@@ -1,0 +1,125 @@
+/* General Styles */
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: #121212;
+    color: #e0e0e0;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+/* Header Section */
+.main-header {
+    background-color: #1c1c1c;
+    padding: 20px 0;
+    text-align: center;
+}
+
+.main-header .header-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+}
+
+.main-header .logo {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.main-header h1 {
+    font-size: 2rem;
+    color: #ff3d00;
+    margin-left: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+/* About Section */
+.about {
+    text-align: center;
+    margin-top: 40px;
+    padding: 40px 20px;
+}
+
+.about h2 {
+    font-size: 2.5rem;
+    color: #ffcc00;
+    margin-bottom: 20px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.about p {
+    font-size: 1.1rem;
+    color: #bdbdbd;
+    line-height: 1.6;
+    margin-bottom: 20px;
+    max-width: 800px;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+/* Visit Button */
+.btn {
+    display: inline-block;
+    padding: 15px 30px;
+    background-color: #ff3d00;
+    color: #121212;
+    font-size: 1.2rem;
+    font-weight: bold;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: background-color 0.3s ease, transform 0.3s ease;
+    margin-top: 30px;
+}
+
+.btn:hover {
+    background-color: #ffcc00;
+    transform: scale(1.1);
+}
+
+/* Back to Home Button (Styled Differently) */
+.back-to-home {
+    background-color: #ffcc00;
+    color: #121212;
+    margin-top: 20px;
+}
+
+.back-to-home:hover {
+    background-color: #ff3d00;
+    transform: scale(1.1);
+}
+
+/* Footer Section */
+.footer {
+    background-color: #1c1c1c;
+    color: #bdbdbd;
+    text-align: center;
+    padding: 20px;
+    position: absolute;
+    bottom: 0;
+    width: 100%;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .main-header h1 {
+        font-size: 1.5rem;
+    }
+
+    .about h2 {
+        font-size: 2rem;
+    }
+
+    .about p {
+        font-size: 1rem;
+    }
+
+    .btn {
+        padding: 12px 25px;
+        font-size: 1rem;
+    }
+}
