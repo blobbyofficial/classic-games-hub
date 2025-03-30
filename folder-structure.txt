@@ -1,0 +1,30 @@
+classic-games-hub/  # 🌍 Root folder for the website
+│── index.html  # 🏠 Homepage - Intro & featured games
+│
+├── html/  # 📄 Contains all individual pages
+│   ├── games.html  # 🎮 Page listing all games with links
+│   ├── about.html  # ℹ️ About page - Info about the creator & project
+│   ├── settings.html  # ⚙️ Settings page (dark mode & sound toggle)
+│   ├── error.html 
+│
+├── css/  # 🎨 Stylesheets for design & layout
+│   ├── index.css  # 🏠 Styles for the homepage
+│   ├── games.css  # 🎮 Styles for the games page
+│   ├── about.css  # ℹ️ Styles for the about page
+│   ├── settings.css  # ⚙️ Styles for the settings page
+│   ├── error.css
+│
+├── js/  # 🧠 JavaScript files for interactivity
+│   ├── script.js  # 🌐 Main script for general site functionality
+│   ├── settings.js  # ⚙️ Handles dark mode & sound settings
+│   ├── error.js  # │
+├── assets/  # 🎵🔊 Images, sounds, and other media files
+│   ├── favicon.png  # 🖼 Website icon (also used as the logo)
+│   ├── hover.mp3  # 🎵 Sound effect when hovering over elements
+│   ├── click.mp3  # 🎵 Sound effect when clicking buttons/links
+│   ├── music/  # 🎶 Background music files
+│   │   ├── song1.mp3  # 🎼 Example music track 1
+│   │   ├── song2.mp3  # 🎼 Example music track 2
+│   │   ├── etc  # 🔁 Additional music tracks
+│
+└── README.md  # 📜 Documentation & project details
