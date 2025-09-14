@@ -1,0 +1,21 @@
+[
+  {
+    "slug": "snake",
+    "title": "Snake Classic",
+    "description": "Eat apples and grow!",
+    "thumbnail": "../assets/images/snake-thumb.png",
+    "controls": "Arrow keys",
+    "playUrl": "snake-game.html",
+    "available": true
+  },
+  
+  {
+    "slug": "tetris",
+    "title": "Tetris Deluxe",
+    "description": "Stack blocks and clear lines!",
+    "thumbnail": "../assets/images/tetris-thumb.png",
+    "controls": "Arrow keys, Spacebar",
+    "playUrl": "tetris-game.html",
+    "available": false
+  }
+]
