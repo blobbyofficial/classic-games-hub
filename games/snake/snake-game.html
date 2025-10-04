@@ -1,0 +1,131 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<meta name="description" content="Snake Ripoff — dark mode, blue theme, animated snake, mobile-first, fruit effects." />
+<title>Snake Ripoff</title>
+<style>
+:root { --bg:#0b0f1c; --panel:#1e293b; --accent:#3b82f6; --snake:#16a34a; --snake-head:#22c55e; --text:#e2e8f0; }
+html,body{margin:0;height:100%;font-family:sans-serif;background:var(--bg);color:var(--text);overflow:hidden}
+.container{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:10px;gap:20px;height:100%;box-sizing:border-box}
+canvas{background:#0f172a;border-radius:8px;touch-action:none}
+.panel{width:90%;max-width:350px;background:var(--panel);padding:16px;border-radius:8px;display:flex;flex-direction:column;gap:10px;}
+h1{margin:0;color:var(--accent);text-align:center}
+.row{display:flex;align-items:center;gap:10px;font-size:14px}
+label{flex:1}
+input[type=range]{flex:2}
+select{flex:2;padding:4px;border-radius:4px;background:#1e293b;color:var(--text);border:1px solid #3b82f6}
+input[type=checkbox]{width:20px;height:20px}
+button{width:100%;padding:10px;background:var(--accent);border:none;border-radius:6px;color:#fff;font-weight:600;cursor:pointer;transition:.2s}
+button:hover{background:#1e40af}
+.overlay{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;background:rgba(0,0,0,0.7)}
+.card{background:var(--panel);padding:20px;border-radius:8px;text-align:center;width:90%;max-width:400px}
+.stats{font-size:13px;color:#cbd5e1;margin-top:10px}
+</style>
+</head>
+<body>
+<div class="container">
+  <canvas id="game" width="720" height="480"></canvas>
+  <div class="panel">
+    <h1>Snake Ripoff</h1>
+    <div class="row"><label>Base speed</label><input id="speedRange" type="range" min="3" max="18" value="5"></div>
+    <div class="row"><label>Number of fruits</label><input id="fruitCount" type="range" min="1" max="6" value="3"></div>
+    <div class="row"><label>Snake skin</label><select id="skinSelect"><option value="green">Green</option><option value="neon">Neon</option><option value="purple">Purple</option></select></div>
+    <div class="row"><label>Wrap-around</label><input id="wrapToggle" type="checkbox" checked></div>
+    <div class="row"><label>Show grid</label><input id="gridToggle" type="checkbox"></div>
+    <button id="startBtn">Start Game</button>
+    <div class="stats" id="statsPanel">Speed: 0 | Length: 0 | Effects: None</div>
+  </div>
+</div>
+<div id="startOverlay" class="overlay">
+  <div class="card"><h2>Welcome</h2><p>Adjust settings then press Start.</p><button id="overlayStart">Start</button></div>
+</div>
+<div id="gameOverOverlay" class="overlay" style="display:none">
+  <div class="card"><h2 id="deathReason">Game Over</h2><p>Your score: <span id="finalScore">0</span></p><button id="overlayRestart">Restart</button></div>
+</div>
+<script>
+const canvas=document.getElementById('game');
+const ctx=canvas.getContext('2d');
+let CELL=24; let COLS=Math.floor(canvas.width/CELL),ROWS=Math.floor(canvas.height/CELL);
+let snake=[],dir={x:1,y:0},nextDir={x:1,y:0},fruits=[],score=0,running=false,lastTick=0,tickInterval=200,baseSpeed=5,invincible=false,invTimer=0,currentEffects=[];
+let deathReason="";
+let slitherOffset=0;
+
+const fruitTypes={
+"🍎":{effect:"grow",amount:1,rarity:0.6},
+"🍒":{effect:"grow",amount:2,rarity:0.25},
+"🍋":{effect:"speed",amount:2,rarity:0.1,duration:5000},
+"💀":{effect:"death",rarity:0.04},
+"⭐":{effect:"invincible",time:4000,rarity:0.01}
+};
+
+function resetGame(){
+  snake=[{x:Math.floor(COLS/2),y:Math.floor(ROWS/2)}];
+  dir={x:1,y:0}; nextDir={x:1,y:0};
+  score=0; invincible=false; fruits=[]; currentEffects=[]; deathReason="";
+  slitherOffset=0;
+  spawnFruits();
+  updateStats();
+}
+
+function spawnFruits(){fruits=[];let count=document.getElementById('fruitCount').value;for(let i=0;i<count;i++){const type=weightedRandom();const pos=pickEmpty();fruits.push({x:pos.x,y:pos.y,type,anim:0});}}
+function weightedRandom(){let pool=[];for(let f in fruitTypes){for(let i=0;i<fruitTypes[f].rarity*100;i++)pool.push(f);}return pool[Math.floor(Math.random()*pool.length)];}
+function pickEmpty(){let x,y;do{x=Math.floor(Math.random()*COLS);y=Math.floor(Math.random()*ROWS);}while(snake.some(s=>s.x===x&&s.y===y)||fruits.some(f=>f.x===x&&f.y===y));return {x,y};}
+
+function loop(now){
+  if(!running)return; requestAnimationFrame(loop);
+  if(now-lastTick<tickInterval)return; lastTick=now;
+  slitherOffset+=0.2;
+
+  // handle temporary effects
+  if(invTimer>0){invTimer-=tickInterval;if(invTimer<=0){invincible=false; removeEffect('Invincible');}}
+
+  dir=nextDir;
+  let head={x:snake[0].x+dir.x,y:snake[0].y+dir.y};
+  if(head.x<0||head.x>=COLS||head.y<0||head.y>=ROWS){
+    if(document.getElementById('wrapToggle').checked){ head.x=(head.x+COLS)%COLS; head.y=(head.y+ROWS)%ROWS;}
+    else if(!invincible){ deathReason="You slithered into a wall"; endGame(); return; }
+  }
+  if(!invincible&&snake.some(s=>s.x===head.x&&s.y===head.y)){deathReason="You collided with yourself"; endGame(); return;}
+
+  snake.unshift(head);
+  let ate=false;
+  for(let i=fruits.length-1;i>=0;i--){if(fruits[i].x===head.x&&fruits[i].y===head.y){applyFruit(fruits[i]);fruits.splice(i,1);ate=true;}}
+  if(!ate)snake.pop();
+  while(fruits.length<document.getElementById('fruitCount').value){fruits.push({x:pickEmpty().x,y:pickEmpty().y,type:weightedRandom(),anim:0});}
+  draw(); updateStats();
+}
+
+function applyFruit(fruit){
+  const f=fruitTypes[fruit.type]; if(!f) return;
+  if(f.effect==="grow"){for(let i=0;i<f.amount;i++)snake.push({...snake[snake.length-1]}); score+=f.amount;}
+  else if(f.effect==="speed"){
+    baseSpeed+=f.amount; tickInterval=Math.max(50,200-baseSpeed*5);
+    if(f.duration){ addEffect('Speed Boost',5000,function(){ baseSpeed-=f.amount; tickInterval=Math.max(50,200-baseSpeed*5); });}
+  } else if(f.effect==="death"&&!invincible){deathReason="You ate the deadly fruit"; endGame();}
+  else if(f.effect==="invincible"){invincible=true; invTimer=f.time; addEffect('Invincible',f.time,function(){invincible=false;});}
+  document.getElementById('finalScore').textContent=score;
+}
+
+function addEffect(name,time,onEnd){currentEffects.push({name,time,onEnd}); setTimeout(()=>{currentEffects=currentEffects.filter(e=>e.name!==name); if(onEnd) onEnd();},time);}
+function removeEffect(name){currentEffects=currentEffects.filter(e=>e.name!==name);}
+function updateStats(){let eff=currentEffects.map(e=>e.name).join(', ')||'None'; document.getElementById('statsPanel').textContent=`Speed: ${baseSpeed} | Length: ${snake.length} | Effects: ${eff}`;}
+
+function draw(){
+  ctx.clearRect(0,0,canvas.width,canvas.height);
+  if(document.getElementById('gridToggle').checked){ctx.strokeStyle="#334155";for(let x=0;x<COLS;x++)ctx.strokeRect(x*CELL,0,CELL,canvas.height);for(let y=0;y<ROWS;y++)ctx.strokeRect(0,y*CELL,canvas.width,CELL);}
+  ctx.font=(CELL-4)+"px system-ui"; ctx.textAlign='center'; ctx.textBaseline='middle';
+  fruits.forEach(f=>{f.anim+=0.1; ctx.save(); ctx.translate(f.x*CELL+CELL/2,f.y*CELL+CELL/2); ctx.scale(1+0.1*Math.sin(f.anim),1+0.1*Math.sin(f.anim)); ctx.fillText(f.type,0,0); ctx.restore();});
+
+  snake.forEach((s,i)=>{
+    let offsetX = i===0?0:Math.sin(slitherOffset + i*0.3)*2;
+    let offsetY = i===0?0:Math.cos(slitherOffset + i*0.3)*2;
+    ctx.fillStyle=i==0?(invincible?"gold":varSnakeColor()):varSnakeColor(0.8);
+    ctx.fillRect(s.x*CELL+2+offsetX, s.y*CELL+2+offsetY, CELL-4, CELL-4);
+  });
+}
+
+function varSnakeColor(opacity=1){const skin=document.getElementById('skinSelect').value;if(skin==="green")return `rgba(34,197,94,${opacity})`;if(skin==="neon")return `rgba(59,130,246,${opacity})`;if(skin==="purple")return `rgba(147,51,234,${opacity})`;}
+
+function startGame(){baseSpeed=document.getElementById('speedRange').value; tickInterval=Math.max(50,200-baseSpeed*5); resetGame(); running=true; document.getElementById('
