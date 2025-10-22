@@ -6,7 +6,7 @@
     "thumbnail": "../assets/images/snake-thumb.png",
     "controls": "Arrow keys",
     "playUrl": "snake-game.html",
-    "available": true
+    "available": false
   },
   
   {
@@ -19,5 +19,6 @@
     "available": false
   }
 ]
+
 
 
