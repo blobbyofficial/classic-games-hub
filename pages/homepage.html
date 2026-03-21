@@ -6,6 +6,9 @@
   <title>Classic Games Hub — Game Library</title>
   <meta name="description" content="Browse and play retro classics like Snake, Tetris, and Pong. Modern, responsive, beautifully animated, and mobile-friendly." />
   <link rel="icon" href="../assets/images/Icon.png" type="image/png" />
+  <link rel="stylesheet" href="../assets/styles/site.css" />
+</head>
+<body class="page-library">
 
   <style>
     :root{
@@ -311,6 +314,7 @@
       </section>
     </aside>
   </div>
+
   <header>
     <h1>Game Library</h1>
     <p>Select from the available classics below. Tap a card to view more details and start playing.</p>
@@ -318,7 +322,17 @@
 
   <main id="gameGrid" aria-live="polite" aria-busy="true"></main>
 
+  <footer class="site-footer">
+    &copy; <span data-footer-year>2025</span> Classic Games Hub. All rights reserved.
+  </footer>
 
+  <script src="../assets/scripts/common.js"></script>
+  <script src="../assets/scripts/library.js"></script>
+  <script>
+    window.ClassicGamesHub.initGameLibrary({
+      gridSelector: '#gameGrid',
+      manifestPath: '../games/manifest.json'
+    });
   <footer>
     &copy; <span id="year">2025</span> Classic Games Hub. All rights reserved.
   </footer>

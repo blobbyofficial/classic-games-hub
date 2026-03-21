@@ -6,6 +6,9 @@
   <title>Classic Games Hub — Game Info</title>
   <meta name="description" content="View game details and play classic retro games like Snake, Tetris, Pong, and more. Modern, responsive, interactive, and mobile-first." />
   <link rel="icon" href="../assets/images/Icon.png" type="image/png" />
+  <link rel="stylesheet" href="../assets/styles/site.css" />
+</head>
+<body class="page-game">
 
   <style>
     :root{
@@ -295,6 +298,29 @@
   <div class="game-info" id="gameContainer">
     <div class="thumb" id="gameThumb"></div>
     <div class="details" id="gameDetails"></div>
+    <button class="site-button site-button--hero" id="playBtn">Play Game</button>
+    <div class="status" id="statusMessage">Loading game information…</div>
+  </div>
+
+  <footer class="site-footer">
+    &copy; <span data-footer-year>2025</span> Classic Games Hub. All rights reserved.
+  </footer>
+
+  <script src="../assets/scripts/common.js"></script>
+  <script src="../assets/scripts/gamepage.js"></script>
+  <script>
+    window.ClassicGamesHub.initGamePage({
+      manifestPath: '../games/manifest.json',
+      fallbackThumbnail: '../assets/images/snake-thumb.png',
+      elements: {
+        title: '#gameTitle',
+        description: '#gameDescription',
+        thumbnail: '#gameThumb',
+        details: '#gameDetails',
+        playButton: '#playBtn',
+        status: '#statusMessage'
+      }
+    });
     <button class="play-btn" id="playBtn">Play Game</button>
     <div class="status" id="statusMessage">Loading game information…</div> 
   </div>
