@@ -58,6 +58,7 @@
     }
 
     header{margin-bottom:0;opacity:0;animation:slideFadeIn 1s 0.2s cubic-bezier(0.68,-0.55,0.27,1.55) forwards}
+    header{margin-bottom:3rem;opacity:0;animation:slideFadeIn 1s 0.2s cubic-bezier(0.68,-0.55,0.27,1.55) forwards}
     header h1{font-size:clamp(2rem,5vw,3rem);margin-bottom:.5rem;position:relative;display:inline-block}
     header h1::after{
       content:'';
@@ -78,6 +79,9 @@
       flex-direction:column;
       align-items:center;
       gap:1.25rem;
+
+      gap:2rem;
+      z-index:1;
       opacity:0;
       animation:slideFadeIn 1s 0.4s cubic-bezier(0.68,-0.55,0.27,1.55) forwards;
     }
@@ -97,6 +101,9 @@
     .details{
       width:100%;
       max-width:720px;
+
+      max-width:680px;
+      width:min(100%, 680px);
       text-align:left;
       opacity:0;
       animation:slideFadeIn 1s 0.7s cubic-bezier(0.68,-0.55,0.27,1.55) forwards;
@@ -114,6 +121,37 @@
     .play-btn{
       padding:1.35rem 2.5rem;
       font-size:1.4rem;
+
+    .details p{
+      font-size:1rem;
+      color:var(--muted);
+      margin-bottom:.45rem;
+      line-height:1.55;
+    }
+    .details strong{color:var(--text);}
+    .tag{
+      display:inline-flex;
+      align-items:center;
+      padding:.2rem .55rem;
+      margin:.2rem .35rem .1rem 0;
+      border-radius:999px;
+      background:rgba(255,255,255,0.08);
+      color:var(--text);
+      font-size:.82rem;
+    }
+    .instruction-block{
+      margin-top:1rem;
+      padding:1rem 1.1rem;
+      border-radius:var(--radius);
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .instruction-block strong{display:block;margin-bottom:.65rem;color:var(--text);}
+    .instruction-block ol{padding-left:1.25rem;color:var(--muted);display:grid;gap:.45rem;}
+
+    .play-btn{
+      padding:2.2rem 4.5rem;
+      font-size:1.75rem;
       font-weight:800;
       color:#fff;
       border:none;
@@ -129,11 +167,22 @@
     .play-btn:active{transform:scale(1.03) rotateX(-3deg) rotateY(-2deg)}
     .play-btn:focus{outline:none}
 
+    .play-btn:hover{
+      transform:scale(1.2) rotateX(5deg) rotateY(3deg);
+      opacity:0.95;
+    }
+    .play-btn:active{
+      transform:scale(1.1) rotateX(-3deg) rotateY(-2deg);
+    }
+    .play-btn:focus{outline:none;} 
+
     .status{
       padding:1rem;
       border-radius:var(--radius);
       background:rgba(0,0,0,0.35);
       color:var(--muted);
+
+      margin-top:1rem;
       display:inline-block;
       animation:fadeIn 1s 1.5s forwards;
     }
@@ -168,6 +217,21 @@
 
     @media(max-width:980px){.shell{grid-template-columns:1fr}.side-column{order:-1}}
     @media(max-width:520px){body{padding:1rem}.play-btn{width:100%}}
+
+    footer{
+      margin-top:auto;
+      padding-top:3rem;
+      text-align:center;
+      color:var(--muted);
+      font-size:0.9rem;
+    }
+
+    @media(max-width:520px){
+      body{padding:1.25rem;}
+      .thumb{aspect-ratio:auto;width:100%;height:auto;}
+      .play-btn{padding:1.8rem 3rem;font-size:1.5rem;}
+    }
+ 
 
     @keyframes gradientVignette{0%{background:radial-gradient(circle at center, transparent 60%, rgba(124,58,237,0.15) 100%)}50%{background:radial-gradient(circle at center, transparent 60%, rgba(6,182,212,0.15) 100%)}100%{background:radial-gradient(circle at center, transparent 60%, rgba(124,58,237,0.15) 100%)}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -223,6 +287,16 @@
         </div>
       </section>
     </aside>
+  <header>
+    <h1 id="gameTitle">Loading Game...</h1>
+    <p id="gameDescription"></p>
+  </header>
+
+  <div class="game-info" id="gameContainer">
+    <div class="thumb" id="gameThumb"></div>
+    <div class="details" id="gameDetails"></div>
+    <button class="play-btn" id="playBtn">Play Game</button>
+    <div class="status" id="statusMessage">Loading game information…</div> 
   </div>
 
   <footer>
@@ -232,6 +306,7 @@
   <script>
   (async function(){
     const STORAGE_KEY = 'classicGamesHub.profile.v1';
+
     const params = new URLSearchParams(window.location.search);
     const gameSlug = params.get('game');
 
@@ -394,6 +469,47 @@
       });
       statusEl.style.display = 'inline-block';
       statusEl.textContent = stats.favorite ? 'Added to your favorites.' : 'Removed from your favorites.';
+
+    function escapeHtml(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
+    function normalizeBoolean(value){return value === true || value === 'true';}
+
+    function normalizeGame(game){
+      const instructions = Array.isArray(game.instructions)
+        ? game.instructions.filter(Boolean)
+        : (game.instructions ? [game.instructions] : []);
+      return {
+        ...game,
+        id: game.id || game.slug || '—',
+        genre: game.genre || 'Arcade',
+        difficulty: game.difficulty || 'All skill levels',
+        players: game.players || '1 player',
+        tags: Array.isArray(game.tags) ? game.tags.filter(Boolean) : [],
+        releaseStatus: game.releaseStatus || (normalizeBoolean(game.available) ? 'available' : 'coming-soon'),
+        featured: normalizeBoolean(game.featured),
+        estimatedSessionMinutes: Number.isFinite(Number(game.estimatedSessionMinutes)) ? Number(game.estimatedSessionMinutes) : null,
+        instructions: instructions.length ? instructions : [game.controls || 'No instructions available yet.'],
+        themeColor: game.themeColor || '#7c3aed',
+        highscoreEnabled: normalizeBoolean(game.highscoreEnabled),
+        available: normalizeBoolean(game.available)
+      };
+    }
+
+    function renderDetails(game){
+      const facts = [
+        ['Game ID', game.id],
+        ['Genre', game.genre],
+        ['Difficulty', game.difficulty],
+        ['Players', game.players],
+        ['Release status', game.releaseStatus.replace(/-/g, ' ')],
+        ['Estimated session', game.estimatedSessionMinutes ? `${game.estimatedSessionMinutes} minutes` : 'Flexible'],
+        ['High scores', game.highscoreEnabled ? 'Enabled' : 'Not enabled'],
+        ['Controls', game.controls || '—']
+      ];
+      const tagsMarkup = game.tags.length
+        ? `<p><strong>Tags:</strong> ${game.tags.map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join(' ')}</p>`
+        : '';
+      const instructionsMarkup = `<div class="instruction-block"><strong>How to play:</strong><ol>${game.instructions.map(step => `<li>${escapeHtml(step)}</li>`).join('')}</ol></div>`;
+      detailsEl.innerHTML = `${facts.map(([label, value]) => `<p><strong>${escapeHtml(label)}:</strong> ${escapeHtml(value)}</p>`).join('')}${tagsMarkup}${instructionsMarkup}`;
     }
 
     async function loadGame(){
@@ -406,9 +522,17 @@
         if(!game){statusEl.textContent='Game not found.'; playBtn.style.display = 'none'; return; }
         currentGame = game;
 
+        if(!Array.isArray(manifest)) throw new Error('Manifest format incorrect: expected array');
+        const game = manifest.map(normalizeGame).find(g=>g.slug===gameSlug&&(g.available || g.featured));
+        if(!game){statusEl.textContent='Game not found or currently unavailable.'; playBtn.style.display = 'none'; return; }
+
+
         const thumbUrl = game.thumbnail || '../assets/images/snake-thumb.png';
         await preloadImage(thumbUrl);
         stabiliseThumbBox();
+
+
+        document.documentElement.style.setProperty('--accent1', game.themeColor);
 
         titleEl.textContent = game.title || gameSlug;
         descEl.textContent = game.description || '';
@@ -432,11 +556,27 @@
         saveScoreBtn.addEventListener('click', saveRun);
         favoriteBtn.addEventListener('click', toggleFavorite);
         return;
+        thumbEl.style.boxShadow = `0 0 0 1px ${game.themeColor}55, 0 20px 45px ${game.themeColor}22`;
+
+        renderDetails(game);
+
+        const playTarget = game.playUrl ? `../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.playUrl)}` : `../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.slug)}-game.html`;
+
+        if(game.available){
+          enablePlayButton(playBtn, playTarget);
+          playBtn.textContent = 'Play Game';
+          playBtn.disabled = false;
+          statusEl.textContent = 'Ready to play.';
+        } else {
+          playBtn.style.display = 'none';
+          statusEl.textContent = `This title is ${game.releaseStatus.replace(/-/g, ' ')}.`;
+        }
       } catch (err) {
         console.error(err);
         statusEl.textContent = 'Failed to load game information. Please try again later.';
         playBtn.style.display = 'none';
         return;
+
       }
     }
 
@@ -492,6 +632,7 @@
     }
 
     function enablePlayButton(btn, href, game) {
+    function enablePlayButton(btn, href) {
       btn.style.display = '';
       btn.setAttribute('role', 'button');
       btn.setAttribute('aria-label', 'Play ' + (titleEl.textContent || 'game'));
@@ -502,7 +643,8 @@
           stats.gamesPlayed += 1;
           stats.lastPlayedAt = new Date().toISOString();
           return stats;
-        });
+        })
+      btn.addEventListener('click', ()=> {
         btn.style.transition = 'transform 160ms cubic-bezier(.2,.9,.3,1)';
         btn.style.transform = 'scale(0.98)';
         setTimeout(()=> {
@@ -516,6 +658,9 @@
         }, 160);
       });
 
+          window.location.href = href;
+        }, 160);
+      });
       btn.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
@@ -525,6 +670,57 @@
     }
 
     await loadGame();
+
+      let rect = null;
+      let active = false;
+      let rafId = null;
+      let lastX = 0;
+      let lastY = 0;
+
+      function computeAndApply(clientX, clientY) {
+        if (!rect) rect = btn.getBoundingClientRect();
+        const x = clientX - rect.left;
+        const y = clientY - rect.top;
+        const px = (x / rect.width) - 0.5;
+        const py = (y / rect.height) - 0.5;
+        const rotateY = px * 12;
+        const rotateX = -py * 12;
+        btn.style.transform = `perspective(900px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.06)`;
+      }
+
+      function scheduleApply(x, y) {
+        lastX = x;
+        lastY = y;
+        if (rafId) cancelAnimationFrame(rafId);
+        rafId = requestAnimationFrame(()=> computeAndApply(lastX, lastY));
+      }
+
+      function resetTransform() {
+        rect = null;
+        btn.style.transform = '';
+      }
+
+      btn.addEventListener('pointerenter', (e) => { active = true; rect = btn.getBoundingClientRect(); scheduleApply(e.clientX, e.clientY); });
+      btn.addEventListener('pointermove', (e) => { if (!active) return; scheduleApply(e.clientX, e.clientY); });
+      btn.addEventListener('pointerleave', () => { active = false; resetTransform(); });
+      btn.addEventListener('blur', () => { active = false; resetTransform(); });
+      btn.addEventListener('touchstart', (e) => {
+        const t = e.touches && e.touches[0];
+        if (!t) return;
+        active = true;
+        rect = btn.getBoundingClientRect();
+        scheduleApply(t.clientX, t.clientY);
+      }, { passive: true });
+      btn.addEventListener('touchmove', (e) => {
+        const t = e.touches && e.touches[0];
+        if (!t || !active) return;
+        scheduleApply(t.clientX, t.clientY);
+      }, { passive: true });
+      btn.addEventListener('touchend', () => { active = false; setTimeout(resetTransform, 120); });
+      btn.addEventListener('touchcancel', () => { active = false; resetTransform(); });
+    }
+
+    loadGame();
     document.getElementById('year').textContent = new Date().getFullYear();
   })();
   </script>
