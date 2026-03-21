@@ -2,23 +2,33 @@
   {
     "slug": "snake",
     "title": "Snake Classic",
-    "description": "Eat apples and grow!",
+    "description": "Eat apples, keep growing, and survive longer with every turn.",
     "thumbnail": "../assets/images/snake-thumb.png",
     "controls": "Arrow keys",
     "playUrl": "snake-game.html",
-    "available": false
+    "available": false,
+    "genre": "Arcade",
+    "mode": "Single Player",
+    "difficulty": "Easy to Learn",
+    "bestScoreLabel": "Longest run",
+    "bestScore": "42 apples",
+    "metadata": "../games/snake/snake-info.json",
+    "relatedGames": ["tetris"]
   },
-  
   {
     "slug": "tetris",
     "title": "Tetris Deluxe",
-    "description": "Stack blocks and clear lines!",
-    "thumbnail": "../assets/images/tetris-thumb.png",
+    "description": "Stack blocks, clear lines, and keep the board under control.",
+    "thumbnail": "../assets/images/snake-thumb.png",
     "controls": "Arrow keys, Spacebar",
     "playUrl": "tetris-game.html",
-    "available": false
+    "available": false,
+    "genre": "Puzzle Arcade",
+    "mode": "Single Player",
+    "difficulty": "Scaling Challenge",
+    "bestScoreLabel": "Best line clear",
+    "bestScore": "120 lines",
+    "metadata": "../games/tetris/tetris-info.json",
+    "relatedGames": ["snake"]
   }
 ]
-
-
-

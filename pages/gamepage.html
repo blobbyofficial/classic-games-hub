@@ -10,163 +10,287 @@
   <style>
     :root{
       --bg: linear-gradient(135deg,#0f172a,#1e293b);
+      --panel: rgba(15,23,42,0.72);
+      --panel-border: rgba(148,163,184,0.18);
       --text: #f8fafc;
       --muted: #cbd5e1;
       --accent1: #7c3aed;
       --accent2: #06b6d4;
-      --radius: 16px;
-      --gradient-start: rgba(124,58,237,0.35);
-      --gradient-end: rgba(6,182,212,0.35);
+      --accent-soft: rgba(124,58,237,0.18);
+      --success: #22c55e;
+      --radius: 20px;
+      --shadow: 0 24px 70px rgba(2,6,23,0.32);
     }
 
     *{box-sizing:border-box;margin:0;padding:0}
     html,body{height:100%}
     body{
       min-height:100vh;
-      display:flex;flex-direction:column;
       font-family:'Inter','Segoe UI',Arial,sans-serif;
       background:var(--bg);
       color:var(--text);
       overflow-x:hidden;
       padding:2rem;
-      text-align:center;
-      animation:fadeIn 0.8s ease forwards;
+      animation:fadeIn .8s ease forwards;
     }
 
     body::before{
       content:'';
-      position:fixed;top:0;left:0;width:100%;height:100%;
+      position:fixed;inset:0;
       pointer-events:none;
-      background:radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.25) 100%);
-      mix-blend-mode:overlay;
-      animation:gradientVignette 20s ease infinite;
+      background:radial-gradient(circle at top, rgba(124,58,237,0.18), transparent 40%),
+                 radial-gradient(circle at bottom right, rgba(6,182,212,0.12), transparent 38%);
+      mix-blend-mode:screen;
     }
 
-    header{margin-bottom:3rem;opacity:0;animation:slideFadeIn 1s 0.2s cubic-bezier(0.68,-0.55,0.27,1.55) forwards}
-    header h1{font-size:clamp(2rem,5vw,3rem);margin-bottom:.5rem;position:relative;display:inline-block}
-    header h1::after{
-      content:'';
-      position:absolute;
-      left:0;bottom:-6px;
-      width:100%;
-      height:3px;
-      background:linear-gradient(270deg,var(--accent1),var(--accent2));
-      transform:scaleX(0);
-      transform-origin:left;
-      transition:transform .3s ease;
+    .page-shell{
+      max-width:1200px;
+      margin:0 auto;
+      position:relative;
+      z-index:1;
     }
-    header h1:hover::after{transform:scaleX(1);}
-    header p{color:var(--muted);font-size:1rem;max-width:720px;margin:0 auto}
 
-    .game-info{
+    .hero{
+      display:grid;
+      grid-template-columns:minmax(280px, 420px) minmax(0, 1fr);
+      gap:2rem;
+      align-items:stretch;
+      margin-bottom:2rem;
+    }
+
+    .hero-card,
+    .panel,
+    .status{
+      background:var(--panel);
+      backdrop-filter:blur(18px);
+      border:1px solid var(--panel-border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .hero-media{
+      overflow:hidden;
+      min-height:320px;
       display:flex;
       flex-direction:column;
-      align-items:center;
-      gap:2rem;
-      z-index:1;
-      opacity:0;
-      animation:slideFadeIn 1s 0.4s cubic-bezier(0.68,-0.55,0.27,1.55) forwards;
     }
 
     .thumb{
-      width:100%;
-      max-width:420px;
-      aspect-ratio:4/3;
+      flex:1;
+      min-height:320px;
       background-size:cover;
       background-position:center;
-      border-radius:var(--radius);
-      border:2px solid rgba(255,255,255,0.1);
-      transition:transform .5s ease;
-    }
-    .thumb:hover{transform:scale(1.05) rotateZ(0.5deg);}
-
-    .details{
-      max-width:680px;
-      text-align:left;
-      opacity:0;
-      animation:slideFadeIn 1s 0.7s cubic-bezier(0.68,-0.55,0.27,1.55) forwards;
+      background-repeat:no-repeat;
+      position:relative;
+      isolation:isolate;
     }
 
-    .details h2{
-      font-size:1.5rem;
-      margin-bottom:.5rem;
-      color:var(--accent1);
+    .thumb::after{
+      content:'';
+      position:absolute; inset:0;
+      background:linear-gradient(180deg, transparent 35%, rgba(15,23,42,0.75));
     }
 
-    .details p{
-      font-size:1rem;
-      color:var(--muted);
-      margin-bottom:.25rem;
+    .hero-summary{
+      padding:2rem;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:1rem;
     }
 
-    .play-btn{
-      padding:2.2rem 4.5rem;
-      font-size:1.75rem;
-      font-weight:800;
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      color:#e2e8f0;
+      font-size:.85rem;
+      text-transform:uppercase;
+      letter-spacing:.18em;
+    }
+
+    h1{font-size:clamp(2.4rem,5vw,4rem);line-height:1.05;}
+    .hero-summary > p{color:var(--muted);font-size:1.05rem;line-height:1.7;max-width:65ch;}
+
+    .pill-row,
+    .stats-grid,
+    .section-grid,
+    .actions,
+    .related-grid,
+    .gallery-grid{
+      display:grid;
+      gap:1rem;
+    }
+
+    .pill-row{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
+    .pill{
+      padding:1rem 1.1rem;
+      border-radius:16px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .pill strong{display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:.4rem;}
+    .pill span{color:#fff;font-weight:700;}
+
+    .actions{
+      grid-template-columns:repeat(auto-fit,minmax(190px, max-content));
+      align-items:center;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.65rem;
+      min-height:56px;
+      padding:0 1.4rem;
+      border-radius:16px;
+      border:1px solid transparent;
+      text-decoration:none;
       color:#fff;
-      border:none;
-      border-radius:var(--radius);
-      background:linear-gradient(270deg,var(--gradient-start),var(--gradient-end));
+      font-weight:800;
       cursor:pointer;
-      perspective:1000px;
-      transition:transform .3s ease, filter .3s ease, opacity .3s ease;
-      background-size:200% 200%;
-      animation:gradientShift 6s ease infinite, slideFadeIn 1s 1s cubic-bezier(0.68,-0.55,0.27,1.55) forwards;
+      transition:transform .2s ease, opacity .2s ease, border-color .2s ease, background .2s ease;
     }
-    .play-btn:hover{
-      transform:scale(1.2) rotateX(5deg) rotateY(3deg);
-      opacity:0.95;
+    .btn:hover{transform:translateY(-2px);opacity:.96;}
+    .btn-primary{background:linear-gradient(135deg,var(--accent1),var(--accent2));}
+    .btn-secondary{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.12);}
+
+    .stats-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:2rem;}
+    .stat-card{padding:1.2rem 1.3rem;}
+    .stat-card h2{font-size:.82rem;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:.5rem;}
+    .stat-card p{font-size:1.35rem;font-weight:800;}
+    .stat-card small{display:block;color:var(--muted);margin-top:.45rem;line-height:1.5;}
+
+    .section-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:2rem;}
+    .panel{padding:1.5rem;}
+    .panel h2{font-size:1.15rem;margin-bottom:1rem;color:#fff;}
+    .panel p,.panel li{color:var(--muted);line-height:1.7;}
+    .panel ul{padding-left:1.2rem;display:grid;gap:.65rem;}
+
+    .gallery-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+    .gallery-card,
+    .related-card{
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:18px;
+      overflow:hidden;
+      text-decoration:none;
+      color:inherit;
     }
-    .play-btn:active{
-      transform:scale(1.1) rotateX(-3deg) rotateY(-2deg);
+
+    .gallery-visual{
+      aspect-ratio:16/10;
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      position:relative;
     }
-    .play-btn:focus{outline:none;}
+    .gallery-visual::after{
+      content:attr(data-kind);
+      position:absolute;
+      right:.8rem;
+      bottom:.8rem;
+      padding:.3rem .55rem;
+      border-radius:999px;
+      background:rgba(15,23,42,0.78);
+      color:#e2e8f0;
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .gallery-copy{padding:1rem;}
+    .gallery-copy h3,.related-card h3{font-size:1rem;margin-bottom:.35rem;}
+    .gallery-copy p,.related-card p{color:var(--muted);font-size:.95rem;line-height:1.6;}
+
+    .related-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+    .related-card{display:block;}
+    .related-thumb{aspect-ratio:16/9;background-size:cover;background-position:center;background-repeat:no-repeat;}
+    .related-copy{padding:1rem;}
 
     .status{
-      padding:1rem;
-      border-radius:var(--radius);
-      background:rgba(0,0,0,0.35);
-      color:var(--muted);
-      margin-top:3rem;
+      margin-top:2rem;
+      padding:1rem 1.2rem;
       display:inline-block;
-      animation:fadeIn 1s 1.5s forwards;
-    }
-
-    footer{
-      margin-top:auto;
-      padding-top:3rem;
-      text-align:center;
       color:var(--muted);
-      font-size:0.9rem;
     }
 
-    @media(max-width:520px){
-      .thumb{aspect-ratio:auto;width:100%;height:auto;}
-      .play-btn{padding:1.8rem 3rem;font-size:1.5rem;}
+    footer{margin-top:2rem;text-align:center;color:var(--muted);font-size:.9rem;padding-bottom:1rem;}
+
+    .hidden{display:none !important;}
+
+    @media (max-width: 900px){
+      .hero,.section-grid{grid-template-columns:1fr;}
+      body{padding:1rem;}
+      .hero-summary,.panel{padding:1.25rem;}
     }
 
-    @keyframes gradientVignette{0%{background:radial-gradient(circle at center, transparent 60%, rgba(124,58,237,0.15) 100%)}50%{background:radial-gradient(circle at center, transparent 60%, rgba(6,182,212,0.15) 100%)}100%{background:radial-gradient(circle at center, transparent 60%, rgba(124,58,237,0.15) 100%)}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    @keyframes slideFadeIn{from{opacity:0;transform:translateY(20px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes gradientShift{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
   </style>
 </head>
 <body>
-  <header>
-    <h1 id="gameTitle">Loading Game...</h1>
-    <p id="gameDescription"></p>
-  </header>
+  <div class="page-shell">
+    <main>
+      <section class="hero">
+        <div class="hero-card hero-media">
+          <div class="thumb" id="gameThumb" aria-label="Game preview image"></div>
+        </div>
 
-  <div class="game-info" id="gameContainer">
-    <div class="thumb" id="gameThumb"></div>
-    <div class="details" id="gameDetails"></div>
-    <button class="play-btn" id="playBtn">Play Game</button>
-    <div class="status" id="statusMessage">Loading game information…</div>
+        <div class="hero-card hero-summary">
+          <div class="eyebrow">Classic Games Hub</div>
+          <h1 id="gameTitle">Loading Game...</h1>
+          <p id="gameDescription"></p>
+
+          <div class="pill-row" id="heroFacts"></div>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="playBtn">Play Game</button>
+            <a class="btn btn-secondary" id="backBtn" href="homepage.html">← Back to Library</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-grid" id="statsGrid"></section>
+
+      <section class="section-grid">
+        <article class="panel">
+          <h2>Gameplay Summary</h2>
+          <p id="gameplaySummary">Loading gameplay summary…</p>
+        </article>
+
+        <article class="panel">
+          <h2>Controls &amp; Tips</h2>
+          <ul id="controlsTips"></ul>
+        </article>
+
+        <article class="panel">
+          <h2>Difficulty</h2>
+          <p id="difficultyText"></p>
+        </article>
+
+        <article class="panel">
+          <h2>Best Score / Local Record</h2>
+          <p id="scoreText"></p>
+        </article>
+      </section>
+
+      <section class="panel" id="gallerySection">
+        <h2>Screenshots &amp; Animated Previews</h2>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </section>
+
+      <section class="panel" id="relatedSection">
+        <h2>Related Games</h2>
+        <div class="related-grid" id="relatedGames"></div>
+      </section>
+
+      <div class="status" id="statusMessage">Loading game information…</div>
+    </main>
+
+    <footer>
+      &copy; <span id="year">2025</span> Classic Games Hub. All rights reserved.
+    </footer>
   </div>
-
-  <footer>
-    &copy; <span id="year">2025</span> Classic Games Hub. All rights reserved.
-  </footer>
 
   <script>
   (async function(){
@@ -176,217 +300,276 @@
     const titleEl = document.getElementById('gameTitle');
     const descEl = document.getElementById('gameDescription');
     const thumbEl = document.getElementById('gameThumb');
-    const detailsEl = document.getElementById('gameDetails');
+    const heroFactsEl = document.getElementById('heroFacts');
+    const statsGridEl = document.getElementById('statsGrid');
+    const gameplaySummaryEl = document.getElementById('gameplaySummary');
+    const controlsTipsEl = document.getElementById('controlsTips');
+    const difficultyTextEl = document.getElementById('difficultyText');
+    const scoreTextEl = document.getElementById('scoreText');
+    const galleryGridEl = document.getElementById('galleryGrid');
+    const relatedGamesEl = document.getElementById('relatedGames');
+    const gallerySectionEl = document.getElementById('gallerySection');
+    const relatedSectionEl = document.getElementById('relatedSection');
     const playBtn = document.getElementById('playBtn');
     const statusEl = document.getElementById('statusMessage');
 
-    function escapeHtml(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-
-    async function loadGame(){
-      if(!gameSlug){statusEl.textContent='No game specified in URL.';playBtn.style.display='none';return;}
-      try{
-        const res = await fetch('../games/manifest.json',{cache:'no-store'});
-        if(!res.ok) throw new Error('Could not load manifest');
-        const manifest = await res.json();
-        const game = manifest.find(g=>g.slug===gameSlug&&(g.available===true||g.available==='true'));
-        if(!game){statusEl.textContent='Game not found or currently unavailable.'; playBtn.style.display = 'none'; return; }
-
-        // --- Preload thumbnail to avoid mobile glitching --- //
-        const thumbUrl = game.thumbnail || '../assets/images/snake-thumb.png';
-        await preloadImage(thumbUrl);
-        // Stabilise the thumbnail box on small screens (avoid flicker when image loads)
-        stabiliseThumbBox();
-
-        // Update page content
-        titleEl.textContent = game.title || gameSlug;
-        descEl.textContent = game.description || '';
-        thumbEl.style.backgroundImage = `url('${escapeHtml(thumbUrl)}')`;
-        thumbEl.style.backgroundSize = 'cover';
-        thumbEl.style.backgroundRepeat = 'no-repeat';
-        thumbEl.style.backgroundPosition = 'center center';
-
-        detailsEl.innerHTML = `<p><strong>Controls:</strong> ${escapeHtml(game.controls || '—')}</p>`;
-
-        // Setup play target (fallback if playUrl missing)
-        const playTarget = game.playUrl ? `../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.playUrl)}` : `../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.slug)}-game.html`;
-
-        // Enable and wire the play button with strong UX
-        enablePlayButton(playBtn, playTarget);
-
-        // hide status
-        statusEl.style.display = 'none';
-        return;
-      } catch (err) {
-        console.error(err);
-        statusEl.textContent = 'Failed to load game information. Please try again later.';
-        playBtn.style.display = 'none';
-        return;
-      }
+    function escapeHtml(str){
+      return String(str || '')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
     }
 
-    /* ---------- Utilities & Interactions ---------- */
+    function normalizeList(value){
+      if(Array.isArray(value)) return value.filter(Boolean);
+      if(typeof value === 'string' && value.trim()) return [value.trim()];
+      return [];
+    }
 
-    // Preload image, returns promise
-    function preloadImage(src, timeout = 8000) {
-      return new Promise((resolve, reject) => {
-        try {
-          const img = new Image();
-          let settled = false;
-          const t = setTimeout(() => {
-            if (!settled) {
-              settled = true;
-              // resolve anyway so UI can continue (avoid blocking)
-              resolve();
-            }
-          }, timeout);
-          img.onload = () => {
-            if (!settled) {
-              settled = true;
-              clearTimeout(t);
-              resolve();
-            }
-          };
-          img.onerror = () => {
-            if (!settled) {
-              settled = true;
-              clearTimeout(t);
-              resolve(); // resolve on error to avoid blocking UX
-            }
-          };
-          img.src = src;
-        } catch (e) {
-          resolve();
+    function formatDifficulty(difficulty){
+      if(!difficulty) return 'Difficulty details are not available yet.';
+      if(typeof difficulty === 'string') return difficulty;
+      const parts = [difficulty.level, difficulty.summary].filter(Boolean);
+      return parts.join(' — ') || 'Difficulty details are not available yet.';
+    }
+
+    function getMetadataCandidates(game){
+      const candidates = [];
+      if(game.metadata){
+        candidates.push(game.metadata);
+      }
+      candidates.push(`../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.slug)}-info.json`);
+      candidates.push(`../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.slug)}.json`);
+      return candidates;
+    }
+
+    async function loadOptionalMetadata(game){
+      const candidates = getMetadataCandidates(game);
+      for(const path of candidates){
+        try{
+          const res = await fetch(path, { cache:'no-store' });
+          if(!res.ok) continue;
+          return await res.json();
+        }catch(_err){
+          // continue trying optional metadata files
         }
-      });
+      }
+      return {};
     }
 
-    // Stabilise thumbnail box height on small screens to avoid layout jump
-    function stabiliseThumbBox() {
-      // Use CSS-first approach: if aspect-ratio is supported, rely on it.
-      // But for older mobile browsers, set a fixed height equal to 75% of the current width.
-      if ('aspectRatio' in document.documentElement.style || CSS.supports('aspect-ratio: 1 / 1')) {
-        // nothing extra needed
+    function getPlayTarget(game){
+      return game.playUrl
+        ? `../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.playUrl)}`
+        : `../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.slug)}-game.html`;
+    }
+
+    function getDifficultyBadge(detail){
+      if(!detail) return 'Unrated';
+      if(typeof detail === 'string') return detail;
+      return detail.level || 'Unrated';
+    }
+
+    function getLocalRecord(game, metadata){
+      const keyOptions = [
+        metadata.localRecordKey,
+        metadata.score?.storageKey,
+        `classic-games-hub:${game.slug}:best-score`,
+        `${game.slug}:best-score`,
+        `${game.slug}:high-score`
+      ].filter(Boolean);
+
+      for(const key of keyOptions){
+        const raw = localStorage.getItem(key);
+        if(raw !== null && raw !== '') return { key, value: raw };
+      }
+      return null;
+    }
+
+    function getScoreSummary(game, metadata){
+      const localRecord = getLocalRecord(game, metadata);
+      const bestLabel = metadata.score?.label || game.bestScoreLabel || 'Best score';
+      const bestValue = metadata.score?.best || game.bestScore || 'No published record yet';
+
+      if(localRecord){
+        return `${bestLabel}: ${bestValue}. Your local record: ${localRecord.value}.`;
+      }
+      return `${bestLabel}: ${bestValue}. Your local record will appear here once this browser saves one.`;
+    }
+
+    function renderFactPills(game, metadata){
+      const facts = [
+        { label:'Genre', value: game.genre || metadata.genre || 'Arcade Classic' },
+        { label:'Mode', value: game.mode || metadata.mode || 'Single Player' },
+        { label:'Difficulty', value: getDifficultyBadge(metadata.difficulty || game.difficulty) },
+        { label:'Status', value: (game.available === true || game.available === 'true') ? 'Playable' : 'Coming Soon' }
+      ];
+
+      heroFactsEl.innerHTML = facts.map((fact)=>`<div class="pill"><strong>${escapeHtml(fact.label)}</strong><span>${escapeHtml(fact.value)}</span></div>`).join('');
+    }
+
+    function renderStats(game, metadata){
+      const cards = [
+        {
+          title:'Controls',
+          value: game.controls || metadata.controlsSummary || 'See tips below',
+          detail:'Uses manifest controls first, then optional metadata details.'
+        },
+        {
+          title:'Difficulty',
+          value: getDifficultyBadge(metadata.difficulty || game.difficulty),
+          detail: formatDifficulty(metadata.difficulty || game.difficulty)
+        },
+        {
+          title:'Published Best',
+          value: metadata.score?.best || game.bestScore || 'TBD',
+          detail: metadata.score?.label || game.bestScoreLabel || 'Best known record'
+        },
+        {
+          title:'Related Picks',
+          value: String((metadata.relatedGames || game.relatedGames || []).length || getFallbackRelatedCount(game)),
+          detail:'Games suggested from manifest links and genre similarities.'
+        }
+      ];
+
+      statsGridEl.innerHTML = cards.map((card)=>`<article class="hero-card stat-card"><h2>${escapeHtml(card.title)}</h2><p>${escapeHtml(card.value)}</p><small>${escapeHtml(card.detail)}</small></article>`).join('');
+    }
+
+    function renderControls(game, metadata){
+      const tips = [];
+      if(game.controls) tips.push(`Controls: ${game.controls}`);
+      normalizeList(metadata.tips).forEach((tip)=>tips.push(tip));
+      normalizeList(metadata.controlsTips).forEach((tip)=>tips.push(tip));
+      if(!tips.length) tips.push('Control tips will appear here when metadata is available.');
+      controlsTipsEl.innerHTML = tips.map((tip)=>`<li>${escapeHtml(tip)}</li>`).join('');
+    }
+
+    function renderGallery(game, metadata){
+      const entries = Array.isArray(metadata.media) && metadata.media.length
+        ? metadata.media
+        : [{ type:'screenshot', src: game.thumbnail || '../assets/images/snake-thumb.png', alt: `${game.title || game.slug} preview`, caption:'Primary game preview' }];
+
+      galleryGridEl.innerHTML = entries.map((entry)=>{
+        const kind = entry.type === 'animated' ? 'Animated' : 'Screenshot';
+        const href = entry.href || entry.src;
+        return `
+          <a class="gallery-card" href="${escapeHtml(href)}" ${entry.href ? 'target="_blank" rel="noreferrer"' : ''}>
+            <div class="gallery-visual" style="background-image:url('${escapeHtml(entry.src)}')" data-kind="${escapeHtml(kind)}"></div>
+            <div class="gallery-copy">
+              <h3>${escapeHtml(entry.alt || `${game.title} preview`)}</h3>
+              <p>${escapeHtml(entry.caption || 'Preview artwork for this game.')}</p>
+            </div>
+          </a>`;
+      }).join('');
+
+      gallerySectionEl.classList.toggle('hidden', !entries.length);
+    }
+
+    function getFallbackRelatedCount(game){
+      return Array.isArray(game.relatedGames) ? game.relatedGames.length : 0;
+    }
+
+    function getRelatedGames(game, manifest, metadata){
+      const relatedSlugs = normalizeList(metadata.relatedGames || game.relatedGames);
+      let related = manifest.filter((candidate)=> relatedSlugs.includes(candidate.slug) && candidate.slug !== game.slug);
+
+      if(!related.length){
+        related = manifest
+          .filter((candidate)=> candidate.slug !== game.slug)
+          .filter((candidate)=> (candidate.genre && game.genre && candidate.genre === game.genre) || candidate.available === game.available)
+          .slice(0, 3);
+      }
+
+      return related.slice(0, 4);
+    }
+
+    function renderRelatedGames(game, manifest, metadata){
+      const related = getRelatedGames(game, manifest, metadata);
+      if(!related.length){
+        relatedSectionEl.classList.add('hidden');
         return;
       }
-      // fallback: compute height
-      function update() {
-        const w = thumbEl.getBoundingClientRect().width;
-        const h = Math.round(w * 0.75); // 4:3 ratio
-        thumbEl.style.height = h + 'px';
-      }
-      update();
-      // update on resize/orientation change
-      window.addEventListener('resize', debounce(update, 120));
-      window.addEventListener('orientationchange', debounce(update, 160));
+      relatedGamesEl.innerHTML = related.map((item)=>`
+        <a class="related-card" href="gamepage.html?game=${encodeURIComponent(item.slug)}">
+          <div class="related-thumb" style="background-image:url('${escapeHtml(item.thumbnail || '../assets/images/snake-thumb.png')}')"></div>
+          <div class="related-copy">
+            <h3>${escapeHtml(item.title || item.slug)}</h3>
+            <p>${escapeHtml(item.description || 'Explore another game from the library.')}</p>
+          </div>
+        </a>
+      `).join('');
     }
 
-    // simple debounce
-    function debounce(fn, ms=100){
-      let id;
-      return (...args)=>{ clearTimeout(id); id = setTimeout(()=> fn(...args), ms); };
-    }
-
-    // Enable play button with interactions: click, keyboard, pointer/touch tilt
-    function enablePlayButton(btn, href) {
-      btn.style.display = ''; // ensure visible
-      btn.setAttribute('role', 'button');
-      btn.setAttribute('aria-label', 'Play ' + (titleEl.textContent || 'game'));
-      btn.tabIndex = 0;
-
-      // Navigate on click
-      btn.addEventListener('click', ()=> {
-        // small press bounce before navigate for polish
-        btn.style.transition = 'transform 160ms cubic-bezier(.2,.9,.3,1)';
-        btn.style.transform = 'scale(0.98)';
-        setTimeout(()=> {
-          // return transform and navigate
-          btn.style.transform = '';
-          window.location.href = href;
-        }, 160);
-      });
-
-      // Keyboard activation (Space / Enter)
+    function enablePlayButton(btn, href, title){
+      btn.classList.toggle('hidden', !href);
+      if(!href) return;
+      btn.setAttribute('aria-label', `Play ${title || 'game'}`);
+      btn.addEventListener('click', ()=> { window.location.href = href; });
       btn.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           btn.click();
         }
       });
-
-      // Pointer-based 3D tilt effect (desktop & pointer-capable)
-      // We'll use pointer events for unified handling (mouse/touch/stylus).
-      let rect = null;
-      let active = false;
-      let rafId = null;
-
-      // strength of tilt (degrees)
-      const TILT_DEG = 10;
-      const SCALE_HOVER = 1.12;
-      const RESET_TRANSITION = 'transform 450ms cubic-bezier(.22,1,.36,1)';
-
-      function updateRect() { rect = btn.getBoundingClientRect(); }
-
-      function onPointerMove(e){
-        if (!rect) updateRect();
-        const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
-        const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
-        const px = (clientX - rect.left) / rect.width; // 0..1
-        const py = (clientY - rect.top) / rect.height; // 0..1
-        // normalized -0.5..0.5 then *2 -> -1..1
-        const nx = (px - 0.5) * 2;
-        const ny = (py - 0.5) * 2;
-        const rotateY = nx * TILT_DEG * -1; // invert for natural feel
-        const rotateX = ny * TILT_DEG;
-        const scale = SCALE_HOVER;
-
-        // throttle via rAF
-        if (rafId) cancelAnimationFrame(rafId);
-        rafId = requestAnimationFrame(()=> {
-          btn.style.transition = 'transform 80ms cubic-bezier(.2,.9,.3,1)';
-          btn.style.transform = `perspective(1200px) translateZ(0) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
-        });
-      }
-
-      function onPointerEnter(e){
-        active = true;
-        updateRect();
-        // slightly pop in
-        btn.style.transition = 'transform 240ms cubic-bezier(.2,1,.3,1)';
-        btn.style.transform = `perspective(1200px) translateZ(0) scale(${SCALE_HOVER})`;
-        // start listening for move
-        window.addEventListener('pointermove', onPointerMove, {passive:true});
-        // for touch fallback
-        window.addEventListener('touchmove', onPointerMove, {passive:true});
-      }
-
-      function onPointerLeave(){
-        active = false;
-        if (rafId) cancelAnimationFrame(rafId);
-        btn.style.transition = RESET_TRANSITION;
-        btn.style.transform = 'none';
-        window.removeEventListener('pointermove', onPointerMove);
-        window.removeEventListener('touchmove', onPointerMove);
-      }
-
-      // For devices that support pointer events (incl. mouse), use pointerenter/leave
-      btn.addEventListener('pointerenter', onPointerEnter, {passive:true});
-      btn.addEventListener('pointerleave', onPointerLeave, {passive:true});
-      // For older touch-only browsers, support touchstart/touchend
-      btn.addEventListener('touchstart', (e)=> {
-        updateRect();
-        onPointerMove(e);
-      }, {passive:true});
-      btn.addEventListener('touchend', ()=> onPointerLeave(), {passive:true});
-
-      // Clean up on page hide/unload
-      window.addEventListener('blur', onPointerLeave);
-      window.addEventListener('resize', debounce(()=> { updateRect(); }, 120));
     }
 
-    // Kick off loader
-    await loadGame();
+    async function loadGame(){
+      if(!gameSlug){
+        statusEl.textContent='No game specified in URL.';
+        playBtn.classList.add('hidden');
+        return;
+      }
 
-    // update year
+      try{
+        const res = await fetch('../games/manifest.json',{cache:'no-store'});
+        if(!res.ok) throw new Error('Could not load manifest');
+        const manifest = await res.json();
+        if(!Array.isArray(manifest)) throw new Error('Manifest format incorrect: expected array');
+
+        const game = manifest.find((entry)=> entry.slug === gameSlug);
+        if(!game){
+          statusEl.textContent='Game not found in the manifest.';
+          playBtn.classList.add('hidden');
+          return;
+        }
+
+        const metadata = await loadOptionalMetadata(game);
+        const thumbUrl = metadata.heroImage || game.thumbnail || '../assets/images/snake-thumb.png';
+
+        titleEl.textContent = game.title || gameSlug;
+        descEl.textContent = metadata.tagline || game.description || 'More information about this game will appear here soon.';
+        thumbEl.style.backgroundImage = `url('${escapeHtml(thumbUrl)}')`;
+
+        renderFactPills(game, metadata);
+        renderStats(game, metadata);
+        gameplaySummaryEl.textContent = metadata.gameplaySummary || game.gameplaySummary || game.description || 'No gameplay summary has been provided yet.';
+        renderControls(game, metadata);
+        difficultyTextEl.textContent = formatDifficulty(metadata.difficulty || game.difficulty);
+        scoreTextEl.textContent = getScoreSummary(game, metadata);
+        renderGallery(game, metadata);
+        renderRelatedGames(game, manifest, metadata);
+
+        const playTarget = (game.available === true || game.available === 'true') ? getPlayTarget(game) : '';
+        enablePlayButton(playBtn, playTarget, game.title || game.slug);
+        if(!playTarget){
+          playBtn.textContent = 'Coming Soon';
+          playBtn.disabled = true;
+          playBtn.style.opacity = '.55';
+          playBtn.style.cursor = 'not-allowed';
+        }
+
+        statusEl.classList.add('hidden');
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Failed to load game information. Please try again later.';
+        playBtn.classList.add('hidden');
+      }
+    }
+
+    await loadGame();
     document.getElementById('year').textContent = new Date().getFullYear();
   })();
-</script>
+  </script>
+</body>
+</html>

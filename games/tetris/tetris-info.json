@@ -1,0 +1,27 @@
+{
+  "tagline": "Build clean stacks, rescue messy boards, and chase long combos.",
+  "gameplaySummary": "Tetris Deluxe rewards rhythm and placement discipline: you cycle falling pieces into clean wells, set up line clears, and decide when to burn a piece just to survive.",
+  "difficulty": {
+    "level": "Scaling Challenge",
+    "summary": "Early play is relaxed, but the pace ramps up as your stack rises and piece decisions become more punishing."
+  },
+  "tips": [
+    "Keep one lane open for long pieces whenever possible.",
+    "Flatten the stack before chasing a big combo.",
+    "Use quick drops carefully—speed helps until it locks you into a bad placement."
+  ],
+  "score": {
+    "label": "Best published line clear",
+    "best": "120 lines",
+    "storageKey": "tetris:high-score"
+  },
+  "media": [
+    {
+      "type": "screenshot",
+      "src": "../assets/images/snake-thumb.png",
+      "alt": "Tetris stack preview",
+      "caption": "A placeholder preview that can be swapped for a dedicated screenshot later."
+    }
+  ],
+  "relatedGames": ["snake"]
+}
