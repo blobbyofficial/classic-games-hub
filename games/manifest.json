@@ -3,22 +3,18 @@
     "slug": "snake",
     "title": "Snake Classic",
     "description": "Eat apples and grow!",
-    "thumbnail": "../assets/images/snake-thumb.png",
+    "thumbnail": "../assets/images/snake-thumb.svg",
     "controls": "Arrow keys",
     "playUrl": "snake-game.html",
-    "available": false
+    "available": true
   },
-  
   {
     "slug": "tetris",
     "title": "Tetris Deluxe",
     "description": "Stack blocks and clear lines!",
-    "thumbnail": "../assets/images/tetris-thumb.png",
+    "thumbnail": "../assets/images/tetris-thumb.svg",
     "controls": "Arrow keys, Spacebar",
     "playUrl": "tetris-game.html",
-    "available": false
+    "available": true
   }
 ]
-
-
-
