@@ -9,8 +9,8 @@
     name="description"
     content="Play Tetris Deluxe in Classic Games Hub. Stack blocks, clear lines, and keep the matrix under control."
   />
-  <link rel="icon" href="../../assets/images/Icon.png" type="image/png" />
-  <link rel="stylesheet" href="../../assets/styles/site.css" />
+  <link rel="icon" href="../../assets/images/Icon.png?v=arcade-20260321-6" type="image/png" />
+  <link rel="stylesheet" href="../../assets/styles/site.css?v=arcade-20260321-6" />
   <style>
     .tetris-game {
       --accent: #3d8df5;
@@ -105,6 +105,50 @@
         </section>
 
         <section class="control-card">
+          <h2>Cabinet settings</h2>
+          <p class="touch-note">Difficulty and rule changes apply when you reset the matrix.</p>
+          <form class="settings-form" id="tetrisSettingsForm">
+            <div class="setting-field">
+              <label>
+                <span>Difficulty</span>
+                <select id="tetrisDifficulty">
+                  <option value="easy">Easy</option>
+                  <option value="normal" selected>Standard</option>
+                  <option value="hard">Expert</option>
+                </select>
+                <small>Changes the drop-speed curve.</small>
+              </label>
+            </div>
+            <div class="setting-field">
+              <label>
+                <span>Start level</span>
+                <select id="tetrisStartLevel">
+                  <option value="1" selected>Level 1</option>
+                  <option value="3">Level 3</option>
+                  <option value="5">Level 5</option>
+                </select>
+                <small>Begin deeper into the pressure curve.</small>
+              </label>
+            </div>
+            <div class="setting-field">
+              <label>
+                <span>Rotation assist</span>
+                <select id="tetrisAssist">
+                  <option value="forgiving">Forgiving</option>
+                  <option value="balanced" selected>Balanced</option>
+                  <option value="tight">Tight</option>
+                </select>
+                <small>Controls how generous wall kicks are.</small>
+              </label>
+            </div>
+          </form>
+          <div class="game-actions">
+            <button class="game-button secondary" id="tetrisApplySettings" type="button">Apply settings</button>
+            <button class="game-button secondary" id="tetrisDefaultSettings" type="button">Defaults</button>
+          </div>
+        </section>
+
+        <section class="control-card">
           <h2>Next piece</h2>
           <canvas id="next" width="120" height="120" aria-label="Next piece preview"></canvas>
         </section>
@@ -151,8 +195,14 @@
     const overlayButton = document.getElementById("overlayButton");
     const pauseButton = document.getElementById("pauseButton");
     const restartButton = document.getElementById("restartButton");
+    const difficultySelect = document.getElementById("tetrisDifficulty");
+    const startLevelSelect = document.getElementById("tetrisStartLevel");
+    const assistSelect = document.getElementById("tetrisAssist");
+    const applySettingsButton = document.getElementById("tetrisApplySettings");
+    const defaultSettingsButton = document.getElementById("tetrisDefaultSettings");
 
     const bestKey = "classic-games-hub-tetris-best";
+    const settingsKey = "classic-games-hub-tetris-settings";
     let bestScore = Number(localStorage.getItem(bestKey) || 0);
     bestEl.textContent = String(bestScore);
 
@@ -188,6 +238,42 @@
     let running = false;
     let paused = false;
     let gameOver = false;
+    let currentSettings;
+
+    function defaultSettings() {
+      return {
+        difficulty: "normal",
+        startLevel: "1",
+        assist: "balanced"
+      };
+    }
+
+    function loadSettings() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(settingsKey) || "null");
+        return {
+          ...defaultSettings(),
+          ...(stored || {})
+        };
+      } catch (error) {
+        return defaultSettings();
+      }
+    }
+
+    function syncSettingsForm() {
+      difficultySelect.value = currentSettings.difficulty;
+      startLevelSelect.value = currentSettings.startLevel;
+      assistSelect.value = currentSettings.assist;
+    }
+
+    function saveSettings() {
+      currentSettings = {
+        difficulty: difficultySelect.value,
+        startLevel: startLevelSelect.value,
+        assist: assistSelect.value
+      };
+      localStorage.setItem(settingsKey, JSON.stringify(currentSettings));
+    }
 
     function emptyBoard() {
       return Array.from({ length: ROWS }, () => Array(COLS).fill(0));
@@ -227,8 +313,8 @@
     function resetGame() {
       board = emptyBoard();
       score = 0;
-      lines = 0;
-      level = 1;
+      level = Number(currentSettings.startLevel);
+      lines = (level - 1) * 10;
       dropCounter = 0;
       lastTime = 0;
       paused = false;
@@ -239,7 +325,7 @@
       spawnPiece();
       updateHud();
       showOverlay("Ready to Drop", "Use arrow keys to move and rotate. Space performs a hard drop.", "Start Game");
-      messageEl.textContent = "Clear lines to raise the pace and pressure.";
+      messageEl.textContent = "Clear lines to raise the pace and pressure. Starting on level " + level + ".";
       cancelAnimationFrame(animationId);
       draw();
     }
@@ -364,7 +450,7 @@
         return;
       }
       const rotated = rotate(current.matrix);
-      const offsets = [0, -1, 1, -2, 2];
+      const offsets = currentSettings.assist === "forgiving" ? [0, -1, 1, -2, 2, -3, 3] : currentSettings.assist === "tight" ? [0, -1, 1] : [0, -1, 1, -2, 2];
       for (const offset of offsets) {
         if (!collides(rotated, current.x + offset, current.y)) {
           current.matrix = rotated;
@@ -376,7 +462,12 @@
     }
 
     function getDropInterval() {
-      return Math.max(120, 1000 - (level - 1) * 85);
+      const base = {
+        easy: 1120,
+        normal: 1000,
+        hard: 780
+      };
+      return Math.max(100, base[currentSettings.difficulty] - (level - 1) * 85);
     }
 
     function update(time = 0) {
@@ -549,9 +640,23 @@
     });
 
     restartButton.addEventListener("click", resetGame);
+    applySettingsButton.addEventListener("click", () => {
+      saveSettings();
+      resetGame();
+      messageEl.textContent = "Settings applied. Press start to begin the new matrix.";
+    });
+    defaultSettingsButton.addEventListener("click", () => {
+      currentSettings = defaultSettings();
+      syncSettingsForm();
+      localStorage.setItem(settingsKey, JSON.stringify(currentSettings));
+      resetGame();
+      messageEl.textContent = "Default settings restored.";
+    });
 
+    currentSettings = loadSettings();
+    syncSettingsForm();
     resetGame();
   </script>
-  <script defer src="../../assets/scripts/site-loader.js"></script>
+  <script defer src="../../assets/scripts/site-loader.js?v=arcade-20260321-5"></script>
 </body>
 </html>

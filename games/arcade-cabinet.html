@@ -1,0 +1,148 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>document.documentElement.classList.add('js');</script>
+  <title>Classic Games Hub | Arcade Cabinet</title>
+  <meta
+    name="description"
+    content="Play a large collection of recognizable arcade and childhood games in a static cabinet built for desktop and mobile."
+  />
+  <link rel="icon" href="../assets/images/Icon.png?v=arcade-20260321-6" type="image/png" />
+  <link rel="stylesheet" href="../assets/styles/site.css?v=arcade-20260321-6" />
+</head>
+<body class="arcade-game arcade-cabinet">
+  <div class="arcade-shell">
+    <header class="game-topbar">
+      <a class="brand" href="../index.html" aria-label="Classic Games Hub home">
+        <img src="../assets/images/Icon.png" alt="Classic Games Hub logo" width="48" height="48" />
+        <span class="brand-copy">
+          <strong>Classic Games Hub</strong>
+          <span>Arcade cabinet</span>
+        </span>
+      </a>
+      <nav aria-label="Game navigation">
+        <a class="nav-link" href="../pages/homepage.html">Library</a>
+        <a class="nav-link" href="../pages/gamepage.html">Field Guide</a>
+        <a class="nav-link" href="../games/arcade-cabinet.html?game=pong" data-transition-label="Pong">Pong</a>
+        <a class="nav-link" href="../games/arcade-cabinet.html?game=invaders" data-transition-label="Space Invaders">Invaders</a>
+      </nav>
+    </header>
+
+    <main class="game-layout">
+      <section class="game-panel game-stage">
+        <div class="game-stage__header">
+          <div>
+            <p class="game-kicker" id="cabinetCategory">Loading cabinet</p>
+            <h1 id="cabinetTitle">Arcade Cabinet</h1>
+            <p class="game-stage__copy" id="cabinetDescription">
+              Loading the selected game.
+            </p>
+          </div>
+          <div class="game-thumb game-thumb--hero" id="cabinetThumb" aria-hidden="true"></div>
+        </div>
+
+        <div class="game-canvas-wrap">
+          <canvas id="arcadeCanvas" width="720" height="720" aria-label="Arcade game board"></canvas>
+          <div class="game-overlay visible" id="overlay">
+            <div>
+              <h2 id="overlayTitle">Loading Cabinet</h2>
+              <p id="overlayText">Preparing the controls and board.</p>
+              <button class="game-button" id="overlayButton" type="button">Start Game</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <aside class="game-sidebar">
+        <section class="game-panel">
+          <div class="score-grid" aria-label="Game stats">
+            <article class="score-card">
+              <span id="metric1Label">Score</span>
+              <strong id="metric1Value">0</strong>
+            </article>
+            <article class="score-card">
+              <span id="metric2Label">Best</span>
+              <strong id="metric2Value">0</strong>
+            </article>
+            <article class="score-card">
+              <span id="metric3Label">Level</span>
+              <strong id="metric3Value">-</strong>
+            </article>
+            <article class="score-card">
+              <span id="metric4Label">State</span>
+              <strong id="metric4Value">Ready</strong>
+            </article>
+          </div>
+        </section>
+
+        <section class="control-card">
+          <h2>Cabinet settings</h2>
+          <p class="touch-note" id="settingsNote">Difficulty, pace, and assist apply when you reset the round.</p>
+          <form class="settings-form" id="settingsForm"></form>
+          <div class="game-actions">
+            <button class="game-button secondary" id="applySettingsButton" type="button">Apply settings</button>
+            <button class="game-button secondary" id="defaultSettingsButton" type="button">Defaults</button>
+          </div>
+        </section>
+
+        <section class="control-card">
+          <h2>How to play</h2>
+          <ul class="control-list" id="controlsList"></ul>
+        </section>
+
+        <section class="touch-card" id="touchCard">
+          <h2>Touch controls</h2>
+          <p class="touch-note" id="touchNote">Tap the buttons below to play on mobile.</p>
+          <div class="touch-pad touch-pad--wide" id="touchPad"></div>
+        </section>
+
+        <section class="control-card">
+          <h2>Session controls</h2>
+          <div class="game-actions">
+            <button class="game-button secondary" id="pauseButton" type="button">Pause</button>
+            <button class="game-button danger" id="restartButton" type="button">Restart</button>
+            <a class="game-button secondary" href="../pages/homepage.html">Back to library</a>
+          </div>
+          <p class="status-line" id="statusLine">Choose a cabinet and press start.</p>
+        </section>
+      </aside>
+    </main>
+  </div>
+  <script defer src="../assets/scripts/site-loader.js?v=arcade-20260321-5"></script>
+  <script defer src="../assets/scripts/arcade-suite.js?v=arcade-20260321-6"></script>
+  <script>
+    window.addEventListener('DOMContentLoaded', function () {
+      window.ClassicGamesHubArcade.initCabinet({
+        canvasSelector: '#arcadeCanvas',
+        titleSelector: '#cabinetTitle',
+        categorySelector: '#cabinetCategory',
+        descriptionSelector: '#cabinetDescription',
+        thumbSelector: '#cabinetThumb',
+        controlsSelector: '#controlsList',
+        settingsFormSelector: '#settingsForm',
+        settingsNoteSelector: '#settingsNote',
+        applySettingsSelector: '#applySettingsButton',
+        defaultSettingsSelector: '#defaultSettingsButton',
+        touchCardSelector: '#touchCard',
+        touchPadSelector: '#touchPad',
+        touchNoteSelector: '#touchNote',
+        overlaySelector: '#overlay',
+        overlayTitleSelector: '#overlayTitle',
+        overlayTextSelector: '#overlayText',
+        overlayButtonSelector: '#overlayButton',
+        pauseSelector: '#pauseButton',
+        restartSelector: '#restartButton',
+        statusSelector: '#statusLine',
+        metricSelectors: [
+          { label: '#metric1Label', value: '#metric1Value' },
+          { label: '#metric2Label', value: '#metric2Value' },
+          { label: '#metric3Label', value: '#metric3Value' },
+          { label: '#metric4Label', value: '#metric4Value' }
+        ]
+      });
+    });
+  </script>
+</body>
+</html>

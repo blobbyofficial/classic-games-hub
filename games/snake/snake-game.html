@@ -9,8 +9,8 @@
     name="description"
     content="Play Snake Classic in Classic Games Hub. Guide the snake, collect fruit, and survive your own growing trail."
   />
-  <link rel="icon" href="../../assets/images/Icon.png" type="image/png" />
-  <link rel="stylesheet" href="../../assets/styles/site.css" />
+  <link rel="icon" href="../../assets/images/Icon.png?v=arcade-20260321-6" type="image/png" />
+  <link rel="stylesheet" href="../../assets/styles/site.css?v=arcade-20260321-6" />
   <style>
     .snake-game {
       --accent: #24b25b;
@@ -104,6 +104,49 @@
         </section>
 
         <section class="control-card">
+          <h2>Cabinet settings</h2>
+          <p class="touch-note">Difficulty and rule changes apply when you reset the round.</p>
+          <form class="settings-form" id="snakeSettingsForm">
+            <div class="setting-field">
+              <label>
+                <span>Difficulty</span>
+                <select id="snakeDifficulty">
+                  <option value="easy">Easy</option>
+                  <option value="normal" selected>Standard</option>
+                  <option value="hard">Expert</option>
+                </select>
+                <small>Changes the snake tick speed.</small>
+              </label>
+            </div>
+            <div class="setting-field">
+              <label>
+                <span>Pace</span>
+                <select id="snakePace">
+                  <option value="relaxed">Relaxed</option>
+                  <option value="classic" selected>Classic</option>
+                  <option value="turbo">Turbo</option>
+                </select>
+                <small>Pushes the whole round calmer or faster.</small>
+              </label>
+            </div>
+            <div class="setting-field">
+              <label>
+                <span>Walls</span>
+                <select id="snakeWalls">
+                  <option value="wrap" selected>Wrap</option>
+                  <option value="solid">Solid</option>
+                </select>
+                <small>Choose whether the edges loop or end the run.</small>
+              </label>
+            </div>
+          </form>
+          <div class="game-actions">
+            <button class="game-button secondary" id="snakeApplySettings" type="button">Apply settings</button>
+            <button class="game-button secondary" id="snakeDefaultSettings" type="button">Defaults</button>
+          </div>
+        </section>
+
+        <section class="control-card">
           <h2>Control loop</h2>
           <ul class="control-list">
             <li><strong>Move:</strong> Arrow keys or WASD</li>
@@ -158,8 +201,14 @@
     const overlayButton = document.getElementById("overlayButton");
     const pauseButton = document.getElementById("pauseButton");
     const restartButton = document.getElementById("restartButton");
+    const difficultySelect = document.getElementById("snakeDifficulty");
+    const paceSelect = document.getElementById("snakePace");
+    const wallsSelect = document.getElementById("snakeWalls");
+    const applySettingsButton = document.getElementById("snakeApplySettings");
+    const defaultSettingsButton = document.getElementById("snakeDefaultSettings");
 
     const bestKey = "classic-games-hub-snake-best";
+    const settingsKey = "classic-games-hub-snake-settings";
     let bestScore = Number(localStorage.getItem(bestKey) || 0);
     let snake;
     let direction;
@@ -170,8 +219,58 @@
     let started = false;
     let paused = false;
     let gameOver = false;
+    let currentSettings;
 
     bestEl.textContent = String(bestScore);
+
+    function defaultSettings() {
+      return {
+        difficulty: "normal",
+        pace: "classic",
+        walls: "wrap"
+      };
+    }
+
+    function tickDelay() {
+      const difficultyBase = {
+        easy: 160,
+        normal: 130,
+        hard: 95
+      };
+      const paceScale = {
+        relaxed: 1.15,
+        classic: 1,
+        turbo: 0.82
+      };
+      return Math.round(difficultyBase[currentSettings.difficulty] * paceScale[currentSettings.pace]);
+    }
+
+    function loadSettings() {
+      try {
+        const stored = JSON.parse(localStorage.getItem(settingsKey) || "null");
+        return {
+          ...defaultSettings(),
+          ...(stored || {})
+        };
+      } catch (error) {
+        return defaultSettings();
+      }
+    }
+
+    function syncSettingsForm() {
+      difficultySelect.value = currentSettings.difficulty;
+      paceSelect.value = currentSettings.pace;
+      wallsSelect.value = currentSettings.walls;
+    }
+
+    function saveSettings() {
+      currentSettings = {
+        difficulty: difficultySelect.value,
+        pace: paceSelect.value,
+        walls: wallsSelect.value
+      };
+      localStorage.setItem(settingsKey, JSON.stringify(currentSettings));
+    }
 
     function randomEmptyCell() {
       while (true) {
@@ -212,7 +311,7 @@
 
     function startLoop() {
       stopLoop();
-      loopId = setInterval(step, tickMs);
+      loopId = setInterval(step, tickDelay());
     }
 
     function resetGame() {
@@ -230,7 +329,7 @@
       gameOver = false;
       updateHud();
       showOverlay("Press Start", "Use arrow keys or the touch pad. Avoid your own tail.", "Start Game");
-      messageEl.textContent = "Collect the glowing fruit to build your score.";
+      messageEl.textContent = "Collect the glowing fruit to build your score. " + (currentSettings.walls === "solid" ? "Walls are live." : "Walls wrap.");
       draw();
       stopLoop();
     }
@@ -289,9 +388,20 @@
       }
 
       direction = nextDirection;
+      const rawHead = {
+        x: snake[0].x + direction.x,
+        y: snake[0].y + direction.y
+      };
+      if (
+        currentSettings.walls === "solid" &&
+        (rawHead.x < 0 || rawHead.x >= boardSize || rawHead.y < 0 || rawHead.y >= boardSize)
+      ) {
+        endGame();
+        return;
+      }
       const head = {
-        x: (snake[0].x + direction.x + boardSize) % boardSize,
-        y: (snake[0].y + direction.y + boardSize) % boardSize
+        x: (rawHead.x + boardSize) % boardSize,
+        y: (rawHead.y + boardSize) % boardSize
       };
 
       if (snake.some((part) => part.x === head.x && part.y === head.y)) {
@@ -391,6 +501,18 @@
     });
     pauseButton.addEventListener("click", pauseGame);
     restartButton.addEventListener("click", resetGame);
+    applySettingsButton.addEventListener("click", () => {
+      saveSettings();
+      resetGame();
+      messageEl.textContent = "Settings applied. Press start for a fresh run.";
+    });
+    defaultSettingsButton.addEventListener("click", () => {
+      currentSettings = defaultSettings();
+      syncSettingsForm();
+      localStorage.setItem(settingsKey, JSON.stringify(currentSettings));
+      resetGame();
+      messageEl.textContent = "Default settings restored.";
+    });
 
     document.querySelectorAll("[data-dir]").forEach((button) => {
       button.addEventListener("click", () => {
@@ -404,8 +526,10 @@
       });
     });
 
+    currentSettings = loadSettings();
+    syncSettingsForm();
     resetGame();
   </script>
-  <script defer src="../../assets/scripts/site-loader.js"></script>
+  <script defer src="../../assets/scripts/site-loader.js?v=arcade-20260321-5"></script>
 </body>
 </html>
