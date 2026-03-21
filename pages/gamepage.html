@@ -17,6 +17,10 @@
       --radius: 16px;
       --gradient-start: rgba(124,58,237,0.35);
       --gradient-end: rgba(6,182,212,0.35);
+      --border: rgba(255,255,255,0.1);
+      --panel-bg: rgba(15,23,42,0.55);
+      --success: #4ade80;
+      --warning: #fbbf24;
     }
 
     *{box-sizing:border-box;margin:0;padding:0}
@@ -42,7 +46,18 @@
       animation:gradientVignette 20s ease infinite;
     }
 
-    header{margin-bottom:3rem;opacity:0;animation:slideFadeIn 1s 0.2s cubic-bezier(0.68,-0.55,0.27,1.55) forwards}
+    .shell{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,2fr) minmax(300px,1fr);gap:1rem;align-items:start}
+    .main-column,.side-column{display:grid;gap:1rem}
+
+    header,.panel,.play-btn,.status{backdrop-filter:blur(10px)}
+    header,.panel{
+      background:var(--panel-bg);
+      border:1px solid var(--border);
+      border-radius:20px;
+      padding:1.25rem;
+    }
+
+    header{margin-bottom:0;opacity:0;animation:slideFadeIn 1s 0.2s cubic-bezier(0.68,-0.55,0.27,1.55) forwards}
     header h1{font-size:clamp(2rem,5vw,3rem);margin-bottom:.5rem;position:relative;display:inline-block}
     header h1::after{
       content:'';
@@ -62,8 +77,7 @@
       display:flex;
       flex-direction:column;
       align-items:center;
-      gap:2rem;
-      z-index:1;
+      gap:1.25rem;
       opacity:0;
       animation:slideFadeIn 1s 0.4s cubic-bezier(0.68,-0.55,0.27,1.55) forwards;
     }
@@ -81,27 +95,25 @@
     .thumb:hover{transform:scale(1.05) rotateZ(0.5deg);}
 
     .details{
-      max-width:680px;
+      width:100%;
+      max-width:720px;
       text-align:left;
       opacity:0;
       animation:slideFadeIn 1s 0.7s cubic-bezier(0.68,-0.55,0.27,1.55) forwards;
     }
 
-    .details h2{
-      font-size:1.5rem;
-      margin-bottom:.5rem;
+    .details h2,.panel h2{
+      font-size:1.2rem;
+      margin-bottom:.75rem;
       color:var(--accent1);
     }
 
-    .details p{
-      font-size:1rem;
-      color:var(--muted);
-      margin-bottom:.25rem;
-    }
+    .details p,.panel p,.microcopy{font-size:1rem;color:var(--muted);margin-bottom:.45rem}
+    .microcopy{font-size:.86rem}
 
     .play-btn{
-      padding:2.2rem 4.5rem;
-      font-size:1.75rem;
+      padding:1.35rem 2.5rem;
+      font-size:1.4rem;
       font-weight:800;
       color:#fff;
       border:none;
@@ -113,37 +125,49 @@
       background-size:200% 200%;
       animation:gradientShift 6s ease infinite, slideFadeIn 1s 1s cubic-bezier(0.68,-0.55,0.27,1.55) forwards;
     }
-    .play-btn:hover{
-      transform:scale(1.2) rotateX(5deg) rotateY(3deg);
-      opacity:0.95;
-    }
-    .play-btn:active{
-      transform:scale(1.1) rotateX(-3deg) rotateY(-2deg);
-    }
-    .play-btn:focus{outline:none;}
+    .play-btn:hover{transform:scale(1.1) rotateX(5deg) rotateY(3deg);opacity:0.95}
+    .play-btn:active{transform:scale(1.03) rotateX(-3deg) rotateY(-2deg)}
+    .play-btn:focus{outline:none}
 
     .status{
       padding:1rem;
       border-radius:var(--radius);
       background:rgba(0,0,0,0.35);
       color:var(--muted);
-      margin-top:3rem;
       display:inline-block;
       animation:fadeIn 1s 1.5s forwards;
     }
 
-    footer{
-      margin-top:auto;
-      padding-top:3rem;
-      text-align:center;
-      color:var(--muted);
-      font-size:0.9rem;
+    .stats-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:.75rem}
+    .stat-card,.achievement-pill,.action-row{
+      border:1px solid var(--border);
+      background:rgba(255,255,255,0.03);
+      border-radius:14px;
     }
+    .stat-card{padding:1rem;text-align:left}
+    .stat-card .label{display:block;color:var(--muted);font-size:.8rem;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.35rem}
+    .stat-card .value{font-size:1.45rem;font-weight:800}
+    .stat-card .subtext{font-size:.82rem;color:var(--muted);margin-top:.3rem}
+    .achievement-wrap{display:flex;flex-wrap:wrap;gap:.5rem}
+    .achievement-pill{padding:.45rem .75rem;color:#dbeafe;font-size:.85rem}
+    .achievement-pill.unlocked{background:rgba(74,222,128,.14);color:#bbf7d0}
+    .achievement-pill.locked{opacity:.7}
 
-    @media(max-width:520px){
-      .thumb{aspect-ratio:auto;width:100%;height:auto;}
-      .play-btn{padding:1.8rem 3rem;font-size:1.5rem;}
+    .action-row{padding:1rem;text-align:left}
+    .action-row label{display:block;font-size:.84rem;color:var(--muted);margin-bottom:.35rem}
+    .action-row input,.action-row select{
+      width:100%;padding:.7rem .8rem;border-radius:12px;border:1px solid var(--border);background:rgba(15,23,42,.7);color:var(--text);margin-bottom:.75rem;
     }
+    .btn-row{display:flex;flex-wrap:wrap;gap:.75rem}
+    .secondary-btn,.toggle-btn{
+      padding:.7rem 1rem;border-radius:12px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);cursor:pointer;font-weight:700;
+    }
+    .toggle-btn.active{background:rgba(74,222,128,.18);border-color:rgba(74,222,128,.35);color:#bbf7d0}
+
+    footer{margin-top:auto;padding-top:1.5rem;text-align:center;color:var(--muted);font-size:0.9rem;position:relative;z-index:1}
+
+    @media(max-width:980px){.shell{grid-template-columns:1fr}.side-column{order:-1}}
+    @media(max-width:520px){body{padding:1rem}.play-btn{width:100%}}
 
     @keyframes gradientVignette{0%{background:radial-gradient(circle at center, transparent 60%, rgba(124,58,237,0.15) 100%)}50%{background:radial-gradient(circle at center, transparent 60%, rgba(6,182,212,0.15) 100%)}100%{background:radial-gradient(circle at center, transparent 60%, rgba(124,58,237,0.15) 100%)}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
@@ -152,16 +176,53 @@
   </style>
 </head>
 <body>
-  <header>
-    <h1 id="gameTitle">Loading Game...</h1>
-    <p id="gameDescription"></p>
-  </header>
+  <div class="shell">
+    <section class="main-column">
+      <header>
+        <h1 id="gameTitle">Loading Game...</h1>
+        <p id="gameDescription"></p>
+      </header>
 
-  <div class="game-info" id="gameContainer">
-    <div class="thumb" id="gameThumb"></div>
-    <div class="details" id="gameDetails"></div>
-    <button class="play-btn" id="playBtn">Play Game</button>
-    <div class="status" id="statusMessage">Loading game information…</div>
+      <div class="panel game-info" id="gameContainer">
+        <div class="thumb" id="gameThumb"></div>
+        <div class="details" id="gameDetails"></div>
+        <button class="play-btn" id="playBtn">Play Game</button>
+        <p class="microcopy">Launching a game counts as a played session in this first browser-persistence version.</p>
+        <div class="status" id="statusMessage">Loading game information…</div>
+      </div>
+    </section>
+
+    <aside class="side-column">
+      <section class="panel" aria-labelledby="profileHeading">
+        <h2 id="profileHeading">Game profile</h2>
+        <p>This browser stores per-game stats, favorites, and simple achievements with localStorage.</p>
+        <div class="stats-grid" id="gameStatsGrid"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="achievementsHeading">
+        <h2 id="achievementsHeading">Achievements</h2>
+        <p>These unlock from score milestones, play count, and streak progress.</p>
+        <div class="achievement-wrap" id="achievementWrap"></div>
+      </section>
+
+      <section class="panel" aria-labelledby="trackerHeading">
+        <h2 id="trackerHeading">Quick score tracker</h2>
+        <p>Use this starter form until each individual game writes scores directly.</p>
+        <div class="action-row">
+          <label for="scoreInput">Score</label>
+          <input id="scoreInput" type="number" min="0" step="1" value="0" />
+          <label for="resultSelect">Result</label>
+          <select id="resultSelect">
+            <option value="win">Win</option>
+            <option value="loss">Loss</option>
+          </select>
+          <div class="btn-row">
+            <button class="secondary-btn" id="saveScoreBtn" type="button">Save run</button>
+            <button class="toggle-btn" id="favoriteBtn" type="button">☆ Favorite</button>
+          </div>
+        </div>
+      </section>
+    </aside>
   </div>
 
   <footer>
@@ -170,6 +231,7 @@
 
   <script>
   (async function(){
+    const STORAGE_KEY = 'classicGamesHub.profile.v1';
     const params = new URLSearchParams(window.location.search);
     const gameSlug = params.get('game');
 
@@ -179,8 +241,160 @@
     const detailsEl = document.getElementById('gameDetails');
     const playBtn = document.getElementById('playBtn');
     const statusEl = document.getElementById('statusMessage');
+    const gameStatsGrid = document.getElementById('gameStatsGrid');
+    const achievementWrap = document.getElementById('achievementWrap');
+    const scoreInput = document.getElementById('scoreInput');
+    const resultSelect = document.getElementById('resultSelect');
+    const saveScoreBtn = document.getElementById('saveScoreBtn');
+    const favoriteBtn = document.getElementById('favoriteBtn');
+
+    let currentGame = null;
+
+    function defaultProfile(){
+      return {version:1, updatedAt:new Date().toISOString(), stats:{global:{gamesPlayed:0,totalWins:0,totalLosses:0,currentWinStreak:0,bestWinStreak:0,totalScore:0,bestScore:0,lastPlayedGame:'',favoriteGame:''}, games:{}}};
+    }
+
+    function getStorage(){
+      try{ return window.localStorage; }catch(err){ return null; }
+    }
+
+    function readProfile(){
+      const storage = getStorage();
+      if(!storage) return defaultProfile();
+      try{
+        const raw = storage.getItem(STORAGE_KEY);
+        return raw ? JSON.parse(raw) : defaultProfile();
+      }catch(err){
+        return defaultProfile();
+      }
+    }
+
+    function writeProfile(profile){
+      profile.updatedAt = new Date().toISOString();
+      const storage = getStorage();
+      if(storage){ storage.setItem(STORAGE_KEY, JSON.stringify(profile)); }
+      return profile;
+    }
+
+    function createGameStats(game){
+      return {slug:game.slug,title:game.title || game.slug,gamesPlayed:0,wins:0,losses:0,currentWinStreak:0,bestWinStreak:0,highScore:0,totalScore:0,lastScore:0,lastPlayedAt:'',favorite:false,achievements:[]};
+    }
+
+    function ensureGameStats(game){
+      const profile = readProfile();
+      profile.stats = profile.stats || defaultProfile().stats;
+      profile.stats.global = Object.assign({}, defaultProfile().stats.global, profile.stats.global || {});
+      profile.stats.games = profile.stats.games || {};
+      if(!profile.stats.games[game.slug]){
+        profile.stats.games[game.slug] = createGameStats(game);
+      }
+      profile.stats.games[game.slug].title = game.title || game.slug;
+      profile.stats.games[game.slug].achievements = computeGameAchievements(profile.stats.games[game.slug]);
+      profile.stats.global = computeGlobalStats(profile.stats.games, profile.stats.global);
+      writeProfile(profile);
+      return profile.stats.games[game.slug];
+    }
+
+    function computeGameAchievements(game){
+      return [
+        {label:'First Session', unlocked:game.gamesPlayed >= 1},
+        {label:'100 Club', unlocked:game.highScore >= 100},
+        {label:'Arcade Regular', unlocked:game.gamesPlayed >= 5},
+        {label:'Hot Streak', unlocked:game.bestWinStreak >= 3},
+        {label:'Favorite Pick', unlocked:!!game.favorite}
+      ];
+    }
+
+    function computeGlobalStats(gamesMap, previousGlobal){
+      const games = Object.values(gamesMap || {});
+      const favoriteMarked = games.filter((game)=> game.favorite).sort((a,b)=> (b.gamesPlayed || 0) - (a.gamesPlayed || 0))[0] || null;
+      const lastPlayed = games.filter((game)=> game.lastPlayedAt).sort((a,b)=> new Date(b.lastPlayedAt) - new Date(a.lastPlayedAt))[0] || null;
+      const bestScoreGame = games.reduce((best, game)=> !best || (game.highScore || 0) > (best.highScore || 0) ? game : best, null);
+      return Object.assign({}, previousGlobal || {}, {
+        gamesPlayed: games.reduce((sum, game)=> sum + (game.gamesPlayed || 0), 0),
+        totalWins: games.reduce((sum, game)=> sum + (game.wins || 0), 0),
+        totalLosses: games.reduce((sum, game)=> sum + (game.losses || 0), 0),
+        currentWinStreak: Math.max(0, ...(games.map((game)=> game.currentWinStreak || 0))),
+        bestWinStreak: Math.max(0, ...(games.map((game)=> game.bestWinStreak || 0))),
+        totalScore: games.reduce((sum, game)=> sum + (game.totalScore || 0), 0),
+        bestScore: bestScoreGame ? bestScoreGame.highScore || 0 : 0,
+        lastPlayedGame: lastPlayed ? lastPlayed.title : '',
+        favoriteGame: favoriteMarked ? favoriteMarked.title : ''
+      });
+    }
+
+    function renderStats(gameStats){
+      gameStats.achievements = computeGameAchievements(gameStats);
+      gameStatsGrid.innerHTML = [
+        statCard('High score', gameStats.highScore || 0, `Last run ${gameStats.lastScore || 0}`),
+        statCard('Games played', gameStats.gamesPlayed || 0, gameStats.lastPlayedAt ? `Last played ${new Date(gameStats.lastPlayedAt).toLocaleDateString()}` : 'No sessions recorded'),
+        statCard('Current streak', gameStats.currentWinStreak || 0, `${gameStats.wins || 0} wins / ${gameStats.losses || 0} losses`),
+        statCard('Best run', gameStats.bestWinStreak || 0, gameStats.favorite ? 'Marked as favorite' : 'Favorite toggle available below')
+      ].join('');
+
+      achievementWrap.innerHTML = gameStats.achievements.map((achievement)=> `
+        <span class="achievement-pill ${achievement.unlocked ? 'unlocked' : 'locked'}">${achievement.unlocked ? '✓' : '○'} ${achievement.label}</span>
+      `).join('');
+
+      favoriteBtn.classList.toggle('active', !!gameStats.favorite);
+      favoriteBtn.textContent = gameStats.favorite ? '★ Favorite' : '☆ Favorite';
+    }
+
+    function statCard(label, value, subtext){
+      return `<div class="stat-card"><span class="label">${escapeHtml(label)}</span><div class="value">${escapeHtml(String(value))}</div><div class="subtext">${escapeHtml(subtext)}</div></div>`;
+    }
 
     function escapeHtml(str){return String(str||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+    function updateGameRecord(game, updater){
+      const profile = readProfile();
+      profile.stats = profile.stats || defaultProfile().stats;
+      profile.stats.global = Object.assign({}, defaultProfile().stats.global, profile.stats.global || {});
+      profile.stats.games = profile.stats.games || {};
+      const current = profile.stats.games[game.slug] || createGameStats(game);
+      const updated = updater(current) || current;
+      updated.title = game.title || game.slug;
+      updated.achievements = computeGameAchievements(updated);
+      profile.stats.games[game.slug] = updated;
+      profile.stats.global = computeGlobalStats(profile.stats.games, profile.stats.global);
+      writeProfile(profile);
+      renderStats(updated);
+      return updated;
+    }
+
+    function saveRun(){
+      if(!currentGame) return;
+      const score = Math.max(0, Number(scoreInput.value) || 0);
+      const result = resultSelect.value;
+      updateGameRecord(currentGame, (stats)=>{
+        stats.gamesPlayed += 1;
+        stats.lastScore = score;
+        stats.totalScore += score;
+        stats.highScore = Math.max(stats.highScore || 0, score);
+        stats.lastPlayedAt = new Date().toISOString();
+        if(result === 'win'){
+          stats.wins += 1;
+          stats.currentWinStreak += 1;
+          stats.bestWinStreak = Math.max(stats.bestWinStreak || 0, stats.currentWinStreak || 0);
+        }else{
+          stats.losses += 1;
+          stats.currentWinStreak = 0;
+        }
+        return stats;
+      });
+      statusEl.style.display = 'inline-block';
+      statusEl.textContent = `Saved ${result} with score ${score}. Stats updated on this device.`;
+    }
+
+    function toggleFavorite(){
+      if(!currentGame) return;
+      const stats = updateGameRecord(currentGame, (gameStats)=>{
+        gameStats.favorite = !gameStats.favorite;
+        return gameStats;
+      });
+      statusEl.style.display = 'inline-block';
+      statusEl.textContent = stats.favorite ? 'Added to your favorites.' : 'Removed from your favorites.';
+    }
 
     async function loadGame(){
       if(!gameSlug){statusEl.textContent='No game specified in URL.';playBtn.style.display='none';return;}
@@ -188,16 +402,14 @@
         const res = await fetch('../games/manifest.json',{cache:'no-store'});
         if(!res.ok) throw new Error('Could not load manifest');
         const manifest = await res.json();
-        const game = manifest.find(g=>g.slug===gameSlug&&(g.available===true||g.available==='true'));
-        if(!game){statusEl.textContent='Game not found or currently unavailable.'; playBtn.style.display = 'none'; return; }
+        const game = manifest.find(g=>g.slug===gameSlug);
+        if(!game){statusEl.textContent='Game not found.'; playBtn.style.display = 'none'; return; }
+        currentGame = game;
 
-        // --- Preload thumbnail to avoid mobile glitching --- //
         const thumbUrl = game.thumbnail || '../assets/images/snake-thumb.png';
         await preloadImage(thumbUrl);
-        // Stabilise the thumbnail box on small screens (avoid flicker when image loads)
         stabiliseThumbBox();
 
-        // Update page content
         titleEl.textContent = game.title || gameSlug;
         descEl.textContent = game.description || '';
         thumbEl.style.backgroundImage = `url('${escapeHtml(thumbUrl)}')`;
@@ -205,16 +417,20 @@
         thumbEl.style.backgroundRepeat = 'no-repeat';
         thumbEl.style.backgroundPosition = 'center center';
 
-        detailsEl.innerHTML = `<p><strong>Controls:</strong> ${escapeHtml(game.controls || '—')}</p>`;
+        const gameStats = ensureGameStats(game);
+        detailsEl.innerHTML = `
+          <h2>Session summary</h2>
+          <p><strong>Controls:</strong> ${escapeHtml(game.controls || '—')}</p>
+          <p><strong>Availability:</strong> ${game.available === true || game.available === 'true' ? 'Playable now' : 'Coming soon — profile tracking is still available.'}</p>
+          <p><strong>Score snapshot:</strong> Best ${gameStats.highScore || 0}, played ${gameStats.gamesPlayed || 0}, best streak ${gameStats.bestWinStreak || 0}.</p>`;
+        renderStats(gameStats);
 
-        // Setup play target (fallback if playUrl missing)
         const playTarget = game.playUrl ? `../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.playUrl)}` : `../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.slug)}-game.html`;
+        enablePlayButton(playBtn, playTarget, game);
 
-        // Enable and wire the play button with strong UX
-        enablePlayButton(playBtn, playTarget);
-
-        // hide status
         statusEl.style.display = 'none';
+        saveScoreBtn.addEventListener('click', saveRun);
+        favoriteBtn.addEventListener('click', toggleFavorite);
         return;
       } catch (err) {
         console.error(err);
@@ -224,18 +440,14 @@
       }
     }
 
-    /* ---------- Utilities & Interactions ---------- */
-
-    // Preload image, returns promise
     function preloadImage(src, timeout = 8000) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         try {
           const img = new Image();
           let settled = false;
           const t = setTimeout(() => {
             if (!settled) {
               settled = true;
-              // resolve anyway so UI can continue (avoid blocking)
               resolve();
             }
           }, timeout);
@@ -250,7 +462,7 @@
             if (!settled) {
               settled = true;
               clearTimeout(t);
-              resolve(); // resolve on error to avoid blocking UX
+              resolve();
             }
           };
           img.src = src;
@@ -260,133 +472,61 @@
       });
     }
 
-    // Stabilise thumbnail box height on small screens to avoid layout jump
     function stabiliseThumbBox() {
-      // Use CSS-first approach: if aspect-ratio is supported, rely on it.
-      // But for older mobile browsers, set a fixed height equal to 75% of the current width.
       if ('aspectRatio' in document.documentElement.style || CSS.supports('aspect-ratio: 1 / 1')) {
-        // nothing extra needed
         return;
       }
-      // fallback: compute height
       function update() {
         const w = thumbEl.getBoundingClientRect().width;
-        const h = Math.round(w * 0.75); // 4:3 ratio
+        const h = Math.round(w * 0.75);
         thumbEl.style.height = h + 'px';
       }
       update();
-      // update on resize/orientation change
       window.addEventListener('resize', debounce(update, 120));
       window.addEventListener('orientationchange', debounce(update, 160));
     }
 
-    // simple debounce
     function debounce(fn, ms=100){
       let id;
       return (...args)=>{ clearTimeout(id); id = setTimeout(()=> fn(...args), ms); };
     }
 
-    // Enable play button with interactions: click, keyboard, pointer/touch tilt
-    function enablePlayButton(btn, href) {
-      btn.style.display = ''; // ensure visible
+    function enablePlayButton(btn, href, game) {
+      btn.style.display = '';
       btn.setAttribute('role', 'button');
       btn.setAttribute('aria-label', 'Play ' + (titleEl.textContent || 'game'));
       btn.tabIndex = 0;
 
-      // Navigate on click
       btn.addEventListener('click', ()=> {
-        // small press bounce before navigate for polish
+        updateGameRecord(game, (stats)=>{
+          stats.gamesPlayed += 1;
+          stats.lastPlayedAt = new Date().toISOString();
+          return stats;
+        });
         btn.style.transition = 'transform 160ms cubic-bezier(.2,.9,.3,1)';
         btn.style.transform = 'scale(0.98)';
         setTimeout(()=> {
-          // return transform and navigate
           btn.style.transform = '';
-          window.location.href = href;
+          if(game.available === true || game.available === 'true'){
+            window.location.href = href;
+          }else{
+            statusEl.style.display = 'inline-block';
+            statusEl.textContent = 'This game is marked unavailable right now, but your session count was still tracked locally.';
+          }
         }, 160);
       });
 
-      // Keyboard activation (Space / Enter)
       btn.addEventListener('keydown', (e) => {
         if (e.key === 'Enter' || e.key === ' ') {
           e.preventDefault();
           btn.click();
         }
       });
-
-      // Pointer-based 3D tilt effect (desktop & pointer-capable)
-      // We'll use pointer events for unified handling (mouse/touch/stylus).
-      let rect = null;
-      let active = false;
-      let rafId = null;
-
-      // strength of tilt (degrees)
-      const TILT_DEG = 10;
-      const SCALE_HOVER = 1.12;
-      const RESET_TRANSITION = 'transform 450ms cubic-bezier(.22,1,.36,1)';
-
-      function updateRect() { rect = btn.getBoundingClientRect(); }
-
-      function onPointerMove(e){
-        if (!rect) updateRect();
-        const clientX = (e.touches && e.touches[0]) ? e.touches[0].clientX : e.clientX;
-        const clientY = (e.touches && e.touches[0]) ? e.touches[0].clientY : e.clientY;
-        const px = (clientX - rect.left) / rect.width; // 0..1
-        const py = (clientY - rect.top) / rect.height; // 0..1
-        // normalized -0.5..0.5 then *2 -> -1..1
-        const nx = (px - 0.5) * 2;
-        const ny = (py - 0.5) * 2;
-        const rotateY = nx * TILT_DEG * -1; // invert for natural feel
-        const rotateX = ny * TILT_DEG;
-        const scale = SCALE_HOVER;
-
-        // throttle via rAF
-        if (rafId) cancelAnimationFrame(rafId);
-        rafId = requestAnimationFrame(()=> {
-          btn.style.transition = 'transform 80ms cubic-bezier(.2,.9,.3,1)';
-          btn.style.transform = `perspective(1200px) translateZ(0) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(${scale})`;
-        });
-      }
-
-      function onPointerEnter(e){
-        active = true;
-        updateRect();
-        // slightly pop in
-        btn.style.transition = 'transform 240ms cubic-bezier(.2,1,.3,1)';
-        btn.style.transform = `perspective(1200px) translateZ(0) scale(${SCALE_HOVER})`;
-        // start listening for move
-        window.addEventListener('pointermove', onPointerMove, {passive:true});
-        // for touch fallback
-        window.addEventListener('touchmove', onPointerMove, {passive:true});
-      }
-
-      function onPointerLeave(){
-        active = false;
-        if (rafId) cancelAnimationFrame(rafId);
-        btn.style.transition = RESET_TRANSITION;
-        btn.style.transform = 'none';
-        window.removeEventListener('pointermove', onPointerMove);
-        window.removeEventListener('touchmove', onPointerMove);
-      }
-
-      // For devices that support pointer events (incl. mouse), use pointerenter/leave
-      btn.addEventListener('pointerenter', onPointerEnter, {passive:true});
-      btn.addEventListener('pointerleave', onPointerLeave, {passive:true});
-      // For older touch-only browsers, support touchstart/touchend
-      btn.addEventListener('touchstart', (e)=> {
-        updateRect();
-        onPointerMove(e);
-      }, {passive:true});
-      btn.addEventListener('touchend', ()=> onPointerLeave(), {passive:true});
-
-      // Clean up on page hide/unload
-      window.addEventListener('blur', onPointerLeave);
-      window.addEventListener('resize', debounce(()=> { updateRect(); }, 120));
     }
 
-    // Kick off loader
     await loadGame();
-
-    // update year
     document.getElementById('year').textContent = new Date().getFullYear();
   })();
-</script>
+  </script>
+</body>
+</html>
