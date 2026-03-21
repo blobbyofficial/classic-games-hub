@@ -1,19 +1,26 @@
 classic-games-hub/
-│
-├── index.html                  # Main entry page
-├── README.md                   # Project info
-│
-├── pages/                      # General site pages
-│   ├── homepage.html           # Main menu / game directory
-│   ├── gamepage.html           # Template for game details
-│   └── 404.html                # Error page
-│
-├── games/                      # Individual game folders
-│   └── snake/
-│       ├── snake-game.html     # Snake game HTML (self-contained)
-│       └── snake-info.json     # JSON with game metadata
-│
-└── assets/                     # Shared assets
-    ├── images/                 # Images (thumbnails, favicon, etc.)
-    │   └── snake-thumb.png     # Example placeholder for snake thumbnail
-    └── sounds/                 # Sound files if needed
+|
++-- index.html                  # Landing page
++-- 404.html                    # Root static 404 page
++-- README.md                   # Project overview
+|
++-- pages/
+|   +-- homepage.html           # Static library page
+|   +-- gamepage.html           # Static field guide
+|   +-- snake.html              # Snake detail page
+|   +-- tetris.html             # Tetris detail page
+|   +-- 404.html                # Secondary 404 route
+|
++-- games/
+|   +-- manifest.json           # Reference metadata only
+|   +-- snake/
+|   |   +-- snake-game.html     # Playable Snake game
+|   |   +-- snake-info.json     # Snake reference metadata
+|   +-- tetris/
+|       +-- tetris-game.html    # Playable Tetris game
+|       +-- tetris-info.json    # Tetris reference metadata
+|
++-- assets/
+    +-- images/                 # Shared imagery and icon
+    +-- styles/
+        +-- site.css            # Shared static design system

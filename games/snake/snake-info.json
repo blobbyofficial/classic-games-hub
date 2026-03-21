@@ -1,33 +1,9 @@
 {
-  "tagline": "Guide an ever-growing snake through tight turns and faster mistakes.",
-  "gameplaySummary": "Snake Classic is a score-chasing arcade run where every apple extends your length, shrinks your margin for error, and asks you to plan two or three moves ahead.",
-  "difficulty": {
-    "level": "Easy to Learn",
-    "summary": "The first minute is approachable, but long runs become a routing puzzle as your snake fills more of the board."
-  },
-  "tips": [
-    "Stay close to the center early so you can pivot into any lane quickly.",
-    "Avoid trapping yourself in the corners unless you already know your exit path.",
-    "If your version stores scores in localStorage, this page will show your browser record automatically."
-  ],
-  "score": {
-    "label": "Longest published run",
-    "best": "42 apples",
-    "storageKey": "snake:high-score"
-  },
-  "media": [
-    {
-      "type": "screenshot",
-      "src": "../assets/images/snake-thumb.png",
-      "alt": "Snake board preview",
-      "caption": "A quick look at the maze-like pressure of a late-game run."
-    },
-    {
-      "type": "animated",
-      "src": "../assets/images/snake-thumb.png",
-      "alt": "Snake movement preview",
-      "caption": "Use metadata to point at a GIF or looping preview when one is available."
-    }
-  ],
-  "relatedGames": ["tetris"]
+  "tagline": "Short survival rounds that turn into route-planning puzzles.",
+  "summary": "Snake Classic rewards smooth movement early and disciplined escape planning later once the board starts filling with your own trail.",
+  "difficulty": "Easy to learn with a fast pressure curve",
+  "controls": ["Arrow keys", "WASD", "P to pause", "R to restart"],
+  "sessionLength": "Short",
+  "detailPage": "../../pages/snake.html",
+  "playPage": "./snake-game.html"
 }

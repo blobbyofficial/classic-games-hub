@@ -2,30 +2,147 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Classic Games Hub — Play Retro Classics</title>
-  <meta name="description" content="Play Snake, Tetris, Pong and other timeless classics online. Modern, responsive, beautifully animated, and fun." />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>document.documentElement.classList.add('js');</script>
+  <title>Classic Games Hub | Static Retro Arcade</title>
+  <meta
+    name="description"
+    content="Classic Games Hub is a static retro arcade with a rebuilt editorial-style UI, direct game routes, and instant access to Snake and Tetris."
+  />
   <link rel="icon" href="assets/images/Icon.png" type="image/png" />
   <link rel="stylesheet" href="assets/styles/site.css" />
 </head>
-<body class="page-landing">
-  <header>
-    <img src="assets/images/Icon.png" alt="Classic Games Hub Logo" width="96" height="96" />
-    <h1>Welcome to Classic Games Hub</h1>
-    <p>Play and explore timeless classics with a modern, polished experience. Beautiful animations, responsive design, and smooth interactions make it a joy to play.</p>
-  </header>
+<body class="site-page page-landing">
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="Classic Games Hub home">
+        <img src="assets/images/Icon.png" alt="Classic Games Hub logo" width="48" height="48" />
+        <span class="brand-copy">
+          <strong>Classic Games Hub</strong>
+          <span>Static retro arcade</span>
+        </span>
+      </a>
+      <nav aria-label="Primary">
+        <a class="nav-link" href="pages/homepage.html">Library</a>
+        <a class="nav-link" href="pages/gamepage.html">Field Guide</a>
+        <a class="nav-link" href="pages/snake.html">Snake</a>
+        <a class="nav-link" href="pages/tetris.html">Tetris</a>
+      </nav>
+    </header>
 
-  <nav>
-    <a class="btn" href="pages/homepage.html"><span>Enter Game Hub</span></a>
-  </nav>
+    <main>
+      <section class="hero-grid">
+        <article class="hero-copy">
+          <p class="eyebrow">Rebuilt from scratch</p>
+          <h1>Classic Games Hub</h1>
+          <p class="lede">
+            A sharper, poster-inspired arcade front end with direct file routes, no manifest loading,
+            no browser profile dashboards, and no runtime content fetches. Pick a title and play.
+          </p>
+          <div class="button-row">
+            <a class="button primary" href="pages/homepage.html">Enter the library</a>
+            <a class="button secondary" href="pages/gamepage.html">Browse the field guide</a>
+          </div>
+          <ul class="feature-list">
+            <li>
+              <strong>Instant routing</strong>
+              Every destination is a real static page, including each game detail screen.
+            </li>
+            <li>
+              <strong>Playable classics</strong>
+              Snake and Tetris launch directly from the catalog with no data bootstrap step.
+            </li>
+            <li>
+              <strong>Editorial UI system</strong>
+              The whole site shares one bold visual language instead of page-specific fragments.
+            </li>
+          </ul>
+        </article>
 
-  <footer class="site-footer">
-    &copy; <span data-footer-year>2025</span> Classic Games Hub. All rights reserved.
-  </footer>
+        <aside class="poster-card">
+          <span class="poster-ribbon">Tonight's line-up</span>
+          <div class="poster-visual">
+            <img src="assets/images/snake-thumb.png" alt="Snake Classic preview" />
+          </div>
+          <div class="poster-copy">
+            <h2>Two playable arcade staples.</h2>
+            <p>
+              Snake Classic handles rhythm and route planning. Tetris Deluxe pushes stack control and
+              recovery. Both are reachable through plain static links.
+            </p>
+            <div class="poster-meta">
+              <span class="chip dark">2 games</span>
+              <span class="chip dark">100% static shell</span>
+              <span class="chip dark">Direct play routes</span>
+            </div>
+          </div>
+        </aside>
+      </section>
 
-  <script src="assets/scripts/common.js"></script>
-  <script>
-    window.ClassicGamesHub.initFooterYear();
-  </script>
+      <section class="section-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Quick read</p>
+            <h2>What changed</h2>
+          </div>
+          <p>
+            The site now behaves like a clean static arcade brochure: landing page, catalog, field
+            guide, game detail pages, and playable canvases with a consistent look.
+          </p>
+        </div>
+        <div class="stat-strip">
+          <article class="stat-card">
+            <strong>02</strong>
+            <span>Playable titles in the launch catalog.</span>
+          </article>
+          <article class="stat-card">
+            <strong>00</strong>
+            <span>Content fetches needed to browse the site shell.</span>
+          </article>
+          <article class="stat-card">
+            <strong>01</strong>
+            <span>Shared design system powering every static page.</span>
+          </article>
+          <article class="stat-card">
+            <strong>All</strong>
+            <span>Primary routes work as plain HTML files.</span>
+          </article>
+        </div>
+      </section>
+
+      <section class="feature-grid" aria-label="Featured routes">
+        <article class="feature-card">
+          <p class="eyebrow">Featured game</p>
+          <h3>Snake Classic</h3>
+          <p>
+            Tight turns, compounding risk, and a fast loop that works well on desktop or touch
+            controls.
+          </p>
+          <div class="button-row">
+            <a class="button ink" href="pages/snake.html">View details</a>
+            <a class="button secondary" href="games/snake/snake-game.html">Play now</a>
+          </div>
+        </article>
+
+        <article class="feature-card">
+          <p class="eyebrow">Featured game</p>
+          <h3>Tetris Deluxe</h3>
+          <p>
+            A cleaner matrix view, next-piece preview, and quick restart loop for longer stacking
+            sessions.
+          </p>
+          <div class="button-row">
+            <a class="button ink" href="pages/tetris.html">View details</a>
+            <a class="button secondary" href="games/tetris/tetris-game.html">Play now</a>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      Classic Games Hub - static edition.
+    </footer>
+  </div>
+  <script defer src="assets/scripts/site-loader.js"></script>
 </body>
 </html>

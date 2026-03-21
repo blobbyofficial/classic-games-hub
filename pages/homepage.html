@@ -2,660 +2,180 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Classic Games Hub — Game Library</title>
-  <meta name="description" content="Browse and play retro classics like Snake, Tetris, and Pong. Modern, responsive, beautifully animated, and mobile-friendly." />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <script>document.documentElement.classList.add('js');</script>
+  <title>Classic Games Hub | Library</title>
+  <meta
+    name="description"
+    content="Browse the Classic Games Hub library, compare the available titles, and jump straight into static game pages for Snake and Tetris."
+  />
   <link rel="icon" href="../assets/images/Icon.png" type="image/png" />
   <link rel="stylesheet" href="../assets/styles/site.css" />
 </head>
-<body class="page-library">
+<body class="site-page page-library">
+  <div class="page-shell">
+    <header class="topbar">
+      <a class="brand" href="../index.html" aria-label="Classic Games Hub home">
+        <img src="../assets/images/Icon.png" alt="Classic Games Hub logo" width="48" height="48" />
+        <span class="brand-copy">
+          <strong>Classic Games Hub</strong>
+          <span>Arcade library</span>
+        </span>
+      </a>
+      <nav aria-label="Primary">
+        <a class="nav-link" href="../index.html">Landing</a>
+        <a class="nav-link" href="gamepage.html">Field Guide</a>
+        <a class="nav-link" href="snake.html">Snake</a>
+        <a class="nav-link" href="tetris.html">Tetris</a>
+      </nav>
+    </header>
 
-  <style>
-    :root{
-      --bg: linear-gradient(135deg,#0f172a,#1e293b);
-      --text: #f8fafc;
-      --muted: #cbd5e1;
-      --error: #f87171;
-      --success: #4ade80;
-      --accent1: #7c3aed;
-      --accent2: #06b6d4;
-      --radius: 14px;
-      --gradient: linear-gradient(270deg,var(--accent1),var(--accent2),#22d3ee,#a855f7);
-      --card-bg: rgba(255,255,255,0.04);
-      --border: rgba(255,255,255,0.09);
-      --shadow: 0 24px 60px rgba(15, 23, 42, 0.34);
+    <main>
+      <section class="hero-grid">
+        <article class="hero-copy">
+          <p class="eyebrow">Arcade library</p>
+          <h1>Pick your cabinet.</h1>
+          <p class="lede">
+            The catalog is now hand-authored and static. Each game card links to its own detail page
+            and direct launch file, so browsing works cleanly without script-driven content assembly.
+          </p>
+          <div class="button-row">
+            <a class="button primary" href="snake.html">Open Snake</a>
+            <a class="button secondary" href="tetris.html">Open Tetris</a>
+          </div>
+        </article>
 
-      --border: rgba(255,255,255,0.08);
-      --featured-bg: rgba(250,204,21,0.14);
-      --tag-bg: rgba(148,163,184,0.16);
-    }
-
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body{
-      min-height:100vh;
-      display:flex;flex-direction:column;
-      font-family:'Inter','Segoe UI',Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      overflow-x:hidden;
-      padding:1.25rem;
-      position:relative;
-      -webkit-font-smoothing:antialiased;
-    }
-
-    body::before{
-      content:'';
-      position:fixed;top:0;left:0;width:100%;height:100%;
-      pointer-events:none;z-index:0;
-      background:radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.25) 100%);
-      mix-blend-mode:overlay;animation:gradientVignette 22s ease infinite;
-    }
-
-    .layout{position:relative;z-index:1;display:grid;grid-template-columns:minmax(0,2fr) minmax(280px,1fr);gap:1rem;align-items:start}
-    .library-column,.sidebar{display:grid;gap:1rem}
-
-    header,.panel,.card,.status{backdrop-filter:blur(10px);box-shadow:var(--shadow)}
-
-    header,.panel{
-      background:rgba(15,23,42,0.58);
-      border:1px solid var(--border);
-      border-radius:18px;
-      padding:1.25rem;
-    }
-
-    header{text-align:center}
-    header h1{font-size:clamp(1.6rem,4vw,2.6rem);margin-bottom:.4rem}
-    header p{color:var(--muted);max-width:680px;margin:0 auto;font-size:0.98rem}
-
-    .hero-stats,.summary-grid,.achievement-list,.favorites-list{display:grid;gap:.75rem}
-    .hero-stats,.summary-grid{grid-template-columns:repeat(auto-fit,minmax(140px,1fr))}
-    .stat-tile{
-      background:var(--card-bg);
-      border:1px solid var(--border);
-      border-radius:16px;
-      padding:1rem;
-    }
-    .stat-tile .label{display:block;font-size:.8rem;color:var(--muted);margin-bottom:.35rem;text-transform:uppercase;letter-spacing:.06em}
-    .stat-tile .value{font-size:1.6rem;font-weight:800}
-    .stat-tile .subtext{margin-top:.35rem;font-size:.84rem;color:var(--muted)}
-
-    .panel h2{font-size:1.15rem;margin-bottom:.35rem}
-    .panel p.section-copy{color:var(--muted);font-size:.92rem;margin-bottom:1rem}
-
-    .achievement-item,.favorite-item{
-      display:flex;
-      justify-content:space-between;
-      gap:.75rem;
-      background:rgba(255,255,255,0.03);
-      border:1px solid var(--border);
-      border-radius:14px;
-      padding:.85rem 1rem;
-      align-items:center;
-    }
-    .achievement-item strong,.favorite-item strong{display:block;font-size:.95rem}
-    .achievement-item span,.favorite-item span{font-size:.85rem;color:var(--muted)}
-    .badge{padding:.25rem .55rem;border-radius:999px;background:rgba(74,222,128,.15);color:#bbf7d0;font-size:.78rem;font-weight:700;white-space:nowrap}
-    .empty{color:var(--muted);font-size:.92rem;border:1px dashed var(--border);border-radius:14px;padding:1rem;text-align:center}
-
-    .card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;width:100%;align-items:start}
-    header{text-align:center;margin-bottom:1.25rem;z-index:1}
-    header h1{font-size:clamp(1.6rem,4vw,2.6rem);margin-bottom:.4rem}
-    header p{color:var(--muted);max-width:680px;margin:0 auto;font-size:0.98rem}
-
-    main{
-      display:grid;
-      grid-template-columns:repeat(auto-fill,minmax(240px,1fr));
-      gap:1rem;
-      width:100%;
-      align-items:start;
-      z-index:1;
-    }
-
-    .card{
-      background:var(--card-bg);
-      border:1px solid var(--border);
-      border-radius:12px;
-      overflow:hidden;
-      cursor:pointer;
-      transition:transform .25s ease,opacity .5s ease, border-color .25s ease;
-      opacity:0;
-      transform:translateY(18px);
-      will-change:transform, opacity;
-    }
-    .card.loaded{opacity:1;transform:none}
-    .card:hover{transform:translateY(-4px);border-color:rgba(34,211,238,.4)}
-    .card .thumb{
-      width:100%;
-      height:0;
-      padding-bottom:75%;
-      background-size:cover;
-      background-position:center;
-      position:relative;
-      transition:transform .3s ease;
-    }
-    .card:hover .thumb{transform:scale(1.05)}
-    .card .info{padding:12px 14px;text-align:left}
-    .info h2{font-size:1rem;margin-bottom:6px}
-    .info p{font-size:0.9rem;color:var(--muted);margin:0 0 .75rem}
-    .score-line{display:flex;flex-wrap:wrap;gap:.5rem;font-size:.82rem;color:#e2e8f0}
-    .score-chip{padding:.28rem .55rem;border-radius:999px;background:rgba(124,58,237,.18);border:1px solid rgba(124,58,237,.35)}
-      transition:transform .25s ease,opacity .5s ease, border-color .25s ease, box-shadow .25s ease;
-      opacity:0;
-      transform:translateY(18px);
-      will-change:transform, opacity;
-      position:relative;
-    }
-    .card.loaded{opacity:1;transform:none}
-    .card:hover{
-      transform:translateY(-4px);
-      border-color:rgba(255,255,255,0.18);
-      box-shadow:0 18px 40px rgba(15,23,42,0.28);
-    }
-    .card.featured{
-      border-color:rgba(250,204,21,0.3);
-      box-shadow:0 0 0 1px rgba(250,204,21,0.12);
-    }
-    .card .thumb{
-      width:100%;
-      height:0;
-      padding-bottom:65%;
-      background-size:cover;
-      background-position:center;
-      transition:transform .3s ease;
-      position:relative;
-    }
-    .card:hover .thumb{transform:scale(1.05)}
-    .card .info{padding:12px 14px 14px;text-align:left}
-    .eyebrow{
-      display:flex;
-      align-items:center;
-      gap:.5rem;
-      margin-bottom:.55rem;
-      flex-wrap:wrap;
-    }
-    .badge{
-      display:inline-flex;
-      align-items:center;
-      gap:.3rem;
-      font-size:.72rem;
-      font-weight:700;
-      text-transform:uppercase;
-      letter-spacing:.04em;
-      padding:.3rem .55rem;
-      border-radius:999px;
-      background:var(--tag-bg);
-      color:#e2e8f0;
-    }
-    .badge.featured{background:var(--featured-bg);color:#fde68a}
-    .info h2{font-size:1rem;margin-bottom:6px}
-    .info p{font-size:0.9rem;color:var(--muted);margin:0 0 .75rem}
-    .meta{
-      display:flex;
-      gap:.45rem;
-      flex-wrap:wrap;
-      margin-bottom:.75rem;
-    }
-    .meta-item{
-      font-size:.78rem;
-      color:#dbeafe;
-      background:rgba(59,130,246,0.12);
-      border-radius:999px;
-      padding:.28rem .55rem;
-    }
-    .tag-list{
-      display:flex;
-      flex-wrap:wrap;
-      gap:.45rem;
-    }
-    .tag{
-      font-size:.78rem;
-      color:var(--text);
-      background:rgba(255,255,255,0.08);
-      border-radius:999px;
-      padding:.24rem .55rem;
-    }
-
-    .status{
-      grid-column:1/-1;
-      text-align:center;
-      padding:1rem;
-      border-radius:var(--radius);
-      background:rgba(0,0,0,0.35);
-
-      backdrop-filter:blur(6px);
-      animation:fadeIn .4s ease both;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:0.75rem;
-    }
-    .status.error{color:var(--error)}
-    .status.info{color:var(--muted)}
-    .retry-btn,.ghost-btn{
-      padding:0.55rem 0.9rem;
-
-    .retry-btn{
-      padding:0.4rem 0.8rem;
-      border:none;
-      border-radius:var(--radius);
-      background:var(--gradient);
-      color:#fff;
-      font-weight:600;
-      cursor:pointer;
-      transition:transform .2s ease, opacity .2s ease;
-    }
-    .ghost-btn{background:rgba(255,255,255,0.08);border:1px solid var(--border)}
-    .retry-btn:hover,.ghost-btn:hover{transform:scale(1.03)}
-
-    footer{margin-top:1.25rem;text-align:center;color:var(--muted);font-size:0.9rem;position:relative;z-index:1}
-
-    @media (max-width:980px){.layout{grid-template-columns:1fr}.sidebar{order:-1}}
-    @media (max-width:520px){.card-grid,.summary-grid,.hero-stats{grid-template-columns:repeat(2,minmax(0,1fr))}header h1{font-size:1.4rem}}
-    @media (max-width:360px){.card-grid,.summary-grid,.hero-stats{grid-template-columns:repeat(1,minmax(0,1fr))}}
-      transition:transform .2s ease;
-    }
-    .retry-btn:hover{transform:scale(1.05)}
-
-    footer{margin-top:1.25rem;text-align:center;color:var(--muted);font-size:0.9rem}
-
-    @media (max-width:520px){main{grid-template-columns:repeat(1,minmax(0,1fr));gap:.9rem}header h1{font-size:1.4rem}}
-    @media (min-width:521px) and (max-width:760px){main{grid-template-columns:repeat(2,minmax(0,1fr))}}
-
-    @keyframes gradientVignette{0%{background:radial-gradient(circle at center, transparent 60%, rgba(124,58,237,0.15) 100%)}50%{background:radial-gradient(circle at center, transparent 60%, rgba(6,182,212,0.15) 100%)}100%{background:radial-gradient(circle at center, transparent 60%, rgba(124,58,237,0.15) 100%)}}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-  </style>
-</head>
-<body>
-  <div class="layout">
-    <section class="library-column">
-      <header>
-        <h1>Game Library</h1>
-        <p>Select from the available classics below. Your browser now keeps a lightweight local profile with high scores, streaks, favorite games, and starter achievements.</p>
-      </header>
-
-      <section class="panel" aria-labelledby="overviewHeading">
-        <h2 id="overviewHeading">Profile overview</h2>
-        <p class="section-copy">Stored in this browser using localStorage for the initial release. Reset at any time from this dashboard.</p>
-        <div class="hero-stats" id="heroStats"></div>
+        <aside class="poster-card">
+          <span class="poster-ribbon">Catalog notes</span>
+          <div class="poster-copy">
+            <h2>Short sessions. Sharp controls. Direct access.</h2>
+            <p>
+              This version favors instant entry: read the details, launch the game, and return to the
+              library without any manifest or query-string dependency.
+            </p>
+            <div class="poster-meta">
+              <span class="chip dark">Desktop friendly</span>
+              <span class="chip dark">Mobile aware</span>
+              <span class="chip dark">Static routes</span>
+            </div>
+          </div>
+        </aside>
       </section>
 
-      <section class="panel" aria-labelledby="libraryHeading">
-        <h2 id="libraryHeading">Games and score summaries</h2>
-        <p class="section-copy">Each card highlights your best score, current streak, and play count for that game.</p>
-        <main id="gameGrid" class="card-grid" aria-live="polite" aria-busy="true"></main>
-      </section>
-    </section>
+      <section class="section-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Current release</p>
+            <h2>Available titles</h2>
+          </div>
+          <p>
+            Two classics anchor the launch catalog. Each page includes a detail breakdown and a direct
+            play route.
+          </p>
+        </div>
 
-    <aside class="sidebar">
-      <section class="panel" aria-labelledby="summaryHeading">
-        <h2 id="summaryHeading">Dashboard</h2>
-        <p class="section-copy">A quick read on your global stats across all tracked games.</p>
-        <div class="summary-grid" id="summaryGrid"></div>
+        <div class="catalog-grid">
+          <article class="catalog-card">
+            <div class="catalog-visual">
+              <img src="../assets/images/snake-thumb.png" alt="Snake Classic artwork" />
+              <span class="chip catalog-badge">Arcade survival</span>
+            </div>
+            <div class="tag-row">
+              <span class="tag">Solo run</span>
+              <span class="tag">Touch controls</span>
+              <span class="tag">Fast rounds</span>
+            </div>
+            <div>
+              <p class="eyebrow">Snake Classic</p>
+              <h2>Route planning under pressure.</h2>
+              <p>
+                Grow the trail, stay ahead of your own turns, and survive longer as the board gets
+                tighter with every pickup.
+              </p>
+            </div>
+            <div class="button-row">
+              <a class="button ink" href="snake.html">View detail page</a>
+              <a class="button secondary" href="../games/snake/snake-game.html">Launch game</a>
+            </div>
+          </article>
+
+          <article class="catalog-card">
+            <div class="catalog-visual">
+              <img src="../assets/images/tetris-thumb.svg" alt="Tetris Deluxe artwork" />
+              <span class="chip catalog-badge">Puzzle arcade</span>
+            </div>
+            <div class="tag-row">
+              <span class="tag">Stack control</span>
+              <span class="tag">Next-piece preview</span>
+              <span class="tag">Longer sessions</span>
+            </div>
+            <div>
+              <p class="eyebrow">Tetris Deluxe</p>
+              <h2>Clean lines and damage control.</h2>
+              <p>
+                Build flat surfaces, protect your well, and recover fast when the matrix starts to tilt
+                against you.
+              </p>
+            </div>
+            <div class="button-row">
+              <a class="button ink" href="tetris.html">View detail page</a>
+              <a class="button secondary" href="../games/tetris/tetris-game.html">Launch game</a>
+            </div>
+          </article>
+        </div>
       </section>
 
-      <section class="panel" aria-labelledby="favoritesHeading">
-        <h2 id="favoritesHeading">Favorite games</h2>
-        <p class="section-copy">Games you’ve marked as favorites or played most often.</p>
-        <div class="favorites-list" id="favoritesList"></div>
-      </section>
+      <section class="section-card">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Browse paths</p>
+            <h2>Useful routes</h2>
+          </div>
+          <p>
+            The site now has explicit pages for every main destination, which makes static hosting and
+            local file browsing predictable.
+          </p>
+        </div>
+        <div class="route-grid">
+          <article class="route-card">
+            <h3>Landing page</h3>
+            <p>The visual front door with the main overview and primary entry points.</p>
+            <div class="button-row">
+              <a class="button secondary" href="../index.html">Open landing</a>
+            </div>
+          </article>
 
-      <section class="panel" aria-labelledby="achievementsHeading">
-        <h2 id="achievementsHeading">Achievements</h2>
-        <p class="section-copy">Simple milestones unlocked from scores, sessions, and streaks.</p>
-        <div class="achievement-list" id="achievementList"></div>
-      </section>
+          <article class="route-card">
+            <h3>Field guide</h3>
+            <p>A static comparison page that frames both games side by side.</p>
+            <div class="button-row">
+              <a class="button secondary" href="gamepage.html">Open guide</a>
+            </div>
+          </article>
 
-      <section class="panel" aria-labelledby="actionsHeading">
-        <h2 id="actionsHeading">Profile actions</h2>
-        <p class="section-copy">Use these controls while the game integrations are still being wired up.</p>
-        <button class="ghost-btn" id="seedProfileBtn" type="button">Add demo stats</button>
-        <button class="ghost-btn" id="resetProfileBtn" type="button" style="margin-top:.75rem;">Reset local profile</button>
+          <article class="route-card">
+            <h3>Snake detail</h3>
+            <p>Control notes, strategy prompts, and the direct launch route for Snake Classic.</p>
+            <div class="button-row">
+              <a class="button secondary" href="snake.html">Open Snake page</a>
+            </div>
+          </article>
+
+          <article class="route-card">
+            <h3>Tetris detail</h3>
+            <p>Layout, pacing, and controls for the current Tetris Deluxe build.</p>
+            <div class="button-row">
+              <a class="button secondary" href="tetris.html">Open Tetris page</a>
+            </div>
+          </article>
+        </div>
       </section>
-    </aside>
+    </main>
+
+    <footer class="site-footer">
+      Classic Games Hub - library routes are fully static.
+    </footer>
   </div>
-
-  <header>
-    <h1>Game Library</h1>
-    <p>Select from the available classics below. Tap a card to view more details and start playing.</p>
-  </header>
-
-  <main id="gameGrid" aria-live="polite" aria-busy="true"></main>
-
-  <footer class="site-footer">
-    &copy; <span data-footer-year>2025</span> Classic Games Hub. All rights reserved.
-  </footer>
-
-  <script src="../assets/scripts/common.js"></script>
-  <script src="../assets/scripts/library.js"></script>
-  <script>
-    window.ClassicGamesHub.initGameLibrary({
-      gridSelector: '#gameGrid',
-      manifestPath: '../games/manifest.json'
-    });
-  <footer>
-    &copy; <span id="year">2025</span> Classic Games Hub. All rights reserved.
-  </footer>
-
-  <script>
-  (async function(){
-    const STORAGE_KEY = 'classicGamesHub.profile.v1';
-    const grid = document.getElementById('gameGrid');
-    const heroStats = document.getElementById('heroStats');
-    const summaryGrid = document.getElementById('summaryGrid');
-    const favoritesList = document.getElementById('favoritesList');
-    const achievementList = document.getElementById('achievementList');
-    const seedProfileBtn = document.getElementById('seedProfileBtn');
-    const resetProfileBtn = document.getElementById('resetProfileBtn');
-
-    function escapeHtml(str){
-      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    function defaultProfile(){
-      return {version:1, updatedAt:new Date().toISOString(), stats:{global:{gamesPlayed:0,totalWins:0,totalLosses:0,currentWinStreak:0,bestWinStreak:0,totalScore:0,bestScore:0,lastPlayedGame:'',favoriteGame:''}, games:{}}};
-    }
-
-    function getStorage(){
-      try{ return window.localStorage; }catch(err){ return null; }
-    }
-
-    function readProfile(){
-      const storage = getStorage();
-      if(!storage) return defaultProfile();
-      try{
-        const raw = storage.getItem(STORAGE_KEY);
-        if(!raw) return defaultProfile();
-        const parsed = JSON.parse(raw);
-        if(!parsed || typeof parsed !== 'object') return defaultProfile();
-        parsed.stats = parsed.stats || defaultProfile().stats;
-        parsed.stats.global = Object.assign({}, defaultProfile().stats.global, parsed.stats.global || {});
-        parsed.stats.games = parsed.stats.games || {};
-        return parsed;
-      }catch(err){
-        console.warn('Unable to read profile, using defaults.', err);
-        return defaultProfile();
-      }
-    }
-
-    function writeProfile(profile){
-      profile.updatedAt = new Date().toISOString();
-      const storage = getStorage();
-      if(storage){
-        storage.setItem(STORAGE_KEY, JSON.stringify(profile));
-      }
-      return profile;
-    }
-
-    function createGameStats(game){
-      return {slug:game.slug,title:game.title || game.slug,gamesPlayed:0,wins:0,losses:0,currentWinStreak:0,bestWinStreak:0,highScore:0,totalScore:0,lastScore:0,lastPlayedAt:'',favorite:false,achievements:[]};
-    }
-
-    function normalizeGameStats(manifest, profile){
-      const next = readProfile();
-      manifest.forEach((game)=>{
-        if(!next.stats.games[game.slug]) next.stats.games[game.slug] = createGameStats(game);
-        next.stats.games[game.slug].title = game.title || game.slug;
-      });
-      Object.keys(next.stats.games).forEach((slug)=>{
-        const game = next.stats.games[slug];
-        game.achievements = computeGameAchievements(game);
-      });
-      next.stats.global = computeGlobalStats(next.stats.games, next.stats.global);
-      writeProfile(next);
-      return next;
-    }
-
-    function computeGameAchievements(game){
-      const unlocked = [];
-      if(game.gamesPlayed >= 1) unlocked.push({id:'first-session', label:'First Session', detail:'Played at least one round.'});
-      if(game.highScore >= 100) unlocked.push({id:'score-100', label:'100 Club', detail:'Scored 100 or more in one run.'});
-      if(game.gamesPlayed >= 5) unlocked.push({id:'regular', label:'Arcade Regular', detail:'Played five rounds of this game.'});
-      if(game.bestWinStreak >= 3) unlocked.push({id:'streak-3', label:'Hot Streak', detail:'Won three runs in a row.'});
-      if(game.favorite) unlocked.push({id:'favorite', label:'Favorite Pick', detail:'Marked as a favorite game.'});
-      return unlocked;
-    }
-
-    function computeGlobalStats(gamesMap, previousGlobal){
-      const games = Object.values(gamesMap);
-      const totalGamesPlayed = games.reduce((sum, game)=> sum + (game.gamesPlayed || 0), 0);
-      const totalWins = games.reduce((sum, game)=> sum + (game.wins || 0), 0);
-      const totalLosses = games.reduce((sum, game)=> sum + (game.losses || 0), 0);
-      const totalScore = games.reduce((sum, game)=> sum + (game.totalScore || 0), 0);
-      const bestScoreGame = games.reduce((best, game)=> !best || (game.highScore || 0) > (best.highScore || 0) ? game : best, null);
-      const favoriteMarked = games.filter((game)=> game.favorite).sort((a,b)=> (b.gamesPlayed || 0) - (a.gamesPlayed || 0))[0] || null;
-      const favoriteByPlay = games.reduce((best, game)=> !best || (game.gamesPlayed || 0) > (best.gamesPlayed || 0) ? game : best, null);
-      const lastPlayed = games.filter((game)=> game.lastPlayedAt).sort((a,b)=> new Date(b.lastPlayedAt) - new Date(a.lastPlayedAt))[0] || null;
-      return Object.assign({}, previousGlobal || {}, {
-        gamesPlayed: totalGamesPlayed,
-        totalWins,
-        totalLosses,
-        currentWinStreak: Math.max(0, ...(games.map((game)=> game.currentWinStreak || 0))),
-        bestWinStreak: Math.max(0, ...(games.map((game)=> game.bestWinStreak || 0))),
-        totalScore,
-        bestScore: bestScoreGame ? bestScoreGame.highScore || 0 : 0,
-        lastPlayedGame: lastPlayed ? lastPlayed.title : '',
-        favoriteGame: favoriteMarked ? favoriteMarked.title : (favoriteByPlay ? favoriteByPlay.title : '')
-      });
-    }
-
-    function formatDate(value){
-      if(!value) return 'No recent session';
-      const parsed = new Date(value);
-      if(Number.isNaN(parsed.getTime())) return 'No recent session';
-      return parsed.toLocaleDateString(undefined, {month:'short', day:'numeric', year:'numeric'});
-    }
-
-    function showStatus(message, type='info', showRetry=false){
-      grid.innerHTML = `<div class="status ${type}">${escapeHtml(message)}${showRetry ? '<button class="retry-btn" type="button">Retry</button>' : ''}</div>`;
-    const grid = document.getElementById('gameGrid');
-
-    function escapeHtml(str){
-      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
-    }
-
-    function normalizeBoolean(value){
-      return value === true || value === 'true';
-    }
-
-    function normalizeGame(game){
-      const tags = Array.isArray(game.tags) ? game.tags.filter(Boolean) : [];
-      return {
-        ...game,
-        id: game.id || game.slug || '',
-        genre: game.genre || 'Arcade',
-        difficulty: game.difficulty || 'All skill levels',
-        players: game.players || '1 player',
-        tags,
-        releaseStatus: game.releaseStatus || (normalizeBoolean(game.available) ? 'available' : 'coming-soon'),
-        featured: normalizeBoolean(game.featured),
-        estimatedSessionMinutes: Number.isFinite(Number(game.estimatedSessionMinutes)) ? Number(game.estimatedSessionMinutes) : null,
-        themeColor: game.themeColor || 'var(--accent1)',
-        available: normalizeBoolean(game.available)
-      };
-    }
-
-    function showStatus(message, type='info', showRetry=false){
-      grid.innerHTML = `<div class="status ${type}">${escapeHtml(message)}${showRetry ? '<button class="retry-btn">Retry</button>' : ''}</div>`;
-      if(showRetry){
-        document.querySelector('.retry-btn').addEventListener('click', loadGames);
-      }
-    }
-
-    function statTile(label, value, subtext=''){
-      return `<div class="stat-tile"><span class="label">${escapeHtml(label)}</span><div class="value">${escapeHtml(value)}</div>${subtext ? `<div class="subtext">${escapeHtml(subtext)}</div>` : ''}</div>`;
-    }
-
-    function renderDashboard(profile){
-      const global = profile.stats.global;
-      const games = Object.values(profile.stats.games);
-      const unlockedAchievements = games.flatMap((game)=> (game.achievements || []).map((achievement)=> Object.assign({gameTitle:game.title}, achievement)));
-      const favorites = games.filter((game)=> game.favorite).sort((a,b)=> (b.highScore || 0) - (a.highScore || 0));
-      const topPlayed = games.filter((game)=> game.gamesPlayed > 0).sort((a,b)=> (b.gamesPlayed || 0) - (a.gamesPlayed || 0)).slice(0, 3);
-      const visibleFavorites = favorites.length ? favorites : topPlayed;
-
-      heroStats.innerHTML = [
-        statTile('Games played', String(global.gamesPlayed || 0), global.lastPlayedGame ? `Last session: ${global.lastPlayedGame}` : 'No sessions yet'),
-        statTile('Best score', String(global.bestScore || 0), global.favoriteGame ? `Favorite: ${global.favoriteGame}` : 'Pick a favorite from any game page'),
-        statTile('Best run', `${global.bestWinStreak || 0} wins`, global.totalWins ? `${global.totalWins} wins overall` : 'Win streaks start after your first victory'),
-        statTile('Total score', String(global.totalScore || 0), unlockedAchievements.length ? `${unlockedAchievements.length} achievements unlocked` : 'Achievements will unlock as you play')
-      ].join('');
-
-      summaryGrid.innerHTML = [
-        statTile('Wins', String(global.totalWins || 0), 'Tracked across all games'),
-        statTile('Losses', String(global.totalLosses || 0), 'Useful for streak recovery'),
-        statTile('Current streak', String(global.currentWinStreak || 0), 'Best active run among tracked games'),
-        statTile('Tracked games', String(games.length), 'Every game gets its own persistent record')
-      ].join('');
-
-      favoritesList.innerHTML = visibleFavorites.length ? visibleFavorites.map((game)=> `
-        <div class="favorite-item">
-          <div>
-            <strong>${escapeHtml(game.title)}</strong>
-            <span>${game.favorite ? 'Marked favorite' : 'Most played'} · ${game.gamesPlayed || 0} plays · High score ${game.highScore || 0}</span>
-          </div>
-          <span class="badge">${game.bestWinStreak || 0} streak</span>
-        </div>`).join('') : '<div class="empty">No favorites yet. Mark a game as favorite from its detail page.</div>';
-
-      achievementList.innerHTML = unlockedAchievements.length ? unlockedAchievements.slice(0, 6).map((achievement)=> `
-        <div class="achievement-item">
-          <div>
-            <strong>${escapeHtml(achievement.label)}</strong>
-            <span>${escapeHtml(achievement.gameTitle)} · ${escapeHtml(achievement.detail)}</span>
-          </div>
-          <span class="badge">Unlocked</span>
-        </div>`).join('') : '<div class="empty">No achievements unlocked yet. Demo stats can populate a sample profile.</div>';
-    }
-
-    function renderCard(game, stats){
-      const card = document.createElement('article');
-      card.className = 'card';
-      const cardSummary = stats ? `
-        <div class="score-line">
-          <span class="score-chip">Best ${stats.highScore || 0}</span>
-          <span class="score-chip">Played ${stats.gamesPlayed || 0}</span>
-          <span class="score-chip">Streak ${stats.bestWinStreak || 0}</span>
-        </div>` : '<div class="score-line"><span class="score-chip">No local stats yet</span></div>';
-      card.innerHTML = `
-        <div class="thumb" style="background-image:url('${escapeHtml(game.thumbnail)}')" role="img" aria-label="${escapeHtml(game.title)}"></div>
-        <div class="info">
-          <h2>${escapeHtml(game.title)}</h2>
-          <p>${escapeHtml(game.description)}</p>
-          ${cardSummary}
-    function renderCard(game){
-      const card = document.createElement('article');
-      card.className = `card${game.featured ? ' featured' : ''}`;
-      card.style.setProperty('--card-accent', game.themeColor);
-      const metaBits = [game.genre, game.difficulty, game.players];
-      if(game.estimatedSessionMinutes){
-        metaBits.push(`${game.estimatedSessionMinutes} min session`);
-      }
-      const tagMarkup = game.tags.length ? `<div class="tag-list">${game.tags.slice(0,4).map(tag => `<span class="tag">${escapeHtml(tag)}</span>`).join('')}</div>` : '';
-      card.innerHTML = `
-        <div class="thumb" style="background-image:url('${escapeHtml(game.thumbnail)}'); box-shadow: inset 0 -80px 120px rgba(15,23,42,0.15), inset 0 0 0 1px ${escapeHtml(game.themeColor)}33;" role="img" aria-label="${escapeHtml(game.title)}"></div>
-        <div class="info">
-          <div class="eyebrow">
-            ${game.featured ? '<span class="badge featured">Featured</span>' : ''}
-            <span class="badge">${escapeHtml(game.releaseStatus.replace(/-/g,' '))}</span>
-          </div>
-          <h2>${escapeHtml(game.title)}</h2>
-          <p>${escapeHtml(game.description)}</p>
-          <div class="meta">${metaBits.map(item => `<span class="meta-item">${escapeHtml(item)}</span>`).join('')}</div>
-          ${tagMarkup}
-        </div>`;
-      card.addEventListener('click', ()=>{
-        window.location.href = `gamepage.html?game=${encodeURIComponent(game.slug)}`;
-      });
-      grid.appendChild(card);
-      requestAnimationFrame(()=> setTimeout(()=> card.classList.add('loaded'), 30));
-    }
-
-    function seedDemoProfile(manifest){
-      const profile = readProfile();
-      manifest.slice(0, 2).forEach((game, index)=>{
-        const stats = profile.stats.games[game.slug] || createGameStats(game);
-        stats.gamesPlayed = 3 + index * 2;
-        stats.wins = 2 + index;
-        stats.losses = 1;
-        stats.currentWinStreak = 1 + index;
-        stats.bestWinStreak = 2 + index;
-        stats.highScore = 120 + index * 85;
-        stats.lastScore = stats.highScore - 20;
-        stats.totalScore = stats.highScore * stats.gamesPlayed;
-        stats.lastPlayedAt = new Date(Date.now() - (index * 86400000)).toISOString();
-        stats.favorite = index === 0;
-        stats.achievements = computeGameAchievements(stats);
-        profile.stats.games[game.slug] = stats;
-      });
-      profile.stats.global = computeGlobalStats(profile.stats.games, profile.stats.global);
-      writeProfile(profile);
-      renderDashboard(profile);
-      loadGames();
-    }
-
-    async function loadGames(){
-    async function loadGames(){
-      grid.setAttribute('aria-busy','true');
-      showStatus('Loading game library…');
-      try{
-        const res = await fetch('../games/manifest.json', {cache:'no-store'});
-        if(!res.ok) throw new Error('Manifest not found (HTTP ' + res.status + ')');
-        const manifest = await res.json();
-        if(!Array.isArray(manifest)) throw new Error('Manifest format incorrect: expected array');
-
-        const profile = normalizeGameStats(manifest, readProfile());
-        renderDashboard(profile);
-
-        const viewableGames = manifest.filter((g)=> g && g.slug);
-        if(viewableGames.length === 0){
-          showStatus('No games are currently configured. Check back later!', 'info');
-          return;
-        }
-
-        grid.innerHTML = '';
-        viewableGames.forEach((game)=> renderCard(game, profile.stats.games[game.slug]));
-
-        seedProfileBtn.onclick = ()=> seedDemoProfile(viewableGames);
-        resetProfileBtn.onclick = ()=>{
-          writeProfile(defaultProfile());
-          loadGames();
-        };
-      }catch(err){
-        console.error('Error loading games:', err);
-        renderDashboard(readProfile());
-
-        let manifest;
-        try{
-          manifest = await res.json();
-        }catch(parseErr){
-          throw new Error('Manifest JSON is invalid: ' + parseErr.message);
-        }
-
-        if(!Array.isArray(manifest)) throw new Error('Manifest format incorrect: expected array');
-
-        const allGames = manifest.filter(Boolean).map(normalizeGame);
-        const featuredGames = allGames.filter(game => game.featured);
-        const available = allGames.filter(game => game.available);
-        const visibleGames = available.length ? available : featuredGames.length ? featuredGames : allGames;
-        if(visibleGames.length === 0){
-          showStatus('No games are currently available. Check back later!', 'info');
-          return;
-        }
-
-        const sortedGames = [...visibleGames].sort((a, b) => Number(b.featured) - Number(a.featured) || a.title.localeCompare(b.title));
-        grid.innerHTML = '';
-        sortedGames.forEach(game=> renderCard(game));
-      }catch(err){
-        console.error('Error loading games:', err);
-        showStatus('Failed to load game library. ' + err.message, 'error', true);
-      }finally{
-        grid.setAttribute('aria-busy','false');
-      }
-    }
-
-    loadGames();
-    document.getElementById('year').textContent = new Date().getFullYear();
-  })();
-  </script>
+  <script defer src="../assets/scripts/site-loader.js"></script>
 </body>
 </html>
