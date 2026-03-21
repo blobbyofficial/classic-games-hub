@@ -9,77 +9,12 @@
   <link rel="canonical" href="/pages/homepage.html" />
   <link rel="icon" href="../assets/images/Icon.png" type="image/png" />
   <link rel="prefetch" href="/pages/homepage.html" />
-
-  <style>
-    :root{
-      --bg: linear-gradient(135deg,#0f172a,#111827);
-      --text:#f8fafc;
-      --muted:#cbd5e1;
-      --accent1:#7c3aed;
-      --accent2:#06b6d4;
-      --card: rgba(255,255,255,0.03);
-      --radius:14px;
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0;padding:1.25rem;display:flex;flex-direction:column;min-height:100vh;
-      align-items:center;justify-content:center;font-family:Inter, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
-      background:var(--bg);color:var(--text);text-align:center;overflow-x:hidden;
-    }
-
-    main{width:100%;max-width:920px;padding:2rem;background:linear-gradient(180deg,rgba(255,255,255,0.02),transparent);border-radius:18px}
-
-    .card{background:var(--card);padding:2rem;border-radius:12px;display:flex;flex-direction:column;gap:1.25rem;align-items:center}
-
-    .scene{width:100%;display:flex;justify-content:center}
-
-    /* friendly pixel / controller illustration (SVG inline) */
-    .illustration{width:180px;height:140px;transform-origin:center;animation:float 4s ease-in-out infinite}
-    @keyframes float{0%{transform:translateY(0)}50%{transform:translateY(-10px)}100%{transform:translateY(0)}}
-
-    h1{font-size:clamp(1.6rem,5vw,2.6rem);margin:0;letter-spacing:-0.02em}
-    h1 .accent{display:inline-block;background:linear-gradient(90deg,var(--accent1),var(--accent2));-webkit-background-clip:text;background-clip:text;color:transparent}
-    p.lead{color:var(--muted);margin:0;font-size:1rem}
-
-    /* big CTA button — heavily animated but no shadows */
-    .actions{display:flex;gap:1rem;align-items:center;flex-wrap:wrap;justify-content:center;margin-top:.5rem}
-
-    .btn{
-      --s:1;display:inline-flex;align-items:center;gap:.75rem;justify-content:center;border-radius:12px;padding:1.1rem 1.6rem;font-weight:700;font-size:1rem;color:#fff;border:none;cursor:pointer;background:linear-gradient(270deg,rgba(124,58,237,0.5),rgba(6,182,212,0.5));background-size:200% 200%;transition:transform .18s cubic-bezier(.2,.9,.3,1),filter .18s,opacity .18s;touch-action:manipulation;}
-
-    /* larger primary */
-    .btn.primary{padding:1.6rem 2.6rem;font-size:1.15rem;border-radius:14px;}
-
-    /* animated gradient sweep */
-    .btn{animation:btnGradient 6s linear infinite}
-    @keyframes btnGradient{0%{background-position:0% 50%}50%{background-position:100% 50%}100%{background-position:0% 50%}}
-
-    /* pronounced bounce on hover/focus */
-    .btn:focus{outline:none}
-    .btn:active{transform:scale(.97) translateY(2px)}
-
-    /* 3D tilt on pointer devices */
-    .btn-wrap{perspective:1200px}
-
-    /* subtle microcopy */
-    .hint{color:var(--muted);font-size:.85rem}
-
-    footer{margin-top:2.5rem;color:var(--muted);font-size:.9rem}
-
-    /* mobile-first responsiveness */
-    @media(min-width:720px){
-      .illustration{width:220px;height:170px}
-      .btn.primary{font-size:1.25rem;padding:1.8rem 3rem}
-    }
-  </style>
+  <link rel="stylesheet" href="../assets/styles/site.css" />
 </head>
-<body>
+<body class="page-404">
   <main>
     <div class="card" role="main" aria-labelledby="title">
       <div class="scene" aria-hidden="true">
-        <!-- playful inline SVG controller/ghost -->
-        <!-- Controller SVG sourced from SVGRepo (CC0) and adapted for inline use -->
         <svg class="illustration" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
           <g>
             <path d="M373.1,256.2H267.4v-21.4c0-17,13.9-30.9,30.9-30.9h102.3c30.6,0,55.4-24.9,55.4-55.4s-24.9-55.4-55.4-55.4H111.4 c-17,0-30.9-13.9-30.9-30.9V23.8c0-6.8-5.5-12.3-12.3-12.3S56,17.1,56,23.8v38.3c0,30.6,24.9,55.4,55.4,55.4h289.2 c17,0,30.9,13.9,30.9,30.9s-13.9,30.9-30.9,30.9H298.3c-30.6,0-55.4,24.9-55.4,55.4v21.4h-104c-67.3,0-122.1,54.8-122.1,122.1 c0,67.3,54.8,122.1,122.1,122.1c36.4,0,66.3-16.3,86.8-47.1h60.7c20.6,30.9,50.4,47.1,86.8,47.1c67.3,0,122.1-54.8,122.1-122.1 C495.3,311,440.5,256.2,373.1,256.2z M373.1,475.9c-30.4,0-53.1-13.5-69.5-41.1c-2.2-3.7-6.2-6-10.5-6h-74.2c-4.3,0-8.3,2.3-10.5,6 c-16.4,27.7-39.1,41.1-69.5,41.1c-53.8,0-97.6-43.8-97.6-97.6c0-53.8,43.8-97.6,97.6-97.6h234.3c53.8,0,97.6,43.8,97.6,97.6 C470.8,432.1,427,475.9,373.1,475.9z" fill="url(#g1)" opacity="0.14"/>
@@ -103,90 +38,132 @@
 
       <div class="actions">
         <div class="btn-wrap" id="backWrap">
-          <button class="btn primary" id="backBtn" aria-label="Back to homepage">Back to Homepage</button>
+          <button class="site-button site-button--solid site-button--primary" id="backBtn" aria-label="Back to homepage"><span>Back to Homepage</span></button>
         </div>
-        <button class="btn" id="goBack" aria-label="Go back">Go back</button>
+        <button class="site-button site-button--solid" id="goBack" aria-label="Go back"><span>Go back</span></button>
       </div>
 
       <p class="hint">Tip: if you followed a broken link, try refreshing or searching the game library.</p>
     </div>
   </main>
 
-  <footer>
-    &copy; <span id="year">2025</span> Classic Games Hub
+  <footer class="site-footer">
+    &copy; <span data-footer-year>2025</span> Classic Games Hub
   </footer>
 
+  <script src="../assets/scripts/common.js"></script>
   <script>
-  (function(){
-    const backBtn = document.getElementById('backBtn');
-    const goBack = document.getElementById('goBack');
-    const backWrap = document.getElementById('backWrap');
+    (function () {
+      const { initFooterYear } = window.ClassicGamesHub;
+      const backBtn = document.getElementById('backBtn');
+      const goBack = document.getElementById('goBack');
+      const backWrap = document.getElementById('backWrap');
 
-    // Navigate to homepage or fallback to pages/homepage.html
-    function goHome(){
-      // prefer history back when available and not from an external site
-      try{
-        if(window.history && window.history.length > 1){
-          window.history.back();
-          // after a short delay, if the URL still contains 404, redirect to homepage
-          setTimeout(()=>{
-            if(location.pathname.endsWith('/pages/404.html') || location.pathname.endsWith('/404.html')){
-              location.href = '/pages/homepage.html';
-            }
-          },400);
+      function animateClick(element) {
+        element.style.transition = 'transform 160ms cubic-bezier(.2,.9,.3,1)';
+        element.style.transform = 'scale(0.96)';
+        setTimeout(() => {
+          element.style.transform = '';
+        }, 160);
+      }
+
+      function goHome() {
+        try {
+          if (window.history && window.history.length > 1) {
+            window.history.back();
+            setTimeout(() => {
+              if (location.pathname.endsWith('/pages/404.html') || location.pathname.endsWith('/404.html')) {
+                location.href = '/pages/homepage.html';
+              }
+            }, 400);
+            return;
+          }
+        } catch (_error) {
+          // noop fallback to direct navigation below
+        }
+
+        location.href = '/pages/homepage.html';
+      }
+
+      function addTilt() {
+        const button = backWrap.querySelector('.site-button');
+        if (!button || !window.PointerEvent) {
           return;
         }
-      }catch(e){}
-      location.href = '/pages/homepage.html';
-    }
 
-    backBtn.addEventListener('click', (e)=>{ e.preventDefault(); animateClick(e.currentTarget); goHome(); });
-    goBack.addEventListener('click', (e)=>{ e.preventDefault(); animateClick(e.currentTarget); window.history.back(); });
+        let rect = null;
+        let raf = 0;
 
-    // button micro-interaction: quick scale/bounce
-    function animateClick(el){
-      el.style.transition = 'transform 160ms cubic-bezier(.2,.9,.3,1)';
-      el.style.transform = 'scale(0.96)';
-      setTimeout(()=>{ el.style.transform = ''; },160);
-    }
+        function updateRect() {
+          rect = button.getBoundingClientRect();
+        }
 
-    // 3D tilt for the primary button (pointer devices)
-    (function addTilt(){
-      const btn = backWrap.querySelector('.btn');
-      if(!window.PointerEvent) return; // require pointer events
-      let rect=null, raf=0;
-      function updateRect(){ rect = btn.getBoundingClientRect(); }
-      function onPointerMove(e){
-        if(!rect) updateRect();
-        const x = (('touches' in e && e.touches[0]) ? e.touches[0].clientX : e.clientX) - rect.left;
-        const y = (('touches' in e && e.touches[0]) ? e.touches[0].clientY : e.clientY) - rect.top;
-        const px = (x / rect.width - 0.5) * 2; // -1..1
-        const py = (y / rect.height - 0.5) * 2; // -1..1
-        const rx = (-py) * 8; // tilt X
-        const ry = px * 8; // tilt Y
-        cancelAnimationFrame(raf);
-        raf = requestAnimationFrame(()=>{
-          btn.style.transform = `perspective(900px) rotateX(${rx}deg) rotateY(${ry}deg) scale(1.02)`;
+        function onPointerMove(event) {
+          if (!rect) {
+            updateRect();
+          }
+          const point = ('touches' in event && event.touches[0]) ? event.touches[0] : event;
+          const x = point.clientX - rect.left;
+          const y = point.clientY - rect.top;
+          const px = (x / rect.width - 0.5) * 2;
+          const py = (y / rect.height - 0.5) * 2;
+          const rx = (-py) * 8;
+          const ry = px * 8;
+          cancelAnimationFrame(raf);
+          raf = requestAnimationFrame(() => {
+            button.style.transform = 'perspective(900px) rotateX(' + rx + 'deg) rotateY(' + ry + 'deg) scale(1.02)';
+          });
+        }
+
+        function reset() {
+          cancelAnimationFrame(raf);
+          button.style.transition = 'transform 400ms cubic-bezier(.2,1,.3,1)';
+          button.style.transform = 'scale(1)';
+        }
+
+        button.addEventListener('pointerenter', () => {
+          updateRect();
+          button.style.transition = 'transform 220ms cubic-bezier(.2,1,.3,1)';
+          button.style.transform = 'scale(1.02)';
+          window.addEventListener('pointermove', onPointerMove);
         });
+        button.addEventListener('pointerleave', () => {
+          window.removeEventListener('pointermove', onPointerMove);
+          reset();
+        });
+        button.addEventListener('touchstart', (event) => {
+          updateRect();
+          onPointerMove(event);
+        }, { passive: true });
+        button.addEventListener('touchend', reset);
+        window.addEventListener('resize', updateRect);
       }
-      function reset(){ cancelAnimationFrame(raf); btn.style.transition='transform 400ms cubic-bezier(.2,1,.3,1)'; btn.style.transform='scale(1)'; }
-      btn.addEventListener('pointerenter', ()=>{ updateRect(); btn.style.transition='transform 220ms cubic-bezier(.2,1,.3,1)'; btn.style.transform='scale(1.02)'; window.addEventListener('pointermove', onPointerMove); });
-      btn.addEventListener('pointerleave', ()=>{ window.removeEventListener('pointermove', onPointerMove); reset(); });
-      // touch fallback
-      btn.addEventListener('touchstart', (e)=>{ updateRect(); onPointerMove(e); }, {passive:true});
-      btn.addEventListener('touchend', reset);
-      window.addEventListener('resize', ()=>{ updateRect(); });
+
+      backBtn.addEventListener('click', (event) => {
+        event.preventDefault();
+        animateClick(event.currentTarget);
+        goHome();
+      });
+
+      goBack.addEventListener('click', (event) => {
+        event.preventDefault();
+        animateClick(event.currentTarget);
+        window.history.back();
+      });
+
+      document.addEventListener('keydown', (event) => {
+        if (event.key === 'Escape') {
+          goHome();
+        }
+        if ((event.key === 'Enter' || event.key === ' ') && document.activeElement === backBtn) {
+          event.preventDefault();
+          backBtn.click();
+        }
+      });
+
+      addTilt();
+      initFooterYear();
     })();
-
-    // Accessibility: allow Enter/Escape keys for actions
-    document.addEventListener('keydown', (e)=>{
-      if(e.key === 'Escape') goHome();
-      if((e.key === 'Enter' || e.key === ' ') && document.activeElement === backBtn) { e.preventDefault(); backBtn.click(); }
-    });
-
-    // update year
-    document.getElementById('year').textContent = new Date().getFullYear();
-  })();
   </script>
 </body>
 </html>

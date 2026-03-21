@@ -6,110 +6,9 @@
   <title>Classic Games Hub — Game Library</title>
   <meta name="description" content="Browse and play retro classics like Snake, Tetris, and Pong. Modern, responsive, beautifully animated, and mobile-friendly." />
   <link rel="icon" href="../assets/images/Icon.png" type="image/png" />
-
-  <style>
-    :root{
-      --bg: linear-gradient(135deg,#0f172a,#1e293b);
-      --text: #f8fafc;
-      --muted: #cbd5e1;
-      --error: #f87171;
-      --accent1: #7c3aed;
-      --accent2: #06b6d4;
-      --radius: 14px;
-      --gradient: linear-gradient(270deg,var(--accent1),var(--accent2),#22d3ee,#a855f7);
-      --card-bg: rgba(255,255,255,0.04);
-    }
-
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%}
-    body{
-      min-height:100vh;
-      display:flex;flex-direction:column;
-      font-family:'Inter','Segoe UI',Arial,sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      overflow-x:hidden;
-      padding:1.25rem;
-      position:relative;
-      -webkit-font-smoothing:antialiased;
-    }
-
-    body::before{
-      content:'';
-      position:fixed;top:0;left:0;width:100%;height:100%;
-      pointer-events:none;z-index:0;
-      background:radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.25) 100%);
-      mix-blend-mode:overlay;animation:gradientVignette 22s ease infinite;
-    }
-
-    header{text-align:center;margin-bottom:1.25rem;z-index:1}
-    header h1{font-size:clamp(1.6rem,4vw,2.6rem);margin-bottom:.4rem}
-    header p{color:var(--muted);max-width:680px;margin:0 auto;font-size:0.98rem}
-
-    main{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:1rem;width:100%;align-items:start;z-index:1}
-
-    .card{
-      background:var(--card-bg);
-      border-radius:12px;
-      overflow:hidden;
-      cursor:pointer;
-      transition:transform .25s ease,opacity .5s ease;
-      opacity:0;
-      transform:translateY(18px);
-      will-change:transform, opacity;
-    }
-    .card.loaded{opacity:1;transform:none}
-    .card .thumb{
-      width:100%;
-      height:0;
-      padding-bottom:75%;
-      background-size:cover;
-      background-position:center;
-      transition:transform .3s ease;
-    }
-    .card:hover .thumb{transform:scale(1.05)}
-    .card .info{padding:12px 14px;text-align:left}
-    .info h2{font-size:1rem;margin-bottom:6px}
-    .info p{font-size:0.9rem;color:var(--muted);margin:0}
-
-    .status{
-      grid-column:1/-1;
-      text-align:center;
-      padding:1rem;
-      border-radius:var(--radius);
-      background:rgba(0,0,0,0.35);
-      backdrop-filter:blur(6px);
-      animation:fadeIn .4s ease both;
-      display:flex;
-      justify-content:center;
-      align-items:center;
-      gap:0.75rem;
-    }
-    .status.error{color:var(--error)}
-    .status.info{color:var(--muted)}
-    .retry-btn{
-      padding:0.4rem 0.8rem;
-      border:none;
-      border-radius:var(--radius);
-      background:var(--gradient);
-      color:#fff;
-      font-weight:600;
-      cursor:pointer;
-      transition:transform .2s ease;
-    }
-    .retry-btn:hover{transform:scale(1.05)}
-
-    footer{margin-top:1.25rem;text-align:center;color:var(--muted);font-size:0.9rem}
-
-    @media (max-width:520px){main{grid-template-columns:repeat(2,minmax(0,1fr));gap:.9rem}header h1{font-size:1.4rem}}
-    @media (max-width:360px){main{grid-template-columns:repeat(1,minmax(0,1fr))}}
-
-    @keyframes gradientVignette{0%{background:radial-gradient(circle at center, transparent 60%, rgba(124,58,237,0.15) 100%)}50%{background:radial-gradient(circle at center, transparent 60%, rgba(6,182,212,0.15) 100%)}100%{background:radial-gradient(circle at center, transparent 60%, rgba(124,58,237,0.15) 100%)}}
-    @keyframes fadeIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-    @keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.03)}}
-  </style>
+  <link rel="stylesheet" href="../assets/styles/site.css" />
 </head>
-<body>
+<body class="page-library">
   <header>
     <h1>Game Library</h1>
     <p>Select from the available classics below. Tap a card to view more details and start playing.</p>
@@ -117,79 +16,17 @@
 
   <main id="gameGrid" aria-live="polite" aria-busy="true"></main>
 
-  <footer>
-    &copy; <span id="year">2025</span> Classic Games Hub. All rights reserved.
+  <footer class="site-footer">
+    &copy; <span data-footer-year>2025</span> Classic Games Hub. All rights reserved.
   </footer>
 
+  <script src="../assets/scripts/common.js"></script>
+  <script src="../assets/scripts/library.js"></script>
   <script>
-  (async function(){
-    const grid = document.getElementById('gameGrid');
-
-    function escapeHtml(str){
-      return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    }
-
-    function showStatus(message, type='info', showRetry=false){
-      grid.innerHTML = `<div class="status ${type}">${escapeHtml(message)}${showRetry ? '<button class="retry-btn">Retry</button>' : ''}</div>`;
-      if(showRetry){
-        document.querySelector('.retry-btn').addEventListener('click', loadGames);
-      }
-    }
-
-    function renderCard(game){
-      const card = document.createElement('article');
-      card.className = 'card';
-      card.innerHTML = `
-        <div class="thumb" style="background-image:url('${escapeHtml(game.thumbnail)}')" role="img" aria-label="${escapeHtml(game.title)}"></div>
-        <div class="info">
-          <h2>${escapeHtml(game.title)}</h2>
-          <p>${escapeHtml(game.description)}</p>
-        </div>`;
-      card.addEventListener('click', ()=>{
-        try{
-          window.location.href = `gamepage.html?game=${encodeURIComponent(game.slug)}`;
-        }catch(e){
-          alert('Unable to open game page: ' + e.message);
-        }
-      });
-      grid.appendChild(card);
-      requestAnimationFrame(()=> setTimeout(()=> card.classList.add('loaded'), 30));
-    }
-
-    async function loadGames(){
-      showStatus('Loading game library…');
-      try{
-        const res = await fetch('../games/manifest.json', {cache:'no-store'});
-        if(!res.ok) throw new Error('Manifest not found (HTTP ' + res.status + ')');
-
-        let manifest;
-        try{
-          manifest = await res.json();
-        }catch(parseErr){
-          throw new Error('Manifest JSON is invalid: ' + parseErr.message);
-        }
-
-        if(!Array.isArray(manifest)) throw new Error('Manifest format incorrect: expected array');
-
-        const available = manifest.filter(g=> g && (g.available === true || g.available === 'true'));
-        if(available.length === 0){
-          showStatus('No games are currently available. Check back later!', 'info');
-          return;
-        }
-
-        grid.innerHTML = '';
-        available.forEach(game=> renderCard(game));
-      }catch(err){
-        console.error('Error loading games:', err);
-        showStatus('Failed to load game library. ' + err.message, 'error', true);
-      }finally{
-        grid.setAttribute('aria-busy','false');
-      }
-    }
-
-    loadGames();
-    document.getElementById('year').textContent = new Date().getFullYear();
-  })();
+    window.ClassicGamesHub.initGameLibrary({
+      gridSelector: '#gameGrid',
+      manifestPath: '../games/manifest.json'
+    });
   </script>
 </body>
 </html>
