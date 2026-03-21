@@ -1,5 +1,51 @@
 [
   {
+    "id": "snake-classic",
+    "slug": "snake",
+    "title": "Snake Classic",
+    "description": "Eat apples, grow your trail, and survive longer with every turn.",
+    "thumbnail": "../assets/images/snake-thumb.png",
+    "controls": "Arrow keys",
+    "instructions": [
+      "Use the arrow keys to steer the snake around the board.",
+      "Collect apples to increase your score and length.",
+      "Avoid crashing into walls or your own tail."
+    ],
+    "genre": "Arcade",
+    "difficulty": "Easy",
+    "players": "1 player",
+    "tags": ["featured", "endless", "high-score", "classic"],
+    "releaseStatus": "coming-soon",
+    "featured": true,
+    "estimatedSessionMinutes": 8,
+    "themeColor": "#22c55e",
+    "highscoreEnabled": true,
+    "playUrl": "snake-game.html",
+    "available": false
+  },
+  {
+    "id": "tetris-deluxe",
+    "slug": "tetris",
+    "title": "Tetris Deluxe",
+    "description": "Stack falling blocks, clear lines, and chase your best combo streak.",
+    "thumbnail": "../assets/images/tetris-thumb.png",
+    "controls": "Arrow keys, Spacebar",
+    "instructions": [
+      "Move and rotate pieces to fit them into complete horizontal lines.",
+      "Clear multiple lines in a row to keep the board under control.",
+      "Use the spacebar to hard-drop a piece when you spot the perfect placement."
+    ],
+    "genre": "Puzzle",
+    "difficulty": "Medium",
+    "players": "1 player",
+    "tags": ["featured", "puzzle", "speed", "strategy"],
+    "releaseStatus": "coming-soon",
+    "featured": true,
+    "estimatedSessionMinutes": 15,
+    "themeColor": "#8b5cf6",
+    "highscoreEnabled": true,
+    "playUrl": "tetris-game.html",
+    "available": false
     "slug": "snake",
     "title": "Snake Classic",
     "description": "Eat apples and grow!",
