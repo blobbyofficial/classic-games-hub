@@ -13,10 +13,17 @@
   <style>
     :root{
       --bg: linear-gradient(135deg,#0f172a,#1e293b);
+      --panel: rgba(15,23,42,0.72);
+      --panel-border: rgba(148,163,184,0.18);
       --text: #f8fafc;
       --muted: #cbd5e1;
       --accent1: #7c3aed;
       --accent2: #06b6d4;
+      --accent-soft: rgba(124,58,237,0.18);
+      --success: #22c55e;
+      --radius: 20px;
+      --shadow: 0 24px 70px rgba(2,6,23,0.32);
+
       --radius: 16px;
       --gradient-start: rgba(124,58,237,0.35);
       --gradient-end: rgba(6,182,212,0.35);
@@ -36,12 +43,269 @@
       color:var(--text);
       overflow-x:hidden;
       padding:2rem;
+      animation:fadeIn .8s ease forwards;
       text-align:center;
       animation:fadeIn 0.8s ease forwards;
     }
 
     body::before{
       content:'';
+      position:fixed;inset:0;
+      pointer-events:none;
+      background:radial-gradient(circle at top, rgba(124,58,237,0.18), transparent 40%),
+                 radial-gradient(circle at bottom right, rgba(6,182,212,0.12), transparent 38%);
+      mix-blend-mode:screen;
+    }
+
+    .page-shell{
+      max-width:1200px;
+      margin:0 auto;
+      position:relative;
+      z-index:1;
+    }
+
+    .hero{
+      display:grid;
+      grid-template-columns:minmax(280px, 420px) minmax(0, 1fr);
+      gap:2rem;
+      align-items:stretch;
+      margin-bottom:2rem;
+    }
+
+    .hero-card,
+    .panel,
+    .status{
+      background:var(--panel);
+      backdrop-filter:blur(18px);
+      border:1px solid var(--panel-border);
+      border-radius:var(--radius);
+      box-shadow:var(--shadow);
+    }
+
+    .hero-media{
+      overflow:hidden;
+      min-height:320px;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .thumb{
+      flex:1;
+      min-height:320px;
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      position:relative;
+      isolation:isolate;
+    }
+
+    .thumb::after{
+      content:'';
+      position:absolute; inset:0;
+      background:linear-gradient(180deg, transparent 35%, rgba(15,23,42,0.75));
+    }
+
+    .hero-summary{
+      padding:2rem;
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      gap:1rem;
+    }
+
+    .eyebrow{
+      display:inline-flex;
+      align-items:center;
+      gap:.5rem;
+      color:#e2e8f0;
+      font-size:.85rem;
+      text-transform:uppercase;
+      letter-spacing:.18em;
+    }
+
+    h1{font-size:clamp(2.4rem,5vw,4rem);line-height:1.05;}
+    .hero-summary > p{color:var(--muted);font-size:1.05rem;line-height:1.7;max-width:65ch;}
+
+    .pill-row,
+    .stats-grid,
+    .section-grid,
+    .actions,
+    .related-grid,
+    .gallery-grid{
+      display:grid;
+      gap:1rem;
+    }
+
+    .pill-row{grid-template-columns:repeat(auto-fit,minmax(140px,1fr));}
+    .pill{
+      padding:1rem 1.1rem;
+      border-radius:16px;
+      background:rgba(255,255,255,0.05);
+      border:1px solid rgba(255,255,255,0.08);
+    }
+    .pill strong{display:block;font-size:.82rem;text-transform:uppercase;letter-spacing:.08em;color:#94a3b8;margin-bottom:.4rem;}
+    .pill span{color:#fff;font-weight:700;}
+
+    .actions{
+      grid-template-columns:repeat(auto-fit,minmax(190px, max-content));
+      align-items:center;
+    }
+
+    .btn{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:.65rem;
+      min-height:56px;
+      padding:0 1.4rem;
+      border-radius:16px;
+      border:1px solid transparent;
+      text-decoration:none;
+      color:#fff;
+      font-weight:800;
+      cursor:pointer;
+      transition:transform .2s ease, opacity .2s ease, border-color .2s ease, background .2s ease;
+    }
+    .btn:hover{transform:translateY(-2px);opacity:.96;}
+    .btn-primary{background:linear-gradient(135deg,var(--accent1),var(--accent2));}
+    .btn-secondary{background:rgba(255,255,255,0.04);border-color:rgba(255,255,255,0.12);}
+
+    .stats-grid{grid-template-columns:repeat(auto-fit,minmax(180px,1fr));margin-bottom:2rem;}
+    .stat-card{padding:1.2rem 1.3rem;}
+    .stat-card h2{font-size:.82rem;text-transform:uppercase;letter-spacing:.1em;color:#94a3b8;margin-bottom:.5rem;}
+    .stat-card p{font-size:1.35rem;font-weight:800;}
+    .stat-card small{display:block;color:var(--muted);margin-top:.45rem;line-height:1.5;}
+
+    .section-grid{grid-template-columns:repeat(2,minmax(0,1fr));margin-bottom:2rem;}
+    .panel{padding:1.5rem;}
+    .panel h2{font-size:1.15rem;margin-bottom:1rem;color:#fff;}
+    .panel p,.panel li{color:var(--muted);line-height:1.7;}
+    .panel ul{padding-left:1.2rem;display:grid;gap:.65rem;}
+
+    .gallery-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+    .gallery-card,
+    .related-card{
+      background:rgba(255,255,255,0.04);
+      border:1px solid rgba(255,255,255,0.08);
+      border-radius:18px;
+      overflow:hidden;
+      text-decoration:none;
+      color:inherit;
+    }
+
+    .gallery-visual{
+      aspect-ratio:16/10;
+      background-size:cover;
+      background-position:center;
+      background-repeat:no-repeat;
+      position:relative;
+    }
+    .gallery-visual::after{
+      content:attr(data-kind);
+      position:absolute;
+      right:.8rem;
+      bottom:.8rem;
+      padding:.3rem .55rem;
+      border-radius:999px;
+      background:rgba(15,23,42,0.78);
+      color:#e2e8f0;
+      font-size:.72rem;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .gallery-copy{padding:1rem;}
+    .gallery-copy h3,.related-card h3{font-size:1rem;margin-bottom:.35rem;}
+    .gallery-copy p,.related-card p{color:var(--muted);font-size:.95rem;line-height:1.6;}
+
+    .related-grid{grid-template-columns:repeat(auto-fit,minmax(220px,1fr));}
+    .related-card{display:block;}
+    .related-thumb{aspect-ratio:16/9;background-size:cover;background-position:center;background-repeat:no-repeat;}
+    .related-copy{padding:1rem;}
+
+    .status{
+      margin-top:2rem;
+      padding:1rem 1.2rem;
+      display:inline-block;
+      color:var(--muted);
+    }
+
+    footer{margin-top:2rem;text-align:center;color:var(--muted);font-size:.9rem;padding-bottom:1rem;}
+
+    .hidden{display:none !important;}
+
+    @media (max-width: 900px){
+      .hero,.section-grid{grid-template-columns:1fr;}
+      body{padding:1rem;}
+      .hero-summary,.panel{padding:1.25rem;}
+    }
+
+    @keyframes fadeIn{from{opacity:0}to{opacity:1}}
+  </style>
+</head>
+<body>
+  <div class="page-shell">
+    <main>
+      <section class="hero">
+        <div class="hero-card hero-media">
+          <div class="thumb" id="gameThumb" aria-label="Game preview image"></div>
+        </div>
+
+        <div class="hero-card hero-summary">
+          <div class="eyebrow">Classic Games Hub</div>
+          <h1 id="gameTitle">Loading Game...</h1>
+          <p id="gameDescription"></p>
+
+          <div class="pill-row" id="heroFacts"></div>
+
+          <div class="actions">
+            <button class="btn btn-primary" id="playBtn">Play Game</button>
+            <a class="btn btn-secondary" id="backBtn" href="homepage.html">← Back to Library</a>
+          </div>
+        </div>
+      </section>
+
+      <section class="stats-grid" id="statsGrid"></section>
+
+      <section class="section-grid">
+        <article class="panel">
+          <h2>Gameplay Summary</h2>
+          <p id="gameplaySummary">Loading gameplay summary…</p>
+        </article>
+
+        <article class="panel">
+          <h2>Controls &amp; Tips</h2>
+          <ul id="controlsTips"></ul>
+        </article>
+
+        <article class="panel">
+          <h2>Difficulty</h2>
+          <p id="difficultyText"></p>
+        </article>
+
+        <article class="panel">
+          <h2>Best Score / Local Record</h2>
+          <p id="scoreText"></p>
+        </article>
+      </section>
+
+      <section class="panel" id="gallerySection">
+        <h2>Screenshots &amp; Animated Previews</h2>
+        <div class="gallery-grid" id="galleryGrid"></div>
+      </section>
+
+      <section class="panel" id="relatedSection">
+        <h2>Related Games</h2>
+        <div class="related-grid" id="relatedGames"></div>
+      </section>
+
+      <div class="status" id="statusMessage">Loading game information…</div>
+    </main>
+
+    <footer>
+      &copy; <span id="year">2025</span> Classic Games Hub. All rights reserved.
+    </footer>
+  </div>
+
       position:fixed;top:0;left:0;width:100%;height:100%;
       pointer-events:none;
       background:radial-gradient(circle at center, transparent 60%, rgba(0,0,0,0.25) 100%);
@@ -339,6 +603,212 @@
     const titleEl = document.getElementById('gameTitle');
     const descEl = document.getElementById('gameDescription');
     const thumbEl = document.getElementById('gameThumb');
+    const heroFactsEl = document.getElementById('heroFacts');
+    const statsGridEl = document.getElementById('statsGrid');
+    const gameplaySummaryEl = document.getElementById('gameplaySummary');
+    const controlsTipsEl = document.getElementById('controlsTips');
+    const difficultyTextEl = document.getElementById('difficultyText');
+    const scoreTextEl = document.getElementById('scoreText');
+    const galleryGridEl = document.getElementById('galleryGrid');
+    const relatedGamesEl = document.getElementById('relatedGames');
+    const gallerySectionEl = document.getElementById('gallerySection');
+    const relatedSectionEl = document.getElementById('relatedSection');
+    const playBtn = document.getElementById('playBtn');
+    const statusEl = document.getElementById('statusMessage');
+
+    function escapeHtml(str){
+      return String(str || '')
+        .replace(/&/g,'&amp;')
+        .replace(/</g,'&lt;')
+        .replace(/>/g,'&gt;')
+        .replace(/"/g,'&quot;')
+        .replace(/'/g,'&#39;');
+    }
+
+    function normalizeList(value){
+      if(Array.isArray(value)) return value.filter(Boolean);
+      if(typeof value === 'string' && value.trim()) return [value.trim()];
+      return [];
+    }
+
+    function formatDifficulty(difficulty){
+      if(!difficulty) return 'Difficulty details are not available yet.';
+      if(typeof difficulty === 'string') return difficulty;
+      const parts = [difficulty.level, difficulty.summary].filter(Boolean);
+      return parts.join(' — ') || 'Difficulty details are not available yet.';
+    }
+
+    function getMetadataCandidates(game){
+      const candidates = [];
+      if(game.metadata){
+        candidates.push(game.metadata);
+      }
+      candidates.push(`../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.slug)}-info.json`);
+      candidates.push(`../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.slug)}.json`);
+      return candidates;
+    }
+
+    async function loadOptionalMetadata(game){
+      const candidates = getMetadataCandidates(game);
+      for(const path of candidates){
+        try{
+          const res = await fetch(path, { cache:'no-store' });
+          if(!res.ok) continue;
+          return await res.json();
+        }catch(_err){
+          // continue trying optional metadata files
+        }
+      }
+      return {};
+    }
+
+    function getPlayTarget(game){
+      return game.playUrl
+        ? `../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.playUrl)}`
+        : `../games/${encodeURIComponent(game.slug)}/${encodeURIComponent(game.slug)}-game.html`;
+    }
+
+    function getDifficultyBadge(detail){
+      if(!detail) return 'Unrated';
+      if(typeof detail === 'string') return detail;
+      return detail.level || 'Unrated';
+    }
+
+    function getLocalRecord(game, metadata){
+      const keyOptions = [
+        metadata.localRecordKey,
+        metadata.score?.storageKey,
+        `classic-games-hub:${game.slug}:best-score`,
+        `${game.slug}:best-score`,
+        `${game.slug}:high-score`
+      ].filter(Boolean);
+
+      for(const key of keyOptions){
+        const raw = localStorage.getItem(key);
+        if(raw !== null && raw !== '') return { key, value: raw };
+      }
+      return null;
+    }
+
+    function getScoreSummary(game, metadata){
+      const localRecord = getLocalRecord(game, metadata);
+      const bestLabel = metadata.score?.label || game.bestScoreLabel || 'Best score';
+      const bestValue = metadata.score?.best || game.bestScore || 'No published record yet';
+
+      if(localRecord){
+        return `${bestLabel}: ${bestValue}. Your local record: ${localRecord.value}.`;
+      }
+      return `${bestLabel}: ${bestValue}. Your local record will appear here once this browser saves one.`;
+    }
+
+    function renderFactPills(game, metadata){
+      const facts = [
+        { label:'Genre', value: game.genre || metadata.genre || 'Arcade Classic' },
+        { label:'Mode', value: game.mode || metadata.mode || 'Single Player' },
+        { label:'Difficulty', value: getDifficultyBadge(metadata.difficulty || game.difficulty) },
+        { label:'Status', value: (game.available === true || game.available === 'true') ? 'Playable' : 'Coming Soon' }
+      ];
+
+      heroFactsEl.innerHTML = facts.map((fact)=>`<div class="pill"><strong>${escapeHtml(fact.label)}</strong><span>${escapeHtml(fact.value)}</span></div>`).join('');
+    }
+
+    function renderStats(game, metadata){
+      const cards = [
+        {
+          title:'Controls',
+          value: game.controls || metadata.controlsSummary || 'See tips below',
+          detail:'Uses manifest controls first, then optional metadata details.'
+        },
+        {
+          title:'Difficulty',
+          value: getDifficultyBadge(metadata.difficulty || game.difficulty),
+          detail: formatDifficulty(metadata.difficulty || game.difficulty)
+        },
+        {
+          title:'Published Best',
+          value: metadata.score?.best || game.bestScore || 'TBD',
+          detail: metadata.score?.label || game.bestScoreLabel || 'Best known record'
+        },
+        {
+          title:'Related Picks',
+          value: String((metadata.relatedGames || game.relatedGames || []).length || getFallbackRelatedCount(game)),
+          detail:'Games suggested from manifest links and genre similarities.'
+        }
+      ];
+
+      statsGridEl.innerHTML = cards.map((card)=>`<article class="hero-card stat-card"><h2>${escapeHtml(card.title)}</h2><p>${escapeHtml(card.value)}</p><small>${escapeHtml(card.detail)}</small></article>`).join('');
+    }
+
+    function renderControls(game, metadata){
+      const tips = [];
+      if(game.controls) tips.push(`Controls: ${game.controls}`);
+      normalizeList(metadata.tips).forEach((tip)=>tips.push(tip));
+      normalizeList(metadata.controlsTips).forEach((tip)=>tips.push(tip));
+      if(!tips.length) tips.push('Control tips will appear here when metadata is available.');
+      controlsTipsEl.innerHTML = tips.map((tip)=>`<li>${escapeHtml(tip)}</li>`).join('');
+    }
+
+    function renderGallery(game, metadata){
+      const entries = Array.isArray(metadata.media) && metadata.media.length
+        ? metadata.media
+        : [{ type:'screenshot', src: game.thumbnail || '../assets/images/snake-thumb.png', alt: `${game.title || game.slug} preview`, caption:'Primary game preview' }];
+
+      galleryGridEl.innerHTML = entries.map((entry)=>{
+        const kind = entry.type === 'animated' ? 'Animated' : 'Screenshot';
+        const href = entry.href || entry.src;
+        return `
+          <a class="gallery-card" href="${escapeHtml(href)}" ${entry.href ? 'target="_blank" rel="noreferrer"' : ''}>
+            <div class="gallery-visual" style="background-image:url('${escapeHtml(entry.src)}')" data-kind="${escapeHtml(kind)}"></div>
+            <div class="gallery-copy">
+              <h3>${escapeHtml(entry.alt || `${game.title} preview`)}</h3>
+              <p>${escapeHtml(entry.caption || 'Preview artwork for this game.')}</p>
+            </div>
+          </a>`;
+      }).join('');
+
+      gallerySectionEl.classList.toggle('hidden', !entries.length);
+    }
+
+    function getFallbackRelatedCount(game){
+      return Array.isArray(game.relatedGames) ? game.relatedGames.length : 0;
+    }
+
+    function getRelatedGames(game, manifest, metadata){
+      const relatedSlugs = normalizeList(metadata.relatedGames || game.relatedGames);
+      let related = manifest.filter((candidate)=> relatedSlugs.includes(candidate.slug) && candidate.slug !== game.slug);
+
+      if(!related.length){
+        related = manifest
+          .filter((candidate)=> candidate.slug !== game.slug)
+          .filter((candidate)=> (candidate.genre && game.genre && candidate.genre === game.genre) || candidate.available === game.available)
+          .slice(0, 3);
+      }
+
+      return related.slice(0, 4);
+    }
+
+    function renderRelatedGames(game, manifest, metadata){
+      const related = getRelatedGames(game, manifest, metadata);
+      if(!related.length){
+        relatedSectionEl.classList.add('hidden');
+        return;
+      }
+      relatedGamesEl.innerHTML = related.map((item)=>`
+        <a class="related-card" href="gamepage.html?game=${encodeURIComponent(item.slug)}">
+          <div class="related-thumb" style="background-image:url('${escapeHtml(item.thumbnail || '../assets/images/snake-thumb.png')}')"></div>
+          <div class="related-copy">
+            <h3>${escapeHtml(item.title || item.slug)}</h3>
+            <p>${escapeHtml(item.description || 'Explore another game from the library.')}</p>
+          </div>
+        </a>
+      `).join('');
+    }
+
+    function enablePlayButton(btn, href, title){
+      btn.classList.toggle('hidden', !href);
+      if(!href) return;
+      btn.setAttribute('aria-label', `Play ${title || 'game'}`);
+      btn.addEventListener('click', ()=> { window.location.href = href; });
     const detailsEl = document.getElementById('gameDetails');
     const playBtn = document.getElementById('playBtn');
     const statusEl = document.getElementById('statusMessage');
@@ -695,6 +1165,59 @@
       });
     }
 
+    async function loadGame(){
+      if(!gameSlug){
+        statusEl.textContent='No game specified in URL.';
+        playBtn.classList.add('hidden');
+        return;
+      }
+
+      try{
+        const res = await fetch('../games/manifest.json',{cache:'no-store'});
+        if(!res.ok) throw new Error('Could not load manifest');
+        const manifest = await res.json();
+        if(!Array.isArray(manifest)) throw new Error('Manifest format incorrect: expected array');
+
+        const game = manifest.find((entry)=> entry.slug === gameSlug);
+        if(!game){
+          statusEl.textContent='Game not found in the manifest.';
+          playBtn.classList.add('hidden');
+          return;
+        }
+
+        const metadata = await loadOptionalMetadata(game);
+        const thumbUrl = metadata.heroImage || game.thumbnail || '../assets/images/snake-thumb.png';
+
+        titleEl.textContent = game.title || gameSlug;
+        descEl.textContent = metadata.tagline || game.description || 'More information about this game will appear here soon.';
+        thumbEl.style.backgroundImage = `url('${escapeHtml(thumbUrl)}')`;
+
+        renderFactPills(game, metadata);
+        renderStats(game, metadata);
+        gameplaySummaryEl.textContent = metadata.gameplaySummary || game.gameplaySummary || game.description || 'No gameplay summary has been provided yet.';
+        renderControls(game, metadata);
+        difficultyTextEl.textContent = formatDifficulty(metadata.difficulty || game.difficulty);
+        scoreTextEl.textContent = getScoreSummary(game, metadata);
+        renderGallery(game, metadata);
+        renderRelatedGames(game, manifest, metadata);
+
+        const playTarget = (game.available === true || game.available === 'true') ? getPlayTarget(game) : '';
+        enablePlayButton(playBtn, playTarget, game.title || game.slug);
+        if(!playTarget){
+          playBtn.textContent = 'Coming Soon';
+          playBtn.disabled = true;
+          playBtn.style.opacity = '.55';
+          playBtn.style.cursor = 'not-allowed';
+        }
+
+        statusEl.classList.add('hidden');
+      } catch (err) {
+        console.error(err);
+        statusEl.textContent = 'Failed to load game information. Please try again later.';
+        playBtn.classList.add('hidden');
+      }
+    }
+
     await loadGame();
 
       let rect = null;
@@ -746,7 +1269,7 @@
       btn.addEventListener('touchcancel', () => { active = false; resetTransform(); });
     }
 
-    loadGame();
+    loadGame(); 
     document.getElementById('year').textContent = new Date().getFullYear();
   })();
   </script>
