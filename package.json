@@ -1,0 +1,17 @@
+{
+  "name": "classic-games-hub",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Classic Games Hub is a static arcade collection with metadata-driven games, accessible navigation, and a modern build pipeline.",
+  "scripts": {
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "generate:manifest": "node scripts/generate-manifest.js",
+    "build": "npm run generate:manifest && node scripts/build.js"
+  },
+  "devDependencies": {
+    "esbuild": "^0.19.0",
+    "eslint": "^8.57.0",
+    "prettier": "^3.0.0"
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "id": "match3",
+  "title": "Match-3",
+  "description": "Swap adjacent gems, trigger cascades, and hit the target before the moves run out.",
+  "genre": "Puzzle",
+  "category": "Puzzle",
+  "pacing": "Combo chase",
+  "difficulty": "Pattern matching and move economy",
+  "controls": [
+    "Mouse or touch to swap tiles",
+    "P to pause",
+    "R to restart"
+  ],
+  "thumbnail": "",
+  "screenshots": [],
+  "releaseStatus": "released",
+  "version": "1.0.0",
+  "author": "Classic Games Hub",
+  "supportedDevices": [
+    "desktop",
+    "mobile"
+  ],
+  "detailPage": "../games/arcade-cabinet.html?game=match3",
+  "playUrl": "../games/arcade-cabinet.html?game=match3",
+  "available": true,
+  "featured": false,
+  "external": false
+}

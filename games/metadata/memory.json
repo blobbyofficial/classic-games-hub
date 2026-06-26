@@ -1,0 +1,28 @@
+{
+  "id": "memory",
+  "title": "Memory Match",
+  "description": "Flip pairs, remember positions, and clear the whole board in fewer turns.",
+  "genre": "Memory",
+  "category": "Memory",
+  "pacing": "Steady pace",
+  "difficulty": "Concentration and recall",
+  "controls": [
+    "Mouse or touch to flip cards",
+    "P to pause",
+    "R to restart"
+  ],
+  "thumbnail": "",
+  "screenshots": [],
+  "releaseStatus": "released",
+  "version": "1.0.0",
+  "author": "Classic Games Hub",
+  "supportedDevices": [
+    "desktop",
+    "mobile"
+  ],
+  "detailPage": "../games/arcade-cabinet.html?game=memory",
+  "playUrl": "../games/arcade-cabinet.html?game=memory",
+  "available": true,
+  "featured": false,
+  "external": false
+}

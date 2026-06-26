@@ -9,26 +9,12 @@
     name="description"
     content="Browse a large static arcade library packed with recognizable classics, quick controls, and mobile-friendly cabinets."
   />
-  <link rel="icon" href="../assets/images/Icon.png?v=arcade-20260321-6" type="image/png" />
-  <link rel="stylesheet" href="../assets/styles/site.css?v=arcade-20260321-6" />
+  <link rel="icon" href="../assets/images/Icon.png" type="image/png" />
+  <link rel="stylesheet" href="../assets/styles/core/site.css" />
 </head>
 <body class="site-page page-library">
   <div class="page-shell">
-    <header class="topbar">
-      <a class="brand" href="../index.html" aria-label="Classic Games Hub home">
-        <img src="../assets/images/Icon.png" alt="Classic Games Hub logo" width="48" height="48" />
-        <span class="brand-copy">
-          <strong>Classic Games Hub</strong>
-          <span>Arcade library</span>
-        </span>
-      </a>
-      <nav aria-label="Primary">
-        <a class="nav-link" href="../index.html">Landing</a>
-        <a class="nav-link" href="gamepage.html">Field Guide</a>
-        <a class="nav-link" href="../games/arcade-cabinet.html?game=pong" data-transition-label="Pong">Pong</a>
-        <a class="nav-link" href="../games/arcade-cabinet.html?game=breakout" data-transition-label="Breakout">Breakout</a>
-      </nav>
-    </header>
+    <header data-shell="topbar"></header>
 
     <main>
       <section class="hero-grid">
@@ -92,22 +78,11 @@
       </section>
     </main>
 
-    <footer class="site-footer">
-      Classic Games Hub - expanded static library.
-    </footer>
+    <footer data-shell="footer"></footer>
   </div>
-  <script defer src="../assets/scripts/site-loader.js?v=arcade-20260321-5"></script>
-  <script defer src="../assets/scripts/arcade-suite.js?v=arcade-20260321-6"></script>
-  <script>
-    window.addEventListener('DOMContentLoaded', function () {
-      window.ClassicGamesHubArcade.renderLibrary({
-        featuredSelector: '#featuredMount',
-        mountSelector: '#catalogMount',
-        filtersSelector: '#libraryFilters',
-        countSelector: '#libraryCount',
-        summarySelector: '#librarySummary'
-      });
-    });
-  </script>
+  <script defer src="../assets/scripts/core/site-shell.js"></script>
+  <script defer src="../assets/scripts/core/site-loader.js"></script>
+  <script defer src="../assets/scripts/games/arcade-suite.js"></script>
+  <script defer src="../assets/scripts/pages/homepage.js"></script>
 </body>
 </html>

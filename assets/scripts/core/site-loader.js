@@ -201,7 +201,46 @@
     });
   }
 
+  function markCurrentNavLink() {
+    const currentUrl = new URL(window.location.href);
+    const navLinks = Array.from(document.querySelectorAll("a.nav-link[href]"));
+    if (!navLinks.length) {
+      return;
+    }
+
+    let activeLink = navLinks.find(function (link) {
+      try {
+        return new URL(link.href, window.location.href).href === currentUrl.href;
+      } catch (_error) {
+        return false;
+      }
+    });
+
+    if (!activeLink) {
+      activeLink = navLinks.find(function (link) {
+        try {
+          return new URL(link.href, window.location.href).pathname === currentUrl.pathname;
+        } catch (_error) {
+          return false;
+        }
+      });
+    }
+
+    if (!activeLink) {
+      return;
+    }
+
+    navLinks.forEach(function (link) {
+      link.removeAttribute("aria-current");
+      link.classList.remove("active");
+    });
+
+    activeLink.setAttribute("aria-current", "page");
+    activeLink.classList.add("active");
+  }
+
   function init() {
+    markCurrentNavLink();
     beginEntrance();
     wireTransitions();
   }

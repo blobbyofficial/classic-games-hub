@@ -1,0 +1,29 @@
+{
+  "id": "invaders",
+  "title": "Space Invaders",
+  "description": "Defend the ground line as the alien rows march lower and start firing back.",
+  "genre": "Shooter",
+  "category": "Shooter",
+  "pacing": "Escalating waves",
+  "difficulty": "Classic arcade pressure",
+  "controls": [
+    "Arrow keys",
+    "Space to shoot",
+    "P to pause",
+    "R to restart"
+  ],
+  "thumbnail": "",
+  "screenshots": [],
+  "releaseStatus": "released",
+  "version": "1.0.0",
+  "author": "Classic Games Hub",
+  "supportedDevices": [
+    "desktop",
+    "mobile"
+  ],
+  "detailPage": "../games/arcade-cabinet.html?game=invaders",
+  "playUrl": "../games/arcade-cabinet.html?game=invaders",
+  "available": true,
+  "featured": true,
+  "external": false
+}

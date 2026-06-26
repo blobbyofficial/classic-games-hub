@@ -1,0 +1,28 @@
+{
+  "id": "target",
+  "title": "Target Gallery",
+  "description": "Shoot moving targets, avoid bad misses, and keep the score rising before time expires.",
+  "genre": "Reaction",
+  "category": "Reaction",
+  "pacing": "High score chase",
+  "difficulty": "Aiming and timing",
+  "controls": [
+    "Mouse or touch to tap targets",
+    "P to pause",
+    "R to restart"
+  ],
+  "thumbnail": "",
+  "screenshots": [],
+  "releaseStatus": "released",
+  "version": "1.0.0",
+  "author": "Classic Games Hub",
+  "supportedDevices": [
+    "desktop",
+    "mobile"
+  ],
+  "detailPage": "../games/arcade-cabinet.html?game=target",
+  "playUrl": "../games/arcade-cabinet.html?game=target",
+  "available": true,
+  "featured": false,
+  "external": false
+}

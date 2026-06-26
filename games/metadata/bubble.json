@@ -1,0 +1,28 @@
+{
+  "id": "bubble",
+  "title": "Bubble Shooter",
+  "description": "Aim the launcher, match clusters, and stop the ceiling from creeping down.",
+  "genre": "Puzzle",
+  "category": "Puzzle",
+  "pacing": "Angle play",
+  "difficulty": "Aim and cluster planning",
+  "controls": [
+    "Mouse or touch to aim and shoot",
+    "P to pause",
+    "R to restart"
+  ],
+  "thumbnail": "",
+  "screenshots": [],
+  "releaseStatus": "released",
+  "version": "1.0.0",
+  "author": "Classic Games Hub",
+  "supportedDevices": [
+    "desktop",
+    "mobile"
+  ],
+  "detailPage": "../games/arcade-cabinet.html?game=bubble",
+  "playUrl": "../games/arcade-cabinet.html?game=bubble",
+  "available": true,
+  "featured": false,
+  "external": false
+}

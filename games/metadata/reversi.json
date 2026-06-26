@@ -1,0 +1,28 @@
+{
+  "id": "reversi",
+  "title": "Reversi",
+  "description": "Flip the edges, fight for corners, and swing the board in the endgame.",
+  "genre": "Board",
+  "category": "Board",
+  "pacing": "Strategic",
+  "difficulty": "Positional control and tempo",
+  "controls": [
+    "Mouse or touch to place pieces",
+    "P to pause",
+    "R to restart"
+  ],
+  "thumbnail": "",
+  "screenshots": [],
+  "releaseStatus": "released",
+  "version": "1.0.0",
+  "author": "Classic Games Hub",
+  "supportedDevices": [
+    "desktop",
+    "mobile"
+  ],
+  "detailPage": "../games/arcade-cabinet.html?game=reversi",
+  "playUrl": "../games/arcade-cabinet.html?game=reversi",
+  "available": true,
+  "featured": false,
+  "external": false
+}

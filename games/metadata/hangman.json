@@ -1,0 +1,28 @@
+{
+  "id": "hangman",
+  "title": "Hangman",
+  "description": "Guess letters, read the pattern, and save the word before the drawing is complete.",
+  "genre": "Word",
+  "category": "Word",
+  "pacing": "Casual",
+  "difficulty": "Vocabulary and deduction",
+  "controls": [
+    "Keyboard letters",
+    "P to pause",
+    "R to restart"
+  ],
+  "thumbnail": "",
+  "screenshots": [],
+  "releaseStatus": "released",
+  "version": "1.0.0",
+  "author": "Classic Games Hub",
+  "supportedDevices": [
+    "desktop",
+    "mobile"
+  ],
+  "detailPage": "../games/arcade-cabinet.html?game=hangman",
+  "playUrl": "../games/arcade-cabinet.html?game=hangman",
+  "available": true,
+  "featured": false,
+  "external": false
+}

@@ -1,0 +1,28 @@
+{
+  "id": "slide",
+  "title": "Slide Puzzle",
+  "description": "Rebuild the full number order one adjacent slide at a time.",
+  "genre": "Puzzle",
+  "category": "Puzzle",
+  "pacing": "Calm challenge",
+  "difficulty": "Spatial reasoning and patience",
+  "controls": [
+    "Mouse or touch to slide tiles",
+    "P to pause",
+    "R to restart"
+  ],
+  "thumbnail": "",
+  "screenshots": [],
+  "releaseStatus": "released",
+  "version": "1.0.0",
+  "author": "Classic Games Hub",
+  "supportedDevices": [
+    "desktop",
+    "mobile"
+  ],
+  "detailPage": "../games/arcade-cabinet.html?game=slide",
+  "playUrl": "../games/arcade-cabinet.html?game=slide",
+  "available": true,
+  "featured": false,
+  "external": false
+}

@@ -1,0 +1,29 @@
+{
+  "id": "asteroids",
+  "title": "Asteroids",
+  "description": "Rotate, thrust, and split drifting rocks before they turn the whole field hostile.",
+  "genre": "Shooter",
+  "category": "Shooter",
+  "pacing": "Free-form",
+  "difficulty": "High reflex and spatial control",
+  "controls": [
+    "Arrow keys",
+    "Space to shoot",
+    "P to pause",
+    "R to restart"
+  ],
+  "thumbnail": "",
+  "screenshots": [],
+  "releaseStatus": "released",
+  "version": "1.0.0",
+  "author": "Classic Games Hub",
+  "supportedDevices": [
+    "desktop",
+    "mobile"
+  ],
+  "detailPage": "../games/arcade-cabinet.html?game=asteroids",
+  "playUrl": "../games/arcade-cabinet.html?game=asteroids",
+  "available": true,
+  "featured": true,
+  "external": false
+}

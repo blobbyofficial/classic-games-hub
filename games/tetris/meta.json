@@ -1,0 +1,18 @@
+{
+  "id": "tetris",
+  "title": "Tetris Deluxe",
+  "description": "Stack falling blocks, clear lines, and manage a board that gets harder to rescue over time.",
+  "controls": ["Arrow keys", "X to rotate", "Space to hard drop", "P to pause", "R to restart"],
+  "difficulty": "Steady level ramp with more demanding late-game reads",
+  "thumbnail": "../assets/images/tetris-thumb.svg",
+  "screenshots": [],
+  "releaseStatus": "released",
+  "version": "1.0.0",
+  "author": "Classic Games Hub",
+  "supportedDevices": ["desktop", "mobile"],
+  "detailPage": "../pages/tetris.html",
+  "playPage": "tetris-game.html",
+  "genre": "Puzzle arcade",
+  "sessionLength": "Medium to long",
+  "available": true
+}

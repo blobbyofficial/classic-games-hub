@@ -1,0 +1,28 @@
+{
+  "id": "whack",
+  "title": "Whack-a-Mole",
+  "description": "Moles keep popping, the clock keeps falling, and hesitation costs you points.",
+  "genre": "Reaction",
+  "category": "Reaction",
+  "pacing": "Party quickplay",
+  "difficulty": "Fast tap accuracy",
+  "controls": [
+    "Mouse or touch to tap targets",
+    "P to pause",
+    "R to restart"
+  ],
+  "thumbnail": "",
+  "screenshots": [],
+  "releaseStatus": "released",
+  "version": "1.0.0",
+  "author": "Classic Games Hub",
+  "supportedDevices": [
+    "desktop",
+    "mobile"
+  ],
+  "detailPage": "../games/arcade-cabinet.html?game=whack",
+  "playUrl": "../games/arcade-cabinet.html?game=whack",
+  "available": true,
+  "featured": false,
+  "external": false
+}

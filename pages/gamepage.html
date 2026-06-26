@@ -9,26 +9,12 @@
     name="description"
     content="Use the Classic Games Hub field guide to compare the anchor favorites, then jump into a wider 22-game static arcade library."
   />
-  <link rel="icon" href="../assets/images/Icon.png?v=arcade-20260321-6" type="image/png" />
-  <link rel="stylesheet" href="../assets/styles/site.css?v=arcade-20260321-6" />
+  <link rel="icon" href="../assets/images/Icon.png" type="image/png" />
+  <link rel="stylesheet" href="../assets/styles/core/site.css" />
 </head>
 <body class="site-page page-guide">
   <div class="page-shell">
-    <header class="topbar">
-      <a class="brand" href="../index.html" aria-label="Classic Games Hub home">
-        <img src="../assets/images/Icon.png" alt="Classic Games Hub logo" width="48" height="48" />
-        <span class="brand-copy">
-          <strong>Classic Games Hub</strong>
-          <span>Arcade field guide</span>
-        </span>
-      </a>
-      <nav aria-label="Primary">
-        <a class="nav-link" href="../index.html">Landing</a>
-        <a class="nav-link" href="homepage.html">Library</a>
-        <a class="nav-link" href="snake.html">Snake</a>
-        <a class="nav-link" href="tetris.html">Tetris</a>
-      </nav>
-    </header>
+    <header data-shell="topbar"></header>
 
     <main>
       <section class="compare-hero">
@@ -87,7 +73,7 @@
           </ul>
           <div class="button-row">
             <a class="button ink" href="snake.html">Read more</a>
-            <a class="button secondary" href="../games/snake/snake-game.html">Play Snake</a>
+            <a class="button secondary" href="../games/arcade-cabinet.html?game=snake">Play Snake</a>
           </div>
         </article>
 
@@ -114,7 +100,7 @@
           </ul>
           <div class="button-row">
             <a class="button ink" href="tetris.html">Read more</a>
-            <a class="button secondary" href="../games/tetris/tetris-game.html">Play Tetris</a>
+            <a class="button secondary" href="../games/arcade-cabinet.html?game=tetris">Play Tetris</a>
           </div>
         </article>
       </section>
@@ -151,10 +137,9 @@
       </section>
     </main>
 
-    <footer class="site-footer">
-      Classic Games Hub - field guide page.
-    </footer>
+    <footer data-shell="footer"></footer>
   </div>
-  <script defer src="../assets/scripts/site-loader.js?v=arcade-20260321-5"></script>
+  <script defer src="../assets/scripts/core/site-shell.js"></script>
+  <script defer src="../assets/scripts/core/site-loader.js"></script>
 </body>
 </html>
