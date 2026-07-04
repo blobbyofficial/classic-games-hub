@@ -1,7 +1,7 @@
 (function () {
   const TRANSITION_KEY = "classic-games-hub.transition";
-  const ENTRANCE_DELAY = 760;
   const TRANSITION_DELAY = 700;
+  const LOADER_DELAY = 220;
   let loaderState = null;
   let transitioning = false;
 
@@ -143,15 +143,51 @@
     }, 450);
   }
 
+  function revealPage() {
+    document.body.classList.add("is-ready");
+    hideLoader();
+  }
+
   function beginEntrance() {
     const pending = parsePendingTransition();
-    const label = pending && pending.label ? pending.label : derivePageName();
-    setLoaderCopy("entrance", label);
+    if (!pending) {
+      revealPage();
+      return;
+    }
 
-    window.setTimeout(function () {
-      document.body.classList.add("is-ready");
-      hideLoader();
-    }, pending ? 560 : ENTRANCE_DELAY);
+    const label = pending.label ? pending.label : derivePageName();
+    let ready = false;
+    let loaderTimer = null;
+
+    function completeReady() {
+      if (ready) {
+        return;
+      }
+      ready = true;
+      if (loaderTimer) {
+        window.clearTimeout(loaderTimer);
+      }
+      revealPage();
+    }
+
+    if (document.readyState === "complete") {
+      completeReady();
+      return;
+    }
+
+    loaderTimer = window.setTimeout(function () {
+      if (!ready) {
+        setLoaderCopy("transition", label);
+      }
+    }, LOADER_DELAY);
+
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", completeReady, { once: true });
+    } else {
+      completeReady();
+    }
+
+    window.addEventListener("load", completeReady, { once: true });
   }
 
   function shouldIntercept(link, event) {
@@ -193,7 +229,6 @@
 
       const label = deriveTargetName(link, url);
       safeStorageSet(TRANSITION_KEY, JSON.stringify({ label: label }));
-      setLoaderCopy("transition", label);
 
       window.setTimeout(function () {
         window.location.href = url.href;
