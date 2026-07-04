@@ -33,8 +33,8 @@
   /* ---- accessible ink text for opaque bright fills ---- */
   --ink-text: #1d0f1b;
 
-  --shadow: 0 24px 70px rgba(8, 3, 8, 0.46);
-  --glow: 0 0 0 1px rgba(255, 240, 222, 0.05), 0 22px 60px rgba(8, 3, 8, 0.36);
+  --shadow: none;
+  --glow: none;
 
   /* ---- radius tokens ---- */
   --radius-xs: 10px;
@@ -87,37 +87,15 @@ body {
   min-height: 100vh;
   font-family: var(--body-font);
   color: var(--text);
-  background:
-    radial-gradient(circle at 14% 12%, rgba(255, 106, 82, 0.22), transparent 28%),
-    radial-gradient(circle at 82% 14%, rgba(43, 191, 174, 0.2), transparent 26%),
-    radial-gradient(circle at 78% 84%, rgba(255, 182, 72, 0.16), transparent 24%),
-    linear-gradient(160deg, var(--bg), var(--bg-2) 52%, var(--bg-3));
+  background: var(--bg);
   overflow-x: hidden;
   position: relative;
 }
 
 body::before,
 body::after {
-  content: "";
-  position: fixed;
-  inset: 0;
-  pointer-events: none;
-}
-
-body::before {
-  background:
-    linear-gradient(180deg, rgba(255, 240, 222, 0.03), transparent 30%),
-    radial-gradient(circle at center, transparent 56%, rgba(6, 2, 6, 0.45) 100%);
-  mix-blend-mode: screen;
-}
-
-body::after {
-  opacity: 0.12;
-  background-image:
-    linear-gradient(rgba(255, 240, 222, 0.14) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 240, 222, 0.08) 1px, transparent 1px);
-  background-size: 84px 84px;
-  mask-image: radial-gradient(circle at center, black 36%, transparent 78%);
+  content: none;
+  display: none;
 }
 
 img {
@@ -185,10 +163,10 @@ select {
 .control-card,
 .touch-card,
 .page-loader__panel {
-  background: linear-gradient(180deg, var(--panel-soft), var(--panel-strong));
+  background: var(--panel);
   border: 1px solid var(--line);
-  box-shadow: var(--shadow), var(--glow);
-  backdrop-filter: blur(18px);
+  box-shadow: none;
+  backdrop-filter: none;
 }
 
 .topbar,
@@ -209,32 +187,12 @@ select {
 .poster-card::before,
 .section-card::before,
 .game-panel::before,
-.page-loader__panel::before {
-  content: "";
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  background:
-    linear-gradient(90deg, transparent, rgba(255, 240, 222, 0.06), transparent),
-    linear-gradient(180deg, rgba(255, 240, 222, 0.06), transparent 28%);
-}
-
-/* Marquee light strip: coral / amber / teal repeating three across. */
+.page-loader__panel::before,
 .topbar::after,
 .game-topbar::after,
 .page-loader__panel::after {
-  content: "";
-  position: absolute;
-  left: var(--space-md);
-  right: var(--space-md);
-  top: 0.7rem;
-  height: 8px;
-  border-radius: var(--radius-pill);
-  background:
-    radial-gradient(circle, var(--accent) 0 46%, transparent 48%) 0 50% / 36px 8px repeat-x,
-    radial-gradient(circle, var(--accent-3) 0 46%, transparent 48%) 12px 50% / 36px 8px repeat-x,
-    radial-gradient(circle, var(--accent-2) 0 46%, transparent 48%) 24px 50% / 36px 8px repeat-x;
-  opacity: 0.85;
+  content: none;
+  display: none;
 }
 
 .brand {
@@ -327,23 +285,23 @@ select {
    WCAG AA contrast instead of the previous light-on-coral pairing. */
 .button.primary,
 .game-button {
-  background: linear-gradient(135deg, var(--accent), #ff9456);
+  background: var(--accent);
   border-color: rgba(255, 170, 130, 0.4);
   color: var(--ink-text);
   font-weight: 700;
-  box-shadow: 0 10px 24px rgba(255, 106, 82, 0.24);
+  box-shadow: none;
 }
 
 .button.secondary,
 .game-button.secondary {
-  background: linear-gradient(180deg, rgba(43, 191, 174, 0.16), rgba(255, 240, 222, 0.06));
+  background: var(--panel-soft);
   border-color: rgba(43, 191, 174, 0.32);
   color: var(--text);
 }
 
 .button.ink,
 .game-button.danger {
-  background: linear-gradient(135deg, var(--accent-4), #3c2247);
+  background: var(--accent-4);
   border-color: rgba(106, 63, 120, 0.42);
   color: #f5ecf7;
 }
@@ -360,7 +318,7 @@ select {
 .route-card:hover,
 .poster-card:hover {
   transform: translateY(-2px);
-  filter: brightness(1.04);
+  filter: none;
 }
 
 .nav-link:active,
@@ -575,10 +533,7 @@ select {
   border-radius: 24px;
   overflow: hidden;
   border: 1px solid rgba(255, 240, 222, 0.1);
-  background:
-    radial-gradient(circle at top left, rgba(255, 182, 72, 0.26), transparent 28%),
-    radial-gradient(circle at bottom right, rgba(43, 191, 174, 0.22), transparent 30%),
-    linear-gradient(160deg, #2a1527, #190d18 58%, #341c2f);
+  background: var(--panel-strong);
 }
 
 .poster-visual {
@@ -694,7 +649,7 @@ select {
 .score-card {
   border-radius: 22px;
   border: 1px solid rgba(255, 240, 222, 0.08);
-  background: linear-gradient(180deg, rgba(255, 240, 222, 0.08), rgba(255, 240, 222, 0.03));
+  background: var(--panel-soft);
 }
 
 .stat-card strong,
@@ -796,7 +751,7 @@ select {
   padding: var(--space-md);
   border-radius: 20px;
   border: 1px solid rgba(255, 240, 222, 0.08);
-  background: linear-gradient(180deg, rgba(255, 106, 82, 0.14), rgba(106, 63, 120, 0.16));
+  background: var(--panel-soft);
 }
 
 .error-wrap {
@@ -844,17 +799,12 @@ select {
 }
 
 body.arcade-game {
-  background:
-    radial-gradient(circle at 10% 14%, rgba(255, 106, 82, 0.2), transparent 26%),
-    radial-gradient(circle at 86% 12%, rgba(43, 191, 174, 0.18), transparent 24%),
-    radial-gradient(circle at 80% 82%, rgba(106, 63, 120, 0.22), transparent 22%),
-    linear-gradient(160deg, #100810, #1c0f1a 54%, #271423);
+  background: var(--bg-2);
 }
 
 body.arcade-game::before {
-  background:
-    linear-gradient(180deg, rgba(255, 240, 222, 0.03), transparent 24%),
-    radial-gradient(circle at center, transparent 46%, rgba(6, 2, 6, 0.48) 100%);
+  content: none;
+  display: none;
 }
 
 .arcade-shell {
@@ -942,8 +892,8 @@ body.arcade-game::before {
   aspect-ratio: 1 / 1;
   border-radius: 24px;
   border: 1px solid rgba(255, 240, 222, 0.12);
-  background: linear-gradient(180deg, rgba(20, 10, 19, 0.88), rgba(14, 7, 13, 0.94));
-  box-shadow: inset 0 1px 0 rgba(255, 240, 222, 0.04), 0 18px 38px rgba(6, 2, 6, 0.3);
+  background: var(--panel-strong);
+  box-shadow: none;
   touch-action: none;
 }
 
@@ -955,9 +905,7 @@ body.arcade-game::before {
   justify-content: center;
   padding: var(--space-md);
   border-radius: 24px;
-  background:
-    radial-gradient(circle at top, rgba(43, 191, 174, 0.18), transparent 28%),
-    linear-gradient(180deg, rgba(16, 8, 16, 0.9), rgba(12, 6, 12, 0.94));
+  background: var(--panel-strong);
   border: 1px solid rgba(255, 240, 222, 0.12);
   opacity: 0;
   pointer-events: none;
@@ -1203,11 +1151,8 @@ body.arcade-game::before {
   border-radius: 22px;
   overflow: hidden;
   border: 1px solid rgba(255, 240, 222, 0.12);
-  background:
-    radial-gradient(circle at 14% 18%, var(--thumb-accent, rgba(255, 182, 72, 0.45)), transparent 24%),
-    radial-gradient(circle at 84% 82%, var(--thumb-accent-2, rgba(43, 191, 174, 0.32)), transparent 26%),
-    linear-gradient(160deg, var(--thumb-bg-1, #2a1527), var(--thumb-bg-2, #190d18) 58%, var(--thumb-bg-3, #341c2f));
-  box-shadow: inset 0 1px 0 rgba(255, 240, 222, 0.06);
+  background: var(--thumb-bg-1, #1f111b);
+  box-shadow: none;
 }
 
 /* Cabinet rivet bolts, replacing the old generic ring blobs. */
@@ -1287,10 +1232,7 @@ body.arcade-game::before {
   display: grid;
   place-items: center;
   padding: var(--space-md);
-  background:
-    radial-gradient(circle at 12% 16%, rgba(255, 106, 82, 0.22), transparent 28%),
-    radial-gradient(circle at 82% 18%, rgba(43, 191, 174, 0.2), transparent 26%),
-    linear-gradient(160deg, rgba(16, 8, 16, 0.97), rgba(22, 12, 21, 0.98));
+  background: var(--bg);
   transition: opacity 0.42s ease, visibility 0.42s ease;
 }
 
@@ -1387,7 +1329,7 @@ body.arcade-game::before {
   inset: 0 auto 0 0;
   width: 38%;
   border-radius: inherit;
-  background: linear-gradient(90deg, var(--accent), var(--accent-3), var(--accent-2));
+  background: var(--accent);
   animation: loaderSweep 1.15s ease-in-out infinite;
 }
 
