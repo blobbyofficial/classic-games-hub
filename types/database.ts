@@ -1,0 +1,514 @@
+/**
+ * Database types for the Classic Games Hub Postgres schema.
+ *
+ * Hand-authored to mirror the migrations in `database/migrations`. Kept in sync
+ * with the schema by hand (a `supabase gen types` run can regenerate this file
+ * verbatim if the CLI is wired up in CI).
+ */
+
+export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
+
+export type UserRole = "user" | "moderator" | "admin";
+export type GameStatus = "published" | "draft" | "archived" | "coming_soon";
+export type Difficulty = "easy" | "normal" | "hard";
+export type Rarity = "common" | "rare" | "epic" | "legendary";
+export type ShopKind =
+  | "avatar_frame"
+  | "profile_theme"
+  | "badge"
+  | "effect"
+  | "banner"
+  | "collectible"
+  | "xp_boost"
+  | "credit_boost";
+export type FriendStatus = "pending" | "accepted" | "declined";
+export type AllowDms = "everyone" | "friends" | "none";
+export type ReportStatus = "open" | "resolved" | "dismissed";
+export type AnnouncementLevel = "info" | "update" | "event" | "alert";
+
+export interface Database {
+  public: {
+    Tables: {
+      profiles: {
+        Row: {
+          id: string;
+          username: string;
+          display_name: string | null;
+          avatar_url: string | null;
+          banner_url: string | null;
+          bio: string | null;
+          level: number;
+          xp: number;
+          credits: number;
+          role: UserRole;
+          equipped: Record<string, string>;
+          is_banned: boolean;
+          last_seen_at: string;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["profiles"]["Row"]> & { id: string; username: string };
+        Update: Partial<Database["public"]["Tables"]["profiles"]["Row"]>;
+        Relationships: [];
+      };
+      user_settings: {
+        Row: {
+          user_id: string;
+          ads_enabled: boolean;
+          theme: "system" | "light" | "dark";
+          reduced_motion: boolean;
+          show_online_status: boolean;
+          allow_friend_requests: boolean;
+          allow_dms: AllowDms;
+          email_notifications: boolean;
+          updated_at: string;
+        };
+        Insert: { user_id: string } & Partial<Database["public"]["Tables"]["user_settings"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["user_settings"]["Row"]>;
+        Relationships: [];
+      };
+      credit_transactions: {
+        Row: {
+          id: number;
+          user_id: string;
+          amount: number;
+          balance_after: number;
+          reason: string;
+          ref_type: string | null;
+          ref_id: string | null;
+          metadata: Json;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      notifications: {
+        Row: {
+          id: number;
+          user_id: string;
+          type: string;
+          title: string;
+          body: string | null;
+          data: Json;
+          read_at: string | null;
+          created_at: string;
+        };
+        Insert: never;
+        Update: { read_at?: string | null };
+        Relationships: [];
+      };
+      games: {
+        Row: {
+          id: string;
+          slug: string;
+          title: string;
+          tagline: string | null;
+          description: string | null;
+          how_to_play: string | null;
+          category: string;
+          tags: string[];
+          controls: { keys: string; action: string }[];
+          thumbnail_url: string | null;
+          banner_url: string | null;
+          engine_id: string;
+          status: GameStatus;
+          featured: boolean;
+          sort_weight: number;
+          difficulty: Difficulty;
+          play_count: number;
+          rating_sum: number;
+          rating_count: number;
+          max_score: number | null;
+          credit_divisor: number;
+          max_credits_per_session: number;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["games"]["Row"]> & {
+          slug: string;
+          title: string;
+          category: string;
+          engine_id: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["games"]["Row"]>;
+        Relationships: [];
+      };
+      game_ratings: {
+        Row: {
+          id: number;
+          game_id: string;
+          user_id: string;
+          rating: number;
+          review: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: { game_id: string; user_id: string; rating: number; review?: string | null };
+        Update: { rating?: number; review?: string | null };
+        Relationships: [];
+      };
+      game_favorites: {
+        Row: { user_id: string; game_id: string; created_at: string };
+        Insert: { user_id: string; game_id: string };
+        Update: never;
+        Relationships: [];
+      };
+      play_sessions: {
+        Row: {
+          id: number;
+          user_id: string;
+          game_id: string;
+          score: number;
+          duration_seconds: number;
+          xp_earned: number;
+          credits_earned: number;
+          ads_doubled: boolean;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      leaderboard_scores: {
+        Row: {
+          game_id: string;
+          user_id: string;
+          best_score: number;
+          plays: number;
+          achieved_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      activity_events: {
+        Row: { id: number; user_id: string; type: string; data: Json; created_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      friendships: {
+        Row: {
+          id: number;
+          requester_id: string;
+          addressee_id: string;
+          status: FriendStatus;
+          created_at: string;
+          responded_at: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      user_blocks: {
+        Row: { blocker_id: string; blocked_id: string; created_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      conversations: {
+        Row: { id: string; created_at: string; last_message_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      conversation_members: {
+        Row: { conversation_id: string; user_id: string; joined_at: string; last_read_at: string };
+        Insert: never;
+        Update: { last_read_at?: string };
+        Relationships: [];
+      };
+      messages: {
+        Row: {
+          id: number;
+          conversation_id: string;
+          sender_id: string;
+          content: string;
+          created_at: string;
+          edited_at: string | null;
+          deleted_at: string | null;
+        };
+        Insert: { conversation_id: string; sender_id: string; content: string };
+        Update: { content?: string; edited_at?: string | null; deleted_at?: string | null };
+        Relationships: [];
+      };
+      shop_items: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          description: string | null;
+          kind: ShopKind;
+          price: number;
+          rarity: Rarity;
+          preview: { colors?: string[]; icon?: string };
+          seasonal: boolean;
+          available: boolean;
+          sort_weight: number;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["shop_items"]["Row"]> & {
+          slug: string;
+          name: string;
+          kind: ShopKind;
+          price: number;
+        };
+        Update: Partial<Database["public"]["Tables"]["shop_items"]["Row"]>;
+        Relationships: [];
+      };
+      inventory_items: {
+        Row: { id: number; user_id: string; item_id: string; acquired_at: string; expires_at: string | null };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      achievements: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          description: string;
+          icon: string;
+          category: string;
+          xp_reward: number;
+          credits_reward: number;
+          secret: boolean;
+          requirement: Json;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["achievements"]["Row"]> & {
+          slug: string;
+          name: string;
+          description: string;
+          requirement: Json;
+        };
+        Update: Partial<Database["public"]["Tables"]["achievements"]["Row"]>;
+        Relationships: [];
+      };
+      user_achievements: {
+        Row: { user_id: string; achievement_id: string; unlocked_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      daily_reward_claims: {
+        Row: { user_id: string; claim_date: string; streak: number; credits_awarded: number; created_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      challenges: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          description: string;
+          kind: "daily" | "weekly" | "event";
+          requirement: Json;
+          credits_reward: number;
+          xp_reward: number;
+          starts_at: string;
+          ends_at: string;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["challenges"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["challenges"]["Row"]>;
+        Relationships: [];
+      };
+      challenge_progress: {
+        Row: {
+          user_id: string;
+          challenge_id: string;
+          progress: number;
+          completed_at: string | null;
+          claimed_at: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      events: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          description: string | null;
+          banner_url: string | null;
+          starts_at: string;
+          ends_at: string;
+          data: Json;
+          published: boolean;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["events"]["Row"]> & {
+          slug: string;
+          name: string;
+          starts_at: string;
+          ends_at: string;
+        };
+        Update: Partial<Database["public"]["Tables"]["events"]["Row"]>;
+        Relationships: [];
+      };
+      reports: {
+        Row: {
+          id: number;
+          reporter_id: string;
+          target_type: "user" | "message" | "review";
+          target_user_id: string | null;
+          target_id: string | null;
+          reason: string;
+          details: string | null;
+          status: ReportStatus;
+          resolved_by: string | null;
+          resolved_at: string | null;
+          created_at: string;
+        };
+        Insert: {
+          reporter_id: string;
+          target_type: "user" | "message" | "review";
+          target_user_id?: string | null;
+          target_id?: string | null;
+          reason: string;
+          details?: string | null;
+        };
+        Update: { status?: ReportStatus; resolved_by?: string | null; resolved_at?: string | null };
+        Relationships: [];
+      };
+      announcements: {
+        Row: {
+          id: string;
+          author_id: string | null;
+          title: string;
+          body: string;
+          level: AnnouncementLevel;
+          published: boolean;
+          published_at: string | null;
+          created_at: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["announcements"]["Row"]> & { title: string; body: string };
+        Update: Partial<Database["public"]["Tables"]["announcements"]["Row"]>;
+        Relationships: [];
+      };
+      audit_logs: {
+        Row: {
+          id: number;
+          actor_id: string | null;
+          action: string;
+          target_type: string | null;
+          target_id: string | null;
+          details: Json;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      feature_flags: {
+        Row: { key: string; enabled: boolean; description: string | null; payload: Json; updated_at: string };
+        Insert: { key: string; enabled?: boolean; description?: string | null; payload?: Json };
+        Update: { enabled?: boolean; description?: string | null; payload?: Json };
+        Relationships: [];
+      };
+    };
+    Views: Record<string, never>;
+    Functions: {
+      submit_score: {
+        Args: { p_slug: string; p_score: number; p_duration?: number };
+        Returns: Json;
+      };
+      claim_daily_reward: { Args: Record<string, never>; Returns: Json };
+      claim_challenge: { Args: { p_challenge: string }; Returns: Json };
+      purchase_shop_item: { Args: { p_slug: string }; Returns: Json };
+      equip_item: { Args: { p_slug: string }; Returns: Json };
+      unequip_item: { Args: { p_kind: string }; Returns: undefined };
+      change_username: { Args: { p_new: string }; Returns: Json };
+      send_friend_request: { Args: { p_username: string }; Returns: Json };
+      respond_friend_request: { Args: { p_id: number; p_accept: boolean }; Returns: Json };
+      remove_friend: { Args: { p_user: string }; Returns: undefined };
+      block_user: { Args: { p_user: string }; Returns: undefined };
+      unblock_user: { Args: { p_user: string }; Returns: undefined };
+      get_or_create_dm: { Args: { p_user: string }; Returns: string };
+      mark_conversation_read: { Args: { p_conversation: string }; Returns: undefined };
+      heartbeat: { Args: Record<string, never>; Returns: undefined };
+      friendship_status: { Args: { p_user: string }; Returns: string };
+      profile_stats: { Args: { p_user: string }; Returns: Json };
+      admin_adjust_credits: { Args: { p_user: string; p_amount: number; p_reason: string }; Returns: undefined };
+      admin_set_role: { Args: { p_user: string; p_role: string }; Returns: undefined };
+      admin_set_banned: { Args: { p_user: string; p_banned: boolean }; Returns: undefined };
+      game_leaderboard: {
+        Args: { p_slug: string; p_limit?: number };
+        Returns: {
+          rank: number;
+          user_id: string;
+          username: string;
+          display_name: string | null;
+          avatar_url: string | null;
+          level: number;
+          best_score: number;
+          plays: number;
+          achieved_at: string;
+        }[];
+      };
+      global_leaderboard: {
+        Args: { p_limit?: number };
+        Returns: {
+          rank: number;
+          user_id: string;
+          username: string;
+          display_name: string | null;
+          avatar_url: string | null;
+          level: number;
+          xp: number;
+          equipped: Record<string, string>;
+        }[];
+      };
+      list_friends: {
+        Args: Record<string, never>;
+        Returns: {
+          user_id: string;
+          username: string;
+          display_name: string | null;
+          avatar_url: string | null;
+          level: number;
+          last_seen_at: string | null;
+          equipped: Record<string, string>;
+          is_online: boolean;
+        }[];
+      };
+      list_friend_requests: {
+        Args: Record<string, never>;
+        Returns: {
+          request_id: number;
+          user_id: string;
+          username: string;
+          display_name: string | null;
+          avatar_url: string | null;
+          level: number;
+          created_at: string;
+        }[];
+      };
+      list_conversations: {
+        Args: Record<string, never>;
+        Returns: {
+          conversation_id: string;
+          last_message_at: string;
+          other_user_id: string;
+          other_username: string;
+          other_display_name: string | null;
+          other_avatar_url: string | null;
+          other_last_seen: string;
+          last_message: string | null;
+          last_message_sender: string | null;
+          unread: number;
+        }[];
+      };
+    };
+    Enums: Record<string, never>;
+    CompositeTypes: Record<string, never>;
+  };
+}
+
+export type Tables<T extends keyof Database["public"]["Tables"]> =
+  Database["public"]["Tables"][T]["Row"];
+export type Enums = Database["public"]["Enums"];

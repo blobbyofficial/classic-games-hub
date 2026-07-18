@@ -1,0 +1,22 @@
+{
+  "name": "Classic Games Hub",
+  "short_name": "CG Hub",
+  "description": "A modern arcade platform — play classic games, earn credits, unlock achievements and play with friends.",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "any",
+  "background_color": "#151320",
+  "theme_color": "#151320",
+  "categories": ["games", "entertainment", "social"],
+  "icons": [
+    { "src": "/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any maskable" },
+    { "src": "/icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any maskable" }
+  ],
+  "shortcuts": [
+    { "name": "Games", "url": "/games" },
+    { "name": "Leaderboards", "url": "/leaderboards" },
+    { "name": "Daily reward", "url": "/challenges" }
+  ]
+}

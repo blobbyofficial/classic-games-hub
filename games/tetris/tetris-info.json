@@ -1,9 +1,0 @@
-{
-  "tagline": "Longer puzzle runs built around stack control and recovery.",
-  "summary": "Tetris Deluxe starts calm, then becomes a board-management challenge where every placement can either preserve control or force a rescue sequence.",
-  "difficulty": "Steady level ramp with more demanding late-game reads",
-  "controls": ["Arrow keys", "X to rotate", "Space to hard drop", "P to pause", "R to restart"],
-  "sessionLength": "Medium to long",
-  "detailPage": "../../pages/tetris.html",
-  "playPage": "./tetris-game.html"
-}

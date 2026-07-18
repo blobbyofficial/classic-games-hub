@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">
+  <defs>
+    <linearGradient id="bg12" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#475569"/><stop offset="1" stop-color="#1e293b"/>
+    </linearGradient>
+    <pattern id="grid12" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#ffffff" stroke-opacity="0.06"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="url(#bg12)"/>
+  <rect width="480" height="300" fill="url(#grid12)"/>
+  <g transform="translate(240 150)" fill="#fff"><circle r="30"/><g stroke="#fff" stroke-width="7"><line x1="30" y1="0" x2="46" y2="0"/><line x1="21.213203435596427" y1="21.213203435596423" x2="32.526911934581186" y2="32.526911934581186"/><line x1="1.83697019872103e-15" y1="30" x2="2.8166876380389124e-15" y2="46"/><line x1="-21.213203435596423" y1="21.213203435596427" x2="-32.526911934581186" y2="32.526911934581186"/><line x1="-30" y1="3.67394039744206e-15" x2="-46" y2="5.633375276077825e-15"/><line x1="-21.21320343559643" y1="-21.213203435596423" x2="-32.52691193458119" y2="-32.526911934581186"/><line x1="-5.510910596163089e-15" y1="-30" x2="-8.450062914116736e-15" y2="-46"/><line x1="21.21320343559642" y1="-21.21320343559643" x2="32.52691193458118" y2="-32.52691193458119"/></g></g>
+</svg>

@@ -1,9 +1,0 @@
-{
-  "tagline": "Short survival rounds that turn into route-planning puzzles.",
-  "summary": "Snake Classic rewards smooth movement early and disciplined escape planning later once the board starts filling with your own trail.",
-  "difficulty": "Easy to learn with a fast pressure curve",
-  "controls": ["Arrow keys", "WASD", "P to pause", "R to restart"],
-  "sessionLength": "Short",
-  "detailPage": "../../pages/snake.html",
-  "playPage": "./snake-game.html"
-}
