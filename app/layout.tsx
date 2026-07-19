@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     siteName: SITE.name,
   },
   twitter: { card: "summary_large_image", title: SITE.name, description: SITE.description },
-  icons: { icon: "/icon.svg", apple: "/icon.svg" },
+  icons: { icon: "/icon.svg", apple: "/apple-icon.png" },
 };
 
 export const viewport: Viewport = {
