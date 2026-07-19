@@ -2,7 +2,6 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Coins, Trophy, Users } from "lucide-react";
 import { OAuthButtons } from "@/features/auth/oauth-buttons";
-import { PasswordForm } from "@/features/auth/password-form";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Sign up" };
@@ -29,16 +28,8 @@ export default async function RegisterPage({
 
         <OAuthButtons next={next} />
 
-        <div className="relative flex items-center gap-3 text-xs text-muted-foreground">
-          <span className="h-px flex-1 bg-border" />
-          OR
-          <span className="h-px flex-1 bg-border" />
-        </div>
-
-        <PasswordForm mode="register" next={next} />
-
         <p className="text-center text-xs text-muted-foreground">
-          By signing up you agree to play fair and be kind to other players.
+          By continuing you agree to play fair and be kind to other players.
         </p>
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}

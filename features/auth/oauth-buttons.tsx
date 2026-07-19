@@ -4,43 +4,30 @@ import { useState } from "react";
 import { toast } from "sonner";
 import { signInWithOAuth } from "@/actions/auth";
 import { Button } from "@/components/ui/button";
-import { GoogleIcon, GitHubIcon, MicrosoftIcon, DiscordIcon } from "@/components/icons";
-
-const PROVIDERS = [
-  { id: "google", label: "Google", Icon: GoogleIcon },
-  { id: "discord", label: "Discord", Icon: DiscordIcon },
-  { id: "github", label: "GitHub", Icon: GitHubIcon },
-  { id: "azure", label: "Microsoft", Icon: MicrosoftIcon },
-] as const;
+import { DiscordIcon } from "@/components/icons";
 
 export function OAuthButtons({ next }: { next?: string }) {
-  const [loading, setLoading] = useState<string | null>(null);
+  const [loading, setLoading] = useState(false);
 
-  const onClick = async (provider: (typeof PROVIDERS)[number]["id"]) => {
-    setLoading(provider);
-    const res = await signInWithOAuth(provider, next ?? "/");
+  const onClick = async () => {
+    setLoading(true);
+    const res = await signInWithOAuth("discord", next ?? "/");
     if (res?.error) {
       toast.error(res.error);
-      setLoading(null);
+      setLoading(false);
     }
     // On success the action redirects, so no reset needed.
   };
 
   return (
-    <div className="grid grid-cols-2 gap-3">
-      {PROVIDERS.map(({ id, label, Icon }) => (
-        <Button
-          key={id}
-          type="button"
-          variant="outline"
-          onClick={() => onClick(id)}
-          disabled={loading !== null}
-          className="h-11"
-        >
-          <Icon className="size-4" />
-          {loading === id ? "Redirecting…" : label}
-        </Button>
-      ))}
-    </div>
+    <Button
+      type="button"
+      onClick={onClick}
+      disabled={loading}
+      className="h-12 w-full bg-[#5865F2] text-white hover:bg-[#4752c4]"
+    >
+      <DiscordIcon className="size-5" />
+      {loading ? "Redirecting…" : "Continue with Discord"}
+    </Button>
   );
 }
