@@ -1,3 +1,5 @@
+# NOTE: To enable CI, move this file to .github/workflows/ci.yml
+# (kept out of that folder because the push token lacked GitHub 'workflow' scope).
 name: CI
 
 on:
