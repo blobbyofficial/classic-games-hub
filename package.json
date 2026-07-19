@@ -5,10 +5,12 @@
   "description": "Classic Games Hub — a modern arcade platform with accounts, social features, a credits economy, and 22 playable classics.",
   "scripts": {
     "dev": "next dev",
+    "prebuild": "node scripts/generate-icons.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "generate:assets": "node scripts/generate-thumbnails.mjs && node scripts/generate-icons.mjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.1.10",
@@ -52,6 +54,7 @@
     "@types/react-dom": "^19.2.3",
     "eslint": "^9.39.1",
     "eslint-config-next": "^16.2.10",
+    "sharp": "^0.34.4",
     "tailwindcss": "^4.3.3",
     "typescript": "^5.9.3"
   },

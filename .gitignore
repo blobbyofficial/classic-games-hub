@@ -28,3 +28,7 @@ yarn-error.log*
 
 # typescript
 *.tsbuildinfo
+
+# generated PWA raster icons (created by scripts/generate-icons.mjs at build)
+/public/icons/*.png
+/public/apple-icon.png
