@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users, Zap } from "lucide-react";
 import { getFeaturedGames, getPublishedGames, getFavoriteGameIds, getRecentlyPlayed } from "@/services/games";
 import { getDailyRewardStatus } from "@/services/economy";
-import { getSessionUser } from "@/lib/supabase/queries";
+import { getCurrentProfile } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { GameGrid } from "@/components/games/game-grid";
 import { GameCard } from "@/components/games/game-card";
@@ -16,17 +16,24 @@ import { Badge } from "@/components/ui/badge";
 import { compactNumber } from "@/lib/utils";
 
 export default async function HomePage() {
-  const [user, featured, allGames] = await Promise.all([
-    getSessionUser(),
+  const [profile, featured, allGames] = await Promise.all([
+    getCurrentProfile(),
     getFeaturedGames(),
     getPublishedGames(),
   ]);
+  const user = profile;
   const favorites = user ? await getFavoriteGameIds() : new Set<string>();
   const totalPlays = allGames.reduce((sum, g) => sum + g.play_count, 0);
+  const displayName = profile ? profile.display_name ?? profile.username : null;
 
   return (
     <div className="space-y-12">
-      <Hero gameCount={allGames.length} totalPlays={totalPlays} isAuthed={Boolean(user)} />
+      <Hero
+        gameCount={allGames.length}
+        totalPlays={totalPlays}
+        isAuthed={Boolean(user)}
+        displayName={displayName}
+      />
 
       {user && (
         <Suspense>
@@ -72,10 +79,12 @@ function Hero({
   gameCount,
   totalPlays,
   isAuthed,
+  displayName,
 }: {
   gameCount: number;
   totalPlays: number;
   isAuthed: boolean;
+  displayName?: string | null;
 }) {
   return (
     <section className="relative overflow-hidden rounded-3xl border border-border bg-grid px-6 py-12 sm:px-10 sm:py-16">
@@ -85,11 +94,19 @@ function Hero({
         <Badge variant="neon" className="mb-4">
           <Zap className="size-3" /> Rebuilt for 2026
         </Badge>
-        <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">
-          Your arcade,
-          <br />
-          <span className="text-gradient">reimagined.</span>
-        </h1>
+        {displayName ? (
+          <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">
+            Welcome back,
+            <br />
+            <span className="text-gradient">{displayName}</span>
+          </h1>
+        ) : (
+          <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">
+            Your arcade,
+            <br />
+            <span className="text-gradient">reimagined.</span>
+          </h1>
+        )}
         <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
           Play {gameCount} timeless games, earn credits and XP, unlock achievements, climb the
           leaderboards and hang out with friends. No pay-to-win — just the classics, done right.
