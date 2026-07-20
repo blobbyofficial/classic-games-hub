@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { Coins, Check, Loader2, Clock } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { purchaseItem } from "@/actions/economy";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { DynamicIcon } from "@/components/dynamic-icon";
@@ -54,9 +53,11 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
   };
 
   return (
-    <motion.div
-      whileHover={{ y: -3 }}
-      className={cn("overflow-hidden rounded-2xl border bg-card shadow-sm", `ring-1 ${rarity.ring}`)}
+    <div
+      className={cn(
+        "overflow-hidden rounded-2xl border bg-card shadow-sm transition-transform duration-200 ease-out hover:-translate-y-1 motion-reduce:transform-none",
+        `ring-1 ${rarity.ring}`,
+      )}
     >
       <div
         className="relative grid h-28 place-items-center"
@@ -95,7 +96,7 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 

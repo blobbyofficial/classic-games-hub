@@ -2,7 +2,7 @@ import { Navbar } from "@/components/shell/navbar";
 import { Sidebar } from "@/components/shell/sidebar";
 import { MobileNav } from "@/components/shell/mobile-nav";
 import { Footer } from "@/components/shell/footer";
-import { CommandPalette } from "@/components/shell/command-palette";
+import { CommandPaletteLazy } from "@/components/shell/command-palette-lazy";
 import { SessionSync } from "@/components/providers/session-sync";
 import { MaintenanceBanner } from "@/components/shell/maintenance-banner";
 import { SiteBanner } from "@/components/shell/site-banner";
@@ -58,7 +58,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
       </div>
       <Footer />
       <MobileNav />
-      <CommandPalette />
+      <CommandPaletteLazy />
     </div>
   );
 }

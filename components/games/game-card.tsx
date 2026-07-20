@@ -1,9 +1,6 @@
-"use client";
-
 import Link from "next/link";
 import Image from "next/image";
 import { Play, Star, Users } from "lucide-react";
-import { motion } from "framer-motion";
 import { cn, compactNumber } from "@/lib/utils";
 import { CATEGORY_META } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
@@ -23,11 +20,7 @@ export function GameCard({
   const comingSoon = game.status === "coming_soon";
 
   return (
-    <motion.div
-      whileHover={{ y: -4 }}
-      transition={{ type: "spring", stiffness: 300, damping: 22 }}
-      className="group relative"
-    >
+    <div className="group relative transition-transform duration-200 ease-out hover:-translate-y-1 motion-reduce:transform-none">
       <Link
         href={`/games/${game.slug}`}
         className={cn(
@@ -100,6 +93,6 @@ export function GameCard({
           <FavoriteButton gameId={game.id} initial={isFavorite ?? false} />
         </div>
       )}
-    </motion.div>
+    </div>
   );
 }
