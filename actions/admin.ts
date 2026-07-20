@@ -7,6 +7,7 @@ import {
   announcementSchema,
   bannerPayloadSchema,
   gameUpsertSchema,
+  seasonalEventSchema,
   usernameSchema,
 } from "@/lib/validators";
 import type { RpcResult } from "@/types";
@@ -180,6 +181,23 @@ export async function adminSetFlag(key: string, enabled: boolean): Promise<RpcRe
   await requireStaff();
   const supabase = await createClient();
   const { error } = await supabase.from("feature_flags").update({ enabled }).eq("key", key);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/flags");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function adminSetSeasonalEvent(input: unknown): Promise<RpcResult> {
+  await requireStaff();
+  const parsed = seasonalEventSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+
+  const { enabled, ...payload } = parsed.data;
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("feature_flags")
+    .update({ enabled, payload })
+    .eq("key", "seasonal_event");
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/flags");
   revalidatePath("/", "layout");

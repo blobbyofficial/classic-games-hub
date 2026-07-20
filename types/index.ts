@@ -49,7 +49,15 @@ export interface ScoreResult extends RpcResult {
   best_score?: number;
   new_best?: boolean;
   ads_doubled?: boolean;
+  event_multiplier?: number;
   rewarded?: boolean;
+}
+
+/** Resolved, display-ready config for the site-wide seasonal event. */
+export interface SeasonalEvent {
+  multiplier: number;
+  title: string;
+  message: string;
 }
 
 export interface ProfileStats {

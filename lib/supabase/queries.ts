@@ -1,6 +1,6 @@
 import { cache } from "react";
 import { createClient } from "./server";
-import type { BannerConfig, BannerVariant, Profile, UserSettings } from "@/types";
+import type { BannerConfig, BannerVariant, Profile, SeasonalEvent, UserSettings } from "@/types";
 
 const BANNER_VARIANTS: BannerVariant[] = ["info", "success", "warning", "promo"];
 
@@ -86,6 +86,25 @@ export const getBanners = cache(
     return { maintenance, site: siteConfig };
   },
 );
+
+/** The active seasonal event (credits multiplier + copy), or null when off. */
+export const getSeasonalEvent = cache(async (): Promise<SeasonalEvent | null> => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("feature_flags")
+    .select("enabled, payload")
+    .eq("key", "seasonal_event")
+    .maybeSingle();
+  if (!data?.enabled) return null;
+
+  const p = (data.payload ?? {}) as Record<string, unknown>;
+  const multiplier = typeof p.multiplier === "number" ? p.multiplier : Number(p.multiplier) || 1;
+  return {
+    multiplier: Math.min(5, Math.max(1, multiplier)),
+    title: typeof p.title === "string" ? p.title : "Seasonal event",
+    message: typeof p.message === "string" ? p.message : "",
+  };
+});
 
 export const getUnreadNotificationCount = cache(async (): Promise<number> => {
   const supabase = await createClient();

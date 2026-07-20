@@ -6,22 +6,25 @@ import { CommandPalette } from "@/components/shell/command-palette";
 import { SessionSync } from "@/components/providers/session-sync";
 import { MaintenanceBanner } from "@/components/shell/maintenance-banner";
 import { SiteBanner } from "@/components/shell/site-banner";
+import { SeasonalBanner } from "@/components/shell/seasonal-banner";
 import {
   getCurrentProfile,
   getCurrentSettings,
   getSessionUser,
   getUnreadNotificationCount,
   getBanners,
+  getSeasonalEvent,
 } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
-  const [user, profile, settings, unread, banners] = await Promise.all([
+  const [user, profile, settings, unread, banners, seasonalEvent] = await Promise.all([
     getSessionUser(),
     getCurrentProfile(),
     getCurrentSettings(),
     getUnreadNotificationCount(),
     getBanners(),
+    getSeasonalEvent(),
   ]);
 
   // One extra round-trip for the friend-request badge (cheap, indexed count).
@@ -47,6 +50,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
       />
       <Navbar />
       {banners.maintenance && <MaintenanceBanner message={banners.maintenance.message} />}
+      {seasonalEvent && <SeasonalBanner event={seasonalEvent} />}
       {banners.site && <SiteBanner config={banners.site} />}
       <div className="mx-auto flex w-full max-w-[1600px] flex-1 px-0 sm:px-6">
         <Sidebar />
