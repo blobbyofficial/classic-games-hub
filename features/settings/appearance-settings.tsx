@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Sparkles, Award } from "lucide-react";
+import { Sparkles, Award, Trophy } from "lucide-react";
 import { toast } from "sonner";
-import { setNameStyle, setFeaturedAchievement } from "@/actions/profile";
+import { setNameStyle, setFeaturedAchievement, setShowcase } from "@/actions/profile";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { NAME_STYLES, NameStyle } from "@/components/profile/name-style";
+import { cn } from "@/lib/utils";
 import type { Profile } from "@/types";
 
 interface AchievementOption {
@@ -16,17 +17,48 @@ interface AchievementOption {
   name: string;
 }
 
+interface GameOption {
+  slug: string;
+  title: string;
+}
+
+const MAX_SHOWCASE = 4;
+
 export function AppearanceSettings({
   profile,
   achievements,
+  games,
 }: {
   profile: Profile;
   achievements: AchievementOption[];
+  games: GameOption[];
 }) {
   const patchProfile = useSessionStore((s) => s.patchProfile);
   const [nameStyle, setStyle] = useState<string>(profile.equipped?.name_style ?? "none");
   const [featured, setFeatured] = useState<string>(profile.featured_achievement ?? "none");
+  const [showcase, setShow] = useState<string[]>(
+    Array.isArray(profile.showcase) ? (profile.showcase as string[]) : [],
+  );
   const [, start] = useTransition();
+
+  const toggleShowcase = (slug: string) => {
+    const next = showcase.includes(slug)
+      ? showcase.filter((s) => s !== slug)
+      : showcase.length < MAX_SHOWCASE
+        ? [...showcase, slug]
+        : showcase;
+    if (next === showcase) return void toast.error(`You can showcase up to ${MAX_SHOWCASE} games`);
+    setShow(next);
+    start(async () => {
+      const res = await setShowcase(next);
+      if (!res.ok) {
+        toast.error(res.error ?? "Could not save");
+        setShow(showcase);
+      } else {
+        patchProfile({ showcase: next });
+      }
+    });
+  };
 
   const changeStyle = (v: string) => {
     setStyle(v);
@@ -105,6 +137,36 @@ export function AppearanceSettings({
           </Select>
           {achievements.length === 0 && (
             <p className="text-xs text-muted-foreground">Unlock achievements to feature one on your profile.</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label className="flex items-center gap-1.5">
+            <Trophy className="size-4" /> Trophy case
+            <span className="text-xs font-normal text-muted-foreground">
+              ({showcase.length}/{MAX_SHOWCASE})
+            </span>
+          </Label>
+          {games.length === 0 ? (
+            <p className="text-xs text-muted-foreground">Play some games to pin your favourites here.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {games.map((g) => {
+                const on = showcase.includes(g.slug);
+                return (
+                  <button
+                    key={g.slug}
+                    onClick={() => toggleShowcase(g.slug)}
+                    className={cn(
+                      "rounded-full border px-3 py-1 text-xs font-medium transition-colors",
+                      on ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground hover:text-foreground",
+                    )}
+                  >
+                    {g.title}
+                  </button>
+                );
+              })}
+            </div>
           )}
         </div>
       </CardContent>

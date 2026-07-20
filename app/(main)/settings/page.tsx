@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { User, SlidersHorizontal, Coins, Shield, Lock } from "lucide-react";
 import { getCurrentProfile, getCurrentSettings, getFeatureFlags } from "@/lib/supabase/queries";
-import { getUserAchievements } from "@/services/profiles";
+import { getUserAchievements, getUserBestScores } from "@/services/profiles";
 import { createClient } from "@/lib/supabase/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSettings } from "@/features/settings/profile-settings";
@@ -23,7 +23,10 @@ export default async function SettingsPage() {
   ]);
   if (!profile || !settings) redirect("/login?next=/settings");
 
-  const achievements = await getUserAchievements(profile.id);
+  const [achievements, bestScores] = await Promise.all([
+    getUserAchievements(profile.id),
+    getUserBestScores(profile.id, 24),
+  ]);
 
   const supabase = await createClient();
   const { data: blocks } = await supabase
@@ -62,6 +65,7 @@ export default async function SettingsPage() {
           <AppearanceSettings
             profile={profile}
             achievements={achievements.map((a) => ({ slug: a.slug, name: a.name }))}
+            games={bestScores.map((s) => ({ slug: s.game.slug, title: s.game.title }))}
           />
           <BannerCustomizer profile={profile} />
         </TabsContent>

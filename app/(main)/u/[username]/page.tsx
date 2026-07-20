@@ -101,6 +101,19 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
     myNote = data;
   }
 
+  const showcaseSlugs = Array.isArray(profile.showcase) ? (profile.showcase as string[]) : [];
+  let showcaseGames: { slug: string; title: string; thumbnail_url: string | null }[] = [];
+  if (showcaseSlugs.length) {
+    const { data } = await supabaseSocial
+      .from("games")
+      .select("slug, title, thumbnail_url")
+      .in("slug", showcaseSlugs);
+    // preserve the user's chosen order
+    showcaseGames = showcaseSlugs
+      .map((s) => (data ?? []).find((g) => g.slug === s))
+      .filter((g): g is { slug: string; title: string; thumbnail_url: string | null } => Boolean(g));
+  }
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       {/* Banner */}
@@ -252,6 +265,33 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
         <StatTile icon={Users} label="Friends" value={stats.friends} accent="text-sky-400" />
         <StatTile icon={Coins} label="Credits" value={formatNumber(profile.credits)} accent="text-gold" />
       </div>
+
+      {/* Trophy case / showcase */}
+      {showcaseGames.length > 0 && (
+        <section>
+          <h2 className="mb-3 flex items-center gap-2 text-lg font-bold">
+            <Trophy className="size-5 text-gold" /> Trophy case
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {showcaseGames.map((g) => (
+              <Link
+                key={g.slug}
+                href={`/games/${g.slug}`}
+                className="focus-visible-ring group flex items-center gap-3 rounded-xl border border-gold/30 bg-gold/5 p-3 transition-colors hover:bg-gold/10"
+              >
+                <Image
+                  src={g.thumbnail_url ?? "/games/thumbs/snake.svg"}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="size-10 rounded-lg object-cover"
+                />
+                <p className="truncate text-sm font-semibold">{g.title}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Best scores */}
       {bestScores.length > 0 && (

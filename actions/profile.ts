@@ -72,6 +72,17 @@ export async function setBannerColor(color: string | null): Promise<RpcResult> {
   return { ok: true, equipped };
 }
 
+/** Pin favourite games to the profile showcase (max 4 slugs). */
+export async function setShowcase(slugs: string[]): Promise<RpcResult> {
+  const { supabase, user } = await requireUser();
+  const clean = [...new Set(slugs.filter((s) => /^[a-z0-9-]+$/.test(s)))].slice(0, 4);
+  const { error } = await supabase.from("profiles").update({ showcase: clean }).eq("id", user.id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/settings");
+  revalidatePath("/u/[username]", "page");
+  return { ok: true };
+}
+
 /** Pin (or clear) a featured achievement on the profile. */
 export async function setFeaturedAchievement(slug: string | null): Promise<RpcResult> {
   const { supabase, user } = await requireUser();
