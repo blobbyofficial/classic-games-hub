@@ -196,7 +196,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 overscroll-contain [padding-bottom:env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <div>
