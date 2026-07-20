@@ -14,6 +14,7 @@ const LINKS = {
   Community: [
     { label: "Friends", href: "/friends" },
     { label: "Challenges", href: "/challenges" },
+    { label: "Roadmap", href: "/roadmap" },
     { label: "Discord", href: SITE.discord, external: true },
     { label: "Founder", href: SITE.founder, external: true },
   ],
