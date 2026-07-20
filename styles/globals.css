@@ -190,14 +190,18 @@
 }
 
 @utility text-gradient {
-  background: linear-gradient(
+  /* Use background-image (not the `background` shorthand, which resets
+     background-clip to border-box) and -webkit-text-fill-color so the gradient
+     reliably clips to the glyphs instead of filling the whole box. */
+  background-image: linear-gradient(
     120deg,
     var(--primary) 0%,
     oklch(0.72 0.19 330) 55%,
     var(--neon) 100%
   );
-  background-clip: text;
   -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
   color: transparent;
 }
 
