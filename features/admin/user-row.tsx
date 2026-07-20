@@ -2,9 +2,9 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { MoreHorizontal, Coins, Shield, Ban, Check } from "lucide-react";
+import { MoreHorizontal, Coins, Shield, Ban, Check, AtSign } from "lucide-react";
 import { toast } from "sonner";
-import { adminAdjustCredits, adminSetRole, adminSetBanned } from "@/actions/admin";
+import { adminAdjustCredits, adminSetRole, adminSetBanned, adminSetUsername } from "@/actions/admin";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -34,6 +34,8 @@ export function UserRow({ user, canManageRoles }: { user: Profile; canManageRole
   const [creditOpen, setCreditOpen] = useState(false);
   const [amount, setAmount] = useState("");
   const [reason, setReason] = useState("");
+  const [nameOpen, setNameOpen] = useState(false);
+  const [username, setUsername] = useState(user.username);
 
   const adjustCredits = () =>
     start(async () => {
@@ -59,6 +61,22 @@ export function UserRow({ user, canManageRoles }: { user: Profile; canManageRole
       }
       setRole(r);
       toast.success(`${user.username} is now ${r}`);
+    });
+
+  const changeUsername = () =>
+    start(async () => {
+      const next = username.trim();
+      if (next === user.username) {
+        setNameOpen(false);
+        return;
+      }
+      const res = await adminSetUsername(user.id, next);
+      if (!res.ok) {
+        toast.error(res.error ?? "Failed");
+        return;
+      }
+      toast.success(`Username set to @${next}`);
+      setNameOpen(false);
     });
 
   const toggleBan = () =>
@@ -101,6 +119,11 @@ export function UserRow({ user, canManageRoles }: { user: Profile; canManageRole
             <Coins /> Adjust credits
           </DropdownMenuItem>
           {canManageRoles && (
+            <DropdownMenuItem onClick={() => setNameOpen(true)}>
+              <AtSign /> Change username
+            </DropdownMenuItem>
+          )}
+          {canManageRoles && (
             <>
               <DropdownMenuSeparator />
               <DropdownMenuLabel>Role</DropdownMenuLabel>
@@ -138,6 +161,35 @@ export function UserRow({ user, canManageRoles }: { user: Profile; canManageRole
             </Button>
             <Button variant="gradient" onClick={adjustCredits} disabled={pending}>
               Apply
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={nameOpen} onOpenChange={setNameOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Change username for @{user.username}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-2">
+            <Input
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              placeholder="new_username"
+              maxLength={24}
+              autoComplete="off"
+            />
+            <p className="text-xs text-muted-foreground">
+              If this username already belongs to someone else, they&apos;ll be moved to a placeholder
+              and prompted to pick a new one for free on their next visit.
+            </p>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setNameOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="gradient" onClick={changeUsername} disabled={pending}>
+              Save
             </Button>
           </DialogFooter>
         </DialogContent>

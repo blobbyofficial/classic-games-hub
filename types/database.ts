@@ -43,6 +43,7 @@ export interface Database {
           role: UserRole;
           equipped: Record<string, string>;
           is_banned: boolean;
+          needs_username: boolean;
           last_seen_at: string;
           created_at: string;
           updated_at: string;
@@ -423,6 +424,8 @@ export interface Database {
       equip_item: { Args: { p_slug: string }; Returns: Json };
       unequip_item: { Args: { p_kind: string }; Returns: undefined };
       change_username: { Args: { p_new: string }; Returns: Json };
+      set_username: { Args: { p_new: string }; Returns: Json };
+      admin_set_username: { Args: { p_user: string; p_new: string }; Returns: Json };
       send_friend_request: { Args: { p_username: string }; Returns: Json };
       respond_friend_request: { Args: { p_id: number; p_accept: boolean }; Returns: Json };
       remove_friend: { Args: { p_user: string }; Returns: undefined };

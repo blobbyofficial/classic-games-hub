@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/supabase/queries";
-import { announcementSchema, gameUpsertSchema } from "@/lib/validators";
+import { announcementSchema, gameUpsertSchema, usernameSchema } from "@/lib/validators";
 import type { RpcResult } from "@/types";
 
 export async function adminAdjustCredits(userId: string, amount: number, reason: string): Promise<RpcResult> {
@@ -25,6 +25,21 @@ export async function adminSetRole(userId: string, role: "user" | "moderator" | 
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/users");
   return { ok: true };
+}
+
+export async function adminSetUsername(userId: string, newName: string): Promise<RpcResult> {
+  await requireStaff();
+  const parsed = usernameSchema.safeParse(newName);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_set_username", {
+    p_user: userId,
+    p_new: parsed.data,
+  });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/users");
+  return data as RpcResult;
 }
 
 export async function adminSetBanned(userId: string, banned: boolean): Promise<RpcResult> {
