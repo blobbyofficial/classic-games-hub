@@ -58,6 +58,19 @@ export async function changeUsername(next: string): Promise<RpcResult> {
   return data as RpcResult;
 }
 
+/** Free, one-time username pick used by onboarding and forced resets. */
+export async function chooseUsername(next: string): Promise<RpcResult> {
+  const parsed = usernameSchema.safeParse(next);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+
+  const { supabase } = await requireUser();
+  const { data, error } = await supabase.rpc("set_username", { p_new: parsed.data });
+  if (error) return { ok: false, error: error.message };
+
+  revalidatePath("/", "layout");
+  return data as RpcResult;
+}
+
 export async function setAvatarUrl(url: string | null): Promise<RpcResult> {
   const { supabase, user } = await requireUser();
   const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);

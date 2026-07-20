@@ -5,7 +5,7 @@ import { Pause, Play, RotateCcw, Maximize2, Loader2, Trophy } from "lucide-react
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { ENGINE_LOADERS } from "@/lib/games/registry";
-import { canvasFor, CONTROL_SCHEME } from "@/lib/games/config";
+import { canvasFor, CONTROL_SCHEME, SWIPE_GAMES } from "@/lib/games/config";
 import { submitScore } from "@/actions/games";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { Button } from "@/components/ui/button";
@@ -133,6 +133,53 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameOver]);
 
+  // Swipe-to-move on the canvas for grid/directional games — dispatched as
+  // arrow keys so engines handle them the same as a keyboard or D-pad.
+  useEffect(() => {
+    if (!SWIPE_GAMES.has(engineId)) return;
+    const el = canvasRef.current;
+    if (!el) return;
+    const THRESHOLD = 24;
+    let sx = 0;
+    let sy = 0;
+    let tracking = false;
+
+    const onDown = (e: PointerEvent) => {
+      tracking = true;
+      sx = e.clientX;
+      sy = e.clientY;
+    };
+    const onUp = (e: PointerEvent) => {
+      if (!tracking) return;
+      tracking = false;
+      const dx = e.clientX - sx;
+      const dy = e.clientY - sy;
+      if (Math.max(Math.abs(dx), Math.abs(dy)) < THRESHOLD) return;
+      const k =
+        Math.abs(dx) > Math.abs(dy)
+          ? dx > 0
+            ? "ArrowRight"
+            : "ArrowLeft"
+          : dy > 0
+            ? "ArrowDown"
+            : "ArrowUp";
+      window.dispatchEvent(new KeyboardEvent("keydown", { key: k, bubbles: true }));
+      window.dispatchEvent(new KeyboardEvent("keyup", { key: k, bubbles: true }));
+    };
+    const onCancel = () => {
+      tracking = false;
+    };
+
+    el.addEventListener("pointerdown", onDown);
+    el.addEventListener("pointerup", onUp);
+    el.addEventListener("pointercancel", onCancel);
+    return () => {
+      el.removeEventListener("pointerdown", onDown);
+      el.removeEventListener("pointerup", onUp);
+      el.removeEventListener("pointercancel", onCancel);
+    };
+  }, [engineId]);
+
   const togglePause = () => {
     if (!handleRef.current) return;
     setPaused((p) => {
@@ -177,7 +224,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       </div>
 
       <div
-        className="relative mx-auto w-full overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
+        className="relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
         style={{ maxWidth: `min(100%, ${w * 1.1}px)`, aspectRatio: `${w} / ${h}` }}
       >
         <canvas ref={canvasRef} width={w} height={h} className="block size-full touch-none" />

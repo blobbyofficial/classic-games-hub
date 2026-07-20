@@ -30,15 +30,30 @@ export function canvasFor(engineId: string) {
 }
 
 /** Which on-screen control cluster to show on touch devices. */
-export type ControlScheme = "dpad" | "horizontal" | "flap" | "paddle" | "none";
+export type ControlScheme =
+  | "dpad"
+  | "horizontal"
+  | "flap"
+  | "paddle"
+  | "vertical"
+  | "tetris"
+  | "thrust"
+  | "none";
+
+/**
+ * Games that need the shared swipe handler (dispatched as arrow keys). Only
+ * games WITHOUT their own touch input belong here — snake, 2048 and slide
+ * already handle touch natively, so adding swipe there would double-fire.
+ */
+export const SWIPE_GAMES = new Set(["frogger", "tetris"]);
 
 export const CONTROL_SCHEME: Record<string, ControlScheme> = {
   snake: "dpad",
-  tetris: "dpad",
+  tetris: "tetris",
   "2048": "dpad",
   breakout: "paddle",
-  pong: "none",
-  asteroids: "dpad",
+  pong: "vertical",
+  asteroids: "thrust",
   invaders: "horizontal",
   frogger: "dpad",
   runner: "flap",

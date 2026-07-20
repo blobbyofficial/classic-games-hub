@@ -151,6 +151,43 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
   policy) set in `next.config.ts`.
 - Open-redirect-safe auth callback.
 
+## Roadmap
+
+### v1.1.0 — the `classic-games-bot` & live Discord bridge
+
+A single Discord bot that folds the useful parts of Carl-bot, Arcane, Sapphire
+and a server-stats bot into one — and, because players already sign in with
+Discord, is wired directly into the Hub database with no account-linking step.
+Planned: shared credits/XP economy, a near-real-time score/achievement feed,
+two-way moderation, live server-stat counters, and
+`/profile` `/balance` `/leaderboard` `/daily` slash commands reading the same
+data as the site. Identity is synced both ways:
+
+- **Badges & awards → wearable Discord roles.** Every achievement/award maps to
+  a Discord role, auto-granted when earned, so a member's server profile mirrors
+  what they've unlocked in the Hub. Rank milestones and admin/moderator roles
+  stay in lockstep.
+- **Profile colour → chat colour.** Choosing a profile colour on the site grants
+  a matching Discord colour role, so a player's name and messages appear in that
+  colour in the server. Shipped as a curated palette (Discord's 250-role cap
+  rules out a unique role per user).
+
+### Ads (planned for v1.1.0)
+
+The app ships today with a clearly-labelled **simulated** rewarded ad (no real
+ad network is contacted) and an opt-in "2× credits" setting. Turning this into
+real, revenue-generating ads is deferred to v1.1.0:
+
+- **Rewarded "watch 30s for 250 credits" daily** — a real, server-enforced
+  once-per-24h claim that awards real credits. The reward mechanic is built
+  Hub-side; the placeholder ad is swapped for a real rewarded-video network
+  (game-ad networks, since AdSense does not offer web rewarded video).
+- **Display / banner ads** — drop-in ad slots gated behind a publisher ID,
+  most likely via Google AdSense once the site has enough traffic and content
+  to pass review (a privacy policy is a prerequisite).
+
+Both are intentionally non-intrusive and never pay-to-win.
+
 ## License
 
 Built for the Classic Games Hub community. All rights reserved by the project owner.

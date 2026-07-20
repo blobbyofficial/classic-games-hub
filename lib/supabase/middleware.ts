@@ -53,6 +53,27 @@ export async function updateSession(request: NextRequest) {
     return NextResponse.redirect(url);
   }
 
+  // Onboarding / forced username reset: users who owe a free username pick are
+  // funneled to /welcome until they choose one; everyone else is kept off it.
+  if (user && !pathname.startsWith("/auth") && !pathname.startsWith("/api")) {
+    const { data: onboard } = await supabase
+      .from("profiles")
+      .select("needs_username")
+      .eq("id", user.id)
+      .single();
+    const needsUsername = Boolean(onboard?.needs_username);
+    if (needsUsername && pathname !== "/welcome") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/welcome";
+      return NextResponse.redirect(url);
+    }
+    if (!needsUsername && pathname === "/welcome") {
+      const url = request.nextUrl.clone();
+      url.pathname = "/";
+      return NextResponse.redirect(url);
+    }
+  }
+
   if (user && (pathname === "/login" || pathname === "/register")) {
     const url = request.nextUrl.clone();
     url.pathname = "/";
