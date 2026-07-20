@@ -56,6 +56,22 @@ export const gameUpsertSchema = z.object({
   difficulty: z.enum(["easy", "normal", "hard"]),
 });
 
+export const bannerPayloadSchema = z.object({
+  message: z.string().trim().max(200, "At most 200 characters"),
+  variant: z.enum(["info", "success", "warning", "promo"]).optional(),
+  link_label: z.string().trim().max(40, "At most 40 characters").optional().or(z.literal("")),
+  link_href: z
+    .string()
+    .trim()
+    .max(300)
+    .refine(
+      (v) => v === "" || v.startsWith("/") || /^https?:\/\//.test(v),
+      "Use a full URL or an internal path starting with /",
+    )
+    .optional()
+    .or(z.literal("")),
+});
+
 export const announcementSchema = z.object({
   title: z.string().min(1).max(120),
   body: z.string().min(1).max(4000),

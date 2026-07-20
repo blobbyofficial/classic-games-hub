@@ -32,6 +32,16 @@ export interface RpcResult {
   [key: string]: unknown;
 }
 
+export type BannerVariant = "info" | "success" | "warning" | "promo";
+
+/** Resolved, display-ready config for a site-wide banner (from a feature flag payload). */
+export interface BannerConfig {
+  message: string;
+  variant: BannerVariant;
+  linkLabel: string | null;
+  linkHref: string | null;
+}
+
 export interface ScoreResult extends RpcResult {
   credits_earned?: number;
   xp_earned?: number;

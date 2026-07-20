@@ -3,7 +3,12 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireStaff } from "@/lib/supabase/queries";
-import { announcementSchema, gameUpsertSchema, usernameSchema } from "@/lib/validators";
+import {
+  announcementSchema,
+  bannerPayloadSchema,
+  gameUpsertSchema,
+  usernameSchema,
+} from "@/lib/validators";
 import type { RpcResult } from "@/types";
 
 export async function adminAdjustCredits(userId: string, amount: number, reason: string): Promise<RpcResult> {
@@ -175,6 +180,22 @@ export async function adminSetFlag(key: string, enabled: boolean): Promise<RpcRe
   await requireStaff();
   const supabase = await createClient();
   const { error } = await supabase.from("feature_flags").update({ enabled }).eq("key", key);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/flags");
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
+export async function adminSetBannerPayload(key: string, input: unknown): Promise<RpcResult> {
+  await requireStaff();
+  const parsed = bannerPayloadSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("feature_flags")
+    .update({ payload: parsed.data })
+    .eq("key", key);
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/flags");
   revalidatePath("/", "layout");
