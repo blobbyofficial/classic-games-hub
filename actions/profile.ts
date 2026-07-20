@@ -57,6 +57,21 @@ export async function setNameStyle(style: string): Promise<RpcResult> {
   return { ok: true, equipped };
 }
 
+/** Set a plain solid-colour banner (email tier) via equipped.banner, or clear it. */
+export async function setBannerColor(color: string | null): Promise<RpcResult> {
+  const { supabase, user } = await requireUser();
+  const { data: prof } = await supabase.from("profiles").select("equipped").eq("id", user.id).single();
+  const equipped = { ...((prof?.equipped as Record<string, string>) ?? {}) };
+  if (color && /^#[0-9a-fA-F]{6}$/.test(color)) equipped.banner = color;
+  else delete equipped.banner;
+  const { error } = await supabase.from("profiles").update({ equipped }).eq("id", user.id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/settings");
+  revalidatePath("/u/[username]", "page");
+  revalidatePath("/", "layout");
+  return { ok: true, equipped };
+}
+
 /** Pin (or clear) a featured achievement on the profile. */
 export async function setFeaturedAchievement(slug: string | null): Promise<RpcResult> {
   const { supabase, user } = await requireUser();

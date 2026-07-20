@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSettings } from "@/features/settings/profile-settings";
 import { AppearanceSettings } from "@/features/settings/appearance-settings";
+import { BannerCustomizer } from "@/features/settings/banner-customizer";
 import { PreferencesSettings } from "@/features/settings/preferences-settings";
 import { AdsSettings } from "@/features/settings/ads-settings";
 import { SecuritySettings } from "@/features/settings/security-settings";
@@ -62,6 +63,7 @@ export default async function SettingsPage() {
             profile={profile}
             achievements={achievements.map((a) => ({ slug: a.slug, name: a.name }))}
           />
+          <BannerCustomizer profile={profile} />
         </TabsContent>
         <TabsContent value="preferences">
           <PreferencesSettings settings={settings} />
