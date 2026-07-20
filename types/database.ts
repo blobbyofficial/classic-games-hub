@@ -18,6 +18,7 @@ export type ShopKind =
   | "badge"
   | "effect"
   | "banner"
+  | "nameplate"
   | "collectible"
   | "xp_boost"
   | "credit_boost";
@@ -247,6 +248,7 @@ export interface Database {
           seasonal: boolean;
           available: boolean;
           sort_weight: number;
+          staff_only: boolean;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["shop_items"]["Row"]> & {

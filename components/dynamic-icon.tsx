@@ -32,6 +32,7 @@ import {
   Save,
   Tv,
   Target,
+  IdCard,
   HelpCircle,
   type LucideIcon,
 } from "lucide-react";
@@ -70,6 +71,7 @@ const MAP: Record<string, LucideIcon> = {
   save: Save,
   tv: Tv,
   target: Target,
+  "id-card": IdCard,
 };
 
 /** Render a Lucide icon by its kebab-case name (from DB icon fields). */

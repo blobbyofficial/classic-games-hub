@@ -24,6 +24,7 @@ import { DynamicIcon } from "@/components/dynamic-icon";
 import { ProfileActions } from "@/features/social/profile-actions";
 import { PresenceDot } from "@/components/profile/presence-dot";
 import { bannerBackground } from "@/components/profile/profile-theme";
+import { Nameplate } from "@/components/profile/nameplate";
 import { RARITY_META, formatNumber, timeAgo } from "@/lib/utils";
 import type { FriendshipRelation } from "@/types";
 
@@ -102,7 +103,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
               </div>
               <div className="pb-1">
                 <div className="flex flex-wrap items-center gap-2">
-                  <h1 className="text-2xl font-bold">{profile.display_name ?? profile.username}</h1>
+                  <Nameplate slug={profile.equipped?.nameplate}>
+                    <h1 className="text-2xl font-bold">{profile.display_name ?? profile.username}</h1>
+                  </Nameplate>
                   {profile.role === "admin" && (
                     <Badge variant="destructive">
                       <ShieldCheck className="size-3" /> Admin

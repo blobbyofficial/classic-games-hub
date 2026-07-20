@@ -18,6 +18,7 @@ const KIND_LABEL: Record<string, string> = {
   badge: "Badge",
   effect: "Effect",
   banner: "Banner",
+  nameplate: "Nameplate",
   collectible: "Collectible",
   xp_boost: "XP boost",
   credit_boost: "Credit boost",
@@ -70,6 +71,9 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
         {item.seasonal && (
           <Badge className="absolute right-2 top-2 border-none bg-black/30 text-white backdrop-blur-sm">Seasonal</Badge>
         )}
+        {item.staff_only && (
+          <Badge className="absolute right-2 top-2 border-none bg-rose-500/80 text-white backdrop-blur-sm">Staff</Badge>
+        )}
       </div>
       <div className="p-3">
         <p className="text-xs text-muted-foreground">{KIND_LABEL[item.kind]}</p>
@@ -102,6 +106,7 @@ function kindIcon(kind: string): string {
     badge: "award",
     effect: "sparkles",
     banner: "map",
+    nameplate: "id-card",
     collectible: "gem",
     xp_boost: "rocket",
     credit_boost: "coins",
