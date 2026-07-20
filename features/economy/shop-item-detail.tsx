@@ -1,14 +1,15 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Coins, Check, Loader2, Clock, ArrowLeft } from "lucide-react";
+import { Coins, Check, Loader2, Clock, ArrowLeft, Heart, Gift } from "lucide-react";
 import Link from "next/link";
 import { toast } from "sonner";
-import { purchaseItem, equipItem, unequipItem } from "@/actions/economy";
+import { purchaseItem, equipItem, unequipItem, toggleWishlist } from "@/actions/economy";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { CosmeticPreview } from "./cosmetic-preview";
+import { GiftDialog } from "./gift-dialog";
 import { cn, formatNumber, RARITY_META } from "@/lib/utils";
 import type { ShopItem } from "@/types";
 
@@ -25,8 +26,17 @@ const KIND_LABEL: Record<string, string> = {
   credit_boost: "Credit boost",
 };
 
-export function ShopItemDetail({ item, owned }: { item: ShopItem; owned: boolean }) {
+export function ShopItemDetail({
+  item,
+  owned,
+  wishlisted = false,
+}: {
+  item: ShopItem;
+  owned: boolean;
+  wishlisted?: boolean;
+}) {
   const [isOwned, setOwned] = useState(owned);
+  const [onWishlist, setOnWishlist] = useState(wishlisted);
   const [pending, start] = useTransition();
   const profile = useSessionStore((s) => s.profile);
   const patchProfile = useSessionStore((s) => s.patchProfile);
@@ -50,6 +60,21 @@ export function ShopItemDetail({ item, owned }: { item: ShopItem; owned: boolean
       toast.success(`Purchased ${item.name}!`, {
         description: isBoost ? "Active for 24 hours" : "Apply it right here or from your inventory",
       });
+    });
+  };
+
+  const wishlist = () => {
+    if (!userId) return void toast.error("Log in to use your wishlist");
+    const next = !onWishlist;
+    setOnWishlist(next);
+    start(async () => {
+      const res = await toggleWishlist(item.slug, next);
+      if (!res.ok) {
+        setOnWishlist(!next);
+        toast.error(res.error ?? "Could not update wishlist");
+      } else {
+        toast.success(next ? "Added to your wishlist" : "Removed from wishlist");
+      }
     });
   };
 
@@ -127,6 +152,21 @@ export function ShopItemDetail({ item, owned }: { item: ShopItem; owned: boolean
                   "Apply now"
                 )}
               </Button>
+            )}
+
+            {userId && (
+              <Button variant="outline" onClick={wishlist} disabled={pending} aria-pressed={onWishlist}>
+                <Heart className={cn("size-4", onWishlist && "fill-current text-rose-500")} />
+                {onWishlist ? "Wishlisted" : "Wishlist"}
+              </Button>
+            )}
+
+            {userId && !isBoost && !item.staff_only && (
+              <GiftDialog item={item}>
+                <Button variant="outline">
+                  <Gift /> Gift
+                </Button>
+              </GiftDialog>
             )}
           </div>
 

@@ -236,7 +236,13 @@ export interface Database {
           note: string | null;
           updated_at: string;
         };
-        Insert: { author_id: string; target_id: string; nickname?: string | null; note?: string | null };
+        Insert: {
+          author_id: string;
+          target_id: string;
+          nickname?: string | null;
+          note?: string | null;
+          updated_at?: string;
+        };
         Update: { nickname?: string | null; note?: string | null; updated_at?: string };
         Relationships: [];
       };

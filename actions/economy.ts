@@ -57,3 +57,29 @@ export async function claimChallenge(challengeId: string): Promise<RpcResult> {
   revalidatePath("/", "layout");
   return data as RpcResult;
 }
+
+/** Add or remove a shop item from the current user's wishlist. */
+export async function toggleWishlist(slug: string, on: boolean): Promise<RpcResult> {
+  const { supabase, user } = await client();
+  const { data: item } = await supabase.from("shop_items").select("id").eq("slug", slug).maybeSingle();
+  if (!item) return { ok: false, error: "Item not found" };
+  if (on) {
+    const { error } = await supabase.from("wishlist_items").insert({ user_id: user.id, item_id: item.id });
+    if (error && !error.message.includes("duplicate")) return { ok: false, error: error.message };
+  } else {
+    const { error } = await supabase.from("wishlist_items").delete().eq("user_id", user.id).eq("item_id", item.id);
+    if (error) return { ok: false, error: error.message };
+  }
+  revalidatePath("/shop");
+  revalidatePath("/inventory");
+  return { ok: true };
+}
+
+/** Gift a shop item to another player (charged at 75% of the list price). */
+export async function giftItem(slug: string, toUserId: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("gift_item", { p_slug: slug, p_to: toUserId });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/", "layout");
+  return data as RpcResult;
+}
