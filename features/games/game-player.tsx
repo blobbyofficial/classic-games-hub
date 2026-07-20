@@ -20,9 +20,11 @@ interface Props {
   title: string;
   bestScore: number;
   isAuthed: boolean;
+  /** Site-wide rewarded-ads program flag. When off, no ads show for anyone. */
+  adsProgramEnabled: boolean;
 }
 
-export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props) {
+export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProgramEnabled }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const handleRef = useRef<GameEngineHandle | null>(null);
   const startTimeRef = useRef(0);
@@ -31,7 +33,8 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
 
   const setCredits = useSessionStore((s) => s.setCredits);
   const profile = useSessionStore((s) => s.profile);
-  const adsEnabled = useSessionStore((s) => s.settings?.ads_enabled ?? false);
+  // Ads only run when the admin program flag is on AND the player opted in.
+  const adsEnabled = useSessionStore((s) => (s.settings?.ads_enabled ?? false) && adsProgramEnabled);
 
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(bestScore);

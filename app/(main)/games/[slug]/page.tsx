@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Gamepad2, Trophy, Users, Keyboard, Info, MessageSquare, ChevronLeft } from "lucide-react";
 import { getGameBySlug, getPublishedGames } from "@/services/games";
-import { getSessionUser } from "@/lib/supabase/queries";
+import { getSessionUser, getFeatureFlags } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { GamePlayer } from "@/features/games/game-player";
 import { GameLeaderboard } from "@/features/leaderboards/game-leaderboard";
@@ -35,7 +35,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
   const game = await getGameBySlug(slug);
   if (!game || (game.status !== "published" && game.status !== "coming_soon")) notFound();
 
-  const [user, allGames] = await Promise.all([getSessionUser(), getPublishedGames()]);
+  const [user, allGames, flags] = await Promise.all([getSessionUser(), getPublishedGames(), getFeatureFlags()]);
   const supabase = await createClient();
 
   let isFavorite = false;
@@ -115,6 +115,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
               title={game.title}
               bestScore={bestScore}
               isAuthed={Boolean(user)}
+              adsProgramEnabled={flags.rewarded_ads ?? true}
             />
           )}
 
