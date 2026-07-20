@@ -25,6 +25,7 @@ export type GlobalRankRow = Database["public"]["Functions"]["global_leaderboard"
 export type FriendRow = Database["public"]["Functions"]["list_friends"]["Returns"][number];
 export type FriendRequestRow = Database["public"]["Functions"]["list_friend_requests"]["Returns"][number];
 export type ConversationRow = Database["public"]["Functions"]["list_conversations"]["Returns"][number];
+export type PlayerSearchRow = Database["public"]["Functions"]["search_players"]["Returns"][number];
 
 export interface RpcResult {
   ok: boolean;

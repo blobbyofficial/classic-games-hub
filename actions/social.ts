@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { messageSchema, reportSchema } from "@/lib/validators";
-import type { RpcResult } from "@/types";
+import type { PlayerSearchRow, RpcResult } from "@/types";
 
 async function client() {
   const supabase = await createClient();
@@ -12,6 +12,15 @@ async function client() {
   } = await supabase.auth.getUser();
   if (!user) throw new Error("Not authenticated");
   return { supabase, user };
+}
+
+export async function searchPlayers(query: string): Promise<PlayerSearchRow[]> {
+  const q = query.trim();
+  if (q.length < 2) return [];
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("search_players", { p_query: q });
+  if (error) return [];
+  return data ?? [];
 }
 
 export async function sendFriendRequest(username: string): Promise<RpcResult> {

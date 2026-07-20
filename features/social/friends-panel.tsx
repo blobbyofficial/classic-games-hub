@@ -1,55 +1,143 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { UserPlus, Check, X, MessageSquare, UserX, Search } from "lucide-react";
+import { UserPlus, Check, X, MessageSquare, UserX, Search, Clock, UserCheck, Loader2 } from "lucide-react";
 import { toast } from "sonner";
-import { sendFriendRequest, respondFriendRequest, removeFriend, startConversation } from "@/actions/social";
+import {
+  searchPlayers,
+  sendFriendRequest,
+  respondFriendRequest,
+  removeFriend,
+  startConversation,
+} from "@/actions/social";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { PresenceDot } from "@/components/profile/presence-dot";
 import { timeAgo } from "@/lib/utils";
-import type { FriendRow, FriendRequestRow } from "@/types";
+import type { FriendRow, FriendRequestRow, PlayerSearchRow } from "@/types";
 
+/** Live player search with inline "Add friend" actions. */
 export function AddFriend() {
-  const [username, setUsername] = useState("");
-  const [pending, start] = useTransition();
-  const router = useRouter();
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState<PlayerSearchRow[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [touched, setTouched] = useState(false);
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!username.trim()) return;
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      setSearching(false);
+      return;
+    }
+    setSearching(true);
+    const t = setTimeout(async () => {
+      const rows = await searchPlayers(q);
+      setResults(rows);
+      setSearching(false);
+    }, 250);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  return (
+    <div className="space-y-2">
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+        <Input
+          value={query}
+          onChange={(e) => {
+            setTouched(true);
+            setQuery(e.target.value);
+          }}
+          placeholder="Search players by name to add"
+          className="pl-9"
+          maxLength={24}
+        />
+        {searching && (
+          <Loader2 className="absolute right-3 top-1/2 size-4 -translate-y-1/2 animate-spin text-muted-foreground" />
+        )}
+      </div>
+
+      {touched && query.trim().length >= 2 && !searching && results.length === 0 && (
+        <p className="px-1 text-sm text-muted-foreground">No players found for “{query.trim()}”.</p>
+      )}
+
+      {results.length > 0 && (
+        <div className="space-y-2">
+          {results.map((p) => (
+            <PlayerResult key={p.id} player={p} />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function PlayerResult({ player }: { player: PlayerSearchRow }) {
+  const [relation, setRelation] = useState(player.relation);
+  const [pending, start] = useTransition();
+
+  const add = () =>
     start(async () => {
-      const res = await sendFriendRequest(username.trim());
+      const res = await sendFriendRequest(player.username);
       if (!res.ok) {
         toast.error(res.error ?? "Could not send request");
         return;
       }
+      setRelation(res.status === "accepted" ? "friends" : "outgoing");
       toast.success(res.status === "accepted" ? "You are now friends!" : "Friend request sent");
-      setUsername("");
-      router.refresh();
     });
-  };
 
   return (
-    <form onSubmit={submit} className="flex gap-2">
-      <div className="relative flex-1">
-        <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
-        <Input
-          value={username}
-          onChange={(e) => setUsername(e.target.value.replace(/[^a-zA-Z0-9_]/g, ""))}
-          placeholder="Add a friend by username"
-          className="pl-9"
-          maxLength={24}
-        />
-      </div>
-      <Button type="submit" variant="gradient" disabled={pending || !username.trim()}>
-        <UserPlus /> Add
-      </Button>
-    </form>
+    <Card>
+      <CardContent className="flex items-center gap-3 p-3">
+        <Link href={`/u/${player.username}`}>
+          <UserAvatar
+            src={player.avatar_url}
+            name={player.display_name ?? player.username}
+            frame={player.equipped?.avatar_frame}
+            className="size-10"
+          />
+        </Link>
+        <div className="min-w-0 flex-1">
+          <Link href={`/u/${player.username}`} className="truncate text-sm font-medium hover:underline">
+            {player.display_name ?? player.username}
+          </Link>
+          <p className="truncate text-xs text-muted-foreground">
+            @{player.username} · Level {player.level}
+          </p>
+        </div>
+        {relation === "none" && (
+          <Button size="sm" variant="gradient" onClick={add} disabled={pending}>
+            {pending ? <Loader2 className="animate-spin" /> : <UserPlus />} Add
+          </Button>
+        )}
+        {relation === "outgoing" && (
+          <Button size="sm" variant="secondary" disabled>
+            <Clock /> Requested
+          </Button>
+        )}
+        {relation === "friends" && (
+          <Button size="sm" variant="secondary" disabled>
+            <UserCheck /> Friends
+          </Button>
+        )}
+        {relation === "incoming" && (
+          <Button size="sm" variant="outline" asChild>
+            <Link href={`/u/${player.username}`}>Respond</Link>
+          </Button>
+        )}
+        {relation === "blocked" && (
+          <Button size="sm" variant="outline" disabled>
+            Blocked
+          </Button>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
