@@ -62,6 +62,61 @@ function Matrix() {
   );
 }
 
+function Snow() {
+  const flakes = Array.from({ length: 22 });
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+      {flakes.map((_, i) => {
+        const left = (i / flakes.length) * 100;
+        const duration = 4 + (i % 6) * 0.7;
+        const delay = (i % 8) * 0.5;
+        const size = 3 + (i % 3);
+        return (
+          <span
+            key={i}
+            className="absolute top-0 rounded-full bg-white/90"
+            style={{
+              left: `${left}%`,
+              width: size,
+              height: size,
+              animation: `cgh-snow-fall ${duration}s linear ${delay}s infinite`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
+function Embers() {
+  const embers = Array.from({ length: 20 });
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+      {embers.map((_, i) => {
+        const left = (i / embers.length) * 100;
+        const duration = 3 + (i % 5) * 0.6;
+        const delay = (i % 7) * 0.45;
+        const size = 3 + (i % 3);
+        const color = i % 2 === 0 ? "#f97316" : "#ef4444";
+        return (
+          <span
+            key={i}
+            className="absolute bottom-0 rounded-full"
+            style={{
+              left: `${left}%`,
+              width: size,
+              height: size,
+              background: color,
+              boxShadow: `0 0 6px 1px ${color}`,
+              animation: `cgh-ember-rise ${duration}s ease-out ${delay}s infinite`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 function StaffShimmer() {
   return (
     <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
@@ -84,6 +139,10 @@ export function ProfileEffects({ slug }: { slug?: string | null }) {
       return <Confetti />;
     case "effect-matrix":
       return <Matrix />;
+    case "effect-snow":
+      return <Snow />;
+    case "effect-embers":
+      return <Embers />;
     case "effect-staff-shimmer":
       return <StaffShimmer />;
     default:

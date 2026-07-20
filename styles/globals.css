@@ -134,6 +134,16 @@
   85% { opacity: 1; }
   100% { transform: translateY(160%); opacity: 0; }
 }
+@keyframes cgh-snow-fall {
+  0% { transform: translate(0, -20%); opacity: 0; }
+  10% { opacity: 0.9; }
+  100% { transform: translate(10px, 240%); opacity: 0; }
+}
+@keyframes cgh-ember-rise {
+  0% { transform: translateY(120%) scale(1); opacity: 0; }
+  15% { opacity: 1; }
+  100% { transform: translateY(-30%) scale(0.5); opacity: 0; }
+}
 
 @layer base {
   * {

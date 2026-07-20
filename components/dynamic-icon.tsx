@@ -33,6 +33,7 @@ import {
   Tv,
   Target,
   IdCard,
+  Snowflake,
   HelpCircle,
   type LucideIcon,
 } from "lucide-react";
@@ -72,6 +73,7 @@ const MAP: Record<string, LucideIcon> = {
   tv: Tv,
   target: Target,
   "id-card": IdCard,
+  snowflake: Snowflake,
 };
 
 /** Render a Lucide icon by its kebab-case name (from DB icon fields). */

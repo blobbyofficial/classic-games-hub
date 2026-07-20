@@ -30,6 +30,18 @@ export const NAMEPLATE_STYLES: Record<string, { plate: string; text: string }> =
     plate: "bg-[linear-gradient(120deg,#f43f5e,#8b5cf6)]",
     text: "text-white",
   },
+  "nameplate-mono": {
+    plate: "bg-[linear-gradient(120deg,#334155,#0f172a)]",
+    text: "text-white",
+  },
+  "nameplate-bubblegum": {
+    plate: "bg-[linear-gradient(120deg,#f472b6,#f9a8d4)]",
+    text: "text-slate-900",
+  },
+  "nameplate-galaxy": {
+    plate: "bg-[linear-gradient(120deg,#4c1d95,#1e1b4b,#0ea5e9)]",
+    text: "text-white",
+  },
 };
 
 export function hasNameplate(slug?: string | null): boolean {
