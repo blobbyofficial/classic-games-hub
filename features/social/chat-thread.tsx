@@ -23,9 +23,32 @@ interface Msg {
   pending?: boolean;
 }
 
+const GROUP_GAP_MS = 5 * 60 * 1000; // start a fresh bubble group after a 5-min lull
+
+const timeFmt = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
+const dateFmt = new Intl.DateTimeFormat(undefined, { weekday: "long", month: "short", day: "numeric" });
+
+function sameDay(a: string, b: string) {
+  const x = new Date(a);
+  const y = new Date(b);
+  return x.getFullYear() === y.getFullYear() && x.getMonth() === y.getMonth() && x.getDate() === y.getDate();
+}
+
+/** "Today" / "Yesterday" / a full date for the day-separator chips. */
+function dayLabel(iso: string) {
+  const d = new Date(iso);
+  const now = new Date();
+  const startOfDay = (x: Date) => new Date(x.getFullYear(), x.getMonth(), x.getDate()).getTime();
+  const days = Math.round((startOfDay(now) - startOfDay(d)) / 86_400_000);
+  if (days === 0) return "Today";
+  if (days === 1) return "Yesterday";
+  return dateFmt.format(d);
+}
+
 export function ChatThread({ conversation }: { conversation: ConversationDetail }) {
   const me = useSessionStore((s) => s.userId);
   const [messages, setMessages] = useState<Msg[]>(conversation.messages);
+  const [otherReadAt, setOtherReadAt] = useState<string | null>(conversation.otherLastReadAt);
   const [text, setText] = useState("");
   const [otherTyping, setOtherTyping] = useState(false);
   const [, startSend] = useTransition();
@@ -69,6 +92,19 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
           scrollToBottom();
         },
       )
+      .on(
+        "postgres_changes",
+        {
+          event: "UPDATE",
+          schema: "public",
+          table: "conversation_members",
+          filter: `conversation_id=eq.${conversation.id}`,
+        },
+        (payload) => {
+          const row = payload.new as { user_id: string; last_read_at: string | null };
+          if (row.user_id === other.id && row.last_read_at) setOtherReadAt(row.last_read_at);
+        },
+      )
       .on("broadcast", { event: "typing" }, (payload) => {
         if (payload.payload.userId !== me) {
           setOtherTyping(true);
@@ -81,7 +117,7 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [conversation.id, me]);
+  }, [conversation.id, me, other.id]);
 
   const onType = (v: string) => {
     setText(v);
@@ -111,6 +147,10 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
       }
     });
   };
+
+  // The most recent message I sent — the only one that carries a read receipt.
+  let lastMineId: Msg["id"] | undefined;
+  for (const m of messages) if (m.sender_id === me) lastMineId = m.id;
 
   return (
     <div className="flex h-[calc(100dvh-9rem)] flex-col overflow-hidden rounded-2xl border border-border bg-card lg:h-[calc(100dvh-8rem)]">
@@ -144,18 +184,54 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
             Say hi to {other.display_name ?? other.username}!
           </p>
         )}
-        {messages.map((m) => {
+        {messages.map((m, i) => {
           const mine = m.sender_id === me;
+          const prev = messages[i - 1];
+          const next = messages[i + 1];
+          const showDate = !prev || !sameDay(prev.created_at, m.created_at);
+          // End a bubble group when the next message is from someone else, after
+          // a lull, or when the day changes — the timestamp shows on the last one.
+          const endGroup =
+            !next ||
+            next.sender_id !== m.sender_id ||
+            !sameDay(next.created_at, m.created_at) ||
+            new Date(next.created_at).getTime() - new Date(m.created_at).getTime() > GROUP_GAP_MS;
+          const startGroup =
+            showDate ||
+            !prev ||
+            prev.sender_id !== m.sender_id ||
+            new Date(m.created_at).getTime() - new Date(prev.created_at).getTime() > GROUP_GAP_MS;
+          const isMyLast = mine && m.id === lastMineId;
+          const seen = otherReadAt != null && new Date(otherReadAt).getTime() >= new Date(m.created_at).getTime();
+
           return (
-            <div key={m.id} className={cn("flex", mine ? "justify-end" : "justify-start")}>
-              <div
-                className={cn(
-                  "max-w-[75%] rounded-2xl px-3.5 py-2 text-sm",
-                  mine ? "rounded-br-md bg-primary text-primary-foreground" : "rounded-bl-md bg-muted",
-                  m.pending && "opacity-60",
+            <div key={m.id}>
+              {showDate && (
+                <div className="my-3 flex items-center justify-center">
+                  <span className="rounded-full bg-muted px-3 py-0.5 text-[0.7rem] font-medium text-muted-foreground">
+                    {dayLabel(m.created_at)}
+                  </span>
+                </div>
+              )}
+              <div className={cn("flex flex-col", mine ? "items-end" : "items-start", startGroup ? "mt-2" : "mt-0.5")}>
+                <div
+                  className={cn(
+                    "max-w-[75%] px-3.5 py-2 text-sm",
+                    mine
+                      ? "rounded-2xl rounded-br-md bg-primary text-primary-foreground"
+                      : "rounded-2xl rounded-bl-md bg-muted",
+                    m.pending && "opacity-60",
+                  )}
+                >
+                  <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                </div>
+                {endGroup && (
+                  <p className="mt-0.5 px-1 text-[0.65rem] text-muted-foreground">
+                    {timeFmt.format(new Date(m.created_at))}
+                    {isMyLast && !m.pending && <span className="ml-1">· {seen ? "Seen" : "Delivered"}</span>}
+                    {isMyLast && m.pending && <span className="ml-1">· Sending…</span>}
+                  </p>
                 )}
-              >
-                <p className="whitespace-pre-wrap break-words">{m.content}</p>
               </div>
             </div>
           );
