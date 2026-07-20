@@ -42,6 +42,53 @@ export async function adminSetUsername(userId: string, newName: string): Promise
   return data as RpcResult;
 }
 
+export async function adminSetLevelXp(userId: string, level: number, xp: number): Promise<RpcResult> {
+  await requireStaff();
+  if (!Number.isFinite(level) || !Number.isFinite(xp)) {
+    return { ok: false, error: "Enter valid numbers" };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_set_level_xp", {
+    p_user: userId,
+    p_level: Math.trunc(level),
+    p_xp: Math.trunc(xp),
+  });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/users");
+  return data as RpcResult;
+}
+
+export async function adminUpdateAnnouncement(id: string, input: unknown): Promise<RpcResult> {
+  await requireStaff();
+  const parsed = announcementSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("announcements")
+    .update({
+      title: parsed.data.title,
+      body: parsed.data.body,
+      level: parsed.data.level,
+      published: parsed.data.published,
+    })
+    .eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/announcements");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function adminDeleteAnnouncement(id: string): Promise<RpcResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.from("announcements").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/announcements");
+  revalidatePath("/");
+  return { ok: true };
+}
+
 export async function adminSetBanned(userId: string, banned: boolean): Promise<RpcResult> {
   await requireStaff();
   const supabase = await createClient();

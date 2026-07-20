@@ -2,12 +2,19 @@
 
 import { useState, useTransition } from "react";
 import Link from "next/link";
-import { MoreHorizontal, Coins, Shield, Ban, Check, AtSign } from "lucide-react";
+import { MoreHorizontal, Coins, Shield, Ban, Check, AtSign, Gauge } from "lucide-react";
 import { toast } from "sonner";
-import { adminAdjustCredits, adminSetRole, adminSetBanned, adminSetUsername } from "@/actions/admin";
+import {
+  adminAdjustCredits,
+  adminSetRole,
+  adminSetBanned,
+  adminSetUsername,
+  adminSetLevelXp,
+} from "@/actions/admin";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import {
   Dialog,
@@ -36,6 +43,9 @@ export function UserRow({ user, canManageRoles }: { user: Profile; canManageRole
   const [reason, setReason] = useState("");
   const [nameOpen, setNameOpen] = useState(false);
   const [username, setUsername] = useState(user.username);
+  const [xpOpen, setXpOpen] = useState(false);
+  const [levelVal, setLevelVal] = useState(String(user.level));
+  const [xpVal, setXpVal] = useState(String(user.xp));
 
   const adjustCredits = () =>
     start(async () => {
@@ -77,6 +87,17 @@ export function UserRow({ user, canManageRoles }: { user: Profile; canManageRole
       }
       toast.success(`Username set to @${next}`);
       setNameOpen(false);
+    });
+
+  const editLevelXp = () =>
+    start(async () => {
+      const res = await adminSetLevelXp(user.id, parseInt(levelVal, 10), parseInt(xpVal, 10));
+      if (!res.ok) {
+        toast.error(res.error ?? "Failed");
+        return;
+      }
+      toast.success(`Updated @${user.username}'s level & XP`);
+      setXpOpen(false);
     });
 
   const toggleBan = () =>
@@ -121,6 +142,11 @@ export function UserRow({ user, canManageRoles }: { user: Profile; canManageRole
           {canManageRoles && (
             <DropdownMenuItem onClick={() => setNameOpen(true)}>
               <AtSign /> Change username
+            </DropdownMenuItem>
+          )}
+          {canManageRoles && (
+            <DropdownMenuItem onClick={() => setXpOpen(true)}>
+              <Gauge /> Edit level &amp; XP
             </DropdownMenuItem>
           )}
           {canManageRoles && (
@@ -189,6 +215,45 @@ export function UserRow({ user, canManageRoles }: { user: Profile; canManageRole
               Cancel
             </Button>
             <Button variant="gradient" onClick={changeUsername} disabled={pending}>
+              Save
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={xpOpen} onOpenChange={setXpOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Edit level &amp; XP for @{user.username}</DialogTitle>
+          </DialogHeader>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="space-y-1.5">
+              <Label htmlFor={`lvl-${user.id}`}>Level</Label>
+              <Input
+                id={`lvl-${user.id}`}
+                type="number"
+                min={1}
+                max={999}
+                value={levelVal}
+                onChange={(e) => setLevelVal(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor={`xp-${user.id}`}>XP</Label>
+              <Input
+                id={`xp-${user.id}`}
+                type="number"
+                min={0}
+                value={xpVal}
+                onChange={(e) => setXpVal(e.target.value)}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setXpOpen(false)}>
+              Cancel
+            </Button>
+            <Button variant="gradient" onClick={editLevelXp} disabled={pending}>
               Save
             </Button>
           </DialogFooter>

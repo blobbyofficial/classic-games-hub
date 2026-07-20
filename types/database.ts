@@ -439,6 +439,7 @@ export interface Database {
       admin_adjust_credits: { Args: { p_user: string; p_amount: number; p_reason: string }; Returns: undefined };
       admin_set_role: { Args: { p_user: string; p_role: string }; Returns: undefined };
       admin_set_banned: { Args: { p_user: string; p_banned: boolean }; Returns: undefined };
+      admin_set_level_xp: { Args: { p_user: string; p_level: number; p_xp: number }; Returns: Json };
       game_leaderboard: {
         Args: { p_slug: string; p_limit?: number };
         Returns: {
