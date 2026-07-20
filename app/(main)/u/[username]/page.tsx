@@ -25,6 +25,7 @@ import { ProfileActions } from "@/features/social/profile-actions";
 import { PresenceDot } from "@/components/profile/presence-dot";
 import { bannerBackground } from "@/components/profile/profile-theme";
 import { Nameplate } from "@/components/profile/nameplate";
+import { ProfileEffects } from "@/components/profile/profile-effects";
 import { RARITY_META, formatNumber, timeAgo } from "@/lib/utils";
 import type { FriendshipRelation } from "@/types";
 
@@ -85,6 +86,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
             <Image src={profile.banner_url} alt="" fill className="object-cover" sizes="1024px" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
+          <ProfileEffects slug={profile.equipped?.effect} />
         </div>
 
         <div className="relative px-5 pb-5 sm:px-8">

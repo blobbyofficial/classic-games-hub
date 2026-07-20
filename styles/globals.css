@@ -122,6 +122,19 @@
   }
 }
 
+/* Profile cosmetic effect keyframes (referenced via inline animation styles). */
+@keyframes cgh-confetti-fall {
+  0% { transform: translateY(-25%) rotate(0deg); opacity: 0; }
+  10% { opacity: 1; }
+  100% { transform: translateY(240%) rotate(540deg); opacity: 0; }
+}
+@keyframes cgh-matrix-fall {
+  0% { transform: translateY(-60%); opacity: 0; }
+  15% { opacity: 1; }
+  85% { opacity: 1; }
+  100% { transform: translateY(160%); opacity: 0; }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;
