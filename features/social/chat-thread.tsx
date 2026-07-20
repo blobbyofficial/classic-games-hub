@@ -2,18 +2,24 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { ChevronLeft, Send } from "lucide-react";
+import { ChevronLeft, Send, SmilePlus } from "lucide-react";
 import { toast } from "sonner";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { sendMessage, markConversationRead } from "@/actions/social";
+import { sendMessage, markConversationRead, toggleReaction } from "@/actions/social";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { PresenceDot } from "@/components/profile/presence-dot";
 import { cn, isOnline } from "@/lib/utils";
 import type { ConversationDetail } from "@/services/social";
+
+interface Reaction {
+  emoji: string;
+  user_id: string;
+}
 
 interface Msg {
   id: number | string;
@@ -21,9 +27,43 @@ interface Msg {
   content: string;
   created_at: string;
   pending?: boolean;
+  reactions?: Reaction[];
 }
 
+const QUICK_REACTIONS = ["👍", "❤️", "😂", "🔥", "😮", "😢", "🎉", "👀"];
+const EMOJI_PALETTE = [
+  "😀","😂","😊","😍","😎","🤔","😅","😭","😡","🥳",
+  "👍","👎","👏","🙏","💪","🔥","✨","🎉","❤️","💜",
+  "😮","😱","🤯","🥺","😴","🤝","👀","🎮","🏆","⭐",
+];
+
 const GROUP_GAP_MS = 5 * 60 * 1000; // start a fresh bubble group after a 5-min lull
+
+/** Group a message's reactions by emoji with counts and whether I reacted. */
+function groupReactions(reactions: Reaction[] | undefined, me: string | null) {
+  if (!reactions?.length) return [] as { emoji: string; count: number; mine: boolean }[];
+  const map = new Map<string, { count: number; mine: boolean }>();
+  for (const r of reactions) {
+    const e = map.get(r.emoji) ?? { count: 0, mine: false };
+    e.count++;
+    if (r.user_id === me) e.mine = true;
+    map.set(r.emoji, e);
+  }
+  return [...map.entries()].map(([emoji, v]) => ({ emoji, ...v }));
+}
+
+/** Pure helper: add or remove a user's reaction on a message in the list. */
+function applyReactionTo(list: Msg[], id: Msg["id"], emoji: string, userId: string, add: boolean): Msg[] {
+  return list.map((m) => {
+    if (m.id !== id) return m;
+    const reactions = m.reactions ?? [];
+    if (add) {
+      if (reactions.some((r) => r.emoji === emoji && r.user_id === userId)) return m;
+      return { ...m, reactions: [...reactions, { emoji, user_id: userId }] };
+    }
+    return { ...m, reactions: reactions.filter((r) => !(r.emoji === emoji && r.user_id === userId)) };
+  });
+}
 
 const timeFmt = new Intl.DateTimeFormat(undefined, { hour: "numeric", minute: "2-digit" });
 const dateFmt = new Intl.DateTimeFormat(undefined, { weekday: "long", month: "short", day: "numeric" });
@@ -111,6 +151,11 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
           setTimeout(() => setOtherTyping(false), 2500);
         }
       })
+      .on("broadcast", { event: "reaction" }, (payload) => {
+        const p = payload.payload as { id: number; emoji: string; userId: string; add: boolean };
+        if (p.userId === me) return;
+        setMessages((prev) => applyReactionTo(prev, p.id, p.emoji, p.userId, p.add));
+      })
       .subscribe();
     channelRef.current = channel;
 
@@ -123,6 +168,22 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
     setText(v);
     if (typingTimeout.current) clearTimeout(typingTimeout.current);
     channelRef.current?.send({ type: "broadcast", event: "typing", payload: { userId: me } });
+  };
+
+  const react = (id: Msg["id"], emoji: string) => {
+    if (typeof id !== "number" || !me) return; // can't react to a still-sending message
+    const msg = messages.find((m) => m.id === id);
+    const mine = msg?.reactions?.some((r) => r.emoji === emoji && r.user_id === me) ?? false;
+    const add = !mine;
+    setMessages((prev) => applyReactionTo(prev, id, emoji, me, add));
+    channelRef.current?.send({ type: "broadcast", event: "reaction", payload: { id, emoji, userId: me, add } });
+    startSend(async () => {
+      const res = await toggleReaction(id, emoji, add);
+      if (!res.ok) {
+        setMessages((prev) => applyReactionTo(prev, id, emoji, me, !add));
+        toast.error(res.error ?? "Could not react");
+      }
+    });
   };
 
   const submit = (e: React.FormEvent) => {
@@ -213,18 +274,74 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
                   </span>
                 </div>
               )}
-              <div className={cn("flex flex-col", mine ? "items-end" : "items-start", startGroup ? "mt-2" : "mt-0.5")}>
-                <div
-                  className={cn(
-                    "max-w-[75%] px-3.5 py-2 text-sm",
-                    mine
-                      ? "rounded-2xl rounded-br-md bg-primary text-primary-foreground"
-                      : "rounded-2xl rounded-bl-md bg-muted",
-                    m.pending && "opacity-60",
+              <div
+                className={cn(
+                  "group/msg flex flex-col",
+                  mine ? "items-end" : "items-start",
+                  startGroup ? "mt-2" : "mt-0.5",
+                )}
+              >
+                <div className={cn("flex items-center gap-1", mine ? "flex-row-reverse" : "flex-row")}>
+                  <div
+                    className={cn(
+                      "max-w-[75%] px-3.5 py-2 text-sm",
+                      mine
+                        ? "rounded-2xl rounded-br-md bg-primary text-primary-foreground"
+                        : "rounded-2xl rounded-bl-md bg-muted",
+                      m.pending && "opacity-60",
+                    )}
+                  >
+                    <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                  </div>
+                  {typeof m.id === "number" && (
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <button
+                          className="rounded-full p-1 text-muted-foreground opacity-60 transition-opacity hover:bg-accent hover:text-foreground sm:opacity-0 sm:group-hover/msg:opacity-100"
+                          aria-label="Add reaction"
+                        >
+                          <SmilePlus className="size-4" />
+                        </button>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-1">
+                        <div className="flex gap-0.5">
+                          {QUICK_REACTIONS.map((e) => (
+                            <button
+                              key={e}
+                              onClick={() => react(m.id, e)}
+                              className="rounded-md p-1 text-lg leading-none transition-transform hover:scale-125"
+                            >
+                              {e}
+                            </button>
+                          ))}
+                        </div>
+                      </PopoverContent>
+                    </Popover>
                   )}
-                >
-                  <p className="whitespace-pre-wrap break-words">{m.content}</p>
                 </div>
+
+                {(() => {
+                  const grouped = groupReactions(m.reactions, me);
+                  if (grouped.length === 0) return null;
+                  return (
+                    <div className={cn("mt-1 flex flex-wrap gap-1", mine ? "justify-end" : "justify-start")}>
+                      {grouped.map((g) => (
+                        <button
+                          key={g.emoji}
+                          onClick={() => react(m.id, g.emoji)}
+                          className={cn(
+                            "flex items-center gap-1 rounded-full border px-1.5 py-0.5 text-xs transition-colors",
+                            g.mine ? "border-primary bg-primary/10" : "border-border bg-muted hover:bg-accent",
+                          )}
+                        >
+                          <span>{g.emoji}</span>
+                          <span className="tabular-nums text-muted-foreground">{g.count}</span>
+                        </button>
+                      ))}
+                    </div>
+                  );
+                })()}
+
                 {endGroup && (
                   <p className="mt-0.5 px-1 text-[0.65rem] text-muted-foreground">
                     {timeFmt.format(new Date(m.created_at))}
@@ -253,6 +370,27 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
 
       {/* Composer */}
       <form onSubmit={submit} className="flex items-center gap-2 border-t border-border p-3">
+        <Popover>
+          <PopoverTrigger asChild>
+            <Button type="button" variant="ghost" size="icon" aria-label="Insert emoji">
+              <SmilePlus />
+            </Button>
+          </PopoverTrigger>
+          <PopoverContent className="w-auto p-2">
+            <div className="grid grid-cols-10 gap-0.5">
+              {EMOJI_PALETTE.map((e) => (
+                <button
+                  key={e}
+                  type="button"
+                  onClick={() => setText((t) => (t + e).slice(0, 2000))}
+                  className="rounded-md p-1 text-lg leading-none transition-transform hover:scale-125"
+                >
+                  {e}
+                </button>
+              ))}
+            </div>
+          </PopoverContent>
+        </Popover>
         <Input
           value={text}
           onChange={(e) => onType(e.target.value)}

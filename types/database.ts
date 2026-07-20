@@ -278,6 +278,12 @@ export interface Database {
         Update: { content?: string; edited_at?: string | null; deleted_at?: string | null };
         Relationships: [];
       };
+      message_reactions: {
+        Row: { message_id: number; user_id: string; emoji: string; created_at: string };
+        Insert: { message_id: number; user_id: string; emoji: string };
+        Update: never;
+        Relationships: [];
+      };
       shop_items: {
         Row: {
           id: string;

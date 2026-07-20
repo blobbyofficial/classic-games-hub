@@ -40,7 +40,13 @@ export interface ConversationDetail {
   other: { id: string; username: string; display_name: string | null; avatar_url: string | null; last_seen_at: string };
   /** When the other member last read this conversation — powers "Seen" receipts. */
   otherLastReadAt: string | null;
-  messages: { id: number; sender_id: string; content: string; created_at: string }[];
+  messages: {
+    id: number;
+    sender_id: string;
+    content: string;
+    created_at: string;
+    reactions: { emoji: string; user_id: string }[];
+  }[];
 }
 
 export const getConversation = cache(async (conversationId: string): Promise<ConversationDetail | null> => {
@@ -67,10 +73,25 @@ export const getConversation = cache(async (conversationId: string): Promise<Con
     .order("created_at", { ascending: true })
     .limit(100);
 
+  const ids = (messages ?? []).map((m) => m.id);
+  let reactionRows: { message_id: number; emoji: string; user_id: string }[] = [];
+  if (ids.length) {
+    const { data } = await supabase
+      .from("message_reactions")
+      .select("message_id, emoji, user_id")
+      .in("message_id", ids);
+    reactionRows = data ?? [];
+  }
+
   return {
     id: conversationId,
     other: otherMember.profiles as unknown as ConversationDetail["other"],
     otherLastReadAt: otherMember.last_read_at ?? null,
-    messages: messages ?? [],
+    messages: (messages ?? []).map((m) => ({
+      ...m,
+      reactions: reactionRows
+        .filter((r) => r.message_id === m.id)
+        .map((r) => ({ emoji: r.emoji, user_id: r.user_id })),
+    })),
   };
 });

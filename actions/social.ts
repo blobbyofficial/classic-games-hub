@@ -92,6 +92,25 @@ export async function markConversationRead(conversationId: string): Promise<RpcR
   return { ok: true };
 }
 
+export async function toggleReaction(messageId: number, emoji: string, add: boolean): Promise<RpcResult> {
+  const { supabase, user } = await client();
+  if (add) {
+    const { error } = await supabase
+      .from("message_reactions")
+      .insert({ message_id: messageId, user_id: user.id, emoji });
+    if (error && !error.message.includes("duplicate")) return { ok: false, error: error.message };
+  } else {
+    const { error } = await supabase
+      .from("message_reactions")
+      .delete()
+      .eq("message_id", messageId)
+      .eq("user_id", user.id)
+      .eq("emoji", emoji);
+    if (error) return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
 export async function followUser(userId: string): Promise<RpcResult> {
   const { supabase } = await client();
   const { data, error } = await supabase.rpc("follow_user", { p_user: userId });
