@@ -26,6 +26,7 @@ import { DiscordIcon } from "@/components/icons";
 import { PresenceDot } from "@/components/profile/presence-dot";
 import { bannerBackground } from "@/components/profile/profile-theme";
 import { Nameplate } from "@/components/profile/nameplate";
+import { NameStyle } from "@/components/profile/name-style";
 import { ProfileEffects } from "@/components/profile/profile-effects";
 import { RARITY_META, formatNumber, timeAgo } from "@/lib/utils";
 import type { FriendshipRelation } from "@/types";
@@ -129,7 +130,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
               <div className="pb-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <Nameplate slug={profile.equipped?.nameplate}>
-                    <h1 className="text-2xl font-bold">{profile.display_name ?? profile.username}</h1>
+                    <NameStyle style={profile.equipped?.nameplate ? undefined : profile.equipped?.name_style}>
+                      <h1 className="text-2xl font-bold">{profile.display_name ?? profile.username}</h1>
+                    </NameStyle>
                   </Nameplate>
                   {profile.role === "admin" && (
                     <Badge variant="destructive">
@@ -180,6 +183,23 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
               </Link>
             )}
           </div>
+
+          {profile.featured_achievement &&
+            (() => {
+              const feat = achievements.find((a) => a.slug === profile.featured_achievement);
+              if (!feat) return null;
+              return (
+                <div className="mt-4 inline-flex items-center gap-2.5 rounded-xl border border-gold/30 bg-gold/5 px-3 py-2">
+                  <span className="grid size-9 place-items-center rounded-lg bg-gold/15 text-[oklch(0.6_0.13_85)] dark:text-gold">
+                    <DynamicIcon name={feat.icon} className="size-5" />
+                  </span>
+                  <div>
+                    <p className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Featured achievement</p>
+                    <p className="text-sm font-semibold">{feat.name}</p>
+                  </div>
+                </div>
+              );
+            })()}
 
           {profile.bio && <p className="mt-4 max-w-2xl text-sm text-muted-foreground">{profile.bio}</p>}
 

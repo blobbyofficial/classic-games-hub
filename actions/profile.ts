@@ -42,6 +42,31 @@ export async function updateProfile(input: {
   return { ok: true };
 }
 
+/** Set (or clear) the display-name style, stored in the equipped jsonb. */
+export async function setNameStyle(style: string): Promise<RpcResult> {
+  const { supabase, user } = await requireUser();
+  const { data: prof } = await supabase.from("profiles").select("equipped").eq("id", user.id).single();
+  const equipped = { ...((prof?.equipped as Record<string, string>) ?? {}) };
+  if (style && style !== "none") equipped.name_style = style;
+  else delete equipped.name_style;
+  const { error } = await supabase.from("profiles").update({ equipped }).eq("id", user.id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/settings");
+  revalidatePath("/u/[username]", "page");
+  revalidatePath("/", "layout");
+  return { ok: true, equipped };
+}
+
+/** Pin (or clear) a featured achievement on the profile. */
+export async function setFeaturedAchievement(slug: string | null): Promise<RpcResult> {
+  const { supabase, user } = await requireUser();
+  const { error } = await supabase.from("profiles").update({ featured_achievement: slug }).eq("id", user.id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/settings");
+  revalidatePath("/u/[username]", "page");
+  return { ok: true };
+}
+
 export async function updateSettings(input: Record<string, unknown>): Promise<RpcResult> {
   const parsed = settingsSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
