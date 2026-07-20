@@ -10,6 +10,12 @@ export const getShopItems = cache(async (includeStaffOnly = false): Promise<Shop
   return data ?? [];
 });
 
+export const getShopItemBySlug = cache(async (slug: string): Promise<ShopItem | null> => {
+  const supabase = await createClient();
+  const { data } = await supabase.from("shop_items").select("*").eq("slug", slug).maybeSingle();
+  return data ?? null;
+});
+
 export interface OwnedItem extends ShopItem {
   acquired_at: string;
   expires_at: string | null;
