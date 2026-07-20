@@ -17,6 +17,9 @@ export const passwordSchema = z
 export const profileUpdateSchema = z.object({
   display_name: z.string().trim().max(40).optional().or(z.literal("")),
   bio: z.string().trim().max(500).optional().or(z.literal("")),
+  pronouns: z.string().trim().max(24).optional().or(z.literal("")),
+  status_text: z.string().trim().max(80).optional().or(z.literal("")),
+  favourite_game_slug: z.string().trim().max(64).optional().or(z.literal("")),
 });
 
 export const messageSchema = z.string().trim().min(1).max(2000);

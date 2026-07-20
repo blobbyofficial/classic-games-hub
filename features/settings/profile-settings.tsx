@@ -31,6 +31,8 @@ export function ProfileSettings({ profile }: { profile: Profile }) {
 
   const [displayName, setDisplayName] = useState(profile.display_name ?? "");
   const [bio, setBio] = useState(profile.bio ?? "");
+  const [pronouns, setPronouns] = useState(profile.pronouns ?? "");
+  const [statusText, setStatusText] = useState(profile.status_text ?? "");
   const [avatar, setAvatar] = useState(profile.avatar_url);
   const [saving, startSave] = useTransition();
   const [uploading, setUploading] = useState(false);
@@ -42,9 +44,14 @@ export function ProfileSettings({ profile }: { profile: Profile }) {
 
   const save = () =>
     startSave(async () => {
-      const res = await updateProfile({ display_name: displayName, bio });
+      const res = await updateProfile({ display_name: displayName, bio, pronouns, status_text: statusText });
       if (!res.ok) { toast.error(res.error ?? "Could not save"); return; }
-      patchProfile({ display_name: displayName || null, bio: bio || null });
+      patchProfile({
+        display_name: displayName || null,
+        bio: bio || null,
+        pronouns: pronouns || null,
+        status_text: statusText || null,
+      });
       toast.success("Profile saved");
     });
 
@@ -119,6 +126,29 @@ export function ProfileSettings({ profile }: { profile: Profile }) {
             maxLength={40}
             placeholder="Your public name"
           />
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="pronouns">Pronouns</Label>
+            <Input
+              id="pronouns"
+              value={pronouns}
+              onChange={(e) => setPronouns(e.target.value)}
+              maxLength={24}
+              placeholder="they/them"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="status">Status</Label>
+            <Input
+              id="status"
+              value={statusText}
+              onChange={(e) => setStatusText(e.target.value)}
+              maxLength={80}
+              placeholder="What you're up to"
+            />
+          </div>
         </div>
 
         <div className="space-y-1.5">

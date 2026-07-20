@@ -22,6 +22,7 @@ import { StatTile } from "@/components/stat-tile";
 import { XpBar } from "@/components/profile/xp-bar";
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { ProfileActions } from "@/features/social/profile-actions";
+import { DiscordIcon } from "@/components/icons";
 import { PresenceDot } from "@/components/profile/presence-dot";
 import { bannerBackground } from "@/components/profile/profile-theme";
 import { Nameplate } from "@/components/profile/nameplate";
@@ -77,6 +78,28 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
     relation = "self";
   }
 
+  // Social stats (followers/following/mutual) + the viewer's private note.
+  const supabaseSocial = await createClient();
+  const { data: socialData } = await supabaseSocial.rpc("profile_social", { p_target: profile.id });
+  const social = socialData as {
+    followers: number;
+    following: number;
+    is_following: boolean;
+    friends_count: number;
+    friends_visible: boolean;
+    mutual: number;
+  } | null;
+  let myNote: { nickname: string | null; note: string | null } | null = null;
+  if (user && user.id !== profile.id) {
+    const { data } = await supabaseSocial
+      .from("user_notes")
+      .select("nickname, note")
+      .eq("author_id", user.id)
+      .eq("target_id", profile.id)
+      .maybeSingle();
+    myNote = data;
+  }
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       {/* Banner */}
@@ -118,13 +141,35 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                       <ShieldCheck className="size-3" /> Mod
                     </Badge>
                   )}
+                  {profile.discord_linked && (
+                    <Badge className="border-none bg-[#5865F2]/15 text-[#5865F2]">
+                      <DiscordIcon className="size-3" /> Discord
+                    </Badge>
+                  )}
                 </div>
-                <p className="text-muted-foreground">@{profile.username}</p>
+                <p className="flex flex-wrap items-center gap-x-2 text-muted-foreground">
+                  <span>@{profile.username}</span>
+                  {profile.pronouns && <span className="text-xs">· {profile.pronouns}</span>}
+                  {myNote?.nickname && (
+                    <span className="text-xs italic text-muted-foreground/80">· aka {myNote.nickname}</span>
+                  )}
+                </p>
+                {profile.status_text && (
+                  <p className="mt-0.5 text-sm text-foreground/80">{profile.status_text}</p>
+                )}
               </div>
             </div>
 
             {relation !== "self" && user && (
-              <ProfileActions targetId={profile.id} username={profile.username} relation={relation} requestId={requestId} />
+              <ProfileActions
+                targetId={profile.id}
+                username={profile.username}
+                relation={relation}
+                requestId={requestId}
+                isFollowing={social?.is_following ?? false}
+                note={myNote?.note}
+                nickname={myNote?.nickname}
+              />
             )}
             {relation === "self" && (
               <Link
@@ -155,6 +200,25 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
           <div className="mt-5 max-w-md">
             <XpBar xp={profile.xp} level={profile.level} />
           </div>
+          {social && (
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              <span>
+                <b className="tabular-nums">{formatNumber(social.followers)}</b>{" "}
+                <span className="text-muted-foreground">followers</span>
+              </span>
+              <span>
+                <b className="tabular-nums">{formatNumber(social.following)}</b>{" "}
+                <span className="text-muted-foreground">following</span>
+              </span>
+              {relation !== "self" && social.mutual > 0 && (
+                <span className="text-muted-foreground">
+                  <b className="tabular-nums text-foreground">{social.mutual}</b> mutual friend
+                  {social.mutual === 1 ? "" : "s"}
+                </span>
+              )}
+            </div>
+          )}
+
           <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
             <Calendar className="size-3.5" /> Joined {timeAgo(profile.created_at)}
           </p>

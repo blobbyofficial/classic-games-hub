@@ -14,7 +14,13 @@ async function requireUser() {
   return { supabase, user };
 }
 
-export async function updateProfile(input: { display_name?: string; bio?: string }): Promise<RpcResult> {
+export async function updateProfile(input: {
+  display_name?: string;
+  bio?: string;
+  pronouns?: string;
+  status_text?: string;
+  favourite_game_slug?: string;
+}): Promise<RpcResult> {
   const parsed = profileUpdateSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
 
@@ -24,6 +30,9 @@ export async function updateProfile(input: { display_name?: string; bio?: string
     .update({
       display_name: parsed.data.display_name || null,
       bio: parsed.data.bio || null,
+      pronouns: parsed.data.pronouns || null,
+      status_text: parsed.data.status_text || null,
+      favourite_game_slug: parsed.data.favourite_game_slug || null,
     })
     .eq("id", user.id);
   if (error) return { ok: false, error: error.message };
