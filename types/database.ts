@@ -24,6 +24,9 @@ export type ShopKind =
   | "credit_boost";
 export type FriendStatus = "pending" | "accepted" | "declined";
 export type AllowDms = "everyone" | "friends" | "none";
+export type PresenceStatus = "auto" | "online" | "away" | "dnd" | "sleep" | "invisible";
+export type PresenceVisibility = "everyone" | "friends" | "nobody";
+export type FriendsVisibility = "private" | "friends" | "followers" | "public";
 export type ReportStatus = "open" | "resolved" | "dismissed";
 export type AnnouncementLevel = "info" | "update" | "event" | "alert";
 
@@ -45,6 +48,13 @@ export interface Database {
           equipped: Record<string, string>;
           is_banned: boolean;
           needs_username: boolean;
+          discord_linked: boolean;
+          pronouns: string | null;
+          status_text: string | null;
+          favourite_game_slug: string | null;
+          featured_achievement: string | null;
+          showcase: Json;
+          profile_flags: Json;
           last_seen_at: string;
           created_at: string;
           updated_at: string;
@@ -63,6 +73,9 @@ export interface Database {
           allow_friend_requests: boolean;
           allow_dms: AllowDms;
           email_notifications: boolean;
+          presence_status: PresenceStatus;
+          presence_visibility: PresenceVisibility;
+          friends_visibility: FriendsVisibility;
           updated_at: string;
         };
         Insert: { user_id: string } & Partial<Database["public"]["Tables"]["user_settings"]["Row"]>;
@@ -206,6 +219,30 @@ export interface Database {
       user_blocks: {
         Row: { blocker_id: string; blocked_id: string; created_at: string };
         Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      follows: {
+        Row: { follower_id: string; following_id: string; created_at: string };
+        Insert: { follower_id: string; following_id: string };
+        Update: never;
+        Relationships: [];
+      };
+      user_notes: {
+        Row: {
+          author_id: string;
+          target_id: string;
+          nickname: string | null;
+          note: string | null;
+          updated_at: string;
+        };
+        Insert: { author_id: string; target_id: string; nickname?: string | null; note?: string | null };
+        Update: { nickname?: string | null; note?: string | null; updated_at?: string };
+        Relationships: [];
+      };
+      wishlist_items: {
+        Row: { user_id: string; item_id: string; created_at: string };
+        Insert: { user_id: string; item_id: string };
         Update: never;
         Relationships: [];
       };
@@ -433,6 +470,10 @@ export interface Database {
       remove_friend: { Args: { p_user: string }; Returns: undefined };
       block_user: { Args: { p_user: string }; Returns: undefined };
       unblock_user: { Args: { p_user: string }; Returns: undefined };
+      follow_user: { Args: { p_user: string }; Returns: Json };
+      unfollow_user: { Args: { p_user: string }; Returns: undefined };
+      profile_social: { Args: { p_target: string }; Returns: Json };
+      gift_item: { Args: { p_slug: string; p_to: string }; Returns: Json };
       get_or_create_dm: { Args: { p_user: string }; Returns: string };
       mark_conversation_read: { Args: { p_conversation: string }; Returns: undefined };
       heartbeat: { Args: Record<string, never>; Returns: undefined };
