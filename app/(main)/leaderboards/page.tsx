@@ -6,6 +6,7 @@ import { getSessionUser } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { GameLeaderboard } from "@/features/leaderboards/game-leaderboard";
 import { GamePicker } from "@/features/leaderboards/game-picker";
+import { PlayerName } from "@/components/profile/player-name";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -68,7 +69,9 @@ export default async function LeaderboardsPage({
                       />
                       <Crown className={`absolute -top-3 left-1/2 size-5 -translate-x-1/2 ${medal[rank - 1]}`} />
                     </div>
-                    <p className="mt-2 truncate text-sm font-semibold">{r.display_name ?? r.username}</p>
+                    <p className="mt-2 truncate text-sm font-semibold">
+                      <PlayerName name={r.display_name ?? r.username} equipped={r.equipped} />
+                    </p>
                     <p className="text-xs text-muted-foreground">Lvl {r.level}</p>
                     <p className="mt-1 text-sm font-bold text-primary">{compactNumber(r.xp)} XP</p>
                   </Link>
@@ -90,7 +93,7 @@ export default async function LeaderboardsPage({
                         <UserAvatar src={r.avatar_url} name={r.display_name ?? r.username} frame={r.equipped?.avatar_frame} className="size-8" />
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
-                            {r.display_name ?? r.username}
+                            <PlayerName name={r.display_name ?? r.username} equipped={r.equipped} />
                             {me && <span className="ml-1 text-xs text-primary">(you)</span>}
                           </p>
                           <p className="text-xs text-muted-foreground">Level {r.level}</p>

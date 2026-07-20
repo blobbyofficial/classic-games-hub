@@ -3,6 +3,7 @@ import { Crown } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Card } from "@/components/ui/card";
+import { PlayerName } from "@/components/profile/player-name";
 import { compactNumber } from "@/lib/utils";
 
 export async function HomeLeaderboardPreview() {
@@ -38,7 +39,9 @@ export async function HomeLeaderboardPreview() {
             className="size-8"
           />
           <div className="min-w-0 flex-1">
-            <p className="truncate text-sm font-medium">{r.display_name ?? r.username}</p>
+            <p className="truncate text-sm font-medium">
+              <PlayerName name={r.display_name ?? r.username} equipped={r.equipped} />
+            </p>
             <p className="truncate text-xs text-muted-foreground">Level {r.level}</p>
           </div>
           <span className="text-xs font-semibold text-primary">{compactNumber(r.xp)} XP</span>
