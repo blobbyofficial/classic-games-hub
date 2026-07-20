@@ -40,12 +40,12 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
 
 export const ROADMAP: RoadmapRelease[] = [
   {
-    version: "v1.2.1",
+    version: "v1.2.0",
     codename: "Identity & Connection",
-    status: "next",
-    timeframe: "Planned — after v1.2.0",
+    status: "in-progress",
+    timeframe: "In progress — current focus",
     summary:
-      "The release that makes your profile unmistakably yours and the community feel alive: Discord-grade cosmetics, expressive identity, richer friendships, group chats and a messenger that finally feels modern.",
+      "The release that makes your profile unmistakably yours and the community feel alive: Discord-grade cosmetics, expressive identity, richer friendships, group chats, a modern messenger, and a shop and inventory that are finally a pleasure to use.",
     groups: [
       {
         heading: "Profile customisation",
@@ -107,21 +107,6 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "Cosmetic rarity tiers",
             description:
               "Every cosmetic gets a rarity — common through mythic — with matching visual treatment and a clear label in the shop and inventory, so rare items actually feel rare.",
-          },
-          {
-            title: "Rotating & seasonal cosmetic shop",
-            description:
-              "A daily/weekly featured rotation plus event-only, limited-time cosmetics that don't return — there's always something new, and early or active players get looks nobody else can.",
-          },
-          {
-            title: "Cosmetic bundles",
-            description:
-              "Themed sets — matching nameplate, banner, avatar decoration and name style — offered together at a discount for a coherent look in one purchase.",
-          },
-          {
-            title: "Organised inventory & presets",
-            description:
-              "A rebuilt inventory with clear 'applied' indicators on every item, one-tap apply/disable, and saved loadout presets so you can switch your entire look — banner, nameplate, effects and name style — in a single tap.",
           },
           {
             title: "Staff-exclusive cosmetics",
@@ -205,9 +190,46 @@ export const ROADMAP: RoadmapRelease[] = [
         ],
       },
       {
-        heading: "Admin & quality of life",
+        heading: "Store & inventory",
+        icon: "ShoppingBag",
+        blurb: "Buying, previewing and managing cosmetics should be effortless — and fun.",
+        items: [
+          {
+            title: "Live item previews",
+            description:
+              "Click any shop item to open a full preview page (in a new tab) that renders the effect live — see exactly how a nameplate, banner, effect or decoration looks on a real profile before you spend a single credit.",
+          },
+          {
+            title: "Apply straight from the shop",
+            description:
+              "Already own an item? Apply it to your profile or avatar right from the shop page — no detour through the inventory required.",
+          },
+          {
+            title: "Inventory search & filters",
+            description:
+              "A search bar plus filters — by cost, rarity/exclusivity, date acquired and item type — so even a huge collection stays easy to browse and organise.",
+          },
+          {
+            title: "Better boost display",
+            description:
+              "Fix the boost countdown timer and multiplier readout so active boosts always show the correct time remaining and the true stacked multiplier at a glance.",
+          },
+        ],
+      },
+      {
+        heading: "Interface & quality of life",
         icon: "SlidersHorizontal",
         items: [
+          {
+            title: "Redesigned navigation",
+            description:
+              "A proper mobile hamburger menu — today's bar is far too cramped for the space — plus a cleaner desktop nav with more breathing room between items, better spacing and smoother animations. It should simply look and feel good.",
+          },
+          {
+            title: "Organised inventory & presets",
+            description:
+              "A rebuilt inventory with clear 'applied' indicators on every item, one-tap apply/disable, and saved loadout presets so you can switch your entire look — banner, nameplate, effects and name style — in a single tap.",
+          },
           {
             title: "Easier event customisation",
             description:
@@ -333,7 +355,7 @@ export const ROADMAP: RoadmapRelease[] = [
         ],
       },
       {
-        heading: "Analytics & ads",
+        heading: "Analytics, ads & admin",
         icon: "BarChart3",
         items: [
           {
@@ -342,10 +364,70 @@ export const ROADMAP: RoadmapRelease[] = [
               "A dedicated admin section for analytics — site clicks, popular games, active players, retention and revenue — alongside full ad controls: force-shutdown all ads instantly, choose where ads appear, and tune placements without touching code.",
           },
           {
+            title: "Editable roadmap from admin",
+            description:
+              "Manage this very roadmap from the admin dashboard — add, edit and reorder releases and items without touching code, so plans stay fresh with a few clicks.",
+          },
+          {
             title: "NitroPay ad integration",
             description:
               "Ads are planned to run through NitroPay (nitropay.com), wired so they can be paused or relocated entirely from the admin ads centre. Pending final evaluation.",
             status: "idea",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: "v1.4.0",
+    codename: "New Dimensions",
+    status: "later",
+    timeframe: "Planned — games update",
+    summary:
+      "The big games update: a step into 3D, real multiplayer with parties, and store-decorated avatars that show up when you play together — plus admin control over the home screen itself.",
+    groups: [
+      {
+        heading: "3D games",
+        icon: "Box",
+        blurb: "Beyond the 2D arcade — fully playable 3D games in the browser.",
+        items: [
+          {
+            title: "Playable 3D games",
+            description:
+              "Browser-based 3D titles running smoothly on desktop and mobile — think a racing game, a Rubik's cube and more — bringing a whole new dimension to the arcade.",
+          },
+        ],
+      },
+      {
+        heading: "Multiplayer & parties",
+        icon: "Gamepad2",
+        blurb: "Play with other people — across accounts online, or on one device in the same room.",
+        items: [
+          {
+            title: "Real multiplayer games",
+            description:
+              "Games multiple people can play together — either online across accounts or locally on one device (pass-and-play). Noughts & crosses works either way; the racing game is online-only.",
+          },
+          {
+            title: "Parties",
+            description:
+              "Group up into a party to jump into multiplayer games together, with invites and a shared lobby — the social backbone that multiplayer is built on.",
+          },
+          {
+            title: "Store-decorated avatars",
+            description:
+              "Decorate your avatar — your profile picture — with items bought from the store, so you show up in style in multiplayer lobbies and parties.",
+          },
+        ],
+      },
+      {
+        heading: "Admin & layout",
+        icon: "LayoutDashboard",
+        items: [
+          {
+            title: "Customisable home screen",
+            description:
+              "Rearrange the homepage straight from the admin dashboard — move the daily reward to the bottom, reorder 'Continue playing' and 'Featured games', and lay the home screen out however works best.",
           },
         ],
       },

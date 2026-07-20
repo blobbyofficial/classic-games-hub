@@ -12,6 +12,10 @@ import {
   CheckCircle2,
   MessageSquare,
   Heart,
+  ShoppingBag,
+  Box,
+  Gamepad2,
+  LayoutDashboard,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,6 +37,11 @@ const ICONS: Record<string, LucideIcon> = {
   Sparkles,
   BarChart3,
   MessageSquare,
+  Heart,
+  ShoppingBag,
+  Box,
+  Gamepad2,
+  LayoutDashboard,
 };
 
 function StatusPill({ status, className }: { status: RoadmapStatus; className?: string }) {
