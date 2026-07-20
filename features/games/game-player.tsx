@@ -224,7 +224,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       </div>
 
       <div
-        className="relative mx-auto w-full overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
+        className="relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
         style={{ maxWidth: `min(100%, ${w * 1.1}px)`, aspectRatio: `${w} / ${h}` }}
       >
         <canvas ref={canvasRef} width={w} height={h} className="block size-full touch-none" />
