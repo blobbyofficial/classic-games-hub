@@ -45,61 +45,98 @@ export const ROADMAP: RoadmapRelease[] = [
     status: "next",
     timeframe: "Planned — after v1.2.0",
     summary:
-      "The release that makes your profile truly yours and the community feel alive: deep cosmetics, richer friendships, group chats and a WhatsApp-grade messenger.",
+      "The release that makes your profile unmistakably yours and the community feel alive: Discord-grade cosmetics, expressive identity, richer friendships, group chats and a messenger that finally feels modern.",
     groups: [
       {
-        heading: "Deeper profile customisation",
+        heading: "Profile customisation",
         icon: "Palette",
-        blurb: "Take inspiration from Discord, Roblox, Steam and the social platforms — your profile should feel personal at a glance.",
+        blurb:
+          "Your profile should say who you are before you type a word. We're taking cues from Discord, Roblox, Steam and the big social platforms — layered, expressive, and never pay-to-win.",
         items: [
           {
             title: "Nameplates everywhere",
             description:
-              "Your equipped nameplate follows you across search results, friends lists, leaderboards and chat — not just on your own profile page.",
+              "Your equipped nameplate stops living only on your profile page and follows you across the whole site — search results, friends lists, leaderboards, chat headers and message bubbles — so people recognise you instantly wherever you show up.",
           },
           {
             title: "Avatar decorations 2.0",
             description:
-              "Discord-style avatar decorations — animated frames, orbiting particles and soft glows that render around your avatar wherever it appears.",
+              "Discord-style avatar decorations that render everywhere your avatar appears: animated frames, orbiting particles, soft pulsing glows and looping effects. Layered above your picture and tuned to stay readable at small sizes.",
           },
           {
             title: "Tiered custom banners",
             description:
-              "A plain solid colour for email-only accounts; animated gradients and a library of premade art for Discord-linked players; and full custom PNG/JPEG uploads for server boosters.",
+              "Banners scale with how invested you are: a clean solid colour for email-only accounts; animated gradients and a curated library of premade art for Discord-linked players; and full custom PNG/JPEG uploads (with sensible size limits and moderation) for server boosters.",
           },
           {
             title: "Rich profile effects",
             description:
-              "Go well beyond today's flair layer: choose a background colour or gradient, add ambient animated effects (falling snow, drifting stars, aurora) and layer multiple accents together.",
+              "A real effects engine, not just a flair badge. Pick a background colour or gradient, add ambient animated layers (falling snow, drifting stars, aurora, embers, confetti), set intensity, and stack multiple accents together for a look that's genuinely yours.",
+          },
+          {
+            title: "Profile themes & accents",
+            description:
+              "Recolour your whole profile card — buttons, highlights and dividers — with a curated accent theme, so a visitor feels your vibe the moment the page loads. Hand-picked palettes only, so nothing ever clashes.",
           },
           {
             title: "Profile frames",
-            description: "Optional Discord-like decorative frames around your whole profile card.",
+            description:
+              "Optional Discord-like decorative frames around your entire profile card — seasonal, achievement-gated and cosmetic-shop variants.",
             status: "idea",
           },
           {
             title: "Display-name styles",
             description:
-              "A curated set of fonts plus particle, glow and gradient treatments so your name stands out — tastefully.",
+              "A curated set of display fonts plus particle, glow, shimmer and gradient treatments for your name — expressive but always legible.",
+          },
+          {
+            title: "Trophy case & showcases",
+            description:
+              "Steam-style showcases: pin your rarest cosmetics, proudest achievements, favourite games and best scores to the top of your profile so the first thing people see is what you're proud of.",
+          },
+          {
+            title: "Featured achievement pin",
+            description: "Choose one achievement to headline your profile with its full art and rarity.",
+          },
+          {
+            title: "About-me widgets",
+            description:
+              "Optional profile fields — pronouns, a one-line status, favourite game, join date and a short bio — arranged as tidy widgets you can show or hide.",
+          },
+          {
+            title: "Cosmetic rarity tiers",
+            description:
+              "Every cosmetic gets a rarity — common through mythic — with matching visual treatment and a clear label in the shop and inventory, so rare items actually feel rare.",
+          },
+          {
+            title: "Rotating & seasonal cosmetic shop",
+            description:
+              "A daily/weekly featured rotation plus event-only, limited-time cosmetics that don't return — there's always something new, and early or active players get looks nobody else can.",
+          },
+          {
+            title: "Cosmetic bundles",
+            description:
+              "Themed sets — matching nameplate, banner, avatar decoration and name style — offered together at a discount for a coherent look in one purchase.",
           },
           {
             title: "Organised inventory & presets",
             description:
-              "A reorganised inventory with clear 'applied' indicators, one-tap apply/disable, and saved cosmetic presets so you can swap your entire look in a tap.",
+              "A rebuilt inventory with clear 'applied' indicators on every item, one-tap apply/disable, and saved loadout presets so you can switch your entire look — banner, nameplate, effects and name style — in a single tap.",
           },
           {
             title: "Staff-exclusive cosmetics",
             description:
-              "Genuinely special, unbuyable items for admins, mods and developers so staff are recognisable at a glance.",
+              "Genuinely special, unbuyable cosmetics for admins, mods and developers — distinct animated nameplates, frames and decorations — so staff are recognisable at a glance and the role feels earned.",
           },
           {
             title: "Discord link on profile",
-            description: "An optional 'connect' button that links to your Discord — for verified players who want it shown.",
+            description:
+              "An optional 'Connect' button that surfaces your Discord for verified players who want it shown — off by default, entirely your call.",
           },
           {
-            title: "More cosmetic ideas",
+            title: "More expressive extras",
             description:
-              "Borrowing from Discord/Roblox/Steam/social: a pinned 'featured achievement', a profile badge showcase, per-profile theme accents, seasonal/limited cosmetics and a rotating cosmetic shop.",
+              "A backlog of stretch cosmetics inspired by the platforms we love: profile entrance animations, custom cursor trails on your page, an optional profile-view counter, a mini 'now playing' game widget, and short looping profile music (from the v1.3 track library).",
             status: "idea",
           },
         ],
@@ -107,49 +144,63 @@ export const ROADMAP: RoadmapRelease[] = [
       {
         heading: "Friends & social",
         icon: "Users",
+        blurb: "Make the hub somewhere you come to hang out, not just to play.",
         items: [
           {
             title: "Mutual friends (opt-in)",
-            description: "See friends you have in common with someone — only for users who choose to make that public.",
+            description:
+              "See the friends you have in common with someone — shown only for users who choose to make their friends list visible, so it's discovery without exposure.",
           },
-          { title: "Follow users", description: "A lightweight one-way follow alongside two-way friendships." },
+          {
+            title: "Follow users",
+            description:
+              "A lightweight one-way follow alongside two-way friendships — keep up with players you admire without needing them to accept.",
+          },
           {
             title: "Friends-list visibility",
-            description: "Let users pick who can see their friends list: private, friends only, followers, or public.",
+            description:
+              "Per-user control over who can see your friends list: private, friends only, followers, or fully public.",
+          },
+          {
+            title: "Friend nicknames & notes",
+            description:
+              "Set a private nickname for a friend that only you see, and leave a private note on anyone's profile as a personal reminder of who they are.",
           },
           {
             title: "Group chats",
             description:
-              "Create a group with a shareable invite link (e.g. /invite/<groupId>) and a group admin who manages members. Limited to boosters, mods and admins at first to keep it tidy.",
+              "Create a group with a shareable invite link (e.g. /invite/<groupId>), managed by a group admin who can add, remove and promote members. Limited to boosters, mods and admins at first to keep it clean and spam-free.",
           },
           {
-            title: "WhatsApp-grade messenger",
+            title: "Modern messenger",
             description:
-              "Rework messaging to feel like WhatsApp — minus file/image/video/audio sharing and calls: cleaner threads, better composer, replies and reactions.",
+              "Rework messaging to feel like WhatsApp — minus file/image/video/audio sharing and calls: clean threads, emoji reactions, replies, pinned and favourite chats, and delivered/seen receipts done right.",
+          },
+          {
+            title: "Emoji & a better mobile keyboard",
+            description:
+              "A proper emoji picker and a solid mobile typing experience across the site — including fixing the frustrating built-in keyboard in Snakes & Ladders while we're in there.",
           },
           {
             title: "Stories",
             description:
-              "Post text or achievements to a story that expires. Boosters, mods and admins only for now while we test it.",
+              "Post text or an achievement to a story that expires after a day. Boosters, mods and admins only for now while we prove out the format and moderation.",
           },
           {
             title: "Rich presence",
             description:
-              "Upgrade online status to online / offline / do-not-disturb / sleep, plus 'last online' — each with audience controls for who can see it.",
+              "Upgrade online status to online / offline / do-not-disturb / sleep, add a 'last online' time, and even an optional 'playing now' game — each with fine-grained controls over exactly who can see it.",
           },
           {
-            title: "Better messaging UX",
+            title: "Friends activity feed",
             description:
-              "Cleaner UI, emoji support and a proper mobile keyboard experience — including fixing the frustrating built-in keyboard in Snakes & Ladders.",
+              "An opt-in feed of what friends are up to — new achievements, level-ups and personal-best scores — respecting everyone's visibility settings.",
+            status: "idea",
           },
           {
             title: "Wishlist & gifting",
             description:
-              "Add store items to a wishlist and gift them to other players at 75% of the normal price, so gifting is cheaper than buying for yourself.",
-          },
-          {
-            title: "User notes",
-            description: "Leave a private note on someone's profile that only you can see.",
+              "Add store items to a public wishlist and gift them to other players at 75% of the normal price — deliberately cheaper than buying for yourself, so gifting is the generous and the smart move.",
           },
         ],
       },
@@ -159,16 +210,18 @@ export const ROADMAP: RoadmapRelease[] = [
         items: [
           {
             title: "Easier event customisation",
-            description: "Set things like a credit multiplier for an event in a couple of clicks.",
+            description:
+              "Spin up an event and set things like a credit multiplier, duration and banner in a couple of clicks — no fiddly config.",
           },
           {
             title: "Faster economy adjustments",
-            description: "Give or take XP, credits and levels from the admin panel with far less friction.",
+            description:
+              "Give or take XP, credits and levels from the admin panel with far less friction — search a player, adjust, done, with an audit trail.",
           },
           {
             title: "Auto device-appropriate controls",
             description:
-              "Show on-screen mobile controls on mobile and desktop controls on desktop automatically — whichever the player is actually using.",
+              "Detect the player's device and show on-screen touch controls on mobile and keyboard/desktop hints on desktop automatically — whichever they're actually using, without a manual toggle.",
           },
         ],
       },
@@ -180,32 +233,74 @@ export const ROADMAP: RoadmapRelease[] = [
     status: "later",
     timeframe: "Planned — future",
     summary:
-      "Turn the hub into somewhere players return to for years, not weeks: original music, stacking events, long-term streaks, booster perks and a proper analytics + ads control centre.",
+      "Turn the hub into somewhere players return to for years, not weeks: original music, stacking events, long-term streaks, deep booster and level rewards, and a proper analytics + ads control centre.",
     groups: [
       {
         heading: "Long-term engagement",
         icon: "Repeat",
-        blurb: "Daily streaks alone won't hold people for a year — these loops are built to.",
+        blurb: "Daily streaks alone won't hold someone for a year — these loops are designed to.",
         items: [
           {
             title: "Community mega-events",
             description:
-              "Big co-op goals where everyone pulls together — e.g. play 500 games collectively — and every participant earns an achievement and bonus credits.",
+              "Server-wide co-op goals where everyone pulls in the same direction — e.g. 'play 500 games together this weekend' — with a live progress bar and an achievement plus bonus credits for everyone who took part.",
           },
           {
             title: "Level-milestone unlocks",
             description:
-              "Reaching a level milestone unlocks a new feature — for example, level 10 could unlock creating groups (which also helps prevent spam).",
+              "Hitting a level milestone unlocks a real feature, giving levelling a point beyond a number. A first-draft ladder: L5 buy background music · L10 create groups · L15 stories · L20 extra loadout preset slots · L30 a vanity profile URL · L50 an exclusive mythic cosmetic. Gating features like groups behind levels also quietly fights spam.",
           },
           {
             title: "Message streaks",
             description:
-              "A Snapchat-style daily streak, but with messages instead of images — keep a conversation going day after day for rewards.",
+              "A Snapchat-style daily streak, but with messages instead of images — keep a conversation going day after day with a friend to build a streak and earn rewards, giving people a reason to check in on each other.",
           },
           {
-            title: "Return-worthy loops",
+            title: "Collections & seasons",
             description:
-              "A deliberate mix of retention mechanics (streaks, evolving goals, collections, seasonal resets) aimed at year-one-and-beyond players, not just week-one.",
+              "Collectable cosmetic sets and seasonal passes with a fresh theme each season, so there's always a longer-term goal to chip away at and a reason to come back after a break.",
+            status: "idea",
+          },
+        ],
+      },
+      {
+        heading: "Booster rewards",
+        icon: "Heart",
+        blurb:
+          "Boosters keep the community's home running — the perks should feel genuinely worth it, while never becoming pay-to-win.",
+        items: [
+          {
+            title: "Bonus daily challenges",
+            description: "Two extra daily challenges on top of everyone else's — more ways to earn, every day.",
+          },
+          {
+            title: "Monthly cosmetic drop",
+            description:
+              "An exclusive cosmetic every month you're boosting — a nameplate, decoration or effect that only boosters of that month receive, so the collection tells a story over time.",
+          },
+          {
+            title: "Boost-tenure badge tiers",
+            description:
+              "The Booster badge evolves the longer you've boosted (1 month → 3 → 6 → 12), with a visibly fancier treatment at each tier to recognise loyalty.",
+          },
+          {
+            title: "Bigger daily & streak bonuses",
+            description: "A larger daily reward and a faster-growing streak multiplier while your boost is active.",
+          },
+          {
+            title: "Early access",
+            description:
+              "A head start on new games and features — try them a week before everyone else and help shape them before launch.",
+          },
+          {
+            title: "Monthly gift token",
+            description:
+              "A free token each month to gift a temporary cosmetic to a friend — spread the perks and pull friends in.",
+            status: "idea",
+          },
+          {
+            title: "Vanity profile URL",
+            description: "Claim a custom profile link (e.g. /u/yourname) while you're boosting.",
             status: "idea",
           },
         ],
@@ -217,17 +312,12 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Background music tracks",
             description:
-              "Level 5+ players can buy original 'tracks' from the shop and play them in the background. All music is made in-house, so there are no copyright concerns.",
-          },
-          {
-            title: "Extra booster rewards",
-            description:
-              "More perks for server boosters beyond the badge — for example, two bonus daily challenges, plus a set of curated extra rewards to be finalised.",
+              "Level 5+ players can buy original 'tracks' from the shop and play them in the background while they browse and play. Every track is composed in-house, so there are zero copyright concerns — and boosters can set one as their profile theme song.",
           },
           {
             title: "Stacking boosts + effect queue",
             description:
-              "Let credit boosts stack up to 5× (10× for Discord boosters). Buy another beyond the cap and it joins an effect queue, automatically taking over when the current boost expires.",
+              "Credit boosts stack up to 5× (10× for Discord boosters). Buy another beyond the cap and it doesn't go to waste — it joins an effect queue and automatically takes over the moment the current boost runs out, so your boosts are always working.",
           },
         ],
       },
@@ -238,7 +328,7 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "More animation, better reduced-motion",
             description:
-              "More life and motion across the site, with a genuinely well-optimised experience for players who turn animations off.",
+              "More life and motion across the whole site — page transitions, micro-interactions and celebratory moments — paired with a genuinely well-optimised, snappy experience for players who prefer animations off.",
           },
         ],
       },
@@ -249,11 +339,12 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Admin analytics & ads centre",
             description:
-              "A new admin section for analytics (site clicks, popular games and more) and ad controls — force-shutdown ads, choose where ads play, and tune placements easily.",
+              "A dedicated admin section for analytics — site clicks, popular games, active players, retention and revenue — alongside full ad controls: force-shutdown all ads instantly, choose where ads appear, and tune placements without touching code.",
           },
           {
             title: "NitroPay ad integration",
-            description: "Ads are planned to run through NitroPay (nitropay.com), pending final evaluation.",
+            description:
+              "Ads are planned to run through NitroPay (nitropay.com), wired so they can be paused or relocated entirely from the admin ads centre. Pending final evaluation.",
             status: "idea",
           },
         ],

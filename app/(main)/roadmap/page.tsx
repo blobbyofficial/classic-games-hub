@@ -11,6 +11,7 @@ import {
   BarChart3,
   CheckCircle2,
   MessageSquare,
+  Heart,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
