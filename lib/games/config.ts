@@ -30,15 +30,29 @@ export function canvasFor(engineId: string) {
 }
 
 /** Which on-screen control cluster to show on touch devices. */
-export type ControlScheme = "dpad" | "horizontal" | "flap" | "paddle" | "none";
+export type ControlScheme =
+  | "dpad"
+  | "horizontal"
+  | "flap"
+  | "paddle"
+  | "vertical"
+  | "tetris"
+  | "thrust"
+  | "none";
+
+/**
+ * Games that also respond to swipe gestures on the canvas (dispatched as arrow
+ * keys). Natural for grid/directional games where a swipe beats tapping a pad.
+ */
+export const SWIPE_GAMES = new Set(["snake", "2048", "frogger", "slide", "tetris"]);
 
 export const CONTROL_SCHEME: Record<string, ControlScheme> = {
   snake: "dpad",
-  tetris: "dpad",
+  tetris: "tetris",
   "2048": "dpad",
   breakout: "paddle",
-  pong: "none",
-  asteroids: "dpad",
+  pong: "vertical",
+  asteroids: "thrust",
   invaders: "horizontal",
   frogger: "dpad",
   runner: "flap",
