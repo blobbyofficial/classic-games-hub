@@ -12,7 +12,22 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   reactStrictMode: true,
+  // Trim client bundles by tree-shaking barrel imports from these packages.
+  experimental: {
+    optimizePackageImports: [
+      "lucide-react",
+      "framer-motion",
+      "cmdk",
+      "sonner",
+      "@radix-ui/react-dropdown-menu",
+      "@radix-ui/react-dialog",
+      "@radix-ui/react-select",
+      "@radix-ui/react-tooltip",
+    ],
+  },
   images: {
+    formats: ["image/avif", "image/webp"],
+    minimumCacheTTL: 604800, // 7 days — game thumbnails/avatars rarely change
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },

@@ -2,6 +2,8 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import { Coins, Trophy, Users } from "lucide-react";
 import { OAuthButtons } from "@/features/auth/oauth-buttons";
+import { PasswordForm } from "@/features/auth/password-form";
+import { AuthDivider } from "@/features/auth/auth-divider";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 export const metadata: Metadata = { title: "Sign up" };
@@ -26,10 +28,14 @@ export default async function RegisterPage({
           <Perk icon={Users} label="Friends & chat" />
         </div>
 
+        <PasswordForm mode="register" next={next} />
+
+        <AuthDivider />
+
         <OAuthButtons next={next} />
 
         <p className="text-center text-xs text-muted-foreground">
-          By continuing you agree to play fair and be kind to other players.
+          Link Discord to unlock chat &amp; friends. By continuing you agree to play fair and be kind to other players.
         </p>
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}

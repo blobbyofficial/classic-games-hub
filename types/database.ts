@@ -18,6 +18,7 @@ export type ShopKind =
   | "badge"
   | "effect"
   | "banner"
+  | "nameplate"
   | "collectible"
   | "xp_boost"
   | "credit_boost";
@@ -247,6 +248,7 @@ export interface Database {
           seasonal: boolean;
           available: boolean;
           sort_weight: number;
+          staff_only: boolean;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["shop_items"]["Row"]> & {
@@ -435,6 +437,18 @@ export interface Database {
       mark_conversation_read: { Args: { p_conversation: string }; Returns: undefined };
       heartbeat: { Args: Record<string, never>; Returns: undefined };
       friendship_status: { Args: { p_user: string }; Returns: string };
+      search_players: {
+        Args: { p_query: string };
+        Returns: {
+          id: string;
+          username: string;
+          display_name: string | null;
+          avatar_url: string | null;
+          level: number;
+          equipped: Record<string, string>;
+          relation: string;
+        }[];
+      };
       profile_stats: { Args: { p_user: string }; Returns: Json };
       admin_adjust_credits: { Args: { p_user: string; p_amount: number; p_reason: string }; Returns: undefined };
       admin_set_role: { Args: { p_user: string; p_role: string }; Returns: undefined };

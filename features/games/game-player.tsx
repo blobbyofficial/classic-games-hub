@@ -20,9 +20,11 @@ interface Props {
   title: string;
   bestScore: number;
   isAuthed: boolean;
+  /** Site-wide rewarded-ads program flag. When off, no ads show for anyone. */
+  adsProgramEnabled: boolean;
 }
 
-export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props) {
+export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProgramEnabled }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const handleRef = useRef<GameEngineHandle | null>(null);
   const startTimeRef = useRef(0);
@@ -31,7 +33,8 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
 
   const setCredits = useSessionStore((s) => s.setCredits);
   const profile = useSessionStore((s) => s.profile);
-  const adsEnabled = useSessionStore((s) => s.settings?.ads_enabled ?? false);
+  // Ads only run when the admin program flag is on AND the player opted in.
+  const adsEnabled = useSessionStore((s) => (s.settings?.ads_enabled ?? false) && adsProgramEnabled);
 
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(bestScore);
@@ -196,7 +199,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   };
 
   return (
-    <div className="space-y-3">
+    <div className="space-y-3 overscroll-contain [padding-bottom:env(safe-area-inset-bottom)]">
       <div className="flex items-center justify-between gap-3">
         <div className="flex items-center gap-4">
           <div>
@@ -224,10 +227,10 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       </div>
 
       <div
-        className="relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
+        className="game-stage relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
         style={{ maxWidth: `min(100%, ${w * 1.1}px)`, aspectRatio: `${w} / ${h}` }}
       >
-        <canvas ref={canvasRef} width={w} height={h} className="block size-full touch-none" />
+        <canvas ref={canvasRef} width={w} height={h} className="block size-full touch-none object-contain" />
 
         {loadingEngine && (
           <div className="absolute inset-0 grid place-items-center bg-card">

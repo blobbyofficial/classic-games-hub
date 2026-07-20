@@ -12,9 +12,11 @@ export const metadata: Metadata = {
 };
 
 export default async function ShopPage() {
-  const [user, items] = await Promise.all([getSessionUser(), getShopItems()]);
-  const [profile, owned] = await Promise.all([
-    user ? getCurrentProfile() : null,
+  const user = await getSessionUser();
+  const profile = user ? await getCurrentProfile() : null;
+  const isStaff = profile?.role === "admin" || profile?.role === "moderator";
+  const [items, owned] = await Promise.all([
+    getShopItems(isStaff),
     user ? getOwnedSlugs() : new Set<string>(),
   ]);
 

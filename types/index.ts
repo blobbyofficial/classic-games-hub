@@ -25,6 +25,7 @@ export type GlobalRankRow = Database["public"]["Functions"]["global_leaderboard"
 export type FriendRow = Database["public"]["Functions"]["list_friends"]["Returns"][number];
 export type FriendRequestRow = Database["public"]["Functions"]["list_friend_requests"]["Returns"][number];
 export type ConversationRow = Database["public"]["Functions"]["list_conversations"]["Returns"][number];
+export type PlayerSearchRow = Database["public"]["Functions"]["search_players"]["Returns"][number];
 
 export interface RpcResult {
   ok: boolean;
@@ -48,7 +49,15 @@ export interface ScoreResult extends RpcResult {
   best_score?: number;
   new_best?: boolean;
   ads_doubled?: boolean;
+  event_multiplier?: number;
   rewarded?: boolean;
+}
+
+/** Resolved, display-ready config for the site-wide seasonal event. */
+export interface SeasonalEvent {
+  multiplier: number;
+  title: string;
+  message: string;
 }
 
 export interface ProfileStats {

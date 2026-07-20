@@ -28,10 +28,24 @@ export function PasswordForm({ mode, next }: { mode: "login" | "register"; next?
     <form action={formAction} className="space-y-4">
       {next && <input type="hidden" name="next" value={next} />}
 
-      <div className="space-y-1.5">
-        <Label htmlFor="email">Email</Label>
-        <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
-      </div>
+      {mode === "login" ? (
+        <div className="space-y-1.5">
+          <Label htmlFor="identifier">Username or email</Label>
+          <Input
+            id="identifier"
+            name="identifier"
+            type="text"
+            autoComplete="username"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+      ) : (
+        <div className="space-y-1.5">
+          <Label htmlFor="email">Email</Label>
+          <Input id="email" name="email" type="email" autoComplete="email" placeholder="you@example.com" required />
+        </div>
+      )}
 
       <div className="space-y-1.5">
         <div className="flex items-center justify-between">

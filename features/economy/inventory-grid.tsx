@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { cn, RARITY_META, timeAgo } from "@/lib/utils";
 import type { OwnedItem } from "@/services/shop";
 
-const EQUIPPABLE = new Set(["avatar_frame", "profile_theme", "badge", "effect", "banner"]);
+const EQUIPPABLE = new Set(["avatar_frame", "profile_theme", "badge", "effect", "banner", "nameplate"]);
 
 export function InventoryGrid({ items }: { items: OwnedItem[] }) {
   const profile = useSessionStore((s) => s.profile);

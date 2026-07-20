@@ -56,6 +56,13 @@ export const gameUpsertSchema = z.object({
   difficulty: z.enum(["easy", "normal", "hard"]),
 });
 
+export const seasonalEventSchema = z.object({
+  enabled: z.boolean(),
+  multiplier: z.coerce.number().min(1, "At least 1×").max(5, "At most 5×"),
+  title: z.string().trim().max(60, "At most 60 characters"),
+  message: z.string().trim().max(200, "At most 200 characters"),
+});
+
 export const bannerPayloadSchema = z.object({
   message: z.string().trim().max(200, "At most 200 characters"),
   variant: z.enum(["info", "success", "warning", "promo"]).optional(),

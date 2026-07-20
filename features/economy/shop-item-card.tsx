@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { Coins, Check, Loader2, Clock } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { purchaseItem } from "@/actions/economy";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { DynamicIcon } from "@/components/dynamic-icon";
@@ -18,6 +17,7 @@ const KIND_LABEL: Record<string, string> = {
   badge: "Badge",
   effect: "Effect",
   banner: "Banner",
+  nameplate: "Nameplate",
   collectible: "Collectible",
   xp_boost: "XP boost",
   credit_boost: "Credit boost",
@@ -53,9 +53,11 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
   };
 
   return (
-    <motion.div
-      whileHover={{ y: -3 }}
-      className={cn("overflow-hidden rounded-2xl border bg-card shadow-sm", `ring-1 ${rarity.ring}`)}
+    <div
+      className={cn(
+        "overflow-hidden rounded-2xl border bg-card shadow-sm transition-transform duration-200 ease-out hover:-translate-y-1 motion-reduce:transform-none",
+        `ring-1 ${rarity.ring}`,
+      )}
     >
       <div
         className="relative grid h-28 place-items-center"
@@ -69,6 +71,9 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
         </Badge>
         {item.seasonal && (
           <Badge className="absolute right-2 top-2 border-none bg-black/30 text-white backdrop-blur-sm">Seasonal</Badge>
+        )}
+        {item.staff_only && (
+          <Badge className="absolute right-2 top-2 border-none bg-rose-500/80 text-white backdrop-blur-sm">Staff</Badge>
         )}
       </div>
       <div className="p-3">
@@ -91,7 +96,7 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
           )}
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
 
@@ -102,6 +107,7 @@ function kindIcon(kind: string): string {
     badge: "award",
     effect: "sparkles",
     banner: "map",
+    nameplate: "id-card",
     collectible: "gem",
     xp_boost: "rocket",
     credit_boost: "coins",

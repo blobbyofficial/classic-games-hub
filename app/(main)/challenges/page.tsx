@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { Target, Flame } from "lucide-react";
+import { Target, Flame, CalendarRange } from "lucide-react";
 import { getSessionUser } from "@/lib/supabase/queries";
 import { getActiveChallenges } from "@/services/achievements";
 import { getDailyRewardStatus } from "@/services/economy";
@@ -15,6 +15,9 @@ export default async function ChallengesPage() {
 
   const [challenges, daily] = await Promise.all([getActiveChallenges(), getDailyRewardStatus()]);
 
+  const dailyChallenges = challenges.filter((c) => c.kind !== "weekly");
+  const weeklyChallenges = challenges.filter((c) => c.kind === "weekly");
+
   return (
     <div className="mx-auto max-w-2xl space-y-6">
       <div className="flex items-center gap-3">
@@ -23,7 +26,7 @@ export default async function ChallengesPage() {
         </span>
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Challenges</h1>
-          <p className="text-sm text-muted-foreground">Complete daily goals for bonus rewards.</p>
+          <p className="text-sm text-muted-foreground">Complete daily & weekly goals for bonus rewards.</p>
         </div>
       </div>
 
@@ -33,16 +36,27 @@ export default async function ChallengesPage() {
         <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
           <Flame className="size-4 text-orange-500" /> Today&apos;s challenges
         </h2>
-        {challenges.length === 0 ? (
+        {dailyChallenges.length === 0 ? (
           <div className="grid place-items-center rounded-2xl border border-dashed border-border py-12 text-center">
             <p className="text-sm text-muted-foreground">
               Play a game to generate today&apos;s challenges, then check back here!
             </p>
           </div>
         ) : (
-          challenges.map((c) => <ChallengeCard key={c.id} challenge={c} />)
+          dailyChallenges.map((c) => <ChallengeCard key={c.id} challenge={c} />)
         )}
       </section>
+
+      {weeklyChallenges.length > 0 && (
+        <section className="space-y-3">
+          <h2 className="flex items-center gap-2 text-sm font-semibold text-muted-foreground">
+            <CalendarRange className="size-4 text-primary" /> This week
+          </h2>
+          {weeklyChallenges.map((c) => (
+            <ChallengeCard key={c.id} challenge={c} />
+          ))}
+        </section>
+      )}
     </div>
   );
 }
