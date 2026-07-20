@@ -42,6 +42,9 @@ export const settingsSchema = z.object({
   allow_friend_requests: z.boolean().optional(),
   allow_dms: z.enum(["everyone", "friends", "none"]).optional(),
   email_notifications: z.boolean().optional(),
+  presence_status: z.enum(["auto", "online", "away", "dnd", "sleep", "invisible"]).optional(),
+  presence_visibility: z.enum(["everyone", "friends", "nobody"]).optional(),
+  friends_visibility: z.enum(["private", "friends", "followers", "public"]).optional(),
 });
 
 export const gameUpsertSchema = z.object({

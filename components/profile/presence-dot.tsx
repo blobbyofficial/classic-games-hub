@@ -1,25 +1,27 @@
-import { cn, isOnline } from "@/lib/utils";
+import { cn, isOnline, PRESENCE_META, type DisplayPresence } from "@/lib/utils";
 
+/**
+ * Presence indicator. Pass a resolved `status` (via resolvePresence) for rich
+ * away/DND/sleep states, or just `lastSeen` for a simple online/offline dot.
+ */
 export function PresenceDot({
   lastSeen,
+  status,
   className,
   ring = true,
 }: {
-  lastSeen: string | null | undefined;
+  lastSeen?: string | null;
+  status?: DisplayPresence;
   className?: string;
   ring?: boolean;
 }) {
-  const online = isOnline(lastSeen);
+  const presence: DisplayPresence = status ?? (isOnline(lastSeen) ? "online" : "offline");
+  const meta = PRESENCE_META[presence];
   return (
     <span
-      className={cn(
-        "block size-3 rounded-full",
-        ring && "ring-2 ring-card",
-        online ? "bg-success" : "bg-muted-foreground/50",
-        className,
-      )}
-      title={online ? "Online" : "Offline"}
-      aria-label={online ? "Online" : "Offline"}
+      className={cn("block size-3 rounded-full", ring && "ring-2 ring-card", meta.className, className)}
+      title={meta.label}
+      aria-label={meta.label}
     />
   );
 }

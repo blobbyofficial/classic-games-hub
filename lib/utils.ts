@@ -86,6 +86,43 @@ export function isOnline(lastSeen: string | null | undefined): boolean {
   return Date.now() - new Date(lastSeen).getTime() < 2 * 60 * 1000;
 }
 
+export type DisplayPresence = "online" | "away" | "dnd" | "sleep" | "offline";
+
+export const PRESENCE_META: Record<DisplayPresence, { label: string; className: string }> = {
+  online: { label: "Online", className: "bg-success" },
+  away: { label: "Away", className: "bg-amber-400" },
+  dnd: { label: "Do not disturb", className: "bg-red-500" },
+  sleep: { label: "Sleeping", className: "bg-indigo-400" },
+  offline: { label: "Offline", className: "bg-muted-foreground/50" },
+};
+
+/**
+ * Resolve a user's displayed presence from their manual status and last-seen
+ * time, honouring the master toggle and the viewer's visibility. `visible`
+ * false (hidden by the target's settings) always renders as offline.
+ */
+export function resolvePresence(opts: {
+  lastSeen?: string | null;
+  status?: string | null;
+  visible?: boolean;
+}): DisplayPresence {
+  if (opts.visible === false) return "offline";
+  switch (opts.status) {
+    case "invisible":
+      return "offline";
+    case "online":
+      return "online";
+    case "away":
+      return "away";
+    case "dnd":
+      return "dnd";
+    case "sleep":
+      return "sleep";
+    default:
+      return isOnline(opts.lastSeen) ? "online" : "offline";
+  }
+}
+
 export const RARITY_META: Record<string, { label: string; color: string; ring: string }> = {
   common: { label: "Common", color: "text-slate-400", ring: "ring-slate-400/40" },
   rare: { label: "Rare", color: "text-sky-400", ring: "ring-sky-400/50" },
