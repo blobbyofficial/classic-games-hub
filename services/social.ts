@@ -75,6 +75,8 @@ export interface ConversationDetail {
   isGroup: boolean;
   /** Group name (groups only). */
   name: string | null;
+  /** Group invite code (groups only). */
+  inviteCode: string | null;
   /** The other participant (DMs only). */
   other: ConversationMember | null;
   /** All other members (groups: everyone but me; used for sender lookup). */
@@ -99,7 +101,7 @@ export const getConversation = cache(async (conversationId: string): Promise<Con
 
   const { data: convo } = await supabase
     .from("conversations")
-    .select("id, is_group, name")
+    .select("id, is_group, name, invite_code")
     .eq("id", conversationId)
     .maybeSingle();
   if (!convo) return null;
@@ -138,6 +140,7 @@ export const getConversation = cache(async (conversationId: string): Promise<Con
     id: conversationId,
     isGroup: convo.is_group,
     name: convo.name,
+    inviteCode: convo.invite_code,
     other: convo.is_group ? null : (otherMember!.profiles as unknown as ConversationMember),
     members: others,
     otherLastReadAt: convo.is_group ? null : (otherMember!.last_read_at ?? null),

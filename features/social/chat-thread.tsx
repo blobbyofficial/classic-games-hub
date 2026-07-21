@@ -2,17 +2,25 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { ChevronLeft, Send, SmilePlus, Users } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { ChevronLeft, Send, SmilePlus, Users, MoreVertical, Copy, LogOut } from "lucide-react";
 import { toast } from "sonner";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
-import { sendMessage, markConversationRead, toggleReaction } from "@/actions/social";
+import { sendMessage, markConversationRead, toggleReaction, leaveConversation } from "@/actions/social";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { PresenceDot } from "@/components/profile/presence-dot";
+import { SITE } from "@/lib/constants";
 import { cn, isOnline } from "@/lib/utils";
 import type { ConversationDetail } from "@/services/social";
 
@@ -86,6 +94,7 @@ function dayLabel(iso: string) {
 }
 
 export function ChatThread({ conversation }: { conversation: ConversationDetail }) {
+  const router = useRouter();
   const me = useSessionStore((s) => s.userId);
   const [messages, setMessages] = useState<Msg[]>(conversation.messages);
   const [otherReadAt, setOtherReadAt] = useState<string | null>(conversation.otherLastReadAt);
@@ -172,6 +181,20 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
     channelRef.current?.send({ type: "broadcast", event: "typing", payload: { userId: me } });
   };
 
+  const copyInvite = () => {
+    if (!conversation.inviteCode) return;
+    void navigator.clipboard.writeText(`${SITE.url}/invite/${conversation.inviteCode}`);
+    toast.success("Invite link copied");
+  };
+
+  const leaveGroup = () =>
+    startSend(async () => {
+      const res = await leaveConversation(conversation.id);
+      if (!res.ok) return void toast.error(res.error ?? "Could not leave group");
+      toast.success("Left group");
+      router.push("/messages");
+    });
+
   const react = (id: Msg["id"], emoji: string) => {
     if (typeof id !== "number" || !me) return; // can't react to a still-sending message
     const msg = messages.find((m) => m.id === id);
@@ -229,12 +252,29 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
             <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
               <Users className="size-5" />
             </span>
-            <div className="min-w-0">
+            <div className="min-w-0 flex-1">
               <p className="truncate text-sm font-semibold">{conversation.name ?? "Group"}</p>
               <p className="text-xs text-muted-foreground">
                 {otherTyping ? "someone is typing…" : `${conversation.members.length + 1} members`}
               </p>
             </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="icon-sm" aria-label="Group options">
+                  <MoreVertical />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                {conversation.inviteCode && (
+                  <DropdownMenuItem onClick={copyInvite}>
+                    <Copy /> Copy invite link
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem onClick={leaveGroup} className="text-destructive">
+                  <LogOut /> Leave group
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </>
         ) : (
           other && (
