@@ -108,19 +108,33 @@ export function InventoryGrid({ items }: { items: OwnedItem[] }) {
                 <div
                   key={b.id}
                   className={cn(
-                    "flex items-center gap-3 rounded-xl border p-3",
-                    active ? "border-primary/40 bg-primary/5" : "border-border opacity-60",
+                    "relative flex items-center gap-3 overflow-hidden rounded-xl border p-3",
+                    active
+                      ? cn(
+                          "border-primary/40 bg-primary/5",
+                          isXp ? "shadow-[0_0_16px_-4px] shadow-neon/50" : "shadow-[0_0_16px_-4px] shadow-gold/50",
+                        )
+                      : "border-border opacity-60",
                   )}
                 >
+                  {active && (
+                    <span
+                      className="pointer-events-none absolute -inset-y-4 -left-1/3 w-1/3 motion-safe:animate-sheen"
+                      style={{ background: "linear-gradient(100deg, transparent, rgba(255,255,255,0.18), transparent)" }}
+                      aria-hidden
+                    />
+                  )}
                   <span
                     className={cn(
-                      "grid size-10 place-items-center rounded-lg",
+                      "relative grid size-10 place-items-center rounded-lg",
                       isXp ? "bg-neon/15 text-neon" : "bg-gold/15 text-[oklch(0.55_0.13_85)] dark:text-gold",
+                      active && "motion-safe:animate-glow-pulse",
                     )}
+                    style={active ? { boxShadow: `0 0 14px ${isXp ? "rgba(34,211,238,0.55)" : "rgba(251,191,36,0.55)"}` } : undefined}
                   >
                     {isXp ? <Zap className="size-5" /> : <Coins className="size-5" />}
                   </span>
-                  <div className="min-w-0 flex-1">
+                  <div className="relative min-w-0 flex-1">
                     <p className="flex items-center gap-2 text-sm font-medium">
                       {b.name}
                       <span className="rounded bg-primary/15 px-1.5 py-0.5 text-xs font-bold text-primary">

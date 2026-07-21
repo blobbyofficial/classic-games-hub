@@ -39,21 +39,45 @@ const AvatarFallback = React.forwardRef<
 ));
 AvatarFallback.displayName = AvatarPrimitive.Fallback.displayName;
 
-/** Frame styles keyed to the shop `avatar_frame` slugs. */
+/** Simple ring/shadow frame styles keyed to the shop `avatar_frame` slugs. */
 const FRAME_STYLES: Record<string, string> = {
-  "frame-neon-ring": "ring-2 ring-cyan-400 shadow-[0_0_12px_2px] shadow-cyan-400/50",
-  "frame-violet-pulse": "ring-2 ring-violet-400 shadow-[0_0_14px_3px] shadow-violet-500/50 animate-glow-pulse",
+  "frame-neon-ring": "ring-2 ring-cyan-400 shadow-[0_0_14px_3px] shadow-cyan-400/60 motion-safe:animate-glow-pulse",
+  "frame-violet-pulse": "ring-2 ring-violet-400 shadow-[0_0_16px_4px] shadow-violet-500/60 motion-safe:animate-glow-pulse",
   "frame-gold-laurel": "ring-2 ring-amber-400 shadow-[0_0_12px_2px] shadow-amber-400/50",
-  "frame-pixel-fire": "ring-2 ring-orange-500 shadow-[0_0_16px_4px] shadow-orange-500/60 animate-glow-pulse",
+  "frame-pixel-fire": "ring-2 ring-orange-500 shadow-[0_0_16px_4px] shadow-orange-500/60 motion-safe:animate-glow-pulse",
   "frame-summer-wave": "ring-2 ring-cyan-300 shadow-[0_0_14px_3px] shadow-amber-300/50",
-  "frame-staff-aura": "ring-2 ring-rose-400 shadow-[0_0_16px_4px] shadow-rose-500/60 animate-glow-pulse",
   "frame-emerald-ring": "ring-2 ring-emerald-400 shadow-[0_0_12px_2px] shadow-emerald-400/50",
-  "frame-frostbite": "ring-2 ring-sky-300 shadow-[0_0_14px_3px] shadow-cyan-400/50 animate-glow-pulse",
-  "frame-rainbow": "ring-2 ring-fuchsia-400 shadow-[0_0_16px_4px] shadow-fuchsia-500/50 animate-glow-pulse",
   "frame-shadow": "ring-2 ring-slate-700 shadow-[0_0_14px_3px] shadow-slate-900/60",
-  "frame-royal": "ring-2 ring-amber-300 shadow-[0_0_16px_4px] shadow-violet-500/50 animate-glow-pulse",
-  "frame-toxic": "ring-2 ring-lime-400 shadow-[0_0_16px_4px] shadow-lime-500/60 animate-glow-pulse",
-  "frame-dev-aura": "ring-2 ring-cyan-300 shadow-[0_0_18px_5px] shadow-violet-500/60 animate-glow-pulse",
+  "frame-royal": "ring-2 ring-amber-300 shadow-[0_0_16px_4px] shadow-violet-500/50 motion-safe:animate-glow-pulse",
+  "frame-toxic": "ring-2 ring-lime-400 shadow-[0_0_16px_4px] shadow-lime-500/60 motion-safe:animate-glow-pulse",
+};
+
+/**
+ * Premium frames: an animated rotating gradient rim (Discord "nitro" style). The
+ * conic gradient sits behind the avatar and pokes out ~3px to read as a border;
+ * a card-colored ring separates it from the image. `glow` is the outer bloom.
+ */
+const FRAME_RING: Record<string, { gradient: string; glow: string; spin?: boolean }> = {
+  "frame-rainbow": {
+    gradient: "conic-gradient(from 0deg, #f43f5e, #f59e0b, #22c55e, #3b82f6, #a855f7, #f43f5e)",
+    glow: "shadow-[0_0_18px_4px] shadow-fuchsia-500/50",
+    spin: true,
+  },
+  "frame-dev-aura": {
+    gradient: "conic-gradient(from 0deg, #22d3ee, #8b5cf6, #22d3ee)",
+    glow: "shadow-[0_0_20px_5px] shadow-violet-500/60",
+    spin: true,
+  },
+  "frame-staff-aura": {
+    gradient: "conic-gradient(from 0deg, #f43f5e, #8b5cf6, #f43f5e)",
+    glow: "shadow-[0_0_20px_5px] shadow-rose-500/60",
+    spin: true,
+  },
+  "frame-frostbite": {
+    gradient: "conic-gradient(from 0deg, #e0f2fe, #38bdf8, #6366f1, #e0f2fe)",
+    glow: "shadow-[0_0_18px_4px] shadow-cyan-400/60",
+    spin: true,
+  },
 };
 
 interface UserAvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
@@ -64,14 +88,27 @@ interface UserAvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPr
 
 /** Avatar that renders image or colored initials, with optional cosmetic frame. */
 function UserAvatar({ src, name, frame, className, ...props }: UserAvatarProps) {
-  const frameClass = frame ? FRAME_STYLES[frame] : undefined;
-  return (
-    <Avatar className={cn(frameClass, className)} {...props}>
+  const ring = frame ? FRAME_RING[frame] : undefined;
+  const inner = (
+    <Avatar className={cn(!ring && frame ? FRAME_STYLES[frame] : undefined, ring && "ring-2 ring-card", className)} {...props}>
       {src ? <AvatarImage src={src} alt={name ?? "avatar"} /> : null}
       <AvatarFallback style={{ backgroundColor: stringToColor(name ?? "?") }}>
         {initials(name)}
       </AvatarFallback>
     </Avatar>
+  );
+
+  if (!ring) return inner;
+
+  return (
+    <span className={cn("relative inline-grid place-items-center rounded-full", ring.glow)}>
+      <span
+        className={cn("pointer-events-none absolute -inset-[3px] rounded-full", ring.spin && "motion-safe:animate-spin-slow")}
+        style={{ background: ring.gradient }}
+        aria-hidden
+      />
+      <span className="relative">{inner}</span>
+    </span>
   );
 }
 

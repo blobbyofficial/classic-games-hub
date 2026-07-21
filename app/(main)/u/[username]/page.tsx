@@ -30,7 +30,8 @@ import { bannerBackground } from "@/components/profile/profile-theme";
 import { Nameplate } from "@/components/profile/nameplate";
 import { NameStyle } from "@/components/profile/name-style";
 import { ProfileEffects } from "@/components/profile/profile-effects";
-import { RARITY_META, formatNumber, timeAgo } from "@/lib/utils";
+import { ProfileBackdrop } from "@/components/profile/profile-backdrop";
+import { RARITY_META, formatNumber, timeAgo, cn } from "@/lib/utils";
 import type { FriendshipRelation } from "@/types";
 
 export async function generateMetadata({
@@ -122,6 +123,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
       {/* Banner */}
       <div className="overflow-hidden rounded-3xl border border-border">
         <div className="relative h-40 sm:h-56" style={{ background: bannerBackground(profile.equipped) }}>
+          {!profile.banner_url && <ProfileBackdrop equipped={profile.equipped} />}
           {profile.banner_url && (
             <Image src={profile.banner_url} alt="" fill className="object-cover" sizes="1024px" />
           )}
@@ -221,15 +223,30 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 
           {badges.length > 0 && (
             <div className="mt-4 flex flex-wrap gap-2">
-              {badges.map((b) => (
-                <span
-                  key={b.slug}
-                  className={`inline-flex items-center gap-1.5 rounded-full bg-muted px-3 py-1 text-xs font-medium ${RARITY_META[b.rarity]?.color}`}
-                >
-                  <DynamicIcon name={b.preview?.icon ?? "star"} className="size-3.5" />
-                  {b.name}
-                </span>
-              ))}
+              {badges.map((b) => {
+                const shiny = b.rarity === "epic" || b.rarity === "legendary";
+                return (
+                  <span
+                    key={b.slug}
+                    className={cn(
+                      "relative inline-flex items-center gap-1.5 overflow-hidden rounded-full bg-muted px-3 py-1 text-xs font-medium ring-1",
+                      RARITY_META[b.rarity]?.color,
+                      RARITY_META[b.rarity]?.ring ?? "ring-transparent",
+                      b.rarity === "legendary" && "shadow-[0_0_12px_-2px] shadow-amber-400/60",
+                    )}
+                  >
+                    {shiny && (
+                      <span
+                        className="pointer-events-none absolute -inset-y-1 -left-1/3 w-1/3 motion-safe:animate-sheen"
+                        style={{ background: "linear-gradient(100deg, transparent, rgba(255,255,255,0.4), transparent)" }}
+                        aria-hidden
+                      />
+                    )}
+                    <DynamicIcon name={b.preview?.icon ?? "star"} className="relative size-3.5" />
+                    <span className="relative">{b.name}</span>
+                  </span>
+                );
+              })}
             </div>
           )}
 

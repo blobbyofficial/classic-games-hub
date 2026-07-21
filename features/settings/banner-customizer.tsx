@@ -8,6 +8,7 @@ import { useSessionStore } from "@/lib/stores/session-store";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { bannerBackground } from "@/components/profile/profile-theme";
+import { ProfileBackdrop } from "@/components/profile/profile-backdrop";
 import { cn } from "@/lib/utils";
 import type { Profile } from "@/types";
 
@@ -75,6 +76,7 @@ export function BannerCustomizer({ profile }: { profile: Profile }) {
           className="relative h-20 overflow-hidden rounded-xl border border-border"
           style={{ background: bannerBackground(equipped) }}
         >
+          {!bannerUrl && <ProfileBackdrop equipped={equipped} />}
           {bannerUrl && (
             // eslint-disable-next-line @next/next/no-img-element
             <img src={bannerUrl} alt="" className="absolute inset-0 size-full object-cover" />
