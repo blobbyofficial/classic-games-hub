@@ -42,8 +42,8 @@ export const ROADMAP: RoadmapRelease[] = [
   {
     version: "v1.2.0",
     codename: "Identity & Connection",
-    status: "in-progress",
-    timeframe: "Feature-complete — pending release",
+    status: "shipped",
+    timeframe: "Shipped",
     summary:
       "The release that makes your profile unmistakably yours and the community feel alive: Discord-grade cosmetics, expressive identity, richer friendships, group chats, a modern messenger, and a shop and inventory that are finally a pleasure to use.",
     groups: [
@@ -244,6 +244,48 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "Auto device-appropriate controls",
             description:
               "Detect the player's device and show on-screen touch controls on mobile and keyboard/desktop hints on desktop automatically — whichever they're actually using, without a manual toggle.",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: "v1.2.1",
+    codename: "Notifications & Polish",
+    status: "shipped",
+    timeframe: "Shipped — point release",
+    summary:
+      "A small polish release on top of v1.2.0: richer notifications, linkable announcements, a redesigned podium and a handful of quality-of-life fixes.",
+    groups: [
+      {
+        heading: "Notifications & announcements",
+        icon: "Megaphone",
+        items: [
+          {
+            title: "Notification detail overlay",
+            description:
+              "Tap any notification to open it in full — the complete message, the exact date and time it was sent, and an Open button when a link is attached. Opening marks it read.",
+          },
+          {
+            title: "Linkable announcements",
+            description:
+              "Admins can attach a call-to-action link to an announcement, and publishing with 'Notify everyone' now actually sends a notification (with that link) to every player — the toggle previously did nothing.",
+          },
+        ],
+      },
+      {
+        heading: "Polish",
+        icon: "Sparkles",
+        items: [
+          {
+            title: "Podium glow-up",
+            description:
+              "The global leaderboard's top three now sit on a proper tiered gold/silver/bronze podium with rank badges, a crowned #1 and equipped nameplates.",
+          },
+          {
+            title: "Group chat menu",
+            description:
+              "Group conversations gained a header menu to copy the invite link again or leave the group.",
           },
         ],
       },

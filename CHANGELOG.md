@@ -3,6 +3,24 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.2.1 — "Notifications & Polish"
+
+A small point release on top of v1.2.0.
+
+- **Notification detail overlay** — tap any notification to see the full
+  message, the exact date & time it was sent, and an **Open** button when a
+  link is attached (opening marks it read).
+- **Linkable announcements** — admins can attach a call-to-action link to an
+  announcement, and publishing with **Notify everyone** now actually sends a
+  notification (with that link) to every player. *(The toggle previously did
+  nothing — this also fixes that bug.)*
+- **Podium glow-up** — the global leaderboard's top three now sit on a tiered
+  gold/silver/bronze podium with rank badges, a crowned #1 and nameplates.
+- **Group chat menu** — copy a group's invite link again or leave the group
+  from the chat header.
+
+---
+
 ## v1.2.0 — "Identity & Connection"
 
 The biggest social and cosmetic update yet. v1.2.0 makes your profile
