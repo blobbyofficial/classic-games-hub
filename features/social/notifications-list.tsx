@@ -13,6 +13,8 @@ import {
   CheckCheck,
   Sparkles,
   Target,
+  Rss,
+  Gift,
 } from "lucide-react";
 import { markNotificationsRead } from "@/actions/profile";
 import { useSessionStore } from "@/lib/stores/session-store";
@@ -30,6 +32,8 @@ const ICONS: Record<string, typeof Bell> = {
   announcement: Megaphone,
   challenge: Target,
   welcome: Sparkles,
+  follow: Rss,
+  gift: Gift,
 };
 
 function hrefFor(n: NotificationRow): string | null {
@@ -44,6 +48,10 @@ function hrefFor(n: NotificationRow): string | null {
       return "/achievements";
     case "challenge":
       return "/challenges";
+    case "follow":
+      return data.username ? `/u/${data.username}` : null;
+    case "gift":
+      return "/inventory";
     default:
       return null;
   }
