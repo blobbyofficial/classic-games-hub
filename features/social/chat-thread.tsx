@@ -175,6 +175,59 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
     };
   }, [conversation.id, me, other?.id]);
 
+  // Keep a live ref of the message list so the background poll can compute its
+  // "since" cursor without re-subscribing whenever a message arrives.
+  const messagesRef = useRef(messages);
+  useEffect(() => {
+    messagesRef.current = messages;
+  }, [messages]);
+
+  // Fallback poll: pull only the *new* messages (not a full-page refresh) every
+  // few seconds so the thread stays live even if Realtime drops or isn't
+  // enabled. It's cheap — an indexed `id > last` query that usually returns
+  // nothing — and dedupes against whatever Realtime/optimistic already added.
+  useEffect(() => {
+    const supabase = createClient();
+    let cancelled = false;
+    const poll = async () => {
+      if (typeof document !== "undefined" && document.visibilityState === "hidden") return;
+      const lastId = messagesRef.current.reduce(
+        (max, m) => (typeof m.id === "number" && m.id > max ? m.id : max),
+        0,
+      );
+      const { data } = await supabase
+        .from("messages")
+        .select("id, sender_id, content, created_at")
+        .eq("conversation_id", conversation.id)
+        .gt("id", lastId)
+        .order("id", { ascending: true })
+        .limit(100);
+      if (cancelled || !data?.length) return;
+      let fromOther = false;
+      setMessages((prev) => {
+        const known = new Set(prev.map((m) => m.id));
+        const additions = (data as Msg[]).filter((m) => !known.has(m.id));
+        if (additions.length === 0) return prev;
+        fromOther = additions.some((m) => m.sender_id !== me);
+        // Drop any optimistic bubble now superseded by its persisted row.
+        const cleaned = prev.filter(
+          (m) => !(m.pending && additions.some((a) => a.sender_id === m.sender_id && a.content === m.content)),
+        );
+        return [...cleaned, ...additions];
+      });
+      if (fromOther) {
+        void markConversationRead(conversation.id);
+        scrollToBottom();
+      }
+    };
+    const interval = setInterval(poll, 5000);
+    return () => {
+      cancelled = true;
+      clearInterval(interval);
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [conversation.id, me]);
+
   const onType = (v: string) => {
     setText(v);
     if (typingTimeout.current) clearTimeout(typingTimeout.current);
@@ -227,10 +280,20 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
     scrollToBottom();
     startSend(async () => {
       const res = await sendMessage(conversation.id, content);
-      if (!res.ok) {
+      if (!res.ok || !res.message) {
         setMessages((prev) => prev.filter((m) => m.id !== optimistic.id));
-        toast.error(res.error ?? "Message failed to send");
+        if (!res.ok) toast.error(res.error ?? "Message failed to send");
+        return;
       }
+      // Resolve the optimistic bubble with the real row right away — don't wait
+      // on the Realtime echo (which may be delayed or unavailable). If the echo
+      // already delivered it, just drop the optimistic duplicate.
+      const real = res.message as Msg;
+      setMessages((prev) =>
+        prev.some((m) => m.id === real.id)
+          ? prev.filter((m) => m.id !== optimistic.id)
+          : prev.map((m) => (m.id === optimistic.id ? real : m)),
+      );
     });
   };
 

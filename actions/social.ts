@@ -76,13 +76,19 @@ export async function sendMessage(conversationId: string, content: string): Prom
   if (!parsed.success) return { ok: false, error: "Message must be 1–2000 characters" };
 
   const { supabase, user } = await client();
-  const { error } = await supabase.from("messages").insert({
-    conversation_id: conversationId,
-    sender_id: user.id,
-    content: parsed.data,
-  });
+  const { data, error } = await supabase
+    .from("messages")
+    .insert({
+      conversation_id: conversationId,
+      sender_id: user.id,
+      content: parsed.data,
+    })
+    .select("id, sender_id, content, created_at")
+    .single();
   if (error) return { ok: false, error: error.message };
-  return { ok: true };
+  // Return the persisted row so the client can resolve its optimistic bubble
+  // immediately, without depending on the Realtime echo arriving.
+  return { ok: true, message: data };
 }
 
 export async function markConversationRead(conversationId: string): Promise<RpcResult> {
