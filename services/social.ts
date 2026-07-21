@@ -14,6 +14,33 @@ export const listFriendRequests = cache(async (): Promise<FriendRequestRow[]> =>
   return data ?? [];
 });
 
+export interface StoryItem {
+  id: number;
+  user_id: string;
+  kind: string;
+  content: string | null;
+  created_at: string;
+  author: { username: string; display_name: string | null; avatar_url: string | null };
+}
+
+/** Active (unexpired) stories from the current user and their friends. */
+export const getActiveStories = cache(async (): Promise<StoryItem[]> => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("stories")
+    .select("id, user_id, kind, content, created_at, profiles(username, display_name, avatar_url)")
+    .gt("expires_at", new Date().toISOString())
+    .order("created_at", { ascending: true });
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    user_id: r.user_id,
+    kind: r.kind,
+    content: r.content,
+    created_at: r.created_at,
+    author: r.profiles as unknown as StoryItem["author"],
+  }));
+});
+
 export const listConversations = cache(async (): Promise<ConversationRow[]> => {
   const supabase = await createClient();
   const { data } = await supabase.rpc("list_conversations");

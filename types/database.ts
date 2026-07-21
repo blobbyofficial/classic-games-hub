@@ -292,6 +292,20 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      stories: {
+        Row: {
+          id: number;
+          user_id: string;
+          kind: "text" | "achievement";
+          content: string | null;
+          data: Json;
+          created_at: string;
+          expires_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       shop_items: {
         Row: {
           id: string;
@@ -587,6 +601,7 @@ export interface Database {
       create_group: { Args: { p_name: string }; Returns: Json };
       join_group: { Args: { p_code: string }; Returns: Json };
       leave_conversation: { Args: { p_id: string }; Returns: undefined };
+      post_story: { Args: { p_kind: string; p_content: string; p_data?: Json }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

@@ -92,6 +92,14 @@ export async function markConversationRead(conversationId: string): Promise<RpcR
   return { ok: true };
 }
 
+export async function postStory(kind: "text" | "achievement", content: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("post_story", { p_kind: kind, p_content: content });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/messages");
+  return data as RpcResult;
+}
+
 export async function createGroup(name: string): Promise<RpcResult> {
   const { supabase } = await client();
   const { data, error } = await supabase.rpc("create_group", { p_name: name });
