@@ -16,6 +16,18 @@ export const getShopItemBySlug = cache(async (slug: string): Promise<ShopItem | 
   return data ?? null;
 });
 
+/** A specific user's wishlist (public — for gifting discovery on their profile). */
+export const getUserWishlist = cache(async (userId: string): Promise<ShopItem[]> => {
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("wishlist_items")
+    .select("created_at, shop_items(*)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false })
+    .limit(12);
+  return (data ?? []).map((r) => r.shop_items as unknown as ShopItem);
+});
+
 export const getWishlist = cache(async (): Promise<ShopItem[]> => {
   const supabase = await createClient();
   const {

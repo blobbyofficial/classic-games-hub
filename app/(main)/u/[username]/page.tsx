@@ -13,6 +13,8 @@ import {
   ShieldCheck,
 } from "lucide-react";
 import { getProfileByUsername, getProfileStats, getUserAchievements, getUserBestScores, getEquippedBadges } from "@/services/profiles";
+import { getUserWishlist } from "@/services/shop";
+import { ProfileWishlist } from "@/features/social/profile-wishlist";
 import { getSessionUser } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { UserAvatar } from "@/components/ui/avatar";
@@ -50,12 +52,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
   const profile = await getProfileByUsername(username);
   if (!profile) notFound();
 
-  const [user, stats, achievements, bestScores, badges] = await Promise.all([
+  const [user, stats, achievements, bestScores, badges, wishlist] = await Promise.all([
     getSessionUser(),
     getProfileStats(profile.id),
     getUserAchievements(profile.id),
     getUserBestScores(profile.id, 6),
     getEquippedBadges(profile.id),
+    getUserWishlist(profile.id),
   ]);
 
   // Relationship for the action bar.
@@ -324,6 +327,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
           </div>
         </section>
       )}
+
+      {/* Wishlist */}
+      <ProfileWishlist
+        items={wishlist}
+        ownerId={profile.id}
+        ownerName={profile.display_name ?? profile.username}
+        canGift={Boolean(user) && user!.id !== profile.id}
+      />
 
       {/* Achievements */}
       <section>
