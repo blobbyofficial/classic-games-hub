@@ -65,7 +65,8 @@ styles/              Tailwind theme + global CSS
 
 ## Database
 
-Seven migrations under `database/migrations/` build the schema:
+Numbered migrations under `database/migrations/` are the source of truth and
+run in order. The foundation:
 
 1. `0001_core_identity` — profiles, settings, credits ledger, XP/levels,
    notifications, storage buckets, new-user bootstrap trigger.
@@ -75,10 +76,17 @@ Seven migrations under `database/migrations/` build the schema:
 4. `0004_economy_admin` — shop, inventory, achievements, daily rewards,
    challenges, events, reports, announcements, audit log, feature flags, and
    the `submit_score` game loop.
-5. `0005_seed` — 23 games, 23 achievements, 22 shop items, feature flags.
+5. `0005_seed` — games, achievements, shop items, feature flags.
 6. `0006_harden_functions` — locks down `EXECUTE` on privileged functions.
 7. `0007_read_helpers` — ranked leaderboards, the bidirectional friends graph,
    profile stat rollups.
+
+Later migrations layer on features: `0008`–`0019` add username onboarding,
+admin level/XP + banner/event tooling, nameplates & staff flair, player search,
+seasonal multipliers, the store expansion and challenge system. **v1.2.0**
+adds `0020`–`0028`: `discord_linked` detection + presence/visibility settings,
+Profile-2.0 fields, the follows/notes social graph, wishlist + gifting, message
+reactions, group chats, stories, and a cosmetics-catalogue expansion.
 
 ## Getting started
 
@@ -127,15 +135,27 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
   Minesweeper, Memory, 15 Puzzle, Mastermind, Hangman, Simon, Tic-Tac-Toe,
   Connect Four, Reversi, Whack-a-Mole, Lights Out. Each is a self-contained,
   code-split canvas engine with keyboard + touch controls.
-- **Accounts** — OAuth (Google/Discord/GitHub/Microsoft) + email, profiles with
-  avatars/banners/bios, levels, XP, credits, badges, achievements, inventory.
-- **Social** — friend requests, presence, real-time DMs with typing indicators,
-  notifications, activity, block/report.
+- **Accounts** — email/username + password and OAuth (Discord/Google/GitHub/
+  Microsoft); profiles with avatars, tiered banners, bios, pronouns, a status
+  line, levels, XP, credits, badges, achievements and inventory.
+- **Profiles 2.0** — nameplates and display-name styles that render everywhere,
+  a featured achievement, a trophy case of favourite games, a Discord-linked
+  badge, and profile effects/themes.
+- **Social** — friend requests, one-way follows (with notifications), mutual
+  friends, friends-list visibility, private notes/nicknames, rich presence
+  (online/away/DND/sleep/invisible) with audience controls, block/report.
+- **Messaging** — real-time DMs with timestamps, delivered/seen receipts, emoji
+  reactions and an emoji picker; **group chats** with shareable invite links;
+  24-hour **stories**.
 - **Credits economy** — earn from playing, daily rewards, achievements and
-  challenges; spend on cosmetics, boosts and username changes. No pay-to-win.
-- **Optional rewarded ads** — an opt-in "2× credits" setting; never intrusive.
+  challenges; spend on cosmetics, boosts and username changes; a wishlist and
+  **gifting** at 75% of list price. No pay-to-win.
+- **Store & inventory** — live cosmetic previews, apply-from-shop, and an
+  inventory with search, filters and live boost timers.
+- **Optional rewarded ads** — an opt-in "2× credits" setting, fully removable
+  via an admin flag; never intrusive.
 - **Admin dashboard** — manage users, games, reports, announcements, credits,
-  feature flags, and read the audit log.
+  seasonal events, feature flags, and read the audit log.
 - **Polish** — dark mode, glassmorphism, command palette (⌘K), loading
   skeletons, optimistic UI, keyboard shortcuts, mobile-first responsive design,
   accessibility, and PWA installability.
@@ -153,40 +173,24 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
 
 ## Roadmap
 
-### v1.1.0 — the `classic-games-bot` & live Discord bridge
+A live, always-current roadmap lives in the app at **`/roadmap`** (data in
+`lib/roadmap.ts`). Current shape:
 
-A single Discord bot that folds the useful parts of Carl-bot, Arcane, Sapphire
-and a server-stats bot into one — and, because players already sign in with
-Discord, is wired directly into the Hub database with no account-linking step.
-Planned: shared credits/XP economy, a near-real-time score/achievement feed,
-two-way moderation, live server-stat counters, and
-`/profile` `/balance` `/leaderboard` `/daily` slash commands reading the same
-data as the site. Identity is synced both ways:
+- **v1.1.x** — shipped: mobile-first games, admin control centre, profile
+  customisation, living economy & events, plus v1.1.1 fixes.
+- **v1.2.0 "Identity & Connection"** — shipped: flexible sign-in, deep profile
+  customisation, the social graph (follows, mutual friends, notes), a modern
+  messenger with reactions, group chats and stories, rich presence, wishlist &
+  gifting, a store/inventory overhaul, and a redesigned navigation. See
+  `CHANGELOG.md`.
+- **v1.3.0 "Living Arcade"** — planned: long-term engagement loops, booster
+  rewards, background music tracks, stacking boosts, and an analytics + ads
+  control centre (ads via NitroPay).
+- **v1.4.0 "New Dimensions"** — planned: 3D games, real multiplayer with
+  parties, store-decorated avatars, and an admin-customisable home screen.
 
-- **Badges & awards → wearable Discord roles.** Every achievement/award maps to
-  a Discord role, auto-granted when earned, so a member's server profile mirrors
-  what they've unlocked in the Hub. Rank milestones and admin/moderator roles
-  stay in lockstep.
-- **Profile colour → chat colour.** Choosing a profile colour on the site grants
-  a matching Discord colour role, so a player's name and messages appear in that
-  colour in the server. Shipped as a curated palette (Discord's 250-role cap
-  rules out a unique role per user).
-
-### Ads (planned for v1.1.0)
-
-The app ships today with a clearly-labelled **simulated** rewarded ad (no real
-ad network is contacted) and an opt-in "2× credits" setting. Turning this into
-real, revenue-generating ads is deferred to v1.1.0:
-
-- **Rewarded "watch 30s for 250 credits" daily** — a real, server-enforced
-  once-per-24h claim that awards real credits. The reward mechanic is built
-  Hub-side; the placeholder ad is swapped for a real rewarded-video network
-  (game-ad networks, since AdSense does not offer web rewarded video).
-- **Display / banner ads** — drop-in ad slots gated behind a publisher ID,
-  most likely via Google AdSense once the site has enough traffic and content
-  to pass review (a privacy policy is a prerequisite).
-
-Both are intentionally non-intrusive and never pay-to-win.
+A free-tier Discord bot (HTTP interactions on Supabase/Vercel) that bridges
+badges → Discord roles and adds slash commands is planned for a future release.
 
 ## License
 
