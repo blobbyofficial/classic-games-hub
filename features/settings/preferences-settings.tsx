@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from "react";
 import { useTheme } from "next-themes";
-import { Sparkles, Eye, Bell, Zap, MessageSquare } from "lucide-react";
+import { Sparkles, Eye, Bell, Zap, MessageSquare, Circle, Users } from "lucide-react";
 import { toast } from "sonner";
 import { updateSettings } from "@/actions/profile";
 import { useSessionStore } from "@/lib/stores/session-store";
@@ -89,8 +89,48 @@ export function PreferencesSettings({ settings }: { settings: UserSettings }) {
           <CardDescription>Control who can reach you and what they see.</CardDescription>
         </CardHeader>
         <CardContent className="divide-y divide-border/60">
-          <Row icon={Eye} title="Show online status" description="Let others see when you're active.">
+          <Row icon={Eye} title="Show online status" description="Master switch — hide your presence entirely.">
             <Switch checked={local.show_online_status} onCheckedChange={(v) => update("show_online_status", v)} />
+          </Row>
+          <Row icon={Circle} title="Status" description="Set how you appear to others.">
+            <Select value={local.presence_status} onValueChange={(v) => update("presence_status", v)}>
+              <SelectTrigger className="w-36">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="auto">Automatic</SelectItem>
+                <SelectItem value="online">Online</SelectItem>
+                <SelectItem value="away">Away</SelectItem>
+                <SelectItem value="dnd">Do not disturb</SelectItem>
+                <SelectItem value="sleep">Sleeping</SelectItem>
+                <SelectItem value="invisible">Invisible</SelectItem>
+              </SelectContent>
+            </Select>
+          </Row>
+          <Row icon={Eye} title="Who sees your status" description="Limit who can see when you're online.">
+            <Select value={local.presence_visibility} onValueChange={(v) => update("presence_visibility", v)}>
+              <SelectTrigger className="w-36">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="everyone">Everyone</SelectItem>
+                <SelectItem value="friends">Friends only</SelectItem>
+                <SelectItem value="nobody">Nobody</SelectItem>
+              </SelectContent>
+            </Select>
+          </Row>
+          <Row icon={Users} title="Friends list visibility" description="Who can see your friends list.">
+            <Select value={local.friends_visibility} onValueChange={(v) => update("friends_visibility", v)}>
+              <SelectTrigger className="w-36">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="public">Public</SelectItem>
+                <SelectItem value="followers">Followers</SelectItem>
+                <SelectItem value="friends">Friends</SelectItem>
+                <SelectItem value="private">Private</SelectItem>
+              </SelectContent>
+            </Select>
           </Row>
           <Row icon={Bell} title="Allow friend requests" description="Others can send you friend requests.">
             <Switch checked={local.allow_friend_requests} onCheckedChange={(v) => update("allow_friend_requests", v)} />

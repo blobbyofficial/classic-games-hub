@@ -6,6 +6,7 @@ import {
   UserPlus,
   UserCheck,
   UserX,
+  UserRound,
   MessageSquare,
   MoreHorizontal,
   Ban,
@@ -13,6 +14,8 @@ import {
   Check,
   X,
   Clock,
+  Rss,
+  StickyNote,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -21,6 +24,9 @@ import {
   removeFriend,
   blockUser,
   startConversation,
+  followUser,
+  unfollowUser,
+  setUserNote,
 } from "@/actions/social";
 import { Button } from "@/components/ui/button";
 import {
@@ -30,6 +36,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 import { ReportDialog } from "./report-dialog";
 import type { FriendshipRelation } from "@/types";
 
@@ -38,18 +55,41 @@ export function ProfileActions({
   username,
   relation,
   requestId,
+  isFollowing = false,
+  note,
+  nickname,
 }: {
   targetId: string;
   username: string;
   relation: FriendshipRelation;
   requestId?: number;
+  isFollowing?: boolean;
+  note?: string | null;
+  nickname?: string | null;
 }) {
   const router = useRouter();
   const [rel, setRel] = useState<FriendshipRelation>(relation);
+  const [following, setFollowing] = useState(isFollowing);
   const [pending, start] = useTransition();
   const [reportOpen, setReportOpen] = useState(false);
+  const [noteOpen, setNoteOpen] = useState(false);
 
   if (rel === "self") return null;
+
+  const toggleFollow = () => {
+    const next = !following;
+    setFollowing(next);
+    start(async () => {
+      const res = next ? await followUser(targetId) : await unfollowUser(targetId);
+      if (!res.ok) {
+        setFollowing(!next);
+        toast.error(res.error ?? "Something went wrong");
+      } else {
+        toast.success(next ? `Following @${username}` : `Unfollowed @${username}`);
+        router.refresh();
+      }
+    });
+  };
 
   const act = (fn: () => Promise<{ ok: boolean; error?: string; status?: string }>, next: FriendshipRelation, ok: string) =>
     start(async () => {
@@ -121,6 +161,12 @@ export function ProfileActions({
         </Button>
       )}
 
+      {rel !== "blocked" && (
+        <Button variant={following ? "secondary" : "outline"} onClick={toggleFollow} disabled={pending}>
+          {following ? <UserCheck /> : <Rss />} {following ? "Following" : "Follow"}
+        </Button>
+      )}
+
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="ghost" size="icon" aria-label="More actions">
@@ -136,6 +182,9 @@ export function ProfileActions({
               <UserX /> Remove friend
             </DropdownMenuItem>
           )}
+          <DropdownMenuItem onClick={() => setNoteOpen(true)}>
+            <StickyNote /> {note || nickname ? "Edit note" : "Add note"}
+          </DropdownMenuItem>
           <DropdownMenuItem onClick={() => setReportOpen(true)}>
             <Flag /> Report
           </DropdownMenuItem>
@@ -156,6 +205,86 @@ export function ProfileActions({
         targetUserId={targetId}
         label={`@${username}`}
       />
+
+      <NoteDialog
+        open={noteOpen}
+        onOpenChange={setNoteOpen}
+        targetId={targetId}
+        username={username}
+        initialNote={note ?? ""}
+        initialNickname={nickname ?? ""}
+      />
     </div>
+  );
+}
+
+function NoteDialog({
+  open,
+  onOpenChange,
+  targetId,
+  username,
+  initialNote,
+  initialNickname,
+}: {
+  open: boolean;
+  onOpenChange: (v: boolean) => void;
+  targetId: string;
+  username: string;
+  initialNote: string;
+  initialNickname: string;
+}) {
+  const [nickname, setNickname] = useState(initialNickname);
+  const [note, setNote] = useState(initialNote);
+  const [pending, start] = useTransition();
+
+  const save = () =>
+    start(async () => {
+      const res = await setUserNote(targetId, nickname, note);
+      if (!res.ok) return void toast.error(res.error ?? "Could not save");
+      toast.success("Note saved — only you can see it");
+      onOpenChange(false);
+    });
+
+  return (
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <UserRound className="size-5" /> Private note
+          </DialogTitle>
+          <DialogDescription>
+            A private nickname and note about @{username}. Only you can see this.
+          </DialogDescription>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label htmlFor="nickname">Nickname</Label>
+            <Input
+              id="nickname"
+              value={nickname}
+              onChange={(e) => setNickname(e.target.value)}
+              maxLength={40}
+              placeholder="What you call them"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="note">Note</Label>
+            <Textarea
+              id="note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              maxLength={500}
+              rows={3}
+              placeholder="How you know them, reminders…"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="gradient" onClick={save} disabled={pending}>
+            {pending ? "Saving…" : "Save note"}
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

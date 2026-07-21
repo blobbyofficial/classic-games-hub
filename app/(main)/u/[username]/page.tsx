@@ -22,9 +22,11 @@ import { StatTile } from "@/components/stat-tile";
 import { XpBar } from "@/components/profile/xp-bar";
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { ProfileActions } from "@/features/social/profile-actions";
+import { DiscordIcon } from "@/components/icons";
 import { PresenceDot } from "@/components/profile/presence-dot";
 import { bannerBackground } from "@/components/profile/profile-theme";
 import { Nameplate } from "@/components/profile/nameplate";
+import { NameStyle } from "@/components/profile/name-style";
 import { ProfileEffects } from "@/components/profile/profile-effects";
 import { RARITY_META, formatNumber, timeAgo } from "@/lib/utils";
 import type { FriendshipRelation } from "@/types";
@@ -77,6 +79,41 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
     relation = "self";
   }
 
+  // Social stats (followers/following/mutual) + the viewer's private note.
+  const supabaseSocial = await createClient();
+  const { data: socialData } = await supabaseSocial.rpc("profile_social", { p_target: profile.id });
+  const social = socialData as {
+    followers: number;
+    following: number;
+    is_following: boolean;
+    friends_count: number;
+    friends_visible: boolean;
+    mutual: number;
+  } | null;
+  let myNote: { nickname: string | null; note: string | null } | null = null;
+  if (user && user.id !== profile.id) {
+    const { data } = await supabaseSocial
+      .from("user_notes")
+      .select("nickname, note")
+      .eq("author_id", user.id)
+      .eq("target_id", profile.id)
+      .maybeSingle();
+    myNote = data;
+  }
+
+  const showcaseSlugs = Array.isArray(profile.showcase) ? (profile.showcase as string[]) : [];
+  let showcaseGames: { slug: string; title: string; thumbnail_url: string | null }[] = [];
+  if (showcaseSlugs.length) {
+    const { data } = await supabaseSocial
+      .from("games")
+      .select("slug, title, thumbnail_url")
+      .in("slug", showcaseSlugs);
+    // preserve the user's chosen order
+    showcaseGames = showcaseSlugs
+      .map((s) => (data ?? []).find((g) => g.slug === s))
+      .filter((g): g is { slug: string; title: string; thumbnail_url: string | null } => Boolean(g));
+  }
+
   return (
     <div className="mx-auto max-w-5xl space-y-6">
       {/* Banner */}
@@ -106,7 +143,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
               <div className="pb-1">
                 <div className="flex flex-wrap items-center gap-2">
                   <Nameplate slug={profile.equipped?.nameplate}>
-                    <h1 className="text-2xl font-bold">{profile.display_name ?? profile.username}</h1>
+                    <NameStyle style={profile.equipped?.nameplate ? undefined : profile.equipped?.name_style}>
+                      <h1 className="text-2xl font-bold">{profile.display_name ?? profile.username}</h1>
+                    </NameStyle>
                   </Nameplate>
                   {profile.role === "admin" && (
                     <Badge variant="destructive">
@@ -118,13 +157,35 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                       <ShieldCheck className="size-3" /> Mod
                     </Badge>
                   )}
+                  {profile.discord_linked && (
+                    <Badge className="border-none bg-[#5865F2]/15 text-[#5865F2]">
+                      <DiscordIcon className="size-3" /> Discord
+                    </Badge>
+                  )}
                 </div>
-                <p className="text-muted-foreground">@{profile.username}</p>
+                <p className="flex flex-wrap items-center gap-x-2 text-muted-foreground">
+                  <span>@{profile.username}</span>
+                  {profile.pronouns && <span className="text-xs">· {profile.pronouns}</span>}
+                  {myNote?.nickname && (
+                    <span className="text-xs italic text-muted-foreground/80">· aka {myNote.nickname}</span>
+                  )}
+                </p>
+                {profile.status_text && (
+                  <p className="mt-0.5 text-sm text-foreground/80">{profile.status_text}</p>
+                )}
               </div>
             </div>
 
             {relation !== "self" && user && (
-              <ProfileActions targetId={profile.id} username={profile.username} relation={relation} requestId={requestId} />
+              <ProfileActions
+                targetId={profile.id}
+                username={profile.username}
+                relation={relation}
+                requestId={requestId}
+                isFollowing={social?.is_following ?? false}
+                note={myNote?.note}
+                nickname={myNote?.nickname}
+              />
             )}
             {relation === "self" && (
               <Link
@@ -135,6 +196,23 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
               </Link>
             )}
           </div>
+
+          {profile.featured_achievement &&
+            (() => {
+              const feat = achievements.find((a) => a.slug === profile.featured_achievement);
+              if (!feat) return null;
+              return (
+                <div className="mt-4 inline-flex items-center gap-2.5 rounded-xl border border-gold/30 bg-gold/5 px-3 py-2">
+                  <span className="grid size-9 place-items-center rounded-lg bg-gold/15 text-[oklch(0.6_0.13_85)] dark:text-gold">
+                    <DynamicIcon name={feat.icon} className="size-5" />
+                  </span>
+                  <div>
+                    <p className="text-[0.7rem] uppercase tracking-wide text-muted-foreground">Featured achievement</p>
+                    <p className="text-sm font-semibold">{feat.name}</p>
+                  </div>
+                </div>
+              );
+            })()}
 
           {profile.bio && <p className="mt-4 max-w-2xl text-sm text-muted-foreground">{profile.bio}</p>}
 
@@ -155,6 +233,25 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
           <div className="mt-5 max-w-md">
             <XpBar xp={profile.xp} level={profile.level} />
           </div>
+          {social && (
+            <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 text-sm">
+              <span>
+                <b className="tabular-nums">{formatNumber(social.followers)}</b>{" "}
+                <span className="text-muted-foreground">followers</span>
+              </span>
+              <span>
+                <b className="tabular-nums">{formatNumber(social.following)}</b>{" "}
+                <span className="text-muted-foreground">following</span>
+              </span>
+              {relation !== "self" && social.mutual > 0 && (
+                <span className="text-muted-foreground">
+                  <b className="tabular-nums text-foreground">{social.mutual}</b> mutual friend
+                  {social.mutual === 1 ? "" : "s"}
+                </span>
+              )}
+            </div>
+          )}
+
           <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
             <Calendar className="size-3.5" /> Joined {timeAgo(profile.created_at)}
           </p>
@@ -168,6 +265,33 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
         <StatTile icon={Users} label="Friends" value={stats.friends} accent="text-sky-400" />
         <StatTile icon={Coins} label="Credits" value={formatNumber(profile.credits)} accent="text-gold" />
       </div>
+
+      {/* Trophy case / showcase */}
+      {showcaseGames.length > 0 && (
+        <section>
+          <h2 className="mb-3 flex items-center gap-2 text-lg font-bold">
+            <Trophy className="size-5 text-gold" /> Trophy case
+          </h2>
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {showcaseGames.map((g) => (
+              <Link
+                key={g.slug}
+                href={`/games/${g.slug}`}
+                className="focus-visible-ring group flex items-center gap-3 rounded-xl border border-gold/30 bg-gold/5 p-3 transition-colors hover:bg-gold/10"
+              >
+                <Image
+                  src={g.thumbnail_url ?? "/games/thumbs/snake.svg"}
+                  alt=""
+                  width={40}
+                  height={40}
+                  className="size-10 rounded-lg object-cover"
+                />
+                <p className="truncate text-sm font-semibold">{g.title}</p>
+              </Link>
+            ))}
+          </div>
+        </section>
+      )}
 
       {/* Best scores */}
       {bestScores.length > 0 && (

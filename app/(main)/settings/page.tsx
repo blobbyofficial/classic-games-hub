@@ -2,9 +2,12 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { User, SlidersHorizontal, Coins, Shield, Lock } from "lucide-react";
 import { getCurrentProfile, getCurrentSettings, getFeatureFlags } from "@/lib/supabase/queries";
+import { getUserAchievements, getUserBestScores } from "@/services/profiles";
 import { createClient } from "@/lib/supabase/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSettings } from "@/features/settings/profile-settings";
+import { AppearanceSettings } from "@/features/settings/appearance-settings";
+import { BannerCustomizer } from "@/features/settings/banner-customizer";
 import { PreferencesSettings } from "@/features/settings/preferences-settings";
 import { AdsSettings } from "@/features/settings/ads-settings";
 import { SecuritySettings } from "@/features/settings/security-settings";
@@ -19,6 +22,11 @@ export default async function SettingsPage() {
     getFeatureFlags(),
   ]);
   if (!profile || !settings) redirect("/login?next=/settings");
+
+  const [achievements, bestScores] = await Promise.all([
+    getUserAchievements(profile.id),
+    getUserBestScores(profile.id, 24),
+  ]);
 
   const supabase = await createClient();
   const { data: blocks } = await supabase
@@ -52,8 +60,14 @@ export default async function SettingsPage() {
           </TabsTrigger>
         </TabsList>
 
-        <TabsContent value="profile">
+        <TabsContent value="profile" className="space-y-6">
           <ProfileSettings profile={profile} />
+          <AppearanceSettings
+            profile={profile}
+            achievements={achievements.map((a) => ({ slug: a.slug, name: a.name }))}
+            games={bestScores.map((s) => ({ slug: s.game.slug, title: s.game.title }))}
+          />
+          <BannerCustomizer profile={profile} />
         </TabsContent>
         <TabsContent value="preferences">
           <PreferencesSettings settings={settings} />

@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { ENGINE_LOADERS } from "@/lib/games/registry";
 import { canvasFor, CONTROL_SCHEME, SWIPE_GAMES } from "@/lib/games/config";
+import { useCoarsePointer } from "@/lib/use-coarse-pointer";
 import { submitScore } from "@/actions/games";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { Button } from "@/components/ui/button";
@@ -48,6 +49,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
 
   const { w, h } = canvasFor(engineId);
   const scheme = CONTROL_SCHEME[engineId] ?? "none";
+  const coarse = useCoarsePointer();
 
   const handleGameOver = useCallback(
     async (finalScore: number, durationHint: number) => {
@@ -268,12 +270,15 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
         )}
       </div>
 
-      <TouchControls scheme={scheme} />
+      {/* Touch controls for touch devices; keyboard hints for pointer devices. */}
+      {coarse === true && <TouchControls scheme={scheme} />}
 
-      <p className="text-center text-xs text-muted-foreground">
-        Tip: press <kbd className="rounded border border-border bg-muted px-1">P</kbd> to pause ·{" "}
-        <kbd className="rounded border border-border bg-muted px-1">R</kbd> to restart in most games
-      </p>
+      {coarse === false && (
+        <p className="text-center text-xs text-muted-foreground">
+          Tip: press <kbd className="rounded border border-border bg-muted px-1">P</kbd> to pause ·{" "}
+          <kbd className="rounded border border-border bg-muted px-1">R</kbd> to restart in most games
+        </p>
+      )}
     </div>
   );
 }

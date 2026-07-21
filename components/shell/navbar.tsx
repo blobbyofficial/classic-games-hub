@@ -8,6 +8,7 @@ import { CreditsPill } from "./credits-pill";
 import { LevelPill } from "./level-pill";
 import { NotificationsBell } from "./notifications-bell";
 import { UserMenu } from "./user-menu";
+import { MobileMenu } from "./mobile-menu";
 import { Button } from "@/components/ui/button";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { useSessionStore } from "@/lib/stores/session-store";
@@ -18,7 +19,8 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
-      <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-3 px-4 sm:px-6">
+      <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-3 sm:gap-3 sm:px-6">
+        <MobileMenu />
         <Logo className="lg:w-52" />
 
         <button
@@ -34,8 +36,10 @@ export function Navbar() {
           </kbd>
         </button>
 
-        <div className="ml-auto flex items-center gap-1.5 lg:ml-4">
-          <ThemeToggle />
+        <div className="ml-auto flex items-center gap-1 sm:gap-2 lg:ml-4">
+          <div className="hidden sm:block">
+            <ThemeToggle />
+          </div>
           {userId ? (
             <>
               <div className="hidden sm:block">

@@ -92,6 +92,85 @@ export async function markConversationRead(conversationId: string): Promise<RpcR
   return { ok: true };
 }
 
+export async function postStory(kind: "text" | "achievement", content: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("post_story", { p_kind: kind, p_content: content });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/messages");
+  return data as RpcResult;
+}
+
+export async function createGroup(name: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("create_group", { p_name: name });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/messages");
+  return data as RpcResult;
+}
+
+export async function joinGroup(code: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("join_group", { p_code: code });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/messages");
+  return data as RpcResult;
+}
+
+export async function leaveConversation(id: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { error } = await supabase.rpc("leave_conversation", { p_id: id });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/messages");
+  return { ok: true };
+}
+
+export async function toggleReaction(messageId: number, emoji: string, add: boolean): Promise<RpcResult> {
+  const { supabase, user } = await client();
+  if (add) {
+    const { error } = await supabase
+      .from("message_reactions")
+      .insert({ message_id: messageId, user_id: user.id, emoji });
+    if (error && !error.message.includes("duplicate")) return { ok: false, error: error.message };
+  } else {
+    const { error } = await supabase
+      .from("message_reactions")
+      .delete()
+      .eq("message_id", messageId)
+      .eq("user_id", user.id)
+      .eq("emoji", emoji);
+    if (error) return { ok: false, error: error.message };
+  }
+  return { ok: true };
+}
+
+export async function followUser(userId: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("follow_user", { p_user: userId });
+  if (error) return { ok: false, error: error.message };
+  return data as RpcResult;
+}
+
+export async function unfollowUser(userId: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { error } = await supabase.rpc("unfollow_user", { p_user: userId });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
+/** Save a private nickname/note about another player (only the author sees it). */
+export async function setUserNote(userId: string, nickname: string, note: string): Promise<RpcResult> {
+  const { supabase, user } = await client();
+  const { error } = await supabase.from("user_notes").upsert({
+    author_id: user.id,
+    target_id: userId,
+    nickname: nickname.trim() || null,
+    note: note.trim() || null,
+    updated_at: new Date().toISOString(),
+  });
+  if (error) return { ok: false, error: error.message };
+  return { ok: true };
+}
+
 export async function submitReport(input: unknown): Promise<RpcResult> {
   const parsed = reportSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };

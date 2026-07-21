@@ -10,6 +10,39 @@ export const getShopItems = cache(async (includeStaffOnly = false): Promise<Shop
   return data ?? [];
 });
 
+export const getShopItemBySlug = cache(async (slug: string): Promise<ShopItem | null> => {
+  const supabase = await createClient();
+  const { data } = await supabase.from("shop_items").select("*").eq("slug", slug).maybeSingle();
+  return data ?? null;
+});
+
+export const getWishlist = cache(async (): Promise<ShopItem[]> => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from("wishlist_items")
+    .select("created_at, shop_items(*)")
+    .eq("user_id", user.id)
+    .order("created_at", { ascending: false });
+  return (data ?? []).map((r) => r.shop_items as unknown as ShopItem);
+});
+
+export const getWishlistSlugs = cache(async (): Promise<string[]> => {
+  const supabase = await createClient();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return [];
+  const { data } = await supabase
+    .from("wishlist_items")
+    .select("shop_items(slug)")
+    .eq("user_id", user.id);
+  return (data ?? []).map((r) => (r.shop_items as unknown as { slug: string }).slug);
+});
+
 export interface OwnedItem extends ShopItem {
   acquired_at: string;
   expires_at: string | null;

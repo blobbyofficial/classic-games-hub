@@ -49,6 +49,11 @@ const FRAME_STYLES: Record<string, string> = {
   "frame-staff-aura": "ring-2 ring-rose-400 shadow-[0_0_16px_4px] shadow-rose-500/60 animate-glow-pulse",
   "frame-emerald-ring": "ring-2 ring-emerald-400 shadow-[0_0_12px_2px] shadow-emerald-400/50",
   "frame-frostbite": "ring-2 ring-sky-300 shadow-[0_0_14px_3px] shadow-cyan-400/50 animate-glow-pulse",
+  "frame-rainbow": "ring-2 ring-fuchsia-400 shadow-[0_0_16px_4px] shadow-fuchsia-500/50 animate-glow-pulse",
+  "frame-shadow": "ring-2 ring-slate-700 shadow-[0_0_14px_3px] shadow-slate-900/60",
+  "frame-royal": "ring-2 ring-amber-300 shadow-[0_0_16px_4px] shadow-violet-500/50 animate-glow-pulse",
+  "frame-toxic": "ring-2 ring-lime-400 shadow-[0_0_16px_4px] shadow-lime-500/60 animate-glow-pulse",
+  "frame-dev-aura": "ring-2 ring-cyan-300 shadow-[0_0_18px_5px] shadow-violet-500/60 animate-glow-pulse",
 };
 
 interface UserAvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {

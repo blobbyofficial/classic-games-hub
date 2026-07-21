@@ -54,7 +54,7 @@ export function TouchControls({ scheme }: { scheme: ControlScheme }) {
   if (scheme === "none") return null;
 
   return (
-    <div className="mt-4 flex items-center justify-between gap-4 lg:hidden">
+    <div className="mt-4 flex items-center justify-between gap-4">
       {scheme === "dpad" && (
         <div className="mx-auto grid grid-cols-3 grid-rows-2 gap-1.5">
           <div />

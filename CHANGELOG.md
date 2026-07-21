@@ -1,0 +1,115 @@
+# Changelog
+
+All notable changes to Classic Games Hub. Dates are release targets; see the
+live roadmap at `/roadmap`.
+
+## v1.2.0 — "Identity & Connection"
+
+The biggest social and cosmetic update yet. v1.2.0 makes your profile
+unmistakably yours and turns the Hub into somewhere to hang out, not just play —
+with deep customisation, a real social graph, a modern messenger, group chats,
+stories, and a store & inventory that are finally a pleasure to use.
+
+Everything here is non-pay-to-win; cosmetics are earned or bought with credits
+you win by playing.
+
+### ✨ Profiles 2.0
+
+- **Display-name styles** — a curated set of name treatments (Gold, Neon glow,
+  Fire, Ocean, Rainbow, Elegant, Mono) with a live preview in settings.
+- **Nameplates & name styles everywhere** — your equipped nameplate and name
+  style now render across the whole site: player search, friends, the home
+  leaderboard preview and the full leaderboards, not just your profile.
+- **About-me** — add pronouns and a short status line alongside your bio.
+- **Featured achievement** — pin one achievement to headline your profile.
+- **Trophy case** — pin up to four favourite games to a showcase on your page.
+- **Discord-linked badge** — verified Discord accounts get a badge on their
+  profile, and follower / following / mutual-friend counts are shown.
+
+### 🎨 Cosmetics engine
+
+- **New cosmetics** — five profile themes, four banners, five avatar frames and
+  two new profile effects (Aurora, Fireflies), all purchasable in the shop.
+- **Tiered banners** — a free solid-colour banner for everyone (presets or a
+  custom colour), shop gradient/premade banners, and custom banner-image uploads
+  for Discord-linked members.
+- **Rarity tiers** — every cosmetic shows its rarity (common → legendary) in the
+  shop and inventory.
+- **Staff cosmetics** — unbuyable, staff-only flair (e.g. the Developer Aura).
+
+### 👥 Social
+
+- **Follow** players one-way alongside two-way friendships — and they're
+  notified when you do.
+- **Mutual friends** and **friends-list visibility** (private / friends /
+  followers / public).
+- **Private notes & nicknames** — leave a private note or nickname on anyone's
+  profile that only you can see.
+- **Rich presence** — set your status (online / away / do-not-disturb / sleep /
+  invisible / automatic) and choose exactly who can see it.
+
+### 💬 Messaging
+
+- **Message reactions** — react with emoji; reactions show as grouped chips and
+  sync live to the other person.
+- **Emoji picker** in the composer.
+- **Timestamps, date separators and delivered / seen receipts** (from v1.1.1),
+  with cleaner grouped bubbles.
+- **Group chats** — create a group, share an invite link
+  (`/invite/<code>`), and chat with everyone; groups show member counts and
+  per-message sender names. *(Creating groups is currently limited to
+  Discord-linked members and staff.)*
+- **Stories** — post a 24-hour text story your friends can tap through, with a
+  stories strip on the Messages page. *(Posting is currently limited to
+  Discord-linked members and staff.)*
+
+### 🛍️ Store & inventory
+
+- **Live item previews** — every shop item opens a preview page (in a new tab)
+  that renders the cosmetic on a mock profile before you spend.
+- **Apply from the shop** — apply items you own straight from the shop.
+- **Wishlist & gifting** — wishlist items (viewable and managed from your
+  inventory) and gift them to friends at **75%** of the list price.
+- **Inventory overhaul** — search, type/rarity filters, sorting, clear "Applied"
+  state, and a live boost timer showing the correct time remaining and
+  multiplier.
+
+### 🧭 Interface & quality of life
+
+- **Redesigned navigation** — a proper mobile hamburger drawer with the full
+  navigation and account controls, plus a roomier desktop nav.
+- **Device-appropriate game controls** — on-screen touch controls for touch
+  devices and keyboard hints for pointer devices, based on your actual input
+  rather than screen width.
+- **Flexible sign-in** — email/username + password login and signup alongside
+  Discord.
+
+### 🔧 Under the hood
+
+- New migrations `0020`–`0028`: `discord_linked` sync, presence/visibility
+  settings, Profile-2.0 fields, the `follows`/`user_notes` social graph,
+  `wishlist_items` + `gift_item`, `message_reactions`, group-chat columns +
+  RPCs, `stories`, a cosmetics-catalogue seed, and follow notifications.
+- All new tables use least-privilege Row Level Security; all currency and
+  social mutations go through `SECURITY DEFINER` RPCs.
+
+> **Note on the Discord-linked gate:** group creation, story posting and custom
+> banner uploads are gated to Discord-linked members and staff as an interim
+> stand-in for "boosters" until the free-tier Discord bot lands in a later
+> release. It's a one-line change per RPC to switch to a real booster check.
+
+---
+
+## v1.1.1
+
+Bug-fix release: fixed gradient text rendering as a solid block, added
+long-press flagging to Minesweeper on mobile, fixed fullscreen stretching /
+resolution on games, made the admin "rewarded ads" flag remove all ads
+site-wide, and added `sitemap.xml` + `robots.txt`.
+
+## v1.1.0 — feature complete
+
+Discord-only login and usernames, mobile-first games (touch controls,
+responsive canvases, per-game tuning, safe-area/overscroll), an admin control
+centre, profile customisation (nameplates, staff flair, effects), a living
+economy & events system, and a performance pass.

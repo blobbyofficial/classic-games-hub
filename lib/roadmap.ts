@@ -43,7 +43,7 @@ export const ROADMAP: RoadmapRelease[] = [
     version: "v1.2.0",
     codename: "Identity & Connection",
     status: "in-progress",
-    timeframe: "In progress — current focus",
+    timeframe: "Feature-complete — pending release",
     summary:
       "The release that makes your profile unmistakably yours and the community feel alive: Discord-grade cosmetics, expressive identity, richer friendships, group chats, a modern messenger, and a shop and inventory that are finally a pleasure to use.",
     groups: [
@@ -139,7 +139,7 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Follow users",
             description:
-              "A lightweight one-way follow alongside two-way friendships — keep up with players you admire without needing them to accept.",
+              "A lightweight one-way follow alongside two-way friendships — keep up with players you admire without needing them to accept, and they're notified when you do.",
           },
           {
             title: "Friends-list visibility",
@@ -185,7 +185,7 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Wishlist & gifting",
             description:
-              "Add store items to a public wishlist and gift them to other players at 75% of the normal price — deliberately cheaper than buying for yourself, so gifting is the generous and the smart move.",
+              "Add store items to a wishlist you can view and manage from your inventory, and gift items to other players at 75% of the normal price — deliberately cheaper than buying for yourself, so gifting is the generous and the smart move.",
           },
         ],
       },

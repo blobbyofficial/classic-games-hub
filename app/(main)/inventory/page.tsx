@@ -2,15 +2,16 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Package } from "lucide-react";
 import { getSessionUser } from "@/lib/supabase/queries";
-import { getInventory } from "@/services/shop";
+import { getInventory, getWishlist } from "@/services/shop";
 import { InventoryGrid } from "@/features/economy/inventory-grid";
+import { WishlistSection } from "@/features/economy/wishlist-section";
 
 export const metadata: Metadata = { title: "Inventory" };
 
 export default async function InventoryPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/inventory");
-  const items = await getInventory();
+  const [items, wishlist] = await Promise.all([getInventory(), getWishlist()]);
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -24,6 +25,7 @@ export default async function InventoryPage() {
         </div>
       </div>
       <InventoryGrid items={items} />
+      <WishlistSection items={wishlist} />
     </div>
   );
 }

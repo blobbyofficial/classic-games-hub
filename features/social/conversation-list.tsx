@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { MessageSquare } from "lucide-react";
+import { MessageSquare, Users } from "lucide-react";
 import { UserAvatar } from "@/components/ui/avatar";
 import { PresenceDot } from "@/components/profile/presence-dot";
 import { cn, timeAgo } from "@/lib/utils";
@@ -41,14 +41,27 @@ export function ConversationList({ conversations }: { conversations: Conversatio
               )}
             >
               <div className="relative">
-                <UserAvatar src={c.other_avatar_url} name={c.other_display_name ?? c.other_username} className="size-11" />
-                <span className="absolute -bottom-0.5 -right-0.5">
-                  <PresenceDot lastSeen={c.other_last_seen} className="size-3" />
-                </span>
+                {c.is_group ? (
+                  <span className="grid size-11 place-items-center rounded-full bg-primary/10 text-primary">
+                    <Users className="size-5" />
+                  </span>
+                ) : (
+                  <>
+                    <UserAvatar src={c.other_avatar_url} name={c.title} className="size-11" />
+                    <span className="absolute -bottom-0.5 -right-0.5">
+                      <PresenceDot lastSeen={c.other_last_seen} className="size-3" />
+                    </span>
+                  </>
+                )}
               </div>
               <div className="min-w-0 flex-1">
                 <div className="flex items-center justify-between gap-2">
-                  <p className="truncate text-sm font-medium">{c.other_display_name ?? c.other_username}</p>
+                  <p className="truncate text-sm font-medium">
+                    {c.title}
+                    {c.is_group && (
+                      <span className="ml-1 text-xs font-normal text-muted-foreground">· {c.member_count}</span>
+                    )}
+                  </p>
                   <span className="shrink-0 text-[11px] text-muted-foreground">{timeAgo(c.last_message_at)}</span>
                 </div>
                 <p className={cn("truncate text-xs", c.unread > 0 ? "font-medium text-foreground" : "text-muted-foreground")}>

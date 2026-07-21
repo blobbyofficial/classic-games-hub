@@ -24,6 +24,9 @@ export type ShopKind =
   | "credit_boost";
 export type FriendStatus = "pending" | "accepted" | "declined";
 export type AllowDms = "everyone" | "friends" | "none";
+export type PresenceStatus = "auto" | "online" | "away" | "dnd" | "sleep" | "invisible";
+export type PresenceVisibility = "everyone" | "friends" | "nobody";
+export type FriendsVisibility = "private" | "friends" | "followers" | "public";
 export type ReportStatus = "open" | "resolved" | "dismissed";
 export type AnnouncementLevel = "info" | "update" | "event" | "alert";
 
@@ -45,6 +48,13 @@ export interface Database {
           equipped: Record<string, string>;
           is_banned: boolean;
           needs_username: boolean;
+          discord_linked: boolean;
+          pronouns: string | null;
+          status_text: string | null;
+          favourite_game_slug: string | null;
+          featured_achievement: string | null;
+          showcase: Json;
+          profile_flags: Json;
           last_seen_at: string;
           created_at: string;
           updated_at: string;
@@ -63,6 +73,9 @@ export interface Database {
           allow_friend_requests: boolean;
           allow_dms: AllowDms;
           email_notifications: boolean;
+          presence_status: PresenceStatus;
+          presence_visibility: PresenceVisibility;
+          friends_visibility: FriendsVisibility;
           updated_at: string;
         };
         Insert: { user_id: string } & Partial<Database["public"]["Tables"]["user_settings"]["Row"]>;
@@ -209,14 +222,52 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      follows: {
+        Row: { follower_id: string; following_id: string; created_at: string };
+        Insert: { follower_id: string; following_id: string };
+        Update: never;
+        Relationships: [];
+      };
+      user_notes: {
+        Row: {
+          author_id: string;
+          target_id: string;
+          nickname: string | null;
+          note: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          author_id: string;
+          target_id: string;
+          nickname?: string | null;
+          note?: string | null;
+          updated_at?: string;
+        };
+        Update: { nickname?: string | null; note?: string | null; updated_at?: string };
+        Relationships: [];
+      };
+      wishlist_items: {
+        Row: { user_id: string; item_id: string; created_at: string };
+        Insert: { user_id: string; item_id: string };
+        Update: never;
+        Relationships: [];
+      };
       conversations: {
-        Row: { id: string; created_at: string; last_message_at: string };
+        Row: {
+          id: string;
+          created_at: string;
+          last_message_at: string;
+          is_group: boolean;
+          name: string | null;
+          invite_code: string | null;
+          owner_id: string | null;
+        };
         Insert: never;
         Update: never;
         Relationships: [];
       };
       conversation_members: {
-        Row: { conversation_id: string; user_id: string; joined_at: string; last_read_at: string };
+        Row: { conversation_id: string; user_id: string; joined_at: string; last_read_at: string; role: string };
         Insert: never;
         Update: { last_read_at?: string };
         Relationships: [];
@@ -233,6 +284,26 @@ export interface Database {
         };
         Insert: { conversation_id: string; sender_id: string; content: string };
         Update: { content?: string; edited_at?: string | null; deleted_at?: string | null };
+        Relationships: [];
+      };
+      message_reactions: {
+        Row: { message_id: number; user_id: string; emoji: string; created_at: string };
+        Insert: { message_id: number; user_id: string; emoji: string };
+        Update: never;
+        Relationships: [];
+      };
+      stories: {
+        Row: {
+          id: number;
+          user_id: string;
+          kind: "text" | "achievement";
+          content: string | null;
+          data: Json;
+          created_at: string;
+          expires_at: string;
+        };
+        Insert: never;
+        Update: never;
         Relationships: [];
       };
       shop_items: {
@@ -433,6 +504,10 @@ export interface Database {
       remove_friend: { Args: { p_user: string }; Returns: undefined };
       block_user: { Args: { p_user: string }; Returns: undefined };
       unblock_user: { Args: { p_user: string }; Returns: undefined };
+      follow_user: { Args: { p_user: string }; Returns: Json };
+      unfollow_user: { Args: { p_user: string }; Returns: undefined };
+      profile_social: { Args: { p_target: string }; Returns: Json };
+      gift_item: { Args: { p_slug: string; p_to: string }; Returns: Json };
       get_or_create_dm: { Args: { p_user: string }; Returns: string };
       mark_conversation_read: { Args: { p_conversation: string }; Returns: undefined };
       heartbeat: { Args: Record<string, never>; Returns: undefined };
@@ -511,16 +586,22 @@ export interface Database {
         Returns: {
           conversation_id: string;
           last_message_at: string;
-          other_user_id: string;
-          other_username: string;
-          other_display_name: string | null;
+          is_group: boolean;
+          title: string;
+          other_user_id: string | null;
+          other_username: string | null;
           other_avatar_url: string | null;
-          other_last_seen: string;
+          other_last_seen: string | null;
+          member_count: number;
           last_message: string | null;
           last_message_sender: string | null;
           unread: number;
         }[];
       };
+      create_group: { Args: { p_name: string }; Returns: Json };
+      join_group: { Args: { p_code: string }; Returns: Json };
+      leave_conversation: { Args: { p_id: string }; Returns: undefined };
+      post_story: { Args: { p_kind: string; p_content: string; p_data?: Json }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

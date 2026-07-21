@@ -14,7 +14,13 @@ async function requireUser() {
   return { supabase, user };
 }
 
-export async function updateProfile(input: { display_name?: string; bio?: string }): Promise<RpcResult> {
+export async function updateProfile(input: {
+  display_name?: string;
+  bio?: string;
+  pronouns?: string;
+  status_text?: string;
+  favourite_game_slug?: string;
+}): Promise<RpcResult> {
   const parsed = profileUpdateSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
 
@@ -24,12 +30,66 @@ export async function updateProfile(input: { display_name?: string; bio?: string
     .update({
       display_name: parsed.data.display_name || null,
       bio: parsed.data.bio || null,
+      pronouns: parsed.data.pronouns || null,
+      status_text: parsed.data.status_text || null,
+      favourite_game_slug: parsed.data.favourite_game_slug || null,
     })
     .eq("id", user.id);
   if (error) return { ok: false, error: error.message };
 
   revalidatePath("/settings");
   revalidatePath(`/u/[username]`, "page");
+  return { ok: true };
+}
+
+/** Set (or clear) the display-name style, stored in the equipped jsonb. */
+export async function setNameStyle(style: string): Promise<RpcResult> {
+  const { supabase, user } = await requireUser();
+  const { data: prof } = await supabase.from("profiles").select("equipped").eq("id", user.id).single();
+  const equipped = { ...((prof?.equipped as Record<string, string>) ?? {}) };
+  if (style && style !== "none") equipped.name_style = style;
+  else delete equipped.name_style;
+  const { error } = await supabase.from("profiles").update({ equipped }).eq("id", user.id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/settings");
+  revalidatePath("/u/[username]", "page");
+  revalidatePath("/", "layout");
+  return { ok: true, equipped };
+}
+
+/** Set a plain solid-colour banner (email tier) via equipped.banner, or clear it. */
+export async function setBannerColor(color: string | null): Promise<RpcResult> {
+  const { supabase, user } = await requireUser();
+  const { data: prof } = await supabase.from("profiles").select("equipped").eq("id", user.id).single();
+  const equipped = { ...((prof?.equipped as Record<string, string>) ?? {}) };
+  if (color && /^#[0-9a-fA-F]{6}$/.test(color)) equipped.banner = color;
+  else delete equipped.banner;
+  const { error } = await supabase.from("profiles").update({ equipped }).eq("id", user.id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/settings");
+  revalidatePath("/u/[username]", "page");
+  revalidatePath("/", "layout");
+  return { ok: true, equipped };
+}
+
+/** Pin favourite games to the profile showcase (max 4 slugs). */
+export async function setShowcase(slugs: string[]): Promise<RpcResult> {
+  const { supabase, user } = await requireUser();
+  const clean = [...new Set(slugs.filter((s) => /^[a-z0-9-]+$/.test(s)))].slice(0, 4);
+  const { error } = await supabase.from("profiles").update({ showcase: clean }).eq("id", user.id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/settings");
+  revalidatePath("/u/[username]", "page");
+  return { ok: true };
+}
+
+/** Pin (or clear) a featured achievement on the profile. */
+export async function setFeaturedAchievement(slug: string | null): Promise<RpcResult> {
+  const { supabase, user } = await requireUser();
+  const { error } = await supabase.from("profiles").update({ featured_achievement: slug }).eq("id", user.id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/settings");
+  revalidatePath("/u/[username]", "page");
   return { ok: true };
 }
 

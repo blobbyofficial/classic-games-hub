@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent } from "@/components/ui/card";
 import { PresenceDot } from "@/components/profile/presence-dot";
+import { PlayerName } from "@/components/profile/player-name";
 import { timeAgo } from "@/lib/utils";
 import type { FriendRow, FriendRequestRow, PlayerSearchRow } from "@/types";
 
@@ -105,7 +106,7 @@ function PlayerResult({ player }: { player: PlayerSearchRow }) {
         </Link>
         <div className="min-w-0 flex-1">
           <Link href={`/u/${player.username}`} className="truncate text-sm font-medium hover:underline">
-            {player.display_name ?? player.username}
+            <PlayerName name={player.display_name ?? player.username} equipped={player.equipped} />
           </Link>
           <p className="truncate text-xs text-muted-foreground">
             @{player.username} · Level {player.level}

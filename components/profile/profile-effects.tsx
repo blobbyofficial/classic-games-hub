@@ -133,6 +133,53 @@ function StaffShimmer() {
   );
 }
 
+function Aurora() {
+  const blobs = [
+    { color: "#22d3ee", left: "10%", size: 120, delay: 0 },
+    { color: "#a855f7", left: "45%", size: 150, delay: 0.8 },
+    { color: "#f472b6", left: "75%", size: 110, delay: 1.6 },
+  ];
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+      {blobs.map((b, i) => (
+        <span
+          key={i}
+          className="absolute -top-10 rounded-full opacity-40 blur-2xl animate-glow-pulse"
+          style={{ left: b.left, width: b.size, height: b.size, background: b.color, animationDelay: `${b.delay}s` }}
+        />
+      ))}
+    </div>
+  );
+}
+
+function Fireflies() {
+  const dots = Array.from({ length: 16 });
+  return (
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+      {dots.map((_, i) => {
+        const left = (i * 37) % 100;
+        const top = (i * 53) % 90;
+        const duration = 3 + (i % 5) * 0.6;
+        const delay = (i % 6) * 0.5;
+        return (
+          <span
+            key={i}
+            className="absolute rounded-full bg-amber-300"
+            style={{
+              left: `${left}%`,
+              top: `${top}%`,
+              width: 4,
+              height: 4,
+              boxShadow: "0 0 8px 2px #fcd34d",
+              animation: `float ${duration}s ease-in-out ${delay}s infinite`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 export function ProfileEffects({ slug }: { slug?: string | null }) {
   switch (slug) {
     case "effect-confetti":
@@ -143,6 +190,10 @@ export function ProfileEffects({ slug }: { slug?: string | null }) {
       return <Snow />;
     case "effect-embers":
       return <Embers />;
+    case "effect-aurora":
+      return <Aurora />;
+    case "effect-fireflies":
+      return <Fireflies />;
     case "effect-staff-shimmer":
       return <StaffShimmer />;
     default:
