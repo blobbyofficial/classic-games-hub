@@ -133,3 +133,21 @@ export const RARITY_META: Record<string, { label: string; color: string; ring: s
 export function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
+
+/**
+ * True when a message body is *exactly* a GIF link from a trusted host (Giphy).
+ * We only ever inline-render images from this allowlist — users pick GIFs from
+ * the Giphy picker, never paste arbitrary URLs — so a stray image link from
+ * anywhere else is shown as plain text, not embedded.
+ */
+export function isGifUrl(content: string): boolean {
+  const s = content.trim();
+  if (/\s/.test(s)) return false; // must be a bare URL, nothing else
+  try {
+    const u = new URL(s);
+    if (u.protocol !== "https:") return false;
+    return u.hostname === "giphy.com" || u.hostname.endsWith(".giphy.com");
+  } catch {
+    return false;
+  }
+}

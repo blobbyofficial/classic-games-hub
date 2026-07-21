@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { PresenceDot } from "@/components/profile/presence-dot";
 import { SITE } from "@/lib/constants";
-import { cn, isOnline } from "@/lib/utils";
+import { cn, isOnline, isGifUrl } from "@/lib/utils";
+import { GifPicker } from "./gif-picker";
 import type { ConversationDetail } from "@/services/social";
 
 interface Reaction {
@@ -264,9 +265,10 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
     });
   };
 
-  const submit = (e: React.FormEvent) => {
-    e.preventDefault();
-    const content = text.trim();
+  // Send any message body (typed text or a picked GIF's URL) with an optimistic
+  // bubble that resolves from the action's return value.
+  const send = (body: string) => {
+    const content = body.trim();
     if (!content) return;
     const optimistic: Msg = {
       id: `tmp-${Date.now()}`,
@@ -276,7 +278,6 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
       pending: true,
     };
     setMessages((prev) => [...prev, optimistic]);
-    setText("");
     scrollToBottom();
     startSend(async () => {
       const res = await sendMessage(conversation.id, content);
@@ -295,6 +296,13 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
           : prev.map((m) => (m.id === optimistic.id ? real : m)),
       );
     });
+  };
+
+  const submit = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!text.trim()) return;
+    send(text);
+    setText("");
   };
 
   // The most recent message I sent — the only one that carries a read receipt.
@@ -412,17 +420,30 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
                   </span>
                 )}
                 <div className={cn("flex items-center gap-1", mine ? "flex-row-reverse" : "flex-row")}>
-                  <div
-                    className={cn(
-                      "max-w-[75%] px-3.5 py-2 text-sm",
-                      mine
-                        ? "rounded-2xl rounded-br-md bg-primary text-primary-foreground"
-                        : "rounded-2xl rounded-bl-md bg-muted",
-                      m.pending && "opacity-60",
-                    )}
-                  >
-                    <p className="whitespace-pre-wrap break-words">{m.content}</p>
-                  </div>
+                  {isGifUrl(m.content) ? (
+                    <div className={cn("max-w-[75%] overflow-hidden rounded-2xl", m.pending && "opacity-60")}>
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={m.content}
+                        alt="GIF"
+                        loading="lazy"
+                        className="block max-h-64 w-auto max-w-full"
+                        onLoad={scrollToBottom}
+                      />
+                    </div>
+                  ) : (
+                    <div
+                      className={cn(
+                        "max-w-[75%] px-3.5 py-2 text-sm",
+                        mine
+                          ? "rounded-2xl rounded-br-md bg-primary text-primary-foreground"
+                          : "rounded-2xl rounded-bl-md bg-muted",
+                        m.pending && "opacity-60",
+                      )}
+                    >
+                      <p className="whitespace-pre-wrap break-words">{m.content}</p>
+                    </div>
+                  )}
                   {typeof m.id === "number" && (
                     <Popover>
                       <PopoverTrigger asChild>
@@ -523,6 +544,7 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
             </div>
           </PopoverContent>
         </Popover>
+        <GifPicker onSelect={send} />
         <Input
           value={text}
           onChange={(e) => onType(e.target.value)}
