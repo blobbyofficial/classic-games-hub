@@ -150,16 +150,25 @@ export async function adminSetGameStatus(
 }
 
 export async function adminPublishAnnouncement(input: unknown): Promise<RpcResult> {
-  const profile = await requireStaff();
+  await requireStaff();
   const parsed = announcementSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  const { title, body, level, published, notify, link_label, link_href } = parsed.data;
 
   const supabase = await createClient();
-  const { error } = await supabase.from("announcements").insert({ ...parsed.data, author_id: profile.id });
+  const { data, error } = await supabase.rpc("broadcast_announcement", {
+    p_title: title,
+    p_body: body,
+    p_level: level,
+    p_link_label: link_label ?? "",
+    p_link_href: link_href ?? "",
+    p_publish: published,
+    p_notify: Boolean(notify) && published,
+  });
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/announcements");
-  revalidatePath("/");
-  return { ok: true };
+  revalidatePath("/", "layout");
+  return data as RpcResult;
 }
 
 export async function adminResolveReport(

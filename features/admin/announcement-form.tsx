@@ -19,18 +19,37 @@ export function AnnouncementForm() {
   const [body, setBody] = useState("");
   const [level, setLevel] = useState("info");
   const [publish, setPublish] = useState(true);
+  const [notify, setNotify] = useState(true);
+  const [linkLabel, setLinkLabel] = useState("");
+  const [linkHref, setLinkHref] = useState("");
   const [pending, start] = useTransition();
 
   const submit = () =>
     start(async () => {
-      const res = await adminPublishAnnouncement({ title, body, level, published: publish });
+      const res = await adminPublishAnnouncement({
+        title,
+        body,
+        level,
+        published: publish,
+        notify,
+        link_label: linkLabel,
+        link_href: linkHref,
+      });
       if (!res.ok) {
         toast.error(res.error ?? "Failed");
         return;
       }
-      toast.success(publish ? "Announcement published to all players" : "Announcement saved as draft");
+      toast.success(
+        publish
+          ? notify
+            ? "Published & sent to every player"
+            : "Announcement published"
+          : "Announcement saved as draft",
+      );
       setTitle("");
       setBody("");
+      setLinkLabel("");
+      setLinkHref("");
       router.refresh();
     });
 
@@ -50,6 +69,16 @@ export function AnnouncementForm() {
           <Label>Body</Label>
           <Textarea value={body} onChange={(e) => setBody(e.target.value)} rows={4} maxLength={4000} />
         </div>
+        <div className="grid gap-3 sm:grid-cols-2">
+          <div className="space-y-1.5">
+            <Label>Link label (optional)</Label>
+            <Input value={linkLabel} onChange={(e) => setLinkLabel(e.target.value)} maxLength={40} placeholder="Learn more" />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Link URL (optional)</Label>
+            <Input value={linkHref} onChange={(e) => setLinkHref(e.target.value)} maxLength={300} placeholder="/shop or https://…" />
+          </div>
+        </div>
         <div className="flex flex-wrap items-end gap-4">
           <div className="space-y-1.5">
             <Label>Level</Label>
@@ -67,7 +96,11 @@ export function AnnouncementForm() {
           </div>
           <label className="flex items-center gap-2 text-sm">
             <Switch checked={publish} onCheckedChange={setPublish} />
-            Publish now (notifies everyone)
+            Publish now
+          </label>
+          <label className="flex items-center gap-2 text-sm">
+            <Switch checked={notify} onCheckedChange={setNotify} disabled={!publish} />
+            Notify everyone
           </label>
           <Button variant="gradient" className="ml-auto" onClick={submit} disabled={pending || !title || !body}>
             {pending ? "Sending…" : publish ? "Publish" : "Save draft"}

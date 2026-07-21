@@ -458,6 +458,8 @@ export interface Database {
           level: AnnouncementLevel;
           published: boolean;
           published_at: string | null;
+          link_label: string | null;
+          link_href: string | null;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["announcements"]["Row"]> & { title: string; body: string };
@@ -602,6 +604,18 @@ export interface Database {
       join_group: { Args: { p_code: string }; Returns: Json };
       leave_conversation: { Args: { p_id: string }; Returns: undefined };
       post_story: { Args: { p_kind: string; p_content: string; p_data?: Json }; Returns: Json };
+      broadcast_announcement: {
+        Args: {
+          p_title: string;
+          p_body: string;
+          p_level: string;
+          p_link_label: string;
+          p_link_href: string;
+          p_publish: boolean;
+          p_notify: boolean;
+        };
+        Returns: Json;
+      };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

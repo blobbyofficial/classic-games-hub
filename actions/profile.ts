@@ -172,6 +172,19 @@ export async function uploadUserMedia(
   return { ok: true, url: data.publicUrl };
 }
 
+export async function markNotificationRead(id: number): Promise<RpcResult> {
+  const { supabase, user } = await requireUser();
+  const { error } = await supabase
+    .from("notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", id)
+    .eq("user_id", user.id)
+    .is("read_at", null);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/", "layout");
+  return { ok: true };
+}
+
 export async function markNotificationsRead(): Promise<RpcResult> {
   const { supabase, user } = await requireUser();
   const { error } = await supabase

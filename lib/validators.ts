@@ -90,4 +90,16 @@ export const announcementSchema = z.object({
   body: z.string().min(1).max(4000),
   level: z.enum(["info", "update", "event", "alert"]),
   published: z.boolean(),
+  notify: z.boolean().optional(),
+  link_label: z.string().trim().max(40).optional().or(z.literal("")),
+  link_href: z
+    .string()
+    .trim()
+    .max(300)
+    .refine(
+      (v) => v === "" || v.startsWith("/") || /^https?:\/\//.test(v),
+      "Use a full URL or an internal path starting with /",
+    )
+    .optional()
+    .or(z.literal("")),
 });
