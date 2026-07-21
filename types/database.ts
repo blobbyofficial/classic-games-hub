@@ -253,13 +253,21 @@ export interface Database {
         Relationships: [];
       };
       conversations: {
-        Row: { id: string; created_at: string; last_message_at: string };
+        Row: {
+          id: string;
+          created_at: string;
+          last_message_at: string;
+          is_group: boolean;
+          name: string | null;
+          invite_code: string | null;
+          owner_id: string | null;
+        };
         Insert: never;
         Update: never;
         Relationships: [];
       };
       conversation_members: {
-        Row: { conversation_id: string; user_id: string; joined_at: string; last_read_at: string };
+        Row: { conversation_id: string; user_id: string; joined_at: string; last_read_at: string; role: string };
         Insert: never;
         Update: { last_read_at?: string };
         Relationships: [];
@@ -564,16 +572,21 @@ export interface Database {
         Returns: {
           conversation_id: string;
           last_message_at: string;
-          other_user_id: string;
-          other_username: string;
-          other_display_name: string | null;
+          is_group: boolean;
+          title: string;
+          other_user_id: string | null;
+          other_username: string | null;
           other_avatar_url: string | null;
-          other_last_seen: string;
+          other_last_seen: string | null;
+          member_count: number;
           last_message: string | null;
           last_message_sender: string | null;
           unread: number;
         }[];
       };
+      create_group: { Args: { p_name: string }; Returns: Json };
+      join_group: { Args: { p_code: string }; Returns: Json };
+      leave_conversation: { Args: { p_id: string }; Returns: undefined };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

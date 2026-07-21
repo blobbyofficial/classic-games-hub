@@ -92,6 +92,30 @@ export async function markConversationRead(conversationId: string): Promise<RpcR
   return { ok: true };
 }
 
+export async function createGroup(name: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("create_group", { p_name: name });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/messages");
+  return data as RpcResult;
+}
+
+export async function joinGroup(code: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("join_group", { p_code: code });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/messages");
+  return data as RpcResult;
+}
+
+export async function leaveConversation(id: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { error } = await supabase.rpc("leave_conversation", { p_id: id });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/messages");
+  return { ok: true };
+}
+
 export async function toggleReaction(messageId: number, emoji: string, add: boolean): Promise<RpcResult> {
   const { supabase, user } = await client();
   if (add) {

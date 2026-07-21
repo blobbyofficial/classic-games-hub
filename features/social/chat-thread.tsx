@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
-import { ChevronLeft, Send, SmilePlus } from "lucide-react";
+import { ChevronLeft, Send, SmilePlus, Users } from "lucide-react";
 import { toast } from "sonner";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
@@ -96,6 +96,8 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
   const scrollRef = useRef<HTMLDivElement>(null);
   const typingTimeout = useRef<ReturnType<typeof setTimeout> | null>(null);
   const other = conversation.other;
+  const isGroup = conversation.isGroup;
+  const memberMap = new Map(conversation.members.map((mem) => [mem.id, mem]));
 
   const scrollToBottom = () => {
     requestAnimationFrame(() => scrollRef.current?.scrollTo({ top: scrollRef.current.scrollHeight, behavior: "smooth" }));
@@ -142,7 +144,7 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
         },
         (payload) => {
           const row = payload.new as { user_id: string; last_read_at: string | null };
-          if (row.user_id === other.id && row.last_read_at) setOtherReadAt(row.last_read_at);
+          if (row.user_id === other?.id && row.last_read_at) setOtherReadAt(row.last_read_at);
         },
       )
       .on("broadcast", { event: "typing" }, (payload) => {
@@ -162,7 +164,7 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
     return () => {
       void supabase.removeChannel(channel);
     };
-  }, [conversation.id, me, other.id]);
+  }, [conversation.id, me, other?.id]);
 
   const onType = (v: string) => {
     setText(v);
@@ -222,27 +224,47 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
             <ChevronLeft />
           </Link>
         </Button>
-        <Link href={`/u/${other.username}`} className="relative">
-          <UserAvatar src={other.avatar_url} name={other.display_name ?? other.username} className="size-9" />
-          <span className="absolute -bottom-0.5 -right-0.5">
-            <PresenceDot lastSeen={other.last_seen_at} className="size-3" />
-          </span>
-        </Link>
-        <div className="min-w-0">
-          <Link href={`/u/${other.username}`} className="truncate text-sm font-semibold hover:underline">
-            {other.display_name ?? other.username}
-          </Link>
-          <p className="text-xs text-muted-foreground">
-            {otherTyping ? "typing…" : isOnline(other.last_seen_at) ? "Online" : "Offline"}
-          </p>
-        </div>
+        {isGroup ? (
+          <>
+            <span className="grid size-9 place-items-center rounded-full bg-primary/10 text-primary">
+              <Users className="size-5" />
+            </span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{conversation.name ?? "Group"}</p>
+              <p className="text-xs text-muted-foreground">
+                {otherTyping ? "someone is typing…" : `${conversation.members.length + 1} members`}
+              </p>
+            </div>
+          </>
+        ) : (
+          other && (
+            <>
+              <Link href={`/u/${other.username}`} className="relative">
+                <UserAvatar src={other.avatar_url} name={other.display_name ?? other.username} className="size-9" />
+                <span className="absolute -bottom-0.5 -right-0.5">
+                  <PresenceDot lastSeen={other.last_seen_at} className="size-3" />
+                </span>
+              </Link>
+              <div className="min-w-0">
+                <Link href={`/u/${other.username}`} className="truncate text-sm font-semibold hover:underline">
+                  {other.display_name ?? other.username}
+                </Link>
+                <p className="text-xs text-muted-foreground">
+                  {otherTyping ? "typing…" : isOnline(other.last_seen_at) ? "Online" : "Offline"}
+                </p>
+              </div>
+            </>
+          )
+        )}
       </div>
 
       {/* Messages */}
       <div ref={scrollRef} className="flex-1 space-y-2 overflow-y-auto p-4">
         {messages.length === 0 && (
           <p className="py-8 text-center text-sm text-muted-foreground">
-            Say hi to {other.display_name ?? other.username}!
+            {isGroup
+              ? `This is the start of ${conversation.name ?? "the group"}. Say hello!`
+              : `Say hi to ${other?.display_name ?? other?.username}!`}
           </p>
         )}
         {messages.map((m, i) => {
@@ -281,6 +303,11 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
                   startGroup ? "mt-2" : "mt-0.5",
                 )}
               >
+                {isGroup && !mine && startGroup && (
+                  <span className="mb-0.5 px-1 text-[0.7rem] font-medium text-muted-foreground">
+                    {memberMap.get(m.sender_id)?.display_name ?? memberMap.get(m.sender_id)?.username ?? "Unknown"}
+                  </span>
+                )}
                 <div className={cn("flex items-center gap-1", mine ? "flex-row-reverse" : "flex-row")}>
                   <div
                     className={cn(
@@ -345,7 +372,9 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
                 {endGroup && (
                   <p className="mt-0.5 px-1 text-[0.65rem] text-muted-foreground">
                     {timeFmt.format(new Date(m.created_at))}
-                    {isMyLast && !m.pending && <span className="ml-1">· {seen ? "Seen" : "Delivered"}</span>}
+                    {!isGroup && isMyLast && !m.pending && (
+                      <span className="ml-1">· {seen ? "Seen" : "Delivered"}</span>
+                    )}
                     {isMyLast && m.pending && <span className="ml-1">· Sending…</span>}
                   </p>
                 )}
