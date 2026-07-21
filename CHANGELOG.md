@@ -3,6 +3,42 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.2.2 — "Arcade & Chat Polish"
+
+A quality pass on playing and chatting.
+
+### 💬 Messaging
+
+- **Send GIFs** — a Discord-style GIF picker in the composer, powered by Giphy.
+  Search or browse trending GIFs and tap one to send; it renders inline as an
+  image. You pick from Giphy only (no uploads or pasted image URLs), and only
+  Giphy links are ever embedded. *(Requires a `GIPHY_API_KEY`; without it the
+  picker simply shows no results.)*
+- **Reliable sending** — messages no longer get stuck on "Sending…" until a
+  refresh. A sent message resolves the instant the server confirms it, rather
+  than waiting on the realtime echo.
+- **Live, lightweight updates** — the thread stays live for sent and received
+  messages without reloading the whole page; a cheap background sync fills in
+  anything realtime misses.
+
+### 🎮 Games
+
+- **Six games rebuilt** — Simon, 15 Puzzle, Lights Out, Bubble Pop, Target Rush
+  and Reversi rebuilt as animated, mobile-first, tactile canvas games to match
+  the Tic-Tac-Toe and Connect Four bar.
+
+### 🎨 Cosmetics & shop
+
+- **Cosmetics glow-up** — the kept nameplates, frames, effects, themes, banners,
+  badges and boosts had their particles and animations reworked to a
+  Discord-tier bar, all reduced-motion friendly.
+- **Shop refinement** — a curated cull of overlapping cosmetics with automatic
+  credit refunds.
+- **Group-creation fix** — creating a group no longer errors on the invite-code
+  step; groups create cleanly.
+
+---
+
 ## v1.2.1 — "Notifications & Polish"
 
 A small point release on top of v1.2.0.

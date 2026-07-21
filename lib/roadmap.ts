@@ -292,6 +292,66 @@ export const ROADMAP: RoadmapRelease[] = [
     ],
   },
   {
+    version: "v1.2.2",
+    codename: "Arcade & Chat Polish",
+    status: "shipped",
+    timeframe: "Shipped — point release",
+    summary:
+      "A quality pass on the two things people do most — play and chat. Six more games rebuilt to a modern, tactile bar; the kept cosmetics given a Discord-tier animation glow-up; and messaging made genuinely reliable, now with GIFs.",
+    groups: [
+      {
+        heading: "Messaging",
+        icon: "MessageSquare",
+        blurb: "Chat should feel instant and alive — and a little more fun.",
+        items: [
+          {
+            title: "Send GIFs",
+            description:
+              "A Discord-style GIF picker in the composer, powered by Giphy: search or browse trending GIFs and tap one to send. It arrives as a message that renders inline as an image. You pick from Giphy only — no uploading or pasting your own image URLs — so it stays clean and safe.",
+          },
+          {
+            title: "Reliable sending",
+            description:
+              "Messages no longer get stuck on 'Sending…' until you refresh. A sent message now resolves the instant the server confirms it, independent of the realtime echo.",
+          },
+          {
+            title: "Live, lightweight updates",
+            description:
+              "The thread stays live for both sent and received messages without ever reloading the whole page — a cheap background sync fills in anything realtime misses, so you see new messages within seconds.",
+          },
+        ],
+      },
+      {
+        heading: "Games",
+        icon: "Gamepad2",
+        blurb: "Every game held to the standard set by Tic-Tac-Toe and Connect Four.",
+        items: [
+          {
+            title: "Six games rebuilt",
+            description:
+              "Simon, 15 Puzzle, Lights Out, Bubble Pop, Target Rush and Reversi rebuilt from scratch as animated, mobile-first, tactile canvas games — glowing feedback, satisfying motion and smarter opponents where it counts.",
+          },
+        ],
+      },
+      {
+        heading: "Cosmetics & shop",
+        icon: "Sparkles",
+        items: [
+          {
+            title: "Cosmetics glow-up",
+            description:
+              "The kept nameplates, frames, effects, themes, banners, badges and boosts had their particles and animations reworked to a Discord-tier bar — flowing gradients, travelling sheens, rotating rims and layered particle systems, all reduced-motion friendly.",
+          },
+          {
+            title: "Shop refinement",
+            description:
+              "A curated cull of overlapping cosmetics with automatic credit refunds, and the group-creation bug fixed so groups always create cleanly.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.3.0",
     codename: "Living Arcade",
     status: "later",
