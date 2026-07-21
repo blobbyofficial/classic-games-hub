@@ -10,7 +10,7 @@ import { PlayerName } from "@/components/profile/player-name";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { compactNumber } from "@/lib/utils";
+import { cn, compactNumber } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Leaderboards",
@@ -29,6 +29,29 @@ export default async function LeaderboardsPage({
   const rows = global ?? [];
   const selected = gameSlug && games.some((g) => g.slug === gameSlug) ? gameSlug : games[0]?.slug;
   const medal = ["text-gold", "text-slate-300", "text-amber-600"];
+  const PODIUM = {
+    1: {
+      avatar: "size-20",
+      ring: "ring-gold",
+      badge: "bg-gold",
+      pedestal: "from-gold/70 to-gold/30",
+      height: "h-24",
+    },
+    2: {
+      avatar: "size-14",
+      ring: "ring-slate-300",
+      badge: "bg-slate-400",
+      pedestal: "from-slate-300/70 to-slate-300/25",
+      height: "h-16",
+    },
+    3: {
+      avatar: "size-14",
+      ring: "ring-amber-600",
+      badge: "bg-amber-600",
+      pedestal: "from-amber-600/70 to-amber-600/25",
+      height: "h-12",
+    },
+  } as const;
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -50,30 +73,48 @@ export default async function LeaderboardsPage({
 
         <TabsContent value="global">
           {rows.length >= 3 && (
-            <div className="mb-4 grid grid-cols-3 gap-3">
-              {[rows[1], rows[0], rows[2]].map((r, idx) => {
-                const rank = r.rank;
-                const tall = rank === 1;
+            <div className="mb-6 grid grid-cols-3 items-end gap-2 sm:gap-4">
+              {[rows[1], rows[0], rows[2]].map((r) => {
+                const style = PODIUM[r.rank as 1 | 2 | 3];
                 return (
-                  <Link
-                    key={r.user_id}
-                    href={`/u/${r.username}`}
-                    className={`flex flex-col items-center rounded-2xl border border-border bg-card p-4 ${tall ? "-mt-2 border-gold/40" : "mt-2"}`}
-                  >
-                    <div className="relative">
+                  <Link key={r.user_id} href={`/u/${r.username}`} className="group flex flex-col items-center">
+                    <div className="relative mb-2">
+                      {r.rank === 1 && (
+                        <Crown className="absolute -top-5 left-1/2 size-6 -translate-x-1/2 text-gold drop-shadow motion-safe:animate-glow-pulse" />
+                      )}
                       <UserAvatar
                         src={r.avatar_url}
                         name={r.display_name ?? r.username}
                         frame={r.equipped?.avatar_frame}
-                        className={tall ? "size-16" : "size-12"}
+                        className={cn(
+                          "border-2 border-card ring-2 transition-transform group-hover:scale-105",
+                          style.ring,
+                          style.avatar,
+                        )}
                       />
-                      <Crown className={`absolute -top-3 left-1/2 size-5 -translate-x-1/2 ${medal[rank - 1]}`} />
+                      <span
+                        className={cn(
+                          "absolute -bottom-1 -right-1 grid size-6 place-items-center rounded-full text-xs font-black text-white ring-2 ring-card",
+                          style.badge,
+                        )}
+                      >
+                        {r.rank}
+                      </span>
                     </div>
-                    <p className="mt-2 truncate text-sm font-semibold">
+                    <p className="max-w-full truncate px-1 text-center text-sm font-semibold">
                       <PlayerName name={r.display_name ?? r.username} equipped={r.equipped} />
                     </p>
-                    <p className="text-xs text-muted-foreground">Lvl {r.level}</p>
-                    <p className="mt-1 text-sm font-bold text-primary">{compactNumber(r.xp)} XP</p>
+                    <p className="text-[11px] text-muted-foreground">Lvl {r.level}</p>
+                    <p className="text-sm font-bold text-primary">{compactNumber(r.xp)} XP</p>
+                    <div
+                      className={cn(
+                        "mt-2 grid w-full place-items-center rounded-t-xl bg-gradient-to-b text-2xl font-black text-white/90 shadow-inner",
+                        style.pedestal,
+                        style.height,
+                      )}
+                    >
+                      {r.rank}
+                    </div>
                   </Link>
                 );
               })}
