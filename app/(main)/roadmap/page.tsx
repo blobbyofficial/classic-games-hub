@@ -17,6 +17,7 @@ import {
   Gamepad2,
   LayoutDashboard,
   Megaphone,
+  Bot,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -44,6 +45,7 @@ const ICONS: Record<string, LucideIcon> = {
   Gamepad2,
   LayoutDashboard,
   Megaphone,
+  Bot,
 };
 
 function StatusPill({ status, className }: { status: RoadmapStatus; className?: string }) {

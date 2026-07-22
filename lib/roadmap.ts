@@ -352,6 +352,73 @@ export const ROADMAP: RoadmapRelease[] = [
     ],
   },
   {
+    version: "v1.2.3",
+    codename: "The Bot Update",
+    status: "shipped",
+    timeframe: "Shipped",
+    summary:
+      "The Discord bot becomes a first-class citizen — rebuilt serverlessly so it runs for free, with secure account linking, an Arcane-replacing level system, automatic role sync, and a proper legal foundation for the whole platform.",
+    groups: [
+      {
+        heading: "Discord bot 2.0",
+        icon: "Bot",
+        blurb: "One bot, wired straight into your Hub account — no paid hosting anywhere.",
+        items: [
+          {
+            title: "Serverless slash commands",
+            description:
+              "All commands (/link, /rank, /levels, /daily, /pay, /profile, /leaderboard, /sync, moderation) now run through Discord HTTP interactions served by the website itself — signature-verified, free, and always on.",
+          },
+          {
+            title: "Secure account linking",
+            description:
+              "Link Discord from Settings → Connections via Discord OAuth, or with a one-time /link code minted in the server. Both paths prove you own the Discord account; unlink any time.",
+          },
+          {
+            title: "Discord levels (goodbye Arcane)",
+            description:
+              "Chat XP with configurable rates, cooldowns and level curve — anti-spam enforced in the database. /rank and /levels leaderboards, level-up announcements, website notifications, and an optional XP trickle into your Hub level.",
+          },
+          {
+            title: "Role sync",
+            description:
+              "Hub badges, achievements, staff status, nameplates and levels map to Discord roles. Synced on change, on join, on /sync and nightly — the website is always the source of truth.",
+          },
+          {
+            title: "Admin bot controls",
+            description:
+              "A new Admin → Discord bot page to tune XP rates, curves, announcements and the role map without touching code.",
+          },
+        ],
+      },
+      {
+        heading: "Platform",
+        icon: "Sparkles",
+        items: [
+          {
+            title: "Level-milestone unlocks",
+            description:
+              "Levelling now unlocks real features: create groups at level 10 and post stories at level 15 — or link Discord for instant access, as before.",
+          },
+          {
+            title: "Admin analytics",
+            description:
+              "A new Admin → Analytics page: daily/weekly/monthly active players, plays per day, sign-ups per day and average session length — computed from existing data, no extra tracking.",
+          },
+          {
+            title: "Terms of Service & Privacy Policy",
+            description:
+              "Proper, readable legal pages written for UK GDPR and linked from the footer, sign-up and settings — describing exactly what the platform actually collects.",
+          },
+          {
+            title: "Social share card",
+            description: "Links to the Hub now unfurl with a proper branded preview image.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.3.0",
     codename: "Living Arcade",
     status: "later",
@@ -372,7 +439,8 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Level-milestone unlocks",
             description:
-              "Hitting a level milestone unlocks a real feature, giving levelling a point beyond a number. A first-draft ladder: L5 buy background music · L10 create groups · L15 stories · L20 extra loadout preset slots · L30 a vanity profile URL · L50 an exclusive mythic cosmetic. Gating features like groups behind levels also quietly fights spam.",
+              "Hitting a level milestone unlocks a real feature, giving levelling a point beyond a number. Shipped in v1.2.3: L10 create groups · L15 stories. Still to come: L5 background music · L20 extra loadout preset slots · L30 a vanity profile URL · L50 an exclusive mythic cosmetic.",
+            status: "in-progress",
           },
           {
             title: "Message streaks",

@@ -61,7 +61,7 @@ export function StoriesStrip({ stories, currentUser }: { stories: StoryItem[]; c
     <div className="flex gap-3 overflow-x-auto pb-1">
       {/* Your story */}
       <button
-        onClick={() => (mine ? setViewing(mine) : currentUser.canPost ? setComposeOpen(true) : toast.error("Link your Discord account to post stories"))}
+        onClick={() => (mine ? setViewing(mine) : currentUser.canPost ? setComposeOpen(true) : toast.error("Link your Discord account or reach level 15 to post stories"))}
         className="flex shrink-0 flex-col items-center gap-1"
       >
         <span className="relative">

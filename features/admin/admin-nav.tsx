@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Gamepad2, Flag, Megaphone, Flag as FlagIcon, ScrollText, ToggleRight, Bot } from "lucide-react";
+import { LayoutDashboard, Users, Gamepad2, Flag, Megaphone, Flag as FlagIcon, ScrollText, ToggleRight, Bot, BarChart3 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
   { href: "/admin", label: "Overview", icon: LayoutDashboard, exact: true },
   { href: "/admin/users", label: "Users", icon: Users },
+  { href: "/admin/analytics", label: "Analytics", icon: BarChart3 },
   { href: "/admin/games", label: "Games", icon: Gamepad2 },
   { href: "/admin/reports", label: "Reports", icon: Flag },
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },

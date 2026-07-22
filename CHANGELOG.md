@@ -3,6 +3,51 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.2.3 — "The Bot Update"
+
+The Discord bot becomes a first-class, free-to-run part of the platform — plus
+the Hub's legal foundation.
+
+### 🤖 Discord bot 2.0 (replaces Arcane for levelling)
+
+- **Serverless slash commands** — `/link`, `/unlink`, `/profile`, `/balance`,
+  `/daily`, `/pay`, `/rank`, `/levels`, `/leaderboard`, `/sync`, `/help`,
+  `/warn`, `/timeout`, `/ban` now run through Discord HTTP interactions served
+  by the website on Vercel (Ed25519-verified). No hosted bot process, no
+  hosting bill. *(See `docs/discord-bot.md` for setup.)*
+- **Secure account linking** — link Discord from **Settings → Connections**
+  via Discord OAuth, or with a one-time `/link` code minted in the server.
+  Both flows prove you own the Discord account; unlink any time (with
+  lock-out protection for Discord-only sign-ins).
+- **Discord levels** — chat XP with configurable rates, cooldown and level
+  curve (MEE6/Arcane-style defaults), anti-spam enforced in Postgres,
+  `/rank` + `/levels`, level-up announcements, website notifications for
+  linked players, and an optional XP trickle into your Hub level.
+- **Role sync** — Hub badges, achievements, staff status, nameplates and
+  levels map to Discord roles via an admin-editable role map. Synced on
+  change, on server join, on `/sync`, and nightly; the website is the source
+  of truth, and banned accounts lose managed roles.
+- **Admin → Discord bot** — tune XP rates, curves, announcements and the role
+  map from the dashboard; run a full role sync on demand.
+- The old always-on bot is now an optional **companion worker** (`bot/`) that
+  only covers what webhooks can't: chat-message XP, the live feed, stat
+  counters and join-time sync.
+
+### 🏛️ Platform
+
+- **Terms of Service & Privacy Policy** — readable, UK-GDPR-aware legal pages
+  (`/legal/terms`, `/legal/privacy`) that describe exactly what the platform
+  actually collects, linked from the footer, sign-up and settings.
+- **Level-milestone unlocks** — create groups at level 10 and post stories at
+  level 15, or link Discord for instant access as before.
+- **Admin analytics** — active players (1/7/30 days), plays per day, sign-ups
+  per day and average session length at **Admin → Analytics** — computed from
+  existing data, no new tracking.
+- **Social share card** — links to the Hub now unfurl with a branded preview
+  image.
+- **Security hardening** — tightened `EXECUTE` grants flagged by the Supabase
+  security advisor (migration `0034`).
+
 ## v1.2.2 — "Arcade & Chat Polish"
 
 A quality pass on playing and chatting.

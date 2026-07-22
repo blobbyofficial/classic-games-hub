@@ -86,7 +86,10 @@ admin level/XP + banner/event tooling, nameplates & staff flair, player search,
 seasonal multipliers, the store expansion and challenge system. **v1.2.0**
 adds `0020`–`0028`: `discord_linked` detection + presence/visibility settings,
 Profile-2.0 fields, the follows/notes social graph, wishlist + gifting, message
-reactions, group chats, stories, and a cosmetics-catalogue expansion.
+reactions, group chats, stories, and a cosmetics-catalogue expansion. **v1.2.3**
+adds `0033`–`0035`: the Discord bot v2 schema (`discord_links`, link codes,
+`discord_levels`, `discord_bot_config` + service-role RPCs), security
+hardening from the Supabase advisor, and level-milestone unlocks.
 
 ## Getting started
 
@@ -154,8 +157,15 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
   inventory with search, filters and live boost timers.
 - **Optional rewarded ads** — an opt-in "2× credits" setting, fully removable
   via an admin flag; never intrusive.
+- **Discord bot** — serverless slash commands (economy, profiles, `/rank`
+  levels, role sync, moderation) served by the site itself, secure account
+  linking from Settings → Connections, an Arcane-replacing level system and
+  automatic role sync. See `docs/discord-bot.md`.
 - **Admin dashboard** — manage users, games, reports, announcements, credits,
-  seasonal events, feature flags, and read the audit log.
+  seasonal events, feature flags, the Discord bot (leveling + role map),
+  analytics, and read the audit log.
+- **Legal** — Terms of Service and a UK-GDPR-aware Privacy Policy at
+  `/legal/terms` and `/legal/privacy`.
 - **Polish** — dark mode, glassmorphism, command palette (⌘K), loading
   skeletons, optimistic UI, keyboard shortcuts, mobile-first responsive design,
   accessibility, and PWA installability.

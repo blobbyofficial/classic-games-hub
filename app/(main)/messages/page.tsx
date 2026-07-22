@@ -39,7 +39,11 @@ export default async function MessagesPage() {
             username: profile.username,
             display_name: profile.display_name,
             avatar_url: profile.avatar_url,
-            canPost: profile.discord_linked || profile.role === "admin" || profile.role === "moderator",
+            canPost:
+              profile.discord_linked ||
+              profile.role === "admin" ||
+              profile.role === "moderator" ||
+              profile.level >= 15,
           }}
         />
       )}

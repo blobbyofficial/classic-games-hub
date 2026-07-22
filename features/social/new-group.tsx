@@ -66,7 +66,7 @@ export function NewGroupButton() {
           <DialogDescription>
             {invite
               ? "Share this invite link so friends can join."
-              : "Create a group chat and invite friends with a shareable link. (Discord-linked members and staff.)"}
+              : "Create a group chat and invite friends with a shareable link. (Discord-linked members, staff, and level 10+.)"}
           </DialogDescription>
         </DialogHeader>
 
