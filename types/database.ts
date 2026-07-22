@@ -486,6 +486,33 @@ export interface Database {
         Update: { enabled?: boolean; description?: string | null; payload?: Json };
         Relationships: [];
       };
+      discord_links: {
+        Row: {
+          user_id: string;
+          discord_id: string;
+          discord_username: string | null;
+          via: "code" | "oauth";
+          linked_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      discord_levels: {
+        Row: {
+          discord_id: string;
+          user_id: string | null;
+          discord_username: string | null;
+          xp: number;
+          level: number;
+          messages: number;
+          last_xp_at: string | null;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -616,6 +643,33 @@ export interface Database {
         };
         Returns: Json;
       };
+      // ── Discord integration (0033) ──
+      claim_discord_link: { Args: { p_code: string }; Returns: Json };
+      unlink_discord: { Args: Record<string, never>; Returns: Json };
+      my_discord_connection: { Args: Record<string, never>; Returns: Json };
+      admin_get_bot_config: { Args: Record<string, never>; Returns: Json };
+      admin_set_bot_config: { Args: { p_key: string; p_value: Json }; Returns: Json };
+      // service_role-only bot RPCs (called with the admin client)
+      bot_profile: { Args: { p_discord: string }; Returns: Json };
+      bot_claim_daily: { Args: { p_discord: string }; Returns: Json };
+      bot_pay: { Args: { p_from: string; p_to: string; p_amount: number }; Returns: Json };
+      bot_top_players: { Args: { p_limit?: number }; Returns: Json };
+      bot_log_mod: {
+        Args: { p_actor_discord: string; p_target_discord: string; p_action: string; p_reason: string };
+        Returns: Json;
+      };
+      bot_create_link_code: { Args: { p_discord: string; p_username: string }; Returns: Json };
+      bot_link_status: { Args: { p_discord: string }; Returns: Json };
+      bot_unlink: { Args: { p_discord: string }; Returns: Json };
+      bot_award_discord_xp: { Args: { p_discord: string; p_username?: string | null }; Returns: Json };
+      bot_discord_rank: { Args: { p_discord: string }; Returns: Json };
+      bot_discord_leaderboard: { Args: { p_limit?: number }; Returns: Json };
+      bot_role_state: { Args: { p_discord: string }; Returns: Json };
+      bot_all_linked: { Args: Record<string, never>; Returns: Json };
+      bot_get_config: { Args: { p_key: string }; Returns: Json };
+      bot_discord_id: { Args: { p_user: string }; Returns: string | null };
+      bot_purge_link_codes: { Args: Record<string, never>; Returns: undefined };
+      bot_server_stats: { Args: Record<string, never>; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
-import { User, SlidersHorizontal, Coins, Shield, Lock } from "lucide-react";
+import { User, SlidersHorizontal, Coins, Shield, Lock, Link2 } from "lucide-react";
 import { getCurrentProfile, getCurrentSettings, getFeatureFlags } from "@/lib/supabase/queries";
 import { getUserAchievements, getUserBestScores } from "@/services/profiles";
 import { createClient } from "@/lib/supabase/server";
@@ -12,10 +12,19 @@ import { PreferencesSettings } from "@/features/settings/preferences-settings";
 import { AdsSettings } from "@/features/settings/ads-settings";
 import { SecuritySettings } from "@/features/settings/security-settings";
 import { BlockedUsers } from "@/features/settings/blocked-users";
+import { ConnectionsSettings, type DiscordConnection } from "@/features/settings/connections-settings";
 
 export const metadata: Metadata = { title: "Settings" };
 
-export default async function SettingsPage() {
+const TABS = ["profile", "preferences", "rewards", "privacy", "security", "connections"];
+
+export default async function SettingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ tab?: string }>;
+}) {
+  const { tab } = await searchParams;
+  const initialTab = TABS.includes(tab ?? "") ? (tab as string) : "profile";
   const [profile, settings, flags] = await Promise.all([
     getCurrentProfile(),
     getCurrentSettings(),
@@ -29,6 +38,8 @@ export default async function SettingsPage() {
   ]);
 
   const supabase = await createClient();
+  const { data: connectionData } = await supabase.rpc("my_discord_connection");
+  const connection = (connectionData ?? { linked: false }) as unknown as DiscordConnection;
   const { data: blocks } = await supabase
     .from("user_blocks")
     .select("profiles!user_blocks_blocked_id_fkey(id, username, display_name, avatar_url)")
@@ -41,7 +52,7 @@ export default async function SettingsPage() {
     <div className="mx-auto max-w-3xl">
       <h1 className="mb-6 text-2xl font-bold tracking-tight">Settings</h1>
 
-      <Tabs defaultValue="profile">
+      <Tabs defaultValue={initialTab}>
         <TabsList className="mb-6 flex h-auto w-full flex-wrap justify-start gap-1">
           <TabsTrigger value="profile">
             <User className="size-4" /> Profile
@@ -57,6 +68,9 @@ export default async function SettingsPage() {
           </TabsTrigger>
           <TabsTrigger value="security">
             <Lock className="size-4" /> Security
+          </TabsTrigger>
+          <TabsTrigger value="connections">
+            <Link2 className="size-4" /> Connections
           </TabsTrigger>
         </TabsList>
 
@@ -80,6 +94,9 @@ export default async function SettingsPage() {
         </TabsContent>
         <TabsContent value="security">
           <SecuritySettings />
+        </TabsContent>
+        <TabsContent value="connections">
+          <ConnectionsSettings connection={connection} />
         </TabsContent>
       </Tabs>
     </div>

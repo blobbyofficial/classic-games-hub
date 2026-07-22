@@ -1,9 +1,17 @@
 import { Client, Events, GatewayIntentBits } from "discord.js";
 import { config } from "./config.js";
-import { commandMap } from "./commands/index.js";
 import { handleChatXp } from "./features/leveling.js";
+import { syncMemberRoles } from "./features/roleSync.js";
 import { startLiveFeed } from "./features/liveFeed.js";
 import { startServerStats } from "./features/serverStats.js";
+
+/**
+ * Companion gateway worker. Slash commands are handled serverlessly by the
+ * website (app/api/discord/interactions) — this process only covers what a
+ * webhook can't: reading chat messages for XP, posting the live feed,
+ * renaming stat channels and syncing roles the moment someone joins.
+ * The bot works without it; you just lose those four things.
+ */
 
 const client = new Client({
   intents: [
@@ -19,25 +27,12 @@ client.once(Events.ClientReady, (c) => {
   startServerStats(c);
 });
 
-client.on(Events.InteractionCreate, async (interaction) => {
-  if (!interaction.isChatInputCommand()) return;
-  const command = commandMap.get(interaction.commandName);
-  if (!command) return;
-  try {
-    await command.execute(interaction);
-  } catch (err) {
-    console.error(`Command ${interaction.commandName} errored:`, err);
-    const content = "Something went wrong running that command.";
-    if (interaction.deferred || interaction.replied) {
-      await interaction.followUp({ content, ephemeral: true }).catch(() => undefined);
-    } else {
-      await interaction.reply({ content, ephemeral: true }).catch(() => undefined);
-    }
-  }
-});
-
 client.on(Events.MessageCreate, (message) => {
   void handleChatXp(message);
+});
+
+client.on(Events.GuildMemberAdd, (member) => {
+  if (member.guild.id === config.guildId) void syncMemberRoles(member);
 });
 
 process.on("unhandledRejection", (err) => console.error("Unhandled rejection:", err));

@@ -1,7 +1,11 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
+import { after } from "next/server";
+import { z } from "zod";
 import { createClient } from "@/lib/supabase/server";
+import { botDb } from "@/lib/discord/bot-db";
+import { syncMemberRoles } from "@/lib/discord/role-sync";
 import { requireStaff } from "@/lib/supabase/queries";
 import {
   announcementSchema,
@@ -30,6 +34,11 @@ export async function adminSetRole(userId: string, role: "user" | "moderator" | 
   const { error } = await supabase.rpc("admin_set_role", { p_user: userId, p_role: role });
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/users");
+  // Mirror the change onto their Discord roles (best-effort, post-response).
+  after(async () => {
+    const discordId = await botDb.discordIdFor(userId);
+    if (discordId) await syncMemberRoles(discordId);
+  });
   return { ok: true };
 }
 
@@ -101,6 +110,11 @@ export async function adminSetBanned(userId: string, banned: boolean): Promise<R
   const { error } = await supabase.rpc("admin_set_banned", { p_user: userId, p_banned: banned });
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/users");
+  // Banned accounts lose their managed Discord roles (and get them back on unban).
+  after(async () => {
+    const discordId = await botDb.discordIdFor(userId);
+    if (discordId) await syncMemberRoles(discordId);
+  });
   return { ok: true };
 }
 
@@ -227,4 +241,70 @@ export async function adminSetBannerPayload(key: string, input: unknown): Promis
   revalidatePath("/admin/flags");
   revalidatePath("/", "layout");
   return { ok: true };
+}
+
+// ── Discord bot configuration ──────────────────────────────────────────
+
+const levelingConfigSchema = z.object({
+  enabled: z.boolean(),
+  xp_min: z.number().int().min(1).max(1000),
+  xp_max: z.number().int().min(1).max(1000),
+  cooldown_seconds: z.number().int().min(5).max(3600),
+  curve_quad: z.number().int().min(0).max(100),
+  curve_linear: z.number().int().min(0).max(1000),
+  curve_base: z.number().int().min(1).max(10000),
+  announce_level_ups: z.boolean(),
+  announce_channel_id: z.string().regex(/^\d{5,25}$/).nullable().or(z.literal("").transform(() => null)),
+  no_xp_channel_ids: z.array(z.string().regex(/^\d{5,25}$/)).max(50),
+  hub_xp_share: z.number().min(0).max(1),
+});
+
+const roleSyncConfigSchema = z.object({
+  enabled: z.boolean(),
+  role_map: z.record(z.string().min(1).max(64), z.string().regex(/^\d{5,25}$/)),
+});
+
+export async function adminSetBotLeveling(input: unknown): Promise<RpcResult> {
+  await requireStaff();
+  const parsed = levelingConfigSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  if (parsed.data.xp_max < parsed.data.xp_min) {
+    return { ok: false, error: "Max XP must be at least the min XP" };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_set_bot_config", {
+    p_key: "leveling",
+    p_value: parsed.data,
+  });
+  if (error) return { ok: false, error: error.message };
+  const res = data as { ok?: boolean; error?: string } | null;
+  if (!res?.ok) return { ok: false, error: res?.error ?? "Failed to save" };
+  revalidatePath("/admin/discord");
+  return { ok: true };
+}
+
+export async function adminSetBotRoleSync(input: unknown): Promise<RpcResult> {
+  await requireStaff();
+  const parsed = roleSyncConfigSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, error: "Role map must map award keys to Discord role IDs" };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_set_bot_config", {
+    p_key: "role_sync",
+    p_value: parsed.data,
+  });
+  if (error) return { ok: false, error: error.message };
+  const res = data as { ok?: boolean; error?: string } | null;
+  if (!res?.ok) return { ok: false, error: res?.error ?? "Failed to save" };
+  revalidatePath("/admin/discord");
+  return { ok: true };
+}
+
+export async function adminRunFullRoleSync(): Promise<RpcResult & { detail?: string }> {
+  await requireStaff();
+  const { syncAllMembers } = await import("@/lib/discord/role-sync");
+  const result = await syncAllMembers(200);
+  return {
+    ok: true,
+    detail: `Scanned ${result.scanned} linked member(s); updated ${result.changed}; ${result.errors} error(s).`,
+  };
 }

@@ -2,14 +2,15 @@
   "name": "classic-games-bot",
   "version": "1.0.0",
   "private": true,
-  "description": "Discord bot for Classic Games Hub — economy, leveling, moderation, live feeds and role sync wired to the Hub's Supabase database.",
+  "description": "Optional companion worker for the Classic Games Hub Discord bot - chat XP, live feed, stat counters and join-time role sync. Slash commands are served by the website's serverless interactions endpoint.",
   "type": "module",
-  "engines": { "node": ">=20" },
+  "engines": {
+    "node": ">=20"
+  },
   "scripts": {
     "dev": "tsx watch src/index.ts",
     "build": "tsc",
     "start": "node dist/index.js",
-    "deploy-commands": "tsx src/deploy-commands.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
