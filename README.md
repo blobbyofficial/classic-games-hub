@@ -89,7 +89,10 @@ Profile-2.0 fields, the follows/notes social graph, wishlist + gifting, message
 reactions, group chats, stories, and a cosmetics-catalogue expansion. **v1.2.3**
 adds `0033`–`0035`: the Discord bot v2 schema (`discord_links`, link codes,
 `discord_levels`, `discord_bot_config` + service-role RPCs), security
-hardening from the Supabase advisor, and level-milestone unlocks.
+hardening from the Supabase advisor, and level-milestone unlocks. **v1.3.0**
+adds `0036`–`0037`: stacking boosts + queue, booster perks, message streaks,
+community mega-events, music tracks, the mythic tier, admin site surfaces,
+and the Turbo Horizon racer.
 
 ## Getting started
 
@@ -133,11 +136,13 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
 
 ## Features
 
-- **23 playable games** — Snake, Tetris, 2048, Breakout, Pong, Asteroids, Space
+- **24 playable games** — Snake, Tetris, 2048, Breakout, Pong, Asteroids, Space
   Invaders, Frogger, Neon Runner, Target Rush, Gem Cascade, Bubble Pop,
   Minesweeper, Memory, 15 Puzzle, Mastermind, Hangman, Simon, Tic-Tac-Toe,
-  Connect Four, Reversi, Whack-a-Mole, Lights Out. Each is a self-contained,
-  code-split canvas engine with keyboard + touch controls.
+  Connect Four, Reversi, Whack-a-Mole, Lights Out — plus **Turbo Horizon**, an
+  OutRun-style pseudo-3D racer. Each is a self-contained, code-split canvas
+  engine with keyboard + touch controls; Tic-Tac-Toe includes local
+  pass-and-play.
 - **Accounts** — email/username + password and OAuth (Discord/Google/GitHub/
   Microsoft); profiles with avatars, tiered banners, bios, pronouns, a status
   line, levels, XP, credits, badges, achievements and inventory.

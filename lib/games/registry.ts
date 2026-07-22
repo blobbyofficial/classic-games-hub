@@ -28,6 +28,7 @@ export const ENGINE_LOADERS: Record<string, () => Promise<{ default: GameEngineF
   reversi: () => import("./engines/reversi"),
   whack: () => import("./engines/whack"),
   lightsout: () => import("./engines/lightsout"),
+  racer: () => import("./engines/racer"),
 };
 
 export function hasEngine(id: string): boolean {

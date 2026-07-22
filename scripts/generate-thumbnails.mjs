@@ -33,7 +33,23 @@ const GAMES = {
   reversi: { grad: ["#065f46", "#022c22"], glyph: reversi() },
   whack: { grad: ["#a16207", "#713f12"], glyph: mole() },
   lightsout: { grad: ["#4f46e5", "#312e81"], glyph: lights() },
+  racer: { grad: ["#6d28d9", "#1e1b4b"], glyph: racecar() },
 };
+
+function racecar() {
+  // Perspective road + car silhouette.
+  return `<g>
+    <path d="M-16 -80 L16 -80 L120 100 L-120 100 Z" fill="#1f2333"/>
+    <path d="M-2 -80 L2 -80 L10 100 L-10 100 Z" fill="#fff" opacity="0.5"/>
+    <circle cx="0" cy="-92" r="18" fill="#fbbf24" opacity="0.9"/>
+    <g transform="translate(0 55)">
+      <rect x="-34" y="-16" width="68" height="34" rx="9"/>
+      <rect x="-20" y="-26" width="40" height="16" rx="6" opacity="0.7"/>
+      <rect x="-40" y="6" width="12" height="14" rx="3" fill="#0b0a12"/>
+      <rect x="28" y="6" width="12" height="14" rx="3" fill="#0b0a12"/>
+    </g>
+  </g>`;
+}
 
 function wrap(id, from, to, inner) {
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">

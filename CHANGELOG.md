@@ -3,6 +3,51 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.3.0 — "Living Arcade" (first wave) + v1.4.0 first titles
+
+The long-term-engagement update, and the first step into new dimensions.
+
+### 💰 Economy
+
+- **Stacking boosts + effect queue** — boosts now stack their multiplier up to
+  **5×** (10× for Discord boosters). Buy past the cap and the extra boost
+  joins a queue that takes over automatically the moment the current window
+  ends. The inventory shows the live multiplier, countdown and queue depth.
+- **Booster perks** — Discord server boosters are detected automatically via
+  role sync: +50% daily rewards, a higher boost cap, tenure badges at
+  1/3/6/12 months, and a `__booster__` role-map key.
+
+### 🔥 Engagement
+
+- **Message streaks** — keep a DM conversation going every day (both sides)
+  to build a streak. A flame chip in the chat header tracks it, and milestone
+  days (3 · 7 · 14 · 30 · 50 · 100) pay credits to both of you.
+- **Community mega-events** — admins launch server-wide co-op goals ("500
+  plays this weekend") from **Admin → Events**; a live progress bar sits on
+  the home page and everyone who took part is paid and notified automatically
+  the moment the goal lands.
+- **Background music** — four original tracks (Neon Drift, Starlight, Arcade
+  Heart, Deep Focus), procedurally rendered in the browser with the Web Audio
+  API — zero copyright, nothing to download. Buy them in the shop from level
+  5 and play them from the new navbar player.
+- **Level 50: Singularity** — a mythic, unbuyable profile effect granted
+  automatically at level 50. Mythic is a new top rarity tier.
+
+### 🕹️ New dimensions (v1.4 first titles)
+
+- **Turbo Horizon** — an OutRun-style pseudo-3D racer: a winding, hilly neon
+  highway, traffic to slip past, overtake bonuses and full touch controls.
+- **Pass-and-play** — Tic-Tac-Toe gained a 2P toggle for local two-player
+  matches on one device.
+
+### 🛠️ Admin
+
+- **Admin → Site** — the ads centre (master kill-switch + placement toggles,
+  ready for a future NitroPay integration), reorder/hide any home-page
+  section, and a validated, editable roadmap override that `/roadmap` renders
+  live.
+- New migrations `0036`–`0037`.
+
 ## v1.2.3 — "The Bot Update"
 
 The Discord bot becomes a first-class, free-to-run part of the platform — plus

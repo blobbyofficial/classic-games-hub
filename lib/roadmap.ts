@@ -421,8 +421,8 @@ export const ROADMAP: RoadmapRelease[] = [
   {
     version: "v1.3.0",
     codename: "Living Arcade",
-    status: "later",
-    timeframe: "Planned — future",
+    status: "in-progress",
+    timeframe: "Shipping now — most of it is live",
     summary:
       "Turn the hub into somewhere players return to for years, not weeks: original music, stacking events, long-term streaks, deep booster and level rewards, and a proper analytics + ads control centre.",
     groups: [
@@ -435,6 +435,7 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "Community mega-events",
             description:
               "Server-wide co-op goals where everyone pulls in the same direction — e.g. 'play 500 games together this weekend' — with a live progress bar and an achievement plus bonus credits for everyone who took part.",
+            status: "shipped",
           },
           {
             title: "Level-milestone unlocks",
@@ -446,6 +447,7 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "Message streaks",
             description:
               "A Snapchat-style daily streak, but with messages instead of images — keep a conversation going day after day with a friend to build a streak and earn rewards, giving people a reason to check in on each other.",
+            status: "shipped",
           },
           {
             title: "Collections & seasons",
@@ -464,25 +466,30 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Bonus daily challenges",
             description: "Two extra daily challenges on top of everyone else's — more ways to earn, every day.",
+            status: "later",
           },
           {
             title: "Monthly cosmetic drop",
             description:
               "An exclusive cosmetic every month you're boosting — a nameplate, decoration or effect that only boosters of that month receive, so the collection tells a story over time.",
+            status: "later",
           },
           {
             title: "Boost-tenure badge tiers",
             description:
               "The Booster badge evolves the longer you've boosted (1 month → 3 → 6 → 12), with a visibly fancier treatment at each tier to recognise loyalty.",
+            status: "shipped",
           },
           {
             title: "Bigger daily & streak bonuses",
             description: "A larger daily reward and a faster-growing streak multiplier while your boost is active.",
+            status: "shipped",
           },
           {
             title: "Early access",
             description:
               "A head start on new games and features — try them a week before everyone else and help shape them before launch.",
+            status: "later",
           },
           {
             title: "Monthly gift token",
@@ -505,11 +512,13 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "Background music tracks",
             description:
               "Level 5+ players can buy original 'tracks' from the shop and play them in the background while they browse and play. Every track is composed in-house, so there are zero copyright concerns — and boosters can set one as their profile theme song.",
+            status: "shipped",
           },
           {
             title: "Stacking boosts + effect queue",
             description:
               "Credit boosts stack up to 5× (10× for Discord boosters). Buy another beyond the cap and it doesn't go to waste — it joins an effect queue and automatically takes over the moment the current boost runs out, so your boosts are always working.",
+            status: "shipped",
           },
         ],
       },
@@ -521,6 +530,7 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "More animation, better reduced-motion",
             description:
               "More life and motion across the whole site — page transitions, micro-interactions and celebratory moments — paired with a genuinely well-optimised, snappy experience for players who prefer animations off.",
+            status: "later",
           },
         ],
       },
@@ -532,11 +542,13 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "Admin analytics & ads centre",
             description:
               "A dedicated admin section for analytics — site clicks, popular games, active players, retention and revenue — alongside full ad controls: force-shutdown all ads instantly, choose where ads appear, and tune placements without touching code.",
+            status: "shipped",
           },
           {
             title: "Editable roadmap from admin",
             description:
               "Manage this very roadmap from the admin dashboard — add, edit and reorder releases and items without touching code, so plans stay fresh with a few clicks.",
+            status: "shipped",
           },
           {
             title: "NitroPay ad integration",
@@ -551,8 +563,8 @@ export const ROADMAP: RoadmapRelease[] = [
   {
     version: "v1.4.0",
     codename: "New Dimensions",
-    status: "later",
-    timeframe: "Planned — games update",
+    status: "in-progress",
+    timeframe: "First titles shipping",
     summary:
       "The big games update: a step into 3D, real multiplayer with parties, and store-decorated avatars that show up when you play together — plus admin control over the home screen itself.",
     groups: [
@@ -564,7 +576,8 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Playable 3D games",
             description:
-              "Browser-based 3D titles running smoothly on desktop and mobile — think a racing game, a Rubik's cube and more — bringing a whole new dimension to the arcade.",
+              "Browser-based 3D titles running smoothly on desktop and mobile. First out: Turbo Horizon, an OutRun-style pseudo-3D racer — with more (a Rubik's cube and true-3D titles) to come.",
+            status: "in-progress",
           },
         ],
       },
@@ -576,7 +589,8 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Real multiplayer games",
             description:
-              "Games multiple people can play together — either online across accounts or locally on one device (pass-and-play). Noughts & crosses works either way; the racing game is online-only.",
+              "Games multiple people can play together — online across accounts or locally on one device. Local pass-and-play has landed in Tic-Tac-Toe (the 2P toggle); online play across accounts is next.",
+            status: "in-progress",
           },
           {
             title: "Parties",
@@ -597,7 +611,8 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Customisable home screen",
             description:
-              "Rearrange the homepage straight from the admin dashboard — move the daily reward to the bottom, reorder 'Continue playing' and 'Featured games', and lay the home screen out however works best.",
+              "Rearrange the homepage straight from the admin dashboard — reorder or hide any section from Admin → Site, no code required.",
+            status: "shipped",
           },
         ],
       },

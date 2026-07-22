@@ -10,7 +10,8 @@ const LINES = [
 type Mark = null | "X" | "O";
 
 /** Polished tic-tac-toe: animated placement, an animated winning strike, hover
- *  feedback and a near-unbeatable minimax AI. Mobile-first. */
+ *  feedback and a near-unbeatable minimax AI — plus a local two-player
+ *  pass-and-play mode (roadmap v1.4). Mobile-first. */
 const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
@@ -29,6 +30,8 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
   let winT = 0; // winning-strike progress 0..1
   let hover = -1;
   let shakeT = 0;
+  let mode: "ai" | "2p" = "ai";
+  let turn: "X" | "O" = "X";
   let raf = 0;
   let last = performance.now();
 
@@ -41,8 +44,9 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
     winLine = null;
     winT = 0;
     shakeT = 0;
+    turn = "X";
     onScore(streak * 100);
-    onStatus?.("You are X — your move");
+    onStatus?.(mode === "ai" ? "You are X — your move" : "Pass & play — X starts");
   }
 
   function winnerOf(b: Mark[]): { who: "X" | "O"; line: number[] } | "draw" | null {
@@ -74,12 +78,19 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
     if (!w) return;
     over = true;
     if (w === "draw") {
-      onStatus?.("Draw — tap to play again");
-      onGameOver(streak * 100 + 20, streak);
+      onStatus?.(mode === "2p" ? "Draw — tap for a rematch" : "Draw — tap to play again");
+      onGameOver(mode === "2p" ? 30 : streak * 100 + 20, mode === "2p" ? 0 : streak);
       beep(300, 0.1, "triangle");
       return;
     }
     winLine = w.line;
+    if (mode === "2p") {
+      onStatus?.(`${w.who} wins! Tap for a rematch`);
+      onGameOver(60, 0);
+      beep(660, 0.08);
+      setTimeout(() => beep(880, 0.12), 90);
+      return;
+    }
     if (w.who === "X") {
       streak++;
       onScore(streak * 100);
@@ -118,11 +129,49 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
   function play(i: number) {
     if (over) return reset();
     if (board[i] || busy) return;
+    if (mode === "2p") {
+      board[i] = turn;
+      anim[i] = 0.001;
+      beep(turn === "X" ? 540 : 330, 0.05);
+      finish();
+      if (!over) {
+        turn = turn === "X" ? "O" : "X";
+        onStatus?.(`${turn}'s turn`);
+      }
+      return;
+    }
     board[i] = "X";
     anim[i] = 0.001;
     beep(540, 0.05);
     finish();
     if (!over) aiMove();
+  }
+
+  // Mode pill (top-right): switch between vs-AI and local pass-and-play.
+  const pill = { w: 92, h: 24, x: width - 100, y: 6 };
+  function drawModePill() {
+    ctx.fillStyle = "rgba(255,255,255,0.08)";
+    roundRect(ctx, pill.x, pill.y, pill.w, pill.h, 12);
+    ctx.fill();
+    const half = pill.w / 2;
+    ctx.fillStyle = pal.primary;
+    roundRect(ctx, mode === "ai" ? pill.x : pill.x + half, pill.y, half, pill.h, 12);
+    ctx.fill();
+    ctx.font = "bold 11px ui-sans-serif, sans-serif";
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = mode === "ai" ? "#fff" : "rgba(255,255,255,0.6)";
+    ctx.fillText("VS AI", pill.x + half / 2, pill.y + pill.h / 2 + 0.5);
+    ctx.fillStyle = mode === "2p" ? "#fff" : "rgba(255,255,255,0.6)";
+    ctx.fillText("2P", pill.x + half + half / 2, pill.y + pill.h / 2 + 0.5);
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+  }
+  function pillHit(e: PointerEvent): boolean {
+    const rect = canvas.getBoundingClientRect();
+    const mx = ((e.clientX - rect.left) / rect.width) * width;
+    const my = ((e.clientY - rect.top) / rect.height) * height;
+    return mx >= pill.x && mx <= pill.x + pill.w && my >= pill.y && my <= pill.y + pill.h;
   }
 
   function cellRect(i: number) {
@@ -209,6 +258,7 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
     }
 
     ctx.restore();
+    drawModePill();
     raf = requestAnimationFrame(render);
   }
 
@@ -221,6 +271,12 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
   }
 
   const onDown = (e: PointerEvent) => {
+    if (pillHit(e)) {
+      mode = mode === "ai" ? "2p" : "ai";
+      if (mode === "2p") streak = 0;
+      reset();
+      return;
+    }
     const i = at(e);
     if (over) return reset();
     if (i >= 0) play(i);
