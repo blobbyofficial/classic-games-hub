@@ -48,6 +48,9 @@ export const settingsSchema = z.object({
   presence_status: z.enum(["auto", "online", "away", "dnd", "sleep", "invisible"]).optional(),
   presence_visibility: z.enum(["everyone", "friends", "nobody"]).optional(),
   friends_visibility: z.enum(["private", "friends", "followers", "public"]).optional(),
+  site_theme: z
+    .enum(["default", "midnight", "ocean", "emerald", "crimson", "gold", "rose", "synthwave", "aurora"])
+    .optional(),
 });
 
 export const gameUpsertSchema = z.object({

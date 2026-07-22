@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pause, Play, RotateCcw, Maximize2, Loader2, Trophy } from "lucide-react";
+import { Pause, Play, RotateCcw, Maximize2, Minimize2, Loader2, Trophy } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { ENGINE_LOADERS } from "@/lib/games/registry";
@@ -27,6 +27,7 @@ interface Props {
 
 export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProgramEnabled }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const shellRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<GameEngineHandle | null>(null);
   const startTimeRef = useRef(0);
   const submittingRef = useRef(false);
@@ -46,6 +47,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [showAd, setShowAd] = useState(false);
+  const [isFullscreen, setIsFullscreen] = useState(false);
 
   const { w, h } = canvasFor(engineId);
   const scheme = CONTROL_SCHEME[engineId] ?? "none";
@@ -106,6 +108,12 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
       if (!canvasRef.current) return;
       const reduced =
         typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      // Render at device resolution (capped 2×) for crisp HiDPI/fullscreen
+      // output; engines keep working in logical w×h coordinates.
+      const dpr = Math.min(2, window.devicePixelRatio || 1);
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      canvas.getContext("2d")?.setTransform(dpr, 0, 0, dpr, 0, 0);
       handleRef.current = factory({
         canvas,
         width: w,
@@ -196,13 +204,44 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
 
   const replay = () => buildEngine();
 
-  const fullscreen = () => {
-    canvasRef.current?.parentElement?.requestFullscreen?.().catch(() => {});
+  // Fullscreen wraps the whole shell (stage + HUD + touch controls) so the
+  // experience stays complete on every device.
+  const toggleFullscreen = () => {
+    if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => {});
+    } else {
+      shellRef.current?.requestFullscreen?.().catch(() => {});
+    }
   };
 
+  useEffect(() => {
+    const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
+    document.addEventListener("fullscreenchange", onChange);
+    return () => document.removeEventListener("fullscreenchange", onChange);
+  }, []);
+
+  // Auto-pause when the tab is hidden mid-run.
+  useEffect(() => {
+    const onVis = () => {
+      if (document.hidden && !gameOver && !paused && handleRef.current) {
+        handleRef.current.pause();
+        setPaused(true);
+      }
+    };
+    document.addEventListener("visibilitychange", onVis);
+    return () => document.removeEventListener("visibilitychange", onVis);
+  }, [gameOver, paused]);
+
   return (
-    <div className="space-y-3 overscroll-contain [padding-bottom:env(safe-area-inset-bottom)]">
-      <div className="flex items-center justify-between gap-3">
+    <div
+      ref={shellRef}
+      className={
+        isFullscreen
+          ? "game-shell-fs flex h-full w-full flex-col items-center justify-center gap-3 overflow-hidden p-3 sm:p-6"
+          : "space-y-3 overscroll-contain [padding-bottom:env(safe-area-inset-bottom)]"
+      }
+    >
+      <div className={`flex items-center justify-between gap-3 ${isFullscreen ? "w-full max-w-3xl" : ""}`}>
         <div className="flex items-center gap-4">
           <div>
             <p className="text-xs text-muted-foreground">Score</p>
@@ -222,15 +261,26 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
           <Button variant="outline" size="icon" onClick={replay} aria-label="Restart">
             <RotateCcw />
           </Button>
-          <Button variant="outline" size="icon" onClick={fullscreen} aria-label="Fullscreen" className="hidden sm:inline-flex">
-            <Maximize2 />
+          <Button
+            variant="outline"
+            size="icon"
+            onClick={toggleFullscreen}
+            aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+          >
+            {isFullscreen ? <Minimize2 /> : <Maximize2 />}
           </Button>
         </div>
       </div>
 
       <div
-        className="game-stage relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
-        style={{ maxWidth: `min(100%, ${w * 1.1}px)`, aspectRatio: `${w} / ${h}` }}
+        className={`game-stage relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg ${
+          isFullscreen ? "min-h-0 flex-1" : ""
+        }`}
+        style={
+          isFullscreen
+            ? { maxWidth: `min(100%, calc((100vh - 170px) * ${w} / ${h}))`, aspectRatio: `${w} / ${h}` }
+            : { maxWidth: `min(100%, ${w * 1.1}px)`, aspectRatio: `${w} / ${h}` }
+        }
       >
         <canvas ref={canvasRef} width={w} height={h} className="block size-full touch-none object-contain" />
 
@@ -271,7 +321,11 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
       </div>
 
       {/* Touch controls for touch devices; keyboard hints for pointer devices. */}
-      {coarse === true && <TouchControls scheme={scheme} />}
+      {coarse === true && (
+        <div className={isFullscreen ? "w-full max-w-3xl" : undefined}>
+          <TouchControls scheme={scheme} />
+        </div>
+      )}
 
       {coarse === false && (
         <p className="text-center text-xs text-muted-foreground">

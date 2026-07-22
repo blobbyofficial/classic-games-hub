@@ -3,6 +3,41 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.4.1 — "Every Pixel" (games & themes overhaul)
+
+### 🎮 Games
+
+- **All eight "coming soon" games are playable again** — Tic-Tac-Toe, Connect
+  Four, Simon, 15 Puzzle, Lights Out, Bubble Pop, Target Rush and Reversi were
+  rebuilt to the quality bar in v1.2.2 and are now republished (migration
+  `0038`).
+- **HiDPI rendering** — every canvas game now renders at device resolution
+  (up to 2×), so games are pin-sharp on retina screens and in fullscreen.
+- **Fullscreen, done properly** — fullscreen now takes the whole player
+  (score, controls and touch pads included) onto an ambient themed backdrop
+  with the game letterboxed and glowing — and it works on mobile too.
+- **Device-aware controls** — the Controls tab now shows touch controls on
+  touch devices and keyboard controls on desktop, with a toggle to peek at
+  the other, for every game.
+- **Auto-pause** — games pause themselves when the tab loses visibility.
+
+### 🎨 Global colour themes
+
+- **Recolour the whole site** from Settings → Preferences: Arcade Violet,
+  Midnight (true black), Ocean and Emerald free for everyone; Crimson, Gold
+  Rush, Neon Rose and the animated **Synthwave** and **Aurora** (their hue
+  slowly drifts) reserved for Discord boosters and staff, with a lock shown on
+  the swatches. The gate is enforced in the database, applied before first
+  paint, and animated themes respect reduced-motion.
+
+### ⚡ Performance
+
+- Route-shaped loading skeletons for the games library, game pages, shop,
+  leaderboards, messages and profiles.
+- Preconnect to Supabase from the document head for faster first data fetch.
+
+---
+
 ## v1.3.0 — "Living Arcade" (first wave) + v1.4.0 first titles
 
 The long-term-engagement update, and the first step into new dimensions.

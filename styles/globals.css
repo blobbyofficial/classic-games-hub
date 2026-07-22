@@ -4,27 +4,30 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
+  /* Brand hue/chroma — overridden by the site-theme presets below. */
+  --brand-h: 293;
+  --brand-c: 0.24;
   --background: oklch(0.985 0.002 285);
   --foreground: oklch(0.18 0.02 285);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.18 0.02 285);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.18 0.02 285);
-  --primary: oklch(0.55 0.24 293);
-  --primary-foreground: oklch(0.985 0.005 293);
+  --primary: oklch(0.55 var(--brand-c) var(--brand-h));
+  --primary-foreground: oklch(0.985 0.005 var(--brand-h));
   --secondary: oklch(0.95 0.01 285);
   --secondary-foreground: oklch(0.25 0.03 285);
   --muted: oklch(0.95 0.01 285);
   --muted-foreground: oklch(0.5 0.02 285);
-  --accent: oklch(0.93 0.03 293);
-  --accent-foreground: oklch(0.3 0.1 293);
+  --accent: oklch(0.93 0.03 var(--brand-h));
+  --accent-foreground: oklch(0.3 0.1 var(--brand-h));
   --destructive: oklch(0.6 0.23 25);
   --destructive-foreground: oklch(0.98 0.01 25);
   --success: oklch(0.65 0.17 155);
   --warning: oklch(0.78 0.16 75);
   --border: oklch(0.9 0.01 285);
   --input: oklch(0.9 0.01 285);
-  --ring: oklch(0.55 0.24 293);
+  --ring: oklch(0.55 var(--brand-c) var(--brand-h));
   --neon: oklch(0.75 0.15 195);
   --gold: oklch(0.8 0.14 85);
   --radius: 0.75rem;
@@ -39,25 +42,98 @@
   --card-foreground: oklch(0.95 0.01 285);
   --popover: oklch(0.19 0.025 286);
   --popover-foreground: oklch(0.95 0.01 285);
-  --primary: oklch(0.65 0.22 293);
-  --primary-foreground: oklch(0.985 0.005 293);
+  --primary: oklch(0.65 calc(var(--brand-c) - 0.02) var(--brand-h));
+  --primary-foreground: oklch(0.985 0.005 var(--brand-h));
   --secondary: oklch(0.26 0.03 286);
   --secondary-foreground: oklch(0.9 0.01 285);
   --muted: oklch(0.25 0.025 286);
   --muted-foreground: oklch(0.68 0.02 285);
-  --accent: oklch(0.3 0.06 293);
-  --accent-foreground: oklch(0.9 0.04 293);
+  --accent: oklch(0.3 0.06 var(--brand-h));
+  --accent-foreground: oklch(0.9 0.04 var(--brand-h));
   --destructive: oklch(0.65 0.21 25);
   --destructive-foreground: oklch(0.98 0.01 25);
   --success: oklch(0.7 0.16 155);
   --warning: oklch(0.8 0.15 75);
   --border: oklch(0.29 0.025 286);
   --input: oklch(0.29 0.025 286);
-  --ring: oklch(0.65 0.22 293);
+  --ring: oklch(0.65 calc(var(--brand-c) - 0.02) var(--brand-h));
   --neon: oklch(0.8 0.14 195);
   --gold: oklch(0.82 0.14 85);
   --glass: oklch(0.2 0.025 286 / 55%);
   --glass-border: oklch(0.95 0.01 285 / 10%);
+}
+
+/* ── Global site colour themes (settings → Appearance) ─────────────────────
+   Free: default, midnight, ocean, emerald. Premium (boosters & staff):
+   crimson, gold, rose, synthwave (animated), aurora (animated). The premium
+   gate is enforced server-side (migration 0038); these are just the looks. */
+
+@property --brand-h {
+  syntax: "<number>";
+  inherits: true;
+  initial-value: 293;
+}
+
+html[data-site-theme="midnight"] {
+  --brand-h: 285;
+  --brand-c: 0.02;
+}
+html.dark[data-site-theme="midnight"] {
+  --background: oklch(0.1 0.005 285);
+  --card: oklch(0.145 0.006 285);
+  --popover: oklch(0.14 0.006 285);
+  --secondary: oklch(0.2 0.008 285);
+  --muted: oklch(0.19 0.008 285);
+  --border: oklch(0.24 0.008 285);
+  --input: oklch(0.24 0.008 285);
+  --glass: oklch(0.14 0.006 285 / 55%);
+}
+html[data-site-theme="ocean"] {
+  --brand-h: 245;
+}
+html[data-site-theme="emerald"] {
+  --brand-h: 158;
+  --brand-c: 0.17;
+}
+html[data-site-theme="crimson"] {
+  --brand-h: 22;
+  --brand-c: 0.21;
+}
+html[data-site-theme="gold"] {
+  --brand-h: 80;
+  --brand-c: 0.16;
+}
+html[data-site-theme="rose"] {
+  --brand-h: 350;
+  --brand-c: 0.2;
+}
+/* Animated premium themes: the brand hue itself slowly drifts. Static fallback
+   hue applies wherever @property animation isn't supported, and motion is
+   disabled entirely for reduced-motion users. */
+html[data-site-theme="synthwave"] {
+  --brand-h: 310;
+}
+html[data-site-theme="aurora"] {
+  --brand-h: 190;
+  --brand-c: 0.19;
+}
+@media (prefers-reduced-motion: no-preference) {
+  html[data-site-theme="synthwave"] {
+    animation: cgh-theme-synthwave 16s ease-in-out infinite alternate;
+  }
+  html[data-site-theme="aurora"] {
+    animation: cgh-theme-aurora 18s ease-in-out infinite alternate;
+  }
+}
+@keyframes cgh-theme-synthwave {
+  0% { --brand-h: 320; }
+  50% { --brand-h: 262; }
+  100% { --brand-h: 210; }
+}
+@keyframes cgh-theme-aurora {
+  0% { --brand-h: 160; }
+  50% { --brand-h: 230; }
+  100% { --brand-h: 290; }
 }
 
 @theme inline {
@@ -265,17 +341,20 @@
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
 }
 
-/* Fullscreen game stage: fill the viewport but letterbox the canvas so it
-   scales uniformly to fit instead of stretching. The inline max-width/
-   aspect-ratio set for the inline layout must be overridden here. */
-.game-stage:fullscreen {
-  max-width: none !important;
-  width: 100vw;
-  height: 100vh;
-  border-radius: 0;
-  background: #000;
+/* Fullscreen game shell: the whole player (HUD + stage + touch controls)
+   enters fullscreen together on an ambient gradient backdrop, with the canvas
+   letterboxed so it scales uniformly instead of stretching. */
+.game-shell-fs:fullscreen,
+.game-shell-fs:-webkit-full-screen {
+  background:
+    radial-gradient(60% 50% at 20% 0%, oklch(from var(--primary) l c h / 14%), transparent 60%),
+    radial-gradient(50% 45% at 85% 100%, oklch(from var(--neon) l c h / 10%), transparent 60%),
+    var(--background);
 }
-.game-stage:fullscreen canvas {
+.game-shell-fs:fullscreen .game-stage {
+  box-shadow: 0 0 60px -18px oklch(from var(--primary) l c h / 55%);
+}
+.game-shell-fs:fullscreen .game-stage canvas {
   width: 100%;
   height: 100%;
   object-fit: contain;

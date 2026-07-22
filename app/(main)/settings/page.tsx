@@ -14,6 +14,7 @@ import { AdsSettings } from "@/features/settings/ads-settings";
 import { SecuritySettings } from "@/features/settings/security-settings";
 import { BlockedUsers } from "@/features/settings/blocked-users";
 import { ConnectionsSettings, type DiscordConnection } from "@/features/settings/connections-settings";
+import { SiteThemePicker } from "@/features/settings/site-theme-picker";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -84,8 +85,16 @@ export default async function SettingsPage({
           />
           <BannerCustomizer profile={profile} />
         </TabsContent>
-        <TabsContent value="preferences">
+        <TabsContent value="preferences" className="space-y-6">
           <PreferencesSettings settings={settings} />
+          <SiteThemePicker
+            current={(settings as { site_theme?: string }).site_theme ?? "default"}
+            canUsePremium={
+              (profile as { booster_since?: string | null }).booster_since != null ||
+              profile.role === "admin" ||
+              profile.role === "moderator"
+            }
+          />
         </TabsContent>
         <TabsContent value="rewards">
           <AdsSettings settings={settings} enabled={flags.rewarded_ads ?? true} />

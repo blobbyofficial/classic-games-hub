@@ -99,7 +99,12 @@ export async function updateSettings(input: Record<string, unknown>): Promise<Rp
 
   const { supabase, user } = await requireUser();
   const { error } = await supabase.from("user_settings").update(parsed.data).eq("user_id", user.id);
-  if (error) return { ok: false, error: error.message };
+  if (error) {
+    if (error.message.includes("boosters and staff")) {
+      return { ok: false, error: "That theme is for server boosters and staff." };
+    }
+    return { ok: false, error: error.message };
+  }
 
   revalidatePath("/settings");
   revalidatePath("/", "layout");

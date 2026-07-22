@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { Gamepad2, Trophy, Users, Keyboard, Info, MessageSquare, ChevronLeft } from "lucide-react";
 import { getGameBySlug, getPublishedGames } from "@/services/games";
+import { ControlsList } from "@/features/games/controls-list";
 import { getSessionUser, getFeatureFlags } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { GamePlayer } from "@/features/games/game-player";
@@ -151,14 +152,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
             </TabsContent>
 
             <TabsContent value="controls">
-              <div className="grid gap-2 sm:grid-cols-2">
-                {game.controls.map((c, i) => (
-                  <div key={i} className="flex items-center justify-between rounded-lg border border-border px-3 py-2 text-sm">
-                    <span className="text-muted-foreground">{c.action}</span>
-                    <kbd className="rounded border border-border bg-muted px-2 py-0.5 font-mono text-xs">{c.keys}</kbd>
-                  </div>
-                ))}
-              </div>
+              <ControlsList engineId={game.engine_id} keyboard={game.controls} />
             </TabsContent>
 
             <TabsContent value="reviews" className="space-y-5">

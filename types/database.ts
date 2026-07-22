@@ -78,6 +78,7 @@ export interface Database {
           presence_status: PresenceStatus;
           presence_visibility: PresenceVisibility;
           friends_visibility: FriendsVisibility;
+          site_theme: string;
           updated_at: string;
         };
         Insert: { user_id: string } & Partial<Database["public"]["Tables"]["user_settings"]["Row"]>;

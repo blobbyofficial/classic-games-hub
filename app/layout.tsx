@@ -7,6 +7,8 @@ import { ThemeProvider } from "@/components/providers/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { SITE } from "@/lib/constants";
+import { getCurrentSettings } from "@/lib/supabase/queries";
+import { SITE_THEME_IDS } from "@/lib/themes";
 import "@/styles/globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -40,9 +42,24 @@ export const viewport: Viewport = {
   viewportFit: "cover",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children }: { children: React.ReactNode }) {
+  // Apply the player's global colour theme before first paint (no flash).
+  const settings = await getCurrentSettings().catch(() => null);
+  const rawTheme = (settings as { site_theme?: string } | null)?.site_theme ?? "default";
+  const siteTheme = SITE_THEME_IDS.has(rawTheme) ? rawTheme : "default";
+
+  const supabaseOrigin = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "");
+
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning data-site-theme={siteTheme}>
+      <head>
+        {supabaseOrigin && (
+          <>
+            <link rel="preconnect" href={supabaseOrigin} crossOrigin="anonymous" />
+            <link rel="dns-prefetch" href={supabaseOrigin} />
+          </>
+        )}
+      </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
         <ThemeProvider>
           <QueryProvider>
