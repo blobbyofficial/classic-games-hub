@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { User, SlidersHorizontal, Coins, Shield, Lock, Link2 } from "lucide-react";
 import { getCurrentProfile, getCurrentSettings, getFeatureFlags } from "@/lib/supabase/queries";
@@ -89,8 +90,18 @@ export default async function SettingsPage({
         <TabsContent value="rewards">
           <AdsSettings settings={settings} enabled={flags.rewarded_ads ?? true} />
         </TabsContent>
-        <TabsContent value="privacy">
+        <TabsContent value="privacy" className="space-y-4">
           <BlockedUsers initial={blocked} />
+          <p className="text-sm text-muted-foreground">
+            How we handle your data:{" "}
+            <Link href="/legal/privacy" className="font-medium text-primary hover:underline">
+              Privacy Policy
+            </Link>{" "}
+            ·{" "}
+            <Link href="/legal/terms" className="font-medium text-primary hover:underline">
+              Terms of Service
+            </Link>
+          </p>
         </TabsContent>
         <TabsContent value="security">
           <SecuritySettings />

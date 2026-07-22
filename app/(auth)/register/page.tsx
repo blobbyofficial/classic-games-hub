@@ -35,7 +35,15 @@ export default async function RegisterPage({
         <OAuthButtons next={next} />
 
         <p className="text-center text-xs text-muted-foreground">
-          Link Discord to unlock chat &amp; friends. By continuing you agree to play fair and be kind to other players.
+          Link Discord to unlock chat &amp; friends. By continuing you agree to our{" "}
+          <Link href="/legal/terms" className="font-medium text-primary hover:underline">
+            Terms of Service
+          </Link>{" "}
+          and{" "}
+          <Link href="/legal/privacy" className="font-medium text-primary hover:underline">
+            Privacy Policy
+          </Link>
+          .
         </p>
         <p className="text-center text-sm text-muted-foreground">
           Already have an account?{" "}

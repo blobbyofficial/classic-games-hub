@@ -24,12 +24,16 @@ const LINKS = {
     { label: "Settings", href: "/settings" },
     { label: "Inventory", href: "/inventory" },
   ],
+  Legal: [
+    { label: "Terms of Service", href: "/legal/terms" },
+    { label: "Privacy Policy", href: "/legal/privacy" },
+  ],
 };
 
 export function Footer() {
   return (
     <footer className="mt-16 border-t border-border/60 bg-muted/20">
-      <div className="mx-auto grid max-w-[1600px] gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_repeat(3,1fr)]">
+      <div className="mx-auto grid max-w-[1600px] gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_repeat(4,1fr)]">
         <div className="space-y-4">
           <Logo />
           <p className="max-w-xs text-sm text-muted-foreground">{SITE.description}</p>
@@ -68,7 +72,16 @@ export function Footer() {
         <a href={SITE.founder} target="_blank" rel="noopener noreferrer" className="font-medium hover:text-foreground">
           BlobbyOfficial
         </a>
-        . A community arcade — no pay-to-win, ever.
+        . A community arcade — no pay-to-win, ever.{" "}
+        <span className="whitespace-nowrap">
+          <Link href="/legal/terms" className="hover:text-foreground">
+            Terms
+          </Link>{" "}
+          ·{" "}
+          <Link href="/legal/privacy" className="hover:text-foreground">
+            Privacy
+          </Link>
+        </span>
       </div>
     </footer>
   );
