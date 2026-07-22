@@ -23,6 +23,7 @@ import { PresenceDot } from "@/components/profile/presence-dot";
 import { SITE } from "@/lib/constants";
 import { cn, isOnline, isGifUrl } from "@/lib/utils";
 import { GifPicker } from "./gif-picker";
+import { StreakChip } from "./streak-chip";
 import type { ConversationDetail } from "@/services/social";
 
 interface Reaction {
@@ -364,6 +365,7 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
                   {otherTyping ? "typing…" : isOnline(other.last_seen_at) ? "Online" : "Offline"}
                 </p>
               </div>
+              <StreakChip conversationId={conversation.id} />
             </>
           )
         )}

@@ -3,51 +3,66 @@ import { Suspense } from "react";
 import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users, Zap } from "lucide-react";
 import { getFeaturedGames, getPublishedGames, getFavoriteGameIds, getRecentlyPlayed } from "@/services/games";
 import { getDailyRewardStatus } from "@/services/economy";
-import { getCurrentProfile } from "@/lib/supabase/queries";
+import { getCurrentProfile, getFlagPayload } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { GameGrid } from "@/components/games/game-grid";
 import { GameCard } from "@/components/games/game-card";
 import { SectionHeader } from "@/components/section-header";
 import { DailyRewardCard } from "@/features/economy/daily-reward-card";
+import { CommunityEventCard } from "@/features/economy/community-event-card";
 import { CategoryRail } from "@/components/games/category-rail";
 import { HomeLeaderboardPreview } from "@/features/leaderboards/home-preview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { compactNumber } from "@/lib/utils";
 
+// Section keys the admin can reorder/hide from Admin → Flags ("home_layout").
+const DEFAULT_ORDER = ["event", "daily", "recent", "featured", "categories", "all_games"] as const;
+type SectionKey = (typeof DEFAULT_ORDER)[number];
+
 export default async function HomePage() {
-  const [profile, featured, allGames] = await Promise.all([
+  const [profile, featured, allGames, layoutFlag] = await Promise.all([
     getCurrentProfile(),
     getFeaturedGames(),
     getPublishedGames(),
+    getFlagPayload("home_layout"),
   ]);
   const user = profile;
   const favorites = user ? await getFavoriteGameIds() : new Set<string>();
   const totalPlays = allGames.reduce((sum, g) => sum + g.play_count, 0);
   const displayName = profile ? profile.display_name ?? profile.username : null;
 
-  return (
-    <div className="space-y-12">
-      <Hero
-        gameCount={allGames.length}
-        totalPlays={totalPlays}
-        isAuthed={Boolean(user)}
-        displayName={displayName}
-      />
+  // Admin-customisable section order (roadmap v1.4): unknown keys are ignored,
+  // missing keys are appended in default order, hidden keys are dropped.
+  const cfg = (layoutFlag?.enabled ? layoutFlag.payload : null) as
+    | { order?: string[]; hidden?: string[] }
+    | null;
+  const hidden = new Set(cfg?.hidden ?? []);
+  const configured = (cfg?.order ?? []).filter((k): k is SectionKey =>
+    (DEFAULT_ORDER as readonly string[]).includes(k),
+  );
+  const order = [...configured, ...DEFAULT_ORDER.filter((k) => !configured.includes(k))].filter(
+    (k) => !hidden.has(k),
+  );
 
-      {user && (
-        <Suspense>
-          <DailyRewardSlot />
-        </Suspense>
-      )}
-
-      {user && (
-        <Suspense fallback={null}>
-          <RecentlyPlayed favorites={favorites} />
-        </Suspense>
-      )}
-
-      <section>
+  const sections: Record<SectionKey, React.ReactNode> = {
+    event: (
+      <Suspense key="event" fallback={null}>
+        <CommunityEventCard />
+      </Suspense>
+    ),
+    daily: user ? (
+      <Suspense key="daily">
+        <DailyRewardSlot />
+      </Suspense>
+    ) : null,
+    recent: user ? (
+      <Suspense key="recent" fallback={null}>
+        <RecentlyPlayed favorites={favorites} />
+      </Suspense>
+    ) : null,
+    featured: (
+      <section key="featured">
         <SectionHeader
           title="Featured games"
           subtitle="Hand-picked classics to jump into"
@@ -56,10 +71,10 @@ export default async function HomePage() {
         />
         <GameGrid games={featured} favorites={favorites} priorityCount={5} />
       </section>
-
-      <CategoryRail />
-
-      <section className="grid gap-6 lg:grid-cols-[1fr_360px]">
+    ),
+    categories: <CategoryRail key="categories" />,
+    all_games: (
+      <section key="all_games" className="grid gap-6 lg:grid-cols-[1fr_360px]">
         <div>
           <SectionHeader title="All games" subtitle={`${allGames.length} classics and counting`} icon={Gamepad2} href="/games" />
           <GameGrid games={allGames.slice(0, 10)} favorites={favorites} />
@@ -71,6 +86,18 @@ export default async function HomePage() {
           </Suspense>
         </div>
       </section>
+    ),
+  };
+
+  return (
+    <div className="space-y-12">
+      <Hero
+        gameCount={allGames.length}
+        totalPlays={totalPlays}
+        isAuthed={Boolean(user)}
+        displayName={displayName}
+      />
+      {order.map((key) => sections[key])}
     </div>
   );
 }

@@ -47,6 +47,7 @@ export async function discordFetch<T = unknown>(
 export interface GuildMember {
   user?: { id: string; username: string; global_name?: string | null };
   roles: string[];
+  premium_since?: string | null;
   communication_disabled_until?: string | null;
 }
 

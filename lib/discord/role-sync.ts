@@ -90,7 +90,16 @@ export async function syncMemberRoles(discordId: string): Promise<RoleSyncOutcom
     };
   }
 
+  // Stamp Discord-booster status onto the Hub profile (powers booster perks
+  // and tenure badges) — best-effort, and only for linked members.
+  if (state.linked) {
+    await botDb.setBooster(discordId, member.data.premium_since ?? null);
+  }
+
   const desiredKeys = computeDesiredRoleKeys(state);
+  if (state.linked && !state.is_banned && member.data.premium_since) {
+    desiredKeys.add("__booster__");
+  }
   const desired = new Set<string>();
   for (const [key, roleId] of Object.entries(roleMap)) {
     if (!roleId) continue;

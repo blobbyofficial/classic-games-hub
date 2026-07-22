@@ -24,13 +24,22 @@ const TYPE_FILTERS: { key: string; label: string; kinds: string[] }[] = [
   { key: "badges", label: "Badges", kinds: ["badge"] },
   { key: "effects", label: "Effects", kinds: ["effect"] },
   { key: "collectibles", label: "Collectibles", kinds: ["collectible"] },
+  { key: "tracks", label: "Tracks", kinds: ["track"] },
 ];
 
-const RARITY_ORDER: Record<string, number> = { legendary: 0, epic: 1, rare: 2, common: 3 };
+const RARITY_ORDER: Record<string, number> = { mythic: -1, legendary: 0, epic: 1, rare: 2, common: 3 };
 const SORTS = ["Recent", "Name", "Rarity"] as const;
 type Sort = (typeof SORTS)[number];
 
-export function InventoryGrid({ items }: { items: OwnedItem[] }) {
+export interface BoostState {
+  kind: "credit_boost" | "xp_boost";
+  stacks: number;
+  multiplier: number;
+  expires_at: string | null;
+  queued: number;
+}
+
+export function InventoryGrid({ items, boostState = [] }: { items: OwnedItem[]; boostState?: BoostState[] }) {
   const profile = useSessionStore((s) => s.profile);
   const patchProfile = useSessionStore((s) => s.patchProfile);
   const [equipped, setEquipped] = useState<Record<string, string>>(profile?.equipped ?? {});
@@ -63,7 +72,20 @@ export function InventoryGrid({ items }: { items: OwnedItem[] }) {
     });
   };
 
-  const boosts = items.filter((i) => i.kind === "xp_boost" || i.kind === "credit_boost");
+  const legacyBoosts = items.filter((i) => i.kind === "xp_boost" || i.kind === "credit_boost");
+  // Prefer the live stacked-boost state (0036); fall back to inventory rows.
+  const boosts: BoostState[] =
+    boostState.length > 0
+      ? boostState
+      : legacyBoosts
+          .filter((b) => b.expires_at && new Date(b.expires_at) > new Date())
+          .map((b) => ({
+            kind: b.kind as "credit_boost" | "xp_boost",
+            stacks: 1,
+            multiplier: 2,
+            expires_at: b.expires_at,
+            queued: 0,
+          }));
   const allCosmetics = items.filter((i) => EQUIPPABLE.has(i.kind) || i.kind === "collectible");
 
   const cosmetics = useMemo(() => {
@@ -102,11 +124,11 @@ export function InventoryGrid({ items }: { items: OwnedItem[] }) {
           <div className="grid gap-2 sm:grid-cols-2">
             {boosts.map((b) => {
               const active = b.expires_at && new Date(b.expires_at) > new Date();
-              const multiplier = (b.preview as { multiplier?: number } | null)?.multiplier ?? 2;
+              const multiplier = b.multiplier;
               const isXp = b.kind === "xp_boost";
               return (
                 <div
-                  key={b.id}
+                  key={b.kind}
                   className={cn(
                     "relative flex items-center gap-3 overflow-hidden rounded-xl border p-3",
                     active
@@ -136,13 +158,18 @@ export function InventoryGrid({ items }: { items: OwnedItem[] }) {
                   </span>
                   <div className="relative min-w-0 flex-1">
                     <p className="flex items-center gap-2 text-sm font-medium">
-                      {b.name}
+                      {isXp ? "XP boost" : "Credit boost"}
                       <span className="rounded bg-primary/15 px-1.5 py-0.5 text-xs font-bold text-primary">
                         {multiplier}×
                       </span>
+                      {b.queued > 0 && (
+                        <span className="rounded bg-muted px-1.5 py-0.5 text-xs text-muted-foreground">
+                          +{b.queued} queued
+                        </span>
+                      )}
                     </p>
                     <p className="text-xs text-muted-foreground">
-                      {active ? <BoostTimer expiresAt={b.expires_at!} /> : "Expired"}
+                      {active ? <BoostTimer expiresAt={b.expires_at!} /> : b.queued > 0 ? "Next boost starting…" : "Expired"}
                     </p>
                   </div>
                 </div>
@@ -181,7 +208,7 @@ export function InventoryGrid({ items }: { items: OwnedItem[] }) {
           <FilterChip active={rarity === "all"} onClick={() => setRarity("all")}>
             Any rarity
           </FilterChip>
-          {(["common", "rare", "epic", "legendary"] as const).map((r) => (
+          {(["common", "rare", "epic", "legendary", "mythic"] as const).map((r) => (
             <FilterChip key={r} active={rarity === r} onClick={() => setRarity(r)}>
               {RARITY_META[r].label}
             </FilterChip>

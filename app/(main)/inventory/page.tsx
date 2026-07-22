@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { Package } from "lucide-react";
 import { getSessionUser } from "@/lib/supabase/queries";
 import { getInventory, getWishlist } from "@/services/shop";
+import { createClient } from "@/lib/supabase/server";
 import { InventoryGrid } from "@/features/economy/inventory-grid";
 import { WishlistSection } from "@/features/economy/wishlist-section";
 
@@ -11,7 +12,13 @@ export const metadata: Metadata = { title: "Inventory" };
 export default async function InventoryPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/inventory");
-  const [items, wishlist] = await Promise.all([getInventory(), getWishlist()]);
+  const supabase = await createClient();
+  const [items, wishlist, { data: boostData }] = await Promise.all([
+    getInventory(),
+    getWishlist(),
+    supabase.rpc("my_boosts"),
+  ]);
+  const boostState = (Array.isArray(boostData) ? boostData : []) as unknown as import("@/features/economy/inventory-grid").BoostState[];
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
@@ -24,7 +31,7 @@ export default async function InventoryPage() {
           <p className="text-sm text-muted-foreground">Equip your cosmetics and track active boosts.</p>
         </div>
       </div>
-      <InventoryGrid items={items} />
+      <InventoryGrid items={items} boostState={boostState} />
       <WishlistSection items={wishlist} />
     </div>
   );

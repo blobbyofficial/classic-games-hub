@@ -56,6 +56,19 @@ export const getFeatureFlags = cache(async (): Promise<Record<string, boolean>> 
   return Object.fromEntries((data ?? []).map((f) => [f.key, f.enabled]));
 });
 
+/** A single feature flag with its payload (for admin-configured surfaces). */
+export const getFlagPayload = cache(
+  async (key: string): Promise<{ enabled: boolean; payload: unknown } | null> => {
+    const supabase = await createClient();
+    const { data } = await supabase
+      .from("feature_flags")
+      .select("enabled, payload")
+      .eq("key", key)
+      .maybeSingle();
+    return data ? { enabled: data.enabled, payload: data.payload } : null;
+  },
+);
+
 /**
  * Resolves the two site-wide banners (maintenance + generic) from their feature
  * flags. Returns `null` for a banner that is disabled or has no message so the

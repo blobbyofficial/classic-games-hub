@@ -128,6 +128,7 @@ export const RARITY_META: Record<string, { label: string; color: string; ring: s
   rare: { label: "Rare", color: "text-sky-400", ring: "ring-sky-400/50" },
   epic: { label: "Epic", color: "text-fuchsia-400", ring: "ring-fuchsia-400/50" },
   legendary: { label: "Legendary", color: "text-amber-400", ring: "ring-amber-400/60" },
+  mythic: { label: "Mythic", color: "text-rose-400", ring: "ring-rose-400/70" },
 };
 
 export function sleep(ms: number) {

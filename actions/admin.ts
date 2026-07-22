@@ -308,3 +308,111 @@ export async function adminRunFullRoleSync(): Promise<RpcResult & { detail?: str
     detail: `Scanned ${result.scanned} linked member(s); updated ${result.changed}; ${result.errors} error(s).`,
   };
 }
+
+// ── Community mega-events ──────────────────────────────────────────────
+
+export async function adminCreateCommunityEvent(input: {
+  title: string;
+  description: string;
+  target: number;
+  reward: number;
+  hours: number;
+}): Promise<RpcResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_create_community_event", {
+    p_title: input.title,
+    p_description: input.description,
+    p_target: Math.trunc(input.target),
+    p_reward: Math.trunc(input.reward),
+    p_hours: Math.trunc(input.hours),
+  });
+  if (error) return { ok: false, error: error.message };
+  const res = data as { ok?: boolean; error?: string } | null;
+  if (!res?.ok) return { ok: false, error: res?.error ?? "Failed" };
+  revalidatePath("/admin/events");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+export async function adminEndCommunityEvent(id: string): Promise<RpcResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("admin_end_community_event", { p_id: id });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/events");
+  revalidatePath("/");
+  return { ok: true };
+}
+
+// ── Admin-configured site surfaces (ads, home layout, roadmap override) ─
+
+const HOME_SECTIONS = ["event", "daily", "recent", "featured", "categories", "all_games"] as const;
+
+const adsPlacementsSchema = z.object({
+  home: z.boolean(),
+  games: z.boolean(),
+  shop: z.boolean(),
+});
+
+const homeLayoutSchema = z.object({
+  order: z.array(z.enum(HOME_SECTIONS)).max(10),
+  hidden: z.array(z.enum(HOME_SECTIONS)).max(10),
+});
+
+const roadmapItemSchema = z.object({
+  title: z.string().min(1).max(120),
+  description: z.string().min(1).max(1000),
+  status: z.enum(["shipped", "in-progress", "next", "later", "idea"]).optional(),
+});
+const roadmapOverrideSchema = z.object({
+  releases: z
+    .array(
+      z.object({
+        version: z.string().min(1).max(20),
+        codename: z.string().min(1).max(60),
+        status: z.enum(["shipped", "in-progress", "next", "later", "idea"]),
+        timeframe: z.string().min(1).max(60),
+        summary: z.string().min(1).max(1000),
+        groups: z.array(
+          z.object({
+            heading: z.string().min(1).max(80),
+            icon: z.string().min(1).max(40),
+            blurb: z.string().max(500).optional(),
+            items: z.array(roadmapItemSchema).max(40),
+          }),
+        ).max(20),
+      }),
+    )
+    .max(20),
+});
+
+const FLAG_SCHEMAS: Record<string, z.ZodTypeAny> = {
+  ads_placements: adsPlacementsSchema,
+  home_layout: homeLayoutSchema,
+  roadmap_override: roadmapOverrideSchema,
+};
+
+export async function adminSetFlagConfig(
+  key: "ads_placements" | "home_layout" | "roadmap_override",
+  enabled: boolean,
+  payload: unknown,
+): Promise<RpcResult> {
+  await requireStaff();
+  const schema = FLAG_SCHEMAS[key];
+  const parsed = schema.safeParse(payload);
+  if (!parsed.success) {
+    const issue = parsed.error.issues[0];
+    return { ok: false, error: `${issue.path.join(".") || "payload"}: ${issue.message}` };
+  }
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("feature_flags")
+    .update({ enabled, payload: parsed.data as import("@/types/database").Json })
+    .eq("key", key);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/site");
+  revalidatePath("/", "layout");
+  revalidatePath("/roadmap");
+  return { ok: true };
+}

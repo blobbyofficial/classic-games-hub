@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, Users, Gamepad2, Flag, Megaphone, Flag as FlagIcon, ScrollText, ToggleRight, Bot, BarChart3 } from "lucide-react";
+import { LayoutDashboard, Users, Gamepad2, Flag, Megaphone, Flag as FlagIcon, ScrollText, ToggleRight, Bot, BarChart3, PartyPopper, Globe } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const ITEMS = [
@@ -14,6 +14,8 @@ const ITEMS = [
   { href: "/admin/announcements", label: "Announcements", icon: Megaphone },
   { href: "/admin/flags", label: "Feature flags", icon: ToggleRight, adminOnly: true },
   { href: "/admin/discord", label: "Discord bot", icon: Bot, adminOnly: true },
+  { href: "/admin/events", label: "Events", icon: PartyPopper, adminOnly: true },
+  { href: "/admin/site", label: "Site", icon: Globe, adminOnly: true },
   { href: "/admin/audit", label: "Audit log", icon: ScrollText },
 ];
 

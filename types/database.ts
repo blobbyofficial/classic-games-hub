@@ -11,7 +11,7 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type UserRole = "user" | "moderator" | "admin";
 export type GameStatus = "published" | "draft" | "archived" | "coming_soon";
 export type Difficulty = "easy" | "normal" | "hard";
-export type Rarity = "common" | "rare" | "epic" | "legendary";
+export type Rarity = "common" | "rare" | "epic" | "legendary" | "mythic";
 export type ShopKind =
   | "avatar_frame"
   | "profile_theme"
@@ -21,7 +21,8 @@ export type ShopKind =
   | "nameplate"
   | "collectible"
   | "xp_boost"
-  | "credit_boost";
+  | "credit_boost"
+  | "track";
 export type FriendStatus = "pending" | "accepted" | "declined";
 export type AllowDms = "everyone" | "friends" | "none";
 export type PresenceStatus = "auto" | "online" | "away" | "dnd" | "sleep" | "invisible";
@@ -49,6 +50,7 @@ export interface Database {
           is_banned: boolean;
           needs_username: boolean;
           discord_linked: boolean;
+          booster_since: string | null;
           pronouns: string | null;
           status_text: string | null;
           favourite_game_slug: string | null;
@@ -320,6 +322,7 @@ export interface Database {
           available: boolean;
           sort_weight: number;
           staff_only: boolean;
+          min_level: number;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["shop_items"]["Row"]> & {
@@ -484,6 +487,60 @@ export interface Database {
         Row: { key: string; enabled: boolean; description: string | null; payload: Json; updated_at: string };
         Insert: { key: string; enabled?: boolean; description?: string | null; payload?: Json };
         Update: { enabled?: boolean; description?: string | null; payload?: Json };
+        Relationships: [];
+      };
+      community_events: {
+        Row: {
+          id: string;
+          title: string;
+          description: string | null;
+          goal_type: "plays";
+          target: number;
+          progress: number;
+          credits_reward: number;
+          starts_at: string;
+          ends_at: string;
+          completed_at: string | null;
+          rewarded: boolean;
+          created_by: string | null;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      community_event_participants: {
+        Row: { event_id: string; user_id: string; contributions: number };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      message_streaks: {
+        Row: {
+          conversation_id: string;
+          user_a: string;
+          user_b: string;
+          a_last: string | null;
+          b_last: string | null;
+          last_counted: string | null;
+          streak: number;
+          best: number;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      user_boosts: {
+        Row: {
+          user_id: string;
+          kind: "credit_boost" | "xp_boost";
+          stacks: number;
+          expires_at: string | null;
+          queued: number;
+        };
+        Insert: never;
+        Update: never;
         Relationships: [];
       };
       discord_links: {
@@ -670,6 +727,16 @@ export interface Database {
       bot_discord_id: { Args: { p_user: string }; Returns: string | null };
       bot_purge_link_codes: { Args: Record<string, never>; Returns: undefined };
       bot_server_stats: { Args: Record<string, never>; Returns: Json };
+      // ── Living Arcade (0036) ──
+      my_boosts: { Args: Record<string, never>; Returns: Json };
+      conversation_streak: { Args: { p_conversation: string }; Returns: Json };
+      current_community_event: { Args: Record<string, never>; Returns: Json };
+      admin_create_community_event: {
+        Args: { p_title: string; p_description: string; p_target: number; p_reward: number; p_hours: number };
+        Returns: Json;
+      };
+      admin_end_community_event: { Args: { p_id: string }; Returns: Json };
+      bot_set_booster: { Args: { p_discord: string; p_since: string | null }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

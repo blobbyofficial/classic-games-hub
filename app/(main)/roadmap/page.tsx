@@ -23,7 +23,8 @@ import {
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { SITE } from "@/lib/constants";
-import { ROADMAP, STATUS_META, DEFINITION_OF_DONE, type RoadmapStatus } from "@/lib/roadmap";
+import { ROADMAP, STATUS_META, DEFINITION_OF_DONE, type RoadmapRelease, type RoadmapStatus } from "@/lib/roadmap";
+import { getFlagPayload } from "@/lib/supabase/queries";
 
 export const metadata: Metadata = {
   title: "Roadmap",
@@ -63,7 +64,16 @@ function StatusPill({ status, className }: { status: RoadmapStatus; className?: 
   );
 }
 
-export default function RoadmapPage() {
+export default async function RoadmapPage() {
+  // Admins can override the roadmap from Admin → Site (validated JSON in the
+  // roadmap_override flag); the built-in roadmap is the fallback.
+  let roadmap: RoadmapRelease[] = ROADMAP;
+  const override = await getFlagPayload("roadmap_override");
+  if (override?.enabled) {
+    const releases = (override.payload as { releases?: RoadmapRelease[] } | null)?.releases;
+    if (Array.isArray(releases) && releases.length > 0) roadmap = releases;
+  }
+
   return (
     <div className="mx-auto max-w-4xl space-y-10">
       {/* Header */}
@@ -101,7 +111,7 @@ export default function RoadmapPage() {
       </header>
 
       {/* Releases */}
-      {ROADMAP.map((release) => (
+      {roadmap.map((release) => (
         <section key={release.version} className="space-y-5">
           <div className="rounded-2xl border border-border bg-gradient-to-br from-primary/5 to-transparent p-5">
             <div className="flex flex-wrap items-center gap-3">

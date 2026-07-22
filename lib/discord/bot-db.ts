@@ -124,5 +124,7 @@ export const botDb = {
       p_reason: reason,
     }),
   discordIdFor: (userId: string) => rpc<string | null>("bot_discord_id", { p_user: userId }),
+  setBooster: (discordId: string, since: string | null) =>
+    rpc<{ ok: boolean }>("bot_set_booster", { p_discord: discordId, p_since: since }),
   purgeLinkCodes: () => rpc<undefined>("bot_purge_link_codes", {}),
 };

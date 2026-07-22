@@ -24,6 +24,7 @@ const KIND_LABEL: Record<string, string> = {
   collectible: "Collectible",
   xp_boost: "XP boost",
   credit_boost: "Credit boost",
+  track: "Music track",
 };
 
 export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }) {
@@ -38,6 +39,7 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
   const colors = item.preview?.colors ?? ["#8b5cf6", "#ec4899"];
   const isBoost = item.kind === "xp_boost" || item.kind === "credit_boost";
   const canAfford = credits >= item.price;
+  const levelLocked = (item.min_level ?? 0) > (profile?.level ?? 0);
   const canEquip = EQUIPPABLE.has(item.kind);
   const isEquipped = (profile?.equipped ?? {})[item.kind] === item.slug;
 
@@ -104,6 +106,11 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
         {item.staff_only && (
           <Badge className="absolute right-2 top-2 border-none bg-rose-500/80 text-white backdrop-blur-sm">Staff</Badge>
         )}
+        {(item.min_level ?? 0) > 0 && !item.staff_only && (
+          <Badge className="absolute right-2 top-2 border-none bg-black/30 text-white backdrop-blur-sm">
+            Lv {item.min_level}+
+          </Badge>
+        )}
         <span className="absolute inset-0 grid place-items-center bg-black/40 opacity-0 backdrop-blur-[1px] transition-opacity group-hover/preview:opacity-100">
           <span className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-black">
             <Eye className="size-3.5" /> Preview
@@ -140,9 +147,14 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
               </Button>
             )
           ) : (
-            <Button size="sm" variant={canAfford ? "gradient" : "outline"} onClick={buy} disabled={pending || !canAfford}>
+            <Button
+              size="sm"
+              variant={canAfford && !levelLocked ? "gradient" : "outline"}
+              onClick={buy}
+              disabled={pending || !canAfford || levelLocked}
+            >
               {pending ? <Loader2 className="animate-spin" /> : isBoost ? <Clock /> : null}
-              {canAfford ? "Buy" : "Need more"}
+              {levelLocked ? `Lv ${item.min_level}+` : canAfford ? "Buy" : "Need more"}
             </Button>
           )}
         </div>
