@@ -40,10 +40,11 @@ declare
   r public.user_boosts%rowtype;
 begin
   for r in select * from public.user_boosts where user_id = p_user for update loop
+    -- A queued boost activates the moment the previous window ends. Anchor the
+    -- new window to now() (never to a long-past expiry) so a boost that ran out
+    -- days ago still hands its queued successor a full, live 24-hour window.
     while r.queued > 0 and (r.expires_at is null or r.expires_at <= now()) loop
-      r.expires_at := greatest(coalesce(r.expires_at, now()), now() - interval '24 hours') + interval '24 hours';
-      -- A queued window that would have both started AND ended in the past
-      -- collapses; keep advancing until we reach one that's still live.
+      r.expires_at := greatest(coalesce(r.expires_at, now()), now()) + interval '24 hours';
       r.stacks := 1;
       r.queued := r.queued - 1;
     end loop;

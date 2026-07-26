@@ -29,23 +29,22 @@ export const getSessionUser = cache(async () => {
 });
 
 export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  // Reuse the cached session rather than re-authenticating: several server
+  // components resolve the profile and settings in the same render, and each
+  // auth.getUser() is its own round-trip to Supabase Auth.
+  const user = await getSessionUser();
   if (!user) return null;
 
+  const supabase = await createClient();
   const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
   return data;
 });
 
 export const getCurrentSettings = cache(async (): Promise<UserSettings | null> => {
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
+  const user = await getSessionUser();
   if (!user) return null;
 
+  const supabase = await createClient();
   const { data } = await supabase.from("user_settings").select("*").eq("user_id", user.id).single();
   return data;
 });

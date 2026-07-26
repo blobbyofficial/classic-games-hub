@@ -6,6 +6,7 @@ import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { QueryProvider } from "@/components/providers/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
+import { cookies } from "next/headers";
 import { SITE } from "@/lib/constants";
 import { getCurrentSettings } from "@/lib/supabase/queries";
 import { SITE_THEME_IDS } from "@/lib/themes";
@@ -44,7 +45,12 @@ export const viewport: Viewport = {
 
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Apply the player's global colour theme before first paint (no flash).
-  const settings = await getCurrentSettings().catch(() => null);
+  // Signed-out visitors always get the default theme, so skip the auth
+  // round-trip entirely unless a Supabase session cookie is actually present —
+  // that keeps anonymous traffic (and 404s) off the auth endpoint.
+  const cookieStore = await cookies();
+  const hasSession = cookieStore.getAll().some((c) => /^sb-.*auth-token/.test(c.name));
+  const settings = hasSession ? await getCurrentSettings().catch(() => null) : null;
   const rawTheme = (settings as { site_theme?: string } | null)?.site_theme ?? "default";
   const siteTheme = SITE_THEME_IDS.has(rawTheme) ? rawTheme : "default";
 
