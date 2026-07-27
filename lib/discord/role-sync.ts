@@ -1,5 +1,6 @@
 import "server-only";
 import { botDb, type RoleState } from "./bot-db";
+import { earnedMilestones, getBotConfig } from "./config";
 import { discordEnv } from "./env";
 import { discordRest } from "./rest";
 
@@ -74,7 +75,14 @@ export async function syncMemberRoles(discordId: string): Promise<RoleSyncOutcom
   const cfg = await botDb.getConfig("role_sync");
   if (cfg && cfg.enabled === false) return { ok: false, error: "disabled", ...none };
   const roleMap = (cfg?.role_map ?? {}) as Record<string, string>;
-  const managed = new Set(Object.values(roleMap).filter(Boolean));
+  const levelRoles = await getBotConfig("level_roles");
+  const milestoneRoles = levelRoles.enabled ? levelRoles.roles ?? {} : {};
+
+  // Everything the bot is allowed to add/remove: the award role map plus the
+  // milestone level roles it created itself.
+  const managed = new Set(
+    [...Object.values(roleMap), ...Object.values(milestoneRoles)].filter(Boolean),
+  );
   if (managed.size === 0) return { ok: false, error: "no_role_map", ...none };
 
   const state = await botDb.roleState(discordId);
@@ -105,6 +113,17 @@ export async function syncMemberRoles(discordId: string): Promise<RoleSyncOutcom
     if (!roleId) continue;
     if (desiredKeys.has(key) || (!state.is_banned && levelKeySatisfied(key, state))) {
       desired.add(roleId);
+    }
+  }
+
+  // Milestone level roles (the Arcane-style level rewards). `remove_previous`
+  // keeps only the highest earned milestone; otherwise they stack.
+  if (!state.is_banned && levelRoles.enabled) {
+    const earned = earnedMilestones(levelRoles, state.discord_level ?? 0);
+    const grant = levelRoles.remove_previous ? earned.slice(0, 1) : earned;
+    for (const level of grant) {
+      const roleId = milestoneRoles[String(level)];
+      if (roleId) desired.add(roleId);
     }
   }
 

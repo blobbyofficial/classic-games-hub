@@ -1,0 +1,41 @@
+# Fly.io — the recommended home for the worker.
+#
+# Unlike Render's free web services, a Fly machine is a real always-on process:
+# no idling, no keep-alive pings, and the bot stays Online 24/7. A shared-cpu-1x
+# 256MB machine is comfortably inside Fly's smallest paid-but-usually-free
+# allowance and is plenty for this bot.
+#
+# Deploy:
+#   cd bot
+#   fly launch --no-deploy --copy-config      # creates the app
+#   fly secrets set DISCORD_TOKEN=... DISCORD_GUILD_ID=... \
+#                   SUPABASE_URL=... SUPABASE_SECRET_KEY=...
+#   fly deploy
+app = "classic-games-bot"
+primary_region = "lhr"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  SITE_URL = "https://classic-games-hub.blobbyofficial.com"
+  PORT = "8080"
+
+[http_service]
+  internal_port = 8080
+  force_https = true
+  # Never stop the machine — a stopped machine is a bot that shows offline.
+  auto_stop_machines = false
+  auto_start_machines = true
+  min_machines_running = 1
+
+  [[http_service.checks]]
+    interval = "30s"
+    timeout = "5s"
+    grace_period = "20s"
+    method = "GET"
+    path = "/health"
+
+[[vm]]
+  size = "shared-cpu-1x"
+  memory = "256mb"

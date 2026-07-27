@@ -1,19 +1,7 @@
 import type { Message } from "discord.js";
-import { db, type LevelingConfig } from "../db.js";
-
-const CONFIG_TTL_MS = 60_000;
-let cached: LevelingConfig | null = null;
-let cachedAt = 0;
-
-async function getConfig(): Promise<LevelingConfig | null> {
-  if (cached && Date.now() - cachedAt < CONFIG_TTL_MS) return cached;
-  const cfg = await db.getConfig<LevelingConfig>("leveling");
-  if (cfg) {
-    cached = cfg;
-    cachedAt = Date.now();
-  }
-  return cached;
-}
+import { db } from "../db.js";
+import { getConfig } from "../hubConfig.js";
+import { syncMemberRoles } from "./roleSync.js";
 
 // Cheap in-process pre-filter; the REAL cooldown is enforced in Postgres
 // (bot_award_discord_xp), so restarts can't double-award.
@@ -21,16 +9,16 @@ const lastSeen = new Map<string, number>();
 
 /**
  * Discord chat XP — the Arcane replacement. Config lives in Supabase
- * (discord_bot_config.leveling, editable from the admin dashboard):
- * XP range, cooldown, level curve, no-XP channels, announcements and the
- * optional Hub-XP trickle for linked accounts.
+ * (discord_bot_config, editable from the admin dashboard): XP range, cooldown,
+ * level curve, no-XP channels, announcements, the Hub-XP trickle for linked
+ * accounts, and the milestone roles handed out on level-up.
  */
 export async function handleChatXp(message: Message): Promise<void> {
   if (message.author.bot || !message.inGuild()) return;
   if (message.system) return;
 
-  const cfg = await getConfig();
-  if (!cfg || cfg.enabled === false) return;
+  const cfg = (await getConfig()).leveling;
+  if (cfg.enabled === false) return;
   if ((cfg.no_xp_channel_ids ?? []).includes(message.channelId)) return;
 
   const now = Date.now();
@@ -44,13 +32,37 @@ export async function handleChatXp(message: Message): Promise<void> {
   );
   if (!res?.ok || res.cooldown || !res.leveled_up) return;
 
-  if (cfg.announce_level_ups === false) return;
-  const channel = cfg.announce_channel_id
-    ? await message.client.channels.fetch(cfg.announce_channel_id).catch(() => null)
-    : message.channel;
-  if (channel && channel.isTextBased() && "send" in channel) {
-    channel
-      .send(`🎉 ${message.author} reached **level ${res.level}**! Check your rank with \`/rank\`.`)
-      .catch(() => undefined);
+  await onLevelUp(message, res.level ?? 0);
+}
+
+/** Grants the milestone role (if any) and announces the new level. */
+async function onLevelUp(message: Message, level: number): Promise<void> {
+  const cfg = await getConfig();
+
+  // Sync first, so the announcement can mention the role just earned.
+  let earnedRoleId: string | undefined;
+  const member =
+    message.member ?? (await message.guild?.members.fetch(message.author.id).catch(() => null));
+  if (member) {
+    const outcome = await syncMemberRoles(member);
+    const milestoneIds = new Set(Object.values(cfg.level_roles.roles ?? {}));
+    earnedRoleId = outcome.added.find((id) => milestoneIds.has(id));
   }
+
+  if (cfg.leveling.announce_level_ups === false) return;
+
+  const channel = cfg.leveling.announce_channel_id
+    ? await message.client.channels.fetch(cfg.leveling.announce_channel_id).catch(() => null)
+    : message.channel;
+  if (!channel || !channel.isTextBased() || !("send" in channel)) return;
+
+  const lines = [`🎉 ${message.author} reached **level ${level}**!`];
+  if (earnedRoleId && cfg.level_roles.announce !== false) {
+    lines.push(`🎖️ Milestone unlocked — you've earned <@&${earnedRoleId}>.`);
+  }
+  lines.push("Check your progress with `/level`.");
+
+  await channel
+    .send({ content: lines.join("\n"), allowedMentions: { users: [message.author.id] } })
+    .catch(() => undefined);
 }

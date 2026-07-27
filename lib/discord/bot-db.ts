@@ -1,6 +1,7 @@
 import "server-only";
 import { createAdminClient } from "@/lib/supabase/server";
 import type { Json } from "@/types/database";
+import type { BotConfigKey } from "./config";
 
 /**
  * Typed wrappers around the service_role-only `bot_*` RPCs (migrations
@@ -114,8 +115,71 @@ export const botDb = {
     >("bot_discord_leaderboard", { p_limit: limit }),
   roleState: (discordId: string) => rpc<RoleState>("bot_role_state", { p_discord: discordId }),
   allLinked: () => rpc<string[]>("bot_all_linked", {}),
-  getConfig: (key: "leveling" | "role_sync") =>
-    rpc<Record<string, Json>>("bot_get_config", { p_key: key }),
+  getConfig: (key: BotConfigKey) => rpc<Record<string, Json>>("bot_get_config", { p_key: key }),
+  allConfig: () => rpc<Record<string, Record<string, Json>>>("bot_all_config", {}),
+  patchConfig: (key: BotConfigKey, patch: Record<string, unknown>) =>
+    rpc<{ ok: boolean; error?: string }>("bot_patch_config", { p_key: key, p_patch: patch }),
+  verifyMember: (discordId: string, username: string | null, method: string) =>
+    rpc<{
+      ok: boolean;
+      error?: string;
+      first_time?: boolean;
+      verified_role_id?: string | null;
+      unverified_role_id?: string | null;
+      success_message?: string | null;
+      linked?: boolean;
+    }>("bot_verify_member", { p_discord: discordId, p_username: username, p_method: method }),
+  addCase: (input: {
+    actor: string;
+    target: string;
+    action: string;
+    reason?: string | null;
+    minutes?: number | null;
+    targetUsername?: string | null;
+  }) =>
+    rpc<{ ok: boolean; case?: number }>("bot_add_case", {
+      p_actor: input.actor,
+      p_target: input.target,
+      p_action: input.action,
+      p_reason: input.reason ?? null,
+      p_minutes: input.minutes ?? null,
+      p_target_username: input.targetUsername ?? null,
+    }),
+  listCases: (target: string, limit = 10) =>
+    rpc<
+      {
+        case: number;
+        action: string;
+        reason: string | null;
+        actor: string | null;
+        minutes: number | null;
+        at: string;
+      }[]
+    >("bot_list_cases", { p_target: target, p_limit: limit }),
+  openTicketCount: (discordId: string) =>
+    rpc<{ count: number; channels: string[]; next: number }>("bot_open_ticket_count", {
+      p_discord: discordId,
+    }),
+  ticketOpen: (channelId: string, discordId: string, username: string | null, subject: string | null) =>
+    rpc<{ ok: boolean; ticket?: number }>("bot_ticket_open", {
+      p_channel: channelId,
+      p_discord: discordId,
+      p_username: username,
+      p_subject: subject,
+    }),
+  ticketClose: (channelId: string, by: string | null) =>
+    rpc<{ ok: boolean; error?: string; ticket?: number; opener?: string; subject?: string | null }>(
+      "bot_ticket_close",
+      { p_channel: channelId, p_by: by },
+    ),
+  statsExtended: () =>
+    rpc<{
+      members: number;
+      online: number;
+      plays_today: number;
+      plays_total: number;
+      linked: number;
+    }>("bot_stats_extended", {}),
   logMod: (actor: string, target: string, action: string, reason: string) =>
     rpc<{ ok: boolean }>("bot_log_mod", {
       p_actor_discord: actor,

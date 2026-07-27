@@ -1,128 +1,203 @@
 # Classic Games Hub — Discord bot
 
-The Hub's Discord bot is built to run **entirely on the existing free
-infrastructure** (Vercel + Supabase + Discord). There is no hosted bot
-process for slash commands at all.
+One bot instead of four. It replaces **Appy** (join verification), **Sapphire**
+(moderation, announcements, tickets), **Arcane** (levelling and level-reward
+roles) and **ServerStats** (live counter channels) — and it runs on the
+existing free infrastructure (Vercel + Supabase + Discord).
 
 ## Architecture
 
 ```
-Discord slash command ──HTTP POST──▶ Vercel: /api/discord/interactions
-                                        │  (Ed25519 signature verified)
-                                        ▼
-                              Supabase bot_* RPCs (service_role only)
-                                        │
-Role changes / linking ────────────────▶ Discord REST API (bot token)
+Slash commands, buttons, modals ──HTTP POST──▶ Vercel: /api/discord/interactions
+                                                 │  (Ed25519 signature verified)
+                                                 ▼
+                                       Supabase bot_* RPCs (service_role only)
+                                                 │
+Role/verify/ticket/mod actions ─────────────────▶ Discord REST API (bot token)
 
 Vercel cron (nightly) ──▶ /api/cron/discord-role-sync ──▶ reconcile all roles
+Any scheduler ─────────▶ /api/cron/discord-stats ──────▶ refresh counters
 
-Optional: bot/ companion worker (gateway) ──▶ chat XP, live feed, stats,
-          join-time role sync — the only parts that need a persistent process
+bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handling,
+     automod, live feed, counters — and the bot's Online status
 ```
 
 | Piece | Where it runs | Cost |
 | --- | --- | --- |
-| Slash commands (`/link`, `/rank`, `/daily`, `/pay`, `/sync`, moderation, …) | Vercel serverless (`app/api/discord/interactions`) | free |
-| Account linking | Website (Supabase auth + `claim_discord_link` RPC) | free |
-| Role sync | On change (server actions) + nightly Vercel cron + `/sync` | free |
-| Level/XP storage & rules | Supabase (`discord_levels`, `discord_bot_config`) | free |
-| Chat-message XP awarding, level-up announcements, live feed, stat counters | `bot/` companion worker — needs any always-on Node host | free if you have any always-on machine |
+| Slash commands, verification button/captcha, ticket panel | Vercel serverless | free |
+| Moderation (`/warn` `/timeout` `/kick` `/ban` `/unban` `/purge` `/lock` …) | Vercel serverless | free |
+| Announcements (`/announce`) | Vercel serverless | free |
+| Account linking | Website (Supabase auth + `claim_discord_link`) | free |
+| Role sync + milestone roles | On change, `/sync`, nightly cron, level-up | free |
+| Level/XP storage & rules, cases, tickets | Supabase | free |
+| Chat XP, automod, join handling, live feed, **Online status** | `bot/` worker — any always-on Node host | free-ish (see `bot/README.md`) |
 
-**The one honest free-tier limitation:** Discord only delivers *message*
-events over a persistent gateway connection, which Vercel/Supabase cannot
-hold. Everything else about leveling (storage, config, `/rank`, `/levels`,
-role rewards, the admin panel) is serverless; only *awarding XP for chat
-messages* needs the companion worker in `bot/`. Run it on any machine that's
-usually on (an old laptop/Raspberry Pi works); it's crash-safe — cooldowns
-are enforced in Postgres, so restarts can't double-award XP.
+## What replaced what
+
+### Appy → join verification
+
+- `/setup verification channel:#verify` creates the **Verified** and
+  **Unverified** roles (reusing any that already exist), posts the verify panel
+  and stores every ID in Supabase.
+- Members press one button — or, with `captcha: true`, answer a maths question
+  in a modal. The expected answer never leaves the server: the modal carries an
+  HMAC of it, keyed with the bot token.
+- Optional `min_account_age_hours` blocks throwaway accounts. Verifications are
+  recorded in `discord_verifications` and logged to a channel.
+- On join, the worker applies the Unverified role (and an optional DM); on
+  success the bot swaps it for Verified, posts the welcome message and syncs
+  the member's Hub roles.
+- Members can also type `/verify`.
+
+### Sapphire → moderation, announcements, tickets
+
+- **Moderation:** `/warn` `/timeout` `/untimeout` `/kick` `/ban` `/unban`
+  `/purge` `/slowmode` `/lock` `/unlock` `/warnings`. Every action creates a
+  numbered case in `discord_mod_cases`, DMs the member (configurable), posts an
+  embed to the mod-log channel and lands in the website's audit trail.
+  Permissions are checked twice: `default_member_permissions` *and* in the
+  handler.
+- **Automod** (opt-in, worker-side): Discord invites, links, mass mentions and
+  message floods, with exempt roles/channels and delete-or-timeout actions.
+- **Announcements:** `/announce channel:#news message: … title: … ping:@role
+  image: …` posts a branded embed (or plain text) with mention-scoping, so a
+  ping can never escape the role you chose.
+- **Tickets:** a panel button or `/ticket [subject]` opens a private channel
+  (`ticket-0001`) visible to the member and the staff role; `/close` or the
+  Close button posts a transcript to the log channel and deletes the channel.
+  `max_open_per_user` stops ticket spam.
+
+### Arcane → levelling and level rewards
+
+- XP per counted message is random in a configurable range (default 15–25) with
+  a configurable cooldown (default 60 s) — enforced **in Postgres**, so it
+  can't be gamed by restarts. Bots, system messages and no-XP channels never
+  count.
+- Level curve is configurable (`quad·n² + linear·n + base`; defaults 5/50/100 —
+  the familiar MEE6/Arcane curve).
+- **Milestone roles:** `/setup levels` creates a role per milestone level
+  (defaults **1, 5, 10, 20, 30, 40, 50, 75, 100** — editable) and stores the
+  IDs. Reaching a milestone grants the role immediately; `remove_previous`
+  switches between stacking roles and keeping only the highest. The nightly
+  role sync repairs anything missed while the worker was down.
+- **Members check their level with `/level`** (progress bar, rank, current and
+  next milestone role), `/rewards` lists the whole ladder, `/levels` is the
+  leaderboard and `/rank` stays as the terse card.
+- Linked players optionally trickle a share (default 20 %) of Discord XP into
+  their website XP and get a website notification on level-ups.
+
+### ServerStats → live counter channels
+
+- `/setup stats` creates voice channels under a **📊 Hub stats** category:
+  online players on the website, registered players, plays today (and
+  optionally the Discord member count). Nobody can join them — the name *is*
+  the display.
+- "Online" comes from the website: profiles seen in the last 5 minutes
+  (`bot_stats_extended`).
+- Refreshed every 10 minutes by the worker, and on demand from
+  `/setup refresh-stats` or the admin dashboard. Discord rate-limits channel
+  renames to ~2 per 10 minutes per channel, so that's the practical ceiling.
+- Serverless fallback: `GET /api/cron/discord-stats` with
+  `Authorization: Bearer $CRON_SECRET`. Vercel Hobby crons only run daily, so
+  for a 10-minute cadence use Supabase `pg_cron` + `pg_net`, cron-job.org, or
+  just run the worker.
+
+## Is there any way for the bot to always be online?
+
+Yes — run the gateway worker. Discord's green dot means "this application holds
+a gateway (WebSocket) connection", nothing else. An HTTP-interactions bot has
+none, so it shows grey no matter how well it works, and Vercel/Supabase
+functions are request-scoped and cannot hold that connection open.
+
+`bot/` does hold it: it logs in with an explicit presence (`online` + activity
+text), re-asserts it every 10 minutes (Discord drops presence on some
+reconnects), auto-reconnects, exits non-zero on an invalidated session so the
+host restarts it, and serves `/health` so free hosts keep it alive.
+`bot/fly.toml` (always-on) and `bot/render.yaml` (free tier + keep-alive
+pinger) are both included — see `bot/README.md`.
 
 ## Account linking
 
 Two secure paths, both verifying the user actually controls the Discord
 account:
 
-1. **OAuth (primary).** Settings → Connections → *Link with Discord* sends
-   the signed-in user through Discord OAuth (Supabase `linkIdentity`). Users
-   who already sign in with Discord are linked automatically.
-2. **One-time code (fallback).** `/link` in Discord mints an 8-character,
-   10-minute, single-use code (stored server-side). The user enters it at
-   Settings → Connections while signed in. Nobody can link an account they
-   don't control: the code is only ever shown to the Discord user themselves
-   (ephemeral reply), and claiming requires an authenticated Hub session.
+1. **OAuth (primary).** Settings → Connections → *Link with Discord* sends the
+   signed-in user through Discord OAuth (Supabase `linkIdentity`). Users who
+   already sign in with Discord are linked automatically.
+2. **One-time code (fallback).** `/link` mints an 8-character, 10-minute,
+   single-use code, shown only to that Discord user (ephemeral). Claiming it
+   requires an authenticated Hub session.
 
 Both sources resolve through one function (`bot_uid`), and
 `profiles.discord_linked` stays in sync via triggers. Unlink from Settings →
-Connections (OAuth links require another sign-in method first, so accounts
-can't lock themselves out) or `/unlink` for code links.
+Connections, or `/unlink` for code links.
 
 ## Role synchronisation
 
 - The **website is the source of truth**. The map from Hub facts to Discord
-  role IDs is edited at **Admin → Discord bot** (stored in
-  `discord_bot_config.role_sync`).
-- Supported keys: `__linked__`, `__staff__`, `__admin__`, `__moderator__`,
-  any badge/achievement slug, `nameplate-<slug>`, `hub-level-<N>`,
-  `discord-level-<N>`.
-- Sync happens: on admin role change and ban/unban (server actions), when a
-  link is claimed, on `/sync`, when a member joins (companion worker), and
-  nightly for everyone (Vercel cron `/api/cron/discord-role-sync`).
-- Only mapped role IDs are ever added/removed; deleted/renamed Discord roles
-  and missing permissions are skipped gracefully and reported in `/sync`;
-  banned Hub accounts lose all managed roles.
-
-## Leveling (Arcane replacement)
-
-- XP per counted message is random in a configurable range (default 15–25)
-  with a configurable cooldown (default 60 s) — enforced **in Postgres**, so
-  it can't be gamed by client/bot restarts. Messages from bots and system
-  messages never count; per-channel no-XP lists are supported.
-- Level curve is configurable (`quad·n² + linear·n + base`; defaults 5/50/100
-  — the familiar MEE6/Arcane curve).
-- `/rank` shows level, XP, progress bar and server rank; `/levels` shows the
-  top 10. Level-ups can be announced in-channel or in a dedicated channel.
-- Linked players optionally trickle a share (default 20 %) of Discord XP into
-  their website XP, and get a website notification on Discord level-ups.
-  Discord levels can gate Discord roles via `discord-level-<N>` map keys.
-- Configure everything at **Admin → Discord bot**.
+  role IDs is edited at **Admin → Discord bot**
+  (`discord_bot_config.role_sync`).
+- Supported keys: `__linked__`, `__staff__`, `__admin__`, `__moderator__`, any
+  badge/achievement slug, `nameplate-<slug>`, `hub-level-<N>`,
+  `discord-level-<N>` — plus the milestone level roles, which the bot manages
+  itself.
+- Sync happens: on admin role change and ban/unban, when a link is claimed, on
+  `/sync`, on verification, on level-up, when a member joins, and nightly for
+  everyone.
+- Only mapped role IDs are ever added or removed; missing permissions are
+  reported rather than silently swallowed; banned Hub accounts lose every
+  managed role.
 
 ## Setup (one-time)
 
 1. **Create the Discord application**
    <https://discord.com/developers/applications> → New Application.
-   - *General Information*: copy **Application ID** → `DISCORD_CLIENT_ID`,
+   - *General Information*: **Application ID** → `DISCORD_CLIENT_ID`,
      **Public Key** → `DISCORD_PUBLIC_KEY`.
    - *Bot*: Reset Token → `DISCORD_BOT_TOKEN`. Enable the **Server Members**
-     privileged intent (used by the companion worker; harmless otherwise).
+     privileged intent (and **Message Content** only if you want automod's
+     invite/link rules).
    - *OAuth2 → URL Generator*: scopes `bot` + `applications.commands`;
-     permissions: Send Messages, Embed Links, Manage Roles, Moderate Members,
-     Ban Members (+ Manage Channels if you use stat counters). Invite the bot
-     with the generated URL.
-   - Server ID (right-click your server with Developer Mode on) →
-     `DISCORD_GUILD_ID`.
-2. **Vercel env vars** (Project → Settings → Environment Variables, server
-   only): `DISCORD_CLIENT_ID`, `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN`,
-   `DISCORD_GUILD_ID`, `CRON_SECRET` (any long random string), and
-   `SUPABASE_SECRET_KEY` if not already set. Redeploy.
-3. **Register the slash commands** (once, and after any command change):
+     permissions: Manage Roles, Manage Channels, Kick Members, Ban Members,
+     Moderate Members, Manage Messages, Send Messages, Embed Links, Read
+     Message History. Invite the bot with the generated URL.
+   - Drag the bot's role **above** every role it manages (Server Settings →
+     Roles) — Discord refuses to touch roles above its own.
+2. **Vercel env vars** (server only): `DISCORD_CLIENT_ID`,
+   `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN`, `DISCORD_GUILD_ID`,
+   `CRON_SECRET`, `SUPABASE_SECRET_KEY`. Redeploy.
+3. **Supabase**: apply migrations `0033_discord_bot_v2.sql` and
+   `0041_discord_bot_v3.sql` (and enable *manual account linking* under
+   Auth → Providers).
+4. **Register the slash commands** (once, and after any command change):
    `curl -X POST https://<your-domain>/api/discord/register -H "Authorization: Bearer <CRON_SECRET>"`
-4. **Point Discord at the endpoint**: Developer Portal → General Information
-   → *Interactions Endpoint URL* =
-   `https://<your-domain>/api/discord/interactions` → Save (Discord sends a
-   test ping; it must succeed).
-5. **Supabase**: apply migration `0033_discord_bot_v2.sql` (and enable
-   *manual account linking* under Auth → Providers so the OAuth "Link with
-   Discord" button works for email accounts).
-6. **Admin → Discord bot** on the website: paste your role map, tune
-   leveling.
-7. *(Optional)* run the companion worker — see `bot/README.md`.
+5. **Point Discord at the endpoint**: Developer Portal → General Information →
+   *Interactions Endpoint URL* =
+   `https://<your-domain>/api/discord/interactions`.
+6. **Run `/setup status` in Discord**, then work through what it lists:
+   ```
+   /setup levels
+   /setup verification channel:#verify welcome_channel:#welcome log_channel:#logs
+   /setup tickets channel:#support category:Tickets staff_role:@Staff log_channel:#ticket-logs
+   /setup stats
+   /setup modlog channel:#mod-log
+   ```
+   Verification has one manual step Discord can't automate: deny **View
+   Channel** for @everyone (or the Unverified role) on the channels newcomers
+   shouldn't see, and allow it for Verified.
+7. **Run the worker** (`bot/`) so chat XP, automod and the Online status work —
+   see `bot/README.md`.
+8. Fine-tune wording, limits and automod at **Admin → Discord bot**.
 
 ## Failure modes
 
-- **Bot env vars unset** → commands answer with a friendly error; site
+- **Bot env vars unset** → commands answer with a friendly error; the site is
   unaffected.
+- **Worker down** → slash commands, verification, tickets and moderation all
+  keep working; chat XP, automod, the live feed and the Online dot pause. The
+  nightly reconcile repairs milestone roles afterwards.
 - **Discord API down / rate-limited** → role syncs skip and are corrected by
-  the nightly reconcile.
-- **Bot's role below a managed role** → that role is skipped and `/sync`
-  says so.
-- **User not in the server** → sync is a no-op until they join (then the
-  companion worker or nightly cron catches them).
+  the nightly reconcile; counter renames are skipped until the next tick.
+- **Bot's role below a managed role** → that role is skipped, and `/sync` and
+  `/setup` say so explicitly.
+- **User not in the server** → sync is a no-op until they join.

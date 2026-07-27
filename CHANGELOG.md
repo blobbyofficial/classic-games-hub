@@ -3,6 +3,61 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## Unreleased — "One Bot" (Discord consolidation)
+
+The Hub's own Discord bot now covers everything Appy, Sapphire, Arcane and
+ServerStats did, so the server can run on one bot instead of five.
+
+### 🛡️ Join verification (replaces Appy)
+
+- Verify panel with a one-press button, or a captcha mode that asks a maths
+  question in a modal (the answer never leaves the server — the modal carries
+  an HMAC of it).
+- `/setup verification` creates the Verified/Unverified roles, posts the panel
+  and stores every ID; new joiners get the Unverified role automatically.
+- Optional minimum account age, verification log channel, welcome message with
+  `{user}` / `{server}` / `{count}` placeholders, and `/verify` for members who
+  prefer a command.
+
+### ⚖️ Moderation, announcements & tickets (replaces Sapphire)
+
+- New commands: `/kick` `/unban` `/untimeout` `/purge` `/slowmode` `/lock`
+  `/unlock` `/warnings`, alongside the existing `/warn` `/timeout` `/ban`.
+- Every action creates a numbered case (`discord_mod_cases`), optionally DMs
+  the member, posts to a mod-log channel and lands in the website audit trail.
+- `/announce` posts branded embeds (or plain text) with scoped role pings.
+- Ticket system: panel button or `/ticket [subject]` opens a private channel,
+  `/close` posts a transcript to the log channel and deletes it.
+- Opt-in automod: Discord invites, links, mass mentions and message floods,
+  with exempt roles/channels and delete-or-timeout actions.
+
+### ⭐ Levels & milestone roles (replaces Arcane)
+
+- `/level` — progress bar, rank, current and next milestone role; `/rewards`
+  lists the whole ladder.
+- Milestone roles at levels 1, 5, 10, 20, 30, 40, 50, 75 and 100 (editable).
+  `/setup levels` creates them in Discord, and they're granted the moment
+  someone levels up — stacking, or highest-only if you prefer.
+
+### 📊 Live counters (replaces ServerStats)
+
+- `/setup stats` creates voice channels showing live numbers, including
+  **online players on the website**, refreshed every 10 minutes.
+- Also available serverlessly at `/api/cron/discord-stats`.
+
+### 🟢 Staying online
+
+- The gateway worker now sets an explicit presence, re-asserts it every 10
+  minutes, auto-reconnects, and serves `/health` on `$PORT`. Added `fly.toml`
+  (always-on) and `render.yaml` (free tier + keep-alive pinger).
+
+### 🔧 Admin
+
+- **Admin → Discord bot** gained sections for verification, milestone roles,
+  counters, tickets and moderation/automod, plus one-click "create missing
+  milestone roles" and "refresh counters".
+- New migration `0041`.
+
 ## v1.4.1 — "Every Pixel" (games & themes overhaul)
 
 ### 🎮 Games
