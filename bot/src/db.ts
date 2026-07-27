@@ -10,22 +10,6 @@ export interface FeedEvent {
   data: Record<string, unknown>;
 }
 
-export interface LevelingConfig {
-  enabled: boolean;
-  xp_min: number;
-  xp_max: number;
-  cooldown_seconds: number;
-  announce_level_ups: boolean;
-  announce_channel_id: string | null;
-  no_xp_channel_ids: string[];
-  hub_xp_share: number;
-}
-
-export interface RoleSyncConfig {
-  enabled: boolean;
-  role_map: Record<string, string>;
-}
-
 export interface RoleState {
   ok: boolean;
   linked: boolean;
@@ -57,9 +41,38 @@ export const db = {
       level?: number;
       xp?: number;
     }>("bot_award_discord_xp", { p_discord: discordId, p_username: username }),
-  getConfig: <T>(key: "leveling" | "role_sync") => rpc<T>("bot_get_config", { p_key: key }),
+  /** Every config key in one round trip (migration 0041). */
+  allConfig: () => rpc<Record<string, unknown>>("bot_all_config", {}),
   roleState: (discordId: string) => rpc<RoleState>("bot_role_state", { p_discord: discordId }),
   serverStats: () =>
-    rpc<{ members: number; online: number; plays_today: number }>("bot_server_stats", {}),
+    rpc<{
+      members: number;
+      online: number;
+      plays_today: number;
+      plays_total: number;
+      linked: number;
+    }>("bot_stats_extended", {}),
   recentFeed: (after: number) => rpc<FeedEvent[]>("bot_recent_feed", { p_after: after }),
+  verifyMember: (discordId: string, username: string | null, method: string) =>
+    rpc<{ ok: boolean; error?: string; first_time?: boolean }>("bot_verify_member", {
+      p_discord: discordId,
+      p_username: username,
+      p_method: method,
+    }),
+  addCase: (input: {
+    actor: string;
+    target: string;
+    action: string;
+    reason?: string | null;
+    minutes?: number | null;
+    targetUsername?: string | null;
+  }) =>
+    rpc<{ ok: boolean; case?: number }>("bot_add_case", {
+      p_actor: input.actor,
+      p_target: input.target,
+      p_action: input.action,
+      p_reason: input.reason ?? null,
+      p_minutes: input.minutes ?? null,
+      p_target_username: input.targetUsername ?? null,
+    }),
 };

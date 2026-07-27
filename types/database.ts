@@ -738,6 +738,32 @@ export interface Database {
       };
       admin_end_community_event: { Args: { p_id: string }; Returns: Json };
       bot_set_booster: { Args: { p_discord: string; p_since: string | null }; Returns: Json };
+      // ── Discord bot v3 (0041): verification, moderation cases, tickets ──
+      bot_all_config: { Args: Record<string, never>; Returns: Json };
+      bot_patch_config: { Args: { p_key: string; p_patch: Json }; Returns: Json };
+      bot_verify_member: {
+        Args: { p_discord: string; p_username?: string | null; p_method?: string };
+        Returns: Json;
+      };
+      bot_add_case: {
+        Args: {
+          p_actor: string;
+          p_target: string;
+          p_action: string;
+          p_reason?: string | null;
+          p_minutes?: number | null;
+          p_target_username?: string | null;
+        };
+        Returns: Json;
+      };
+      bot_list_cases: { Args: { p_target: string; p_limit?: number }; Returns: Json };
+      bot_ticket_open: {
+        Args: { p_channel: string; p_discord: string; p_username?: string | null; p_subject?: string | null };
+        Returns: Json;
+      };
+      bot_open_ticket_count: { Args: { p_discord: string }; Returns: Json };
+      bot_ticket_close: { Args: { p_channel: string; p_by?: string | null }; Returns: Json };
+      bot_stats_extended: { Args: Record<string, never>; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

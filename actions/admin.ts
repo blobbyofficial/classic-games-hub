@@ -264,6 +264,150 @@ const roleSyncConfigSchema = z.object({
   role_map: z.record(z.string().min(1).max(64), z.string().regex(/^\d{5,25}$/)),
 });
 
+/** A Discord snowflake, or null when the field is cleared. */
+const snowflake = z
+  .string()
+  .trim()
+  .regex(/^\d{5,25}$/)
+  .nullable()
+  .or(z.literal("").transform(() => null));
+
+const verificationConfigSchema = z.object({
+  enabled: z.boolean(),
+  mode: z.enum(["button", "captcha"]),
+  verified_role_id: snowflake,
+  unverified_role_id: snowflake,
+  panel_channel_id: snowflake,
+  log_channel_id: snowflake,
+  min_account_age_hours: z.number().int().min(0).max(8760),
+  panel_title: z.string().max(200),
+  panel_body: z.string().max(2000),
+  button_label: z.string().max(80),
+  success_message: z.string().max(1000),
+  welcome_channel_id: snowflake,
+  welcome_message: z.string().max(1000),
+  dm_on_join: z.boolean(),
+  dm_message: z.string().max(1000),
+});
+
+const moderationConfigSchema = z.object({
+  log_channel_id: snowflake,
+  dm_on_action: z.boolean(),
+  automod: z.object({
+    enabled: z.boolean(),
+    block_invites: z.boolean(),
+    block_links: z.boolean(),
+    max_mentions: z.number().int().min(0).max(50),
+    spam_messages: z.number().int().min(0).max(50),
+    spam_window_seconds: z.number().int().min(1).max(120),
+    action: z.enum(["delete", "timeout"]),
+    timeout_minutes: z.number().int().min(1).max(40320),
+    exempt_role_ids: z.array(z.string().regex(/^\d{5,25}$/)).max(50),
+    exempt_channel_ids: z.array(z.string().regex(/^\d{5,25}$/)).max(50),
+  }),
+});
+
+const ticketsConfigSchema = z.object({
+  enabled: z.boolean(),
+  category_id: snowflake,
+  staff_role_id: snowflake,
+  log_channel_id: snowflake,
+  panel_title: z.string().max(200),
+  panel_body: z.string().max(2000),
+  button_label: z.string().max(80),
+  open_message: z.string().max(2000),
+  max_open_per_user: z.number().int().min(0).max(10),
+});
+
+const statsConfigSchema = z.object({
+  enabled: z.boolean(),
+  channels: z.object({
+    online: snowflake,
+    members: snowflake,
+    plays: snowflake,
+    discord_members: snowflake,
+  }),
+  templates: z.object({
+    online: z.string().min(1).max(100),
+    members: z.string().min(1).max(100),
+    plays: z.string().min(1).max(100),
+    discord_members: z.string().min(1).max(100),
+  }),
+});
+
+const levelRolesConfigSchema = z.object({
+  enabled: z.boolean(),
+  announce: z.boolean(),
+  remove_previous: z.boolean(),
+  milestones: z.array(z.number().int().min(1).max(500)).max(50),
+  name_template: z.string().min(1).max(80),
+  roles: z.record(z.string(), z.string().regex(/^\d{5,25}$/)),
+});
+
+const BOT_SECTIONS = {
+  verification: verificationConfigSchema,
+  moderation: moderationConfigSchema,
+  tickets: ticketsConfigSchema,
+  stats: statsConfigSchema,
+  level_roles: levelRolesConfigSchema,
+} as const;
+
+export type BotSection = keyof typeof BOT_SECTIONS;
+
+/** Saves one of the newer bot config sections (migration 0037). */
+export async function adminSetBotSection(section: BotSection, input: unknown): Promise<RpcResult> {
+  await requireStaff();
+  const schema = BOT_SECTIONS[section];
+  if (!schema) return { ok: false, error: "Unknown settings section" };
+  const parsed = schema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid settings" };
+  }
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_set_bot_config", {
+    p_key: section,
+    p_value: parsed.data,
+  });
+  if (error) return { ok: false, error: error.message };
+  const res = data as { ok?: boolean; error?: string } | null;
+  if (!res?.ok) return { ok: false, error: res?.error ?? "Failed to save" };
+  revalidatePath("/admin/discord");
+  return { ok: true };
+}
+
+/** Creates any missing milestone level roles in Discord and stores their IDs. */
+export async function adminCreateLevelRoles(): Promise<RpcResult & { detail?: string }> {
+  await requireStaff();
+  const { setupLevelRoles } = await import("@/lib/discord/setup");
+  const res = await setupLevelRoles();
+  if (!res.ok) {
+    return {
+      ok: false,
+      error:
+        res.error === "missing_permissions"
+          ? "The bot needs the Manage Roles permission (and its role must sit above the roles it creates)."
+          : "Couldn't reach Discord — check DISCORD_BOT_TOKEN and DISCORD_GUILD_ID.",
+    };
+  }
+  revalidatePath("/admin/discord");
+  return {
+    ok: true,
+    detail: `Created ${res.created.length}, reused ${res.reused.length}, failed ${res.failed.length}.`,
+  };
+}
+
+/** Renames the live counter channels right now. */
+export async function adminRefreshStatChannels(): Promise<RpcResult & { detail?: string }> {
+  await requireStaff();
+  const { refreshStatChannels } = await import("@/lib/discord/setup");
+  const res = await refreshStatChannels();
+  if (!res.ok) return { ok: false, error: "No counter channels configured yet." };
+  return {
+    ok: true,
+    detail: `Updated ${res.updated.length} channel(s); ${res.skipped.length} already current.`,
+  };
+}
+
 export async function adminSetBotLeveling(input: unknown): Promise<RpcResult> {
   await requireStaff();
   const parsed = levelingConfigSchema.safeParse(input);
