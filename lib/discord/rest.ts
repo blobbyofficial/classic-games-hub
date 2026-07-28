@@ -15,6 +15,26 @@ export interface RestResult<T = unknown> {
   error?: string;
 }
 
+/**
+ * HTTP header values must be Latin-1, and our audit reasons contain an em dash
+ * ("Classic Games Hub — …"). Passing one straight through makes `fetch` throw
+ * *before the request is sent*, which surfaced as a network error and had
+ * admins hunting for a permissions problem that did not exist. Discord
+ * documents this header as URL-encoded, so encode it — Discord decodes it back
+ * for the audit log. 512 characters is Discord's limit; encoding first means
+ * the truncation can't split a percent-escape.
+ */
+function encodeReason(reason: string): string {
+  return encodeURIComponent(reason).slice(0, 512);
+}
+
+function withEncodedReason(headers: RequestInit["headers"]): RequestInit["headers"] {
+  if (!headers || typeof headers !== "object" || Array.isArray(headers)) return headers;
+  const entries = headers as Record<string, string>;
+  const reason = entries["X-Audit-Log-Reason"];
+  return reason ? { ...entries, "X-Audit-Log-Reason": encodeReason(reason) } : headers;
+}
+
 export async function discordFetch<T = unknown>(
   path: string,
   init: RequestInit = {},
@@ -26,7 +46,7 @@ export async function discordFetch<T = unknown>(
       headers: {
         Authorization: `Bot ${discordEnv.botToken}`,
         "Content-Type": "application/json",
-        ...init.headers,
+        ...withEncodedReason(init.headers),
       },
     });
     if (res.status === 204) return { ok: true, status: 204 };
@@ -39,8 +59,11 @@ export async function discordFetch<T = unknown>(
       };
     }
     return { ok: true, status: res.status, data: body as T };
-  } catch {
-    return { ok: false, status: 0, error: "network" };
+  } catch (err) {
+    // Report what actually went wrong. A bare "network" hid a TypeError thrown
+    // by fetch itself for a whole release, and cost a round trip of debugging
+    // a permissions problem that was never there.
+    return { ok: false, status: 0, error: err instanceof Error ? err.message : "network" };
   }
 }
 
