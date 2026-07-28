@@ -60,6 +60,20 @@ four migrations that were live in the database finally have code to reach them.
 - The roadmap now records this as **Dropped** rather than quietly deleting it,
   and gained a status of that name to say so honestly.
 
+### 📜 Update log
+
+- New public **`/updates`** page: every release and the features it brought,
+  every merged pull request, and every individual change that has reached
+  production — 51 of them, back to the first commit in March.
+- The roadmap now covers **only what's coming**. Shipped releases moved out of
+  `lib/roadmap.ts` into `lib/update-log.ts`, so `/roadmap` is a short statement
+  of intent instead of an ever-growing archive, and a release is only ever
+  moved once: out of the roadmap, into the log.
+- `LANDED` is generated from `git log --first-parent main`, so the landing
+  history can be regenerated after a release rather than hand-maintained.
+- Added `/updates` and `/status` to the sitemap; `/status` had been missing
+  since it shipped.
+
 ### 🗺️ Roadmap restructure
 
 - Everything still unbuilt across v1.2.0–v1.4.0 — eleven items that had been
