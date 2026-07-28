@@ -150,6 +150,29 @@ Connections, or `/unlink` for code links.
   reported rather than silently swallowed; banned Hub accounts lose every
   managed role.
 
+## Environment variables
+
+On **Vercel** (the website — all server-only, none reach the browser):
+
+| Variable | Where it comes from | Without it |
+| --- | --- | --- |
+| `DISCORD_CLIENT_ID` | Developer Portal → General Information → Application ID | Commands can't be registered |
+| `DISCORD_PUBLIC_KEY` | Developer Portal → General Information → Public Key | **Discord refuses to save the interactions endpoint URL** — the endpoint correctly rejects the unsigned test ping with a 401 |
+| `DISCORD_BOT_TOKEN` | Developer Portal → Bot → Token | Commands can't be registered; no REST calls |
+| `DISCORD_GUILD_ID` | Right-click your server → Copy Server ID (needs Developer Mode) | Commands register globally instead, taking up to an hour to appear |
+| `CRON_SECRET` | Any long random string you choose | The cron routes and `/api/discord/register` reject every call |
+
+Admin → Discord bot shows which of these are present on the current
+deployment, so a missing one is visible before you press anything.
+
+On the **worker** (`bot/`, if you deploy it): `DISCORD_TOKEN` (or
+`DISCORD_BOT_TOKEN` — both are accepted, since the website uses the second
+name), `DISCORD_GUILD_ID`, `SUPABASE_URL` and `SUPABASE_SECRET_KEY`. The secret
+key is service-role and belongs only here.
+
+Changing a variable on Vercel does **not** affect the running deployment —
+redeploy afterwards, or the old build keeps its old (empty) values.
+
 ## Setup (one-time)
 
 1. **Create the Discord application**

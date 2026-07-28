@@ -1,16 +1,19 @@
 import "dotenv/config";
 
-function required(name: string): string {
-  const v = process.env[name];
-  if (!v) {
-    console.error(`Missing required env var: ${name}`);
-    process.exit(1);
+function required(name: string, ...aliases: string[]): string {
+  for (const key of [name, ...aliases]) {
+    const v = process.env[key];
+    if (v) return v;
   }
-  return v;
+  console.error(`Missing required env var: ${name}`);
+  process.exit(1);
 }
 
 export const config = {
-  discordToken: required("DISCORD_TOKEN"),
+  // The website calls this DISCORD_BOT_TOKEN. Same secret, and hosts often
+  // copy the whole set across, so accept either name rather than exiting on
+  // what looks to a human like the variable being present.
+  discordToken: required("DISCORD_TOKEN", "DISCORD_BOT_TOKEN"),
   guildId: required("DISCORD_GUILD_ID"),
   supabaseUrl: required("SUPABASE_URL"),
   supabaseSecretKey: required("SUPABASE_SECRET_KEY"),

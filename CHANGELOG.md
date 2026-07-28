@@ -60,6 +60,19 @@ four migrations that were live in the database finally have code to reach them.
 - The roadmap now records this as **Dropped** rather than quietly deleting it,
   and gained a status of that name to say so honestly.
 
+### 🔎 Discord setup diagnostics
+
+- **Admin → Discord bot** now lists which Discord environment variables the
+  deployment actually has (presence only, never values). An unset variable
+  previously surfaced as "could not be verified" from Discord, or a generic
+  failure from the register button, with no way to tell which one was missing.
+- The worker accepts `DISCORD_BOT_TOKEN` as well as `DISCORD_TOKEN`. It is the
+  same secret under two names, and copying the whole set across from Vercel
+  otherwise exits with "missing" for a variable that looks present.
+- `docs/discord-bot.md` gains a table of every variable, where to get it, and
+  what breaks without it — including the one that makes Discord reject the
+  interactions endpoint URL.
+
 ### 🤖 Register commands without a terminal
 
 - **Admin → Discord bot → "Register slash commands"** does what
