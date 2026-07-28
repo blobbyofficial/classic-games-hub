@@ -60,6 +60,36 @@ four migrations that were live in the database finally have code to reach them.
 - The roadmap now records this as **Dropped** rather than quietly deleting it,
   and gained a status of that name to say so honestly.
 
+### 🏷️ The bot is "Classic Games Bot"
+
+- The site and community are the Hub; the bot that serves them is now named
+  separately, on every surface it signs — embed footers, audit-log entries and
+  its help card. Kept in one constant (`BOT_NAME`), and `components.ts` no
+  longer carries a second copy of the brand colour and footer that would have
+  drifted the moment either changed.
+- Copy that refers to the *site* or the *community* is untouched: `/link` still
+  links your Classic Games Hub account, and a ban DM still says you were banned
+  from Classic Games Hub, because that is the server.
+
+### 🐞 Bugs found in a sweep of the bot
+
+- **The live feed silently swallowed the first real event.** The worker primes
+  itself on its first poll to skip the backlog, but returned early when that
+  poll came back empty — so on a quiet server `primed` stayed false and the
+  *next* poll, carrying the first genuine high score, was discarded as backlog.
+- **Purging exactly one message failed.** Discord's bulk-delete endpoint takes
+  2–100; the dashboard always called it, so a purge of one never worked. The
+  slash command already handled this.
+- **Locking a channel wiped its other @everyone rules.** Editing a permission
+  overwrite replaces it wholesale, and both the command and the dashboard wrote
+  a fresh overwrite containing only the send-messages bit. Unlocking was worse:
+  it wrote `deny: 0`, clearing every other deny on the channel. Both now read
+  the existing overwrite and change only that one bit — and locking clears an
+  explicit *allow*, which would otherwise beat the deny and leave the channel
+  unlocked.
+- **Long name templates were rejected outright.** Discord caps role and channel
+  names at 100 characters. The refresh pass clamped; creation didn't.
+
 ### 🩹 Three dashboard settings that couldn't take effect
 
 - **Tickets: the panel channel was dropped on every save.** `panel_channel_id`

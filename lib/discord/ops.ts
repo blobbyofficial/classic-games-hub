@@ -247,7 +247,11 @@ export async function purge(
     return { ok: false, error: "Nothing to delete — messages older than 14 days can't be bulk-deleted." };
   }
 
-  const res = await discordRest.bulkDelete(channelId, ids, `Purge by ${actor.name} (web)`);
+  // Discord's bulk-delete endpoint rejects a single message — it takes 2–100.
+  const res =
+    ids.length === 1
+      ? await discordRest.deleteMessage(channelId, ids[0], `Purge by ${actor.name} (web)`)
+      : await discordRest.bulkDelete(channelId, ids, `Purge by ${actor.name} (web)`);
   if (!res.ok) return failed(res.status, res.error, "delete those messages");
 
   await recordModAction({
@@ -279,11 +283,25 @@ export async function setChannelLock(
   const guildId = discordEnv.guildId;
   if (!guildId) return { ok: false, error: "DISCORD_GUILD_ID isn't set." };
 
-  // Deny SendMessages for @everyone (the role whose id is the guild id).
+  // Editing a permission overwrite REPLACES it, so the current allow/deny have
+  // to be read first — otherwise locking a channel silently drops every other
+  // @everyone rule on it (and unlocking dropped them too, by writing deny: 0).
+  const SEND_MESSAGES = 1n << 11n;
+  const channel = await discordRest.getChannel(channelId);
+  const existing = channel.data?.permission_overwrites?.find((o) => o.id === guildId);
+  const allow = BigInt(existing?.allow ?? "0");
+  const deny = BigInt(existing?.deny ?? "0");
+
   const res = await discordRest.editChannelPermissions(
     channelId,
     guildId,
-    locked ? { deny: String(1n << 11n), type: 0 } : { deny: "0", type: 0 },
+    {
+      type: 0,
+      // Locking must also clear an explicit *allow* of SendMessages, or the
+      // deny is overruled and the lock does nothing.
+      allow: String(locked ? allow & ~SEND_MESSAGES : allow),
+      deny: String(locked ? deny | SEND_MESSAGES : deny & ~SEND_MESSAGES),
+    },
     `${locked ? "Lock" : "Unlock"} by ${actor.name} (web)`,
   );
   if (!res.ok) return failed(res.status, res.error, `${locked ? "lock" : "unlock"} that channel`);

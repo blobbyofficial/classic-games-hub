@@ -1,4 +1,13 @@
-# Classic Games Hub — Discord bot
+# Classic Games Bot
+
+The Discord bot for **Classic Games Hub**. The site and community are the Hub;
+the bot is **Classic Games Bot**, and that is what it signs its embeds and
+audit-log entries with (`BOT_NAME` in `lib/discord/embeds.ts` — one edit to
+change it everywhere).
+
+Renaming it there does **not** rename the Discord application. That name is set
+in the Developer Portal → your app → General Information, and the bot's
+nickname in the member list can be changed by right-clicking it in your server.
 
 One bot instead of four. It replaces **Appy** (join verification), **Sapphire**
 (moderation, announcements, tickets), **Arcane** (levelling and level-reward
