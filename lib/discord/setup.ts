@@ -26,9 +26,22 @@ export interface SetupResult {
   created: string[];
   reused: string[];
   failed: string[];
+  /**
+   * Discord's own words for the first failure, e.g. "Missing Permissions
+   * (50013)". Guessing at the cause in the summary sent people checking role
+   * hierarchy for problems that were nothing to do with it — a created role
+   * always lands at the bottom, so hierarchy cannot be why creation failed.
+   */
+  detail?: string;
 }
 
 const empty = (): Omit<SetupResult, "ok" | "error"> => ({ created: [], reused: [], failed: [] });
+
+/** Discord's message and code for a failed call, for showing to an admin. */
+function describe(res: { status?: number; error?: string }): string {
+  const code = res.status ? ` (HTTP ${res.status})` : "";
+  return `${res.error ?? "unknown error"}${code}`;
+}
 
 /** Milestone level roles — the Arcane level-reward replacement. */
 export async function setupLevelRoles(): Promise<SetupResult> {
@@ -75,6 +88,7 @@ export async function setupLevelRoles(): Promise<SetupResult> {
       result.created.push(name);
     } else {
       result.failed.push(name);
+      result.detail ??= describe(created);
     }
     await new Promise((r) => setTimeout(r, 120)); // stay well inside rate limits
   }
@@ -117,6 +131,7 @@ export async function setupVerificationRoles(): Promise<SetupResult & { verified
       return created.data.id;
     }
     result.failed.push(name);
+    result.detail ??= describe(created);
     return null;
   };
 
@@ -209,6 +224,7 @@ export async function setupStatsChannels(): Promise<SetupResult> {
       result.created.push(key);
     } else {
       result.failed.push(key);
+      result.detail ??= describe(created);
     }
     await new Promise((r) => setTimeout(r, 150));
   }

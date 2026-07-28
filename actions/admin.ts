@@ -390,10 +390,10 @@ export async function adminCreateLevelRoles(): Promise<RpcResult & { detail?: st
     };
   }
   revalidatePath("/admin/discord");
-  return {
-    ok: true,
-    detail: `Created ${res.created.length}, reused ${res.reused.length}, failed ${res.failed.length}.`,
-  };
+  const summary = `Created ${res.created.length}, reused ${res.reused.length}, failed ${res.failed.length}.`;
+  // Same reasoning as the Discord embed: report what Discord said rather than
+  // a guess, so a permissions problem and a role-limit problem look different.
+  return { ok: true, detail: res.detail ? `${summary} Discord said: ${res.detail}` : summary };
 }
 
 export interface DiscordEnvStatus {
