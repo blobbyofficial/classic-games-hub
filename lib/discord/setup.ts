@@ -157,7 +157,8 @@ export async function postVerificationPanel(channelId: string) {
 export async function postTicketPanel(channelId: string) {
   const cfg = await getBotConfig("tickets");
   const res = await discordRest.createMessage(channelId, ticketPanel(cfg));
-  if (res.ok) await botDb.patchConfig("tickets", { enabled: true });
+  // Record where it went, so the dashboard can re-post it after an edit.
+  if (res.ok) await botDb.patchConfig("tickets", { enabled: true, panel_channel_id: channelId });
   return res;
 }
 

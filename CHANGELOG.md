@@ -60,6 +60,27 @@ four migrations that were live in the database finally have code to reach them.
 - The roadmap now records this as **Dropped** rather than quietly deleting it,
   and gained a status of that name to say so honestly.
 
+### 🎛️ Run the bot from the dashboard
+
+- **Admin → Discord bot** gains a console: **Announce**, **Moderation** (warn,
+  timeout, remove timeout, kick, ban, unban), and **Channel tools** (purge,
+  slowmode, lock, unlock) — the commands that *do* something, now runnable
+  without opening Discord.
+- **Saving a section applies it.** It used to write to Postgres and stop, so
+  the dashboard and the server disagreed until someone ran the matching
+  `/setup`. The push is best-effort on purpose: settings are saved either way,
+  so a Discord problem costs a retry of the push, never your edit.
+- **Push settings to Discord** re-applies one section or all of them — for
+  after someone edits roles by hand, or to repair the server after the bot was
+  offline. Idempotent, so pressing it twice is safe.
+- Both surfaces call the same functions (`lib/discord/ops.ts`), so a case
+  opened on the website is numbered, DM'd and mod-logged identically to one
+  opened in Discord. Moderation from the site is attributed to the staff
+  member's linked Discord account, and refused without one.
+- The ticket panel's channel is now recorded when it's posted, so it can be
+  re-posted from the dashboard — previously that was only possible by running
+  `/setup tickets` again.
+
 ### 🐛 Audit-log reasons broke every write to Discord
 
 - **`/setup levels`, `/setup verification` and `/setup stats` could never create

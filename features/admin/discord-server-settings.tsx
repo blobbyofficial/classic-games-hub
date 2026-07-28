@@ -183,8 +183,12 @@ export function DiscordServerSettings({
     setState: (f: Feedback) => void,
   ) =>
     startTransition(async () => {
+      setState({ message: "Saving and applying to Discord…" });
       const res = await adminSetBotSection(section, value);
-      setState(res.ok ? { message: "Saved." } : { error: res.error });
+      if (!res.ok) return setState({ error: res.error });
+      // A save always succeeds on its own; a failed push is a warning against
+      // it, never a failure that leaves you wondering if your edit survived.
+      setState(res.warning ? { error: res.warning } : { message: res.detail ?? "Saved." });
     });
 
   const createRoles = () =>

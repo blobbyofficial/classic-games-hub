@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/queries";
 import { DiscordBotSettings } from "@/features/admin/discord-bot-settings";
 import type { LevelingConfig, RoleSyncConfig } from "@/features/admin/discord-bot-settings";
+import { DiscordConsole } from "@/features/admin/discord-console";
 import { DiscordServerSettings } from "@/features/admin/discord-server-settings";
 import type {
   LevelRolesConfig,
@@ -48,6 +49,8 @@ export default async function AdminDiscordPage() {
   // unconfigured server still renders sensible values.
   return (
     <div className="space-y-6">
+      {/* Actions first: this is the page you open to *do* something. */}
+      <DiscordConsole />
       <DiscordBotSettings leveling={leveling} roleSync={roleSync} />
       <DiscordServerSettings
         verification={mergeConfig("verification", config.verification) as VerificationConfig}
