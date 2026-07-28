@@ -4,7 +4,7 @@
  * Rendered by app/(main)/roadmap/page.tsx.
  */
 
-export type RoadmapStatus = "shipped" | "in-progress" | "next" | "later" | "idea";
+export type RoadmapStatus = "shipped" | "in-progress" | "next" | "later" | "idea" | "dropped";
 
 export interface RoadmapItem {
   title: string;
@@ -36,6 +36,9 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
   next: { label: "Next up", className: "bg-neon/15 text-neon border-neon/30" },
   later: { label: "Later", className: "bg-muted text-muted-foreground border-border" },
   idea: { label: "Exploring", className: "bg-gold/10 text-gold border-gold/30" },
+  // Plans we announced and then decided against. Kept visible rather than
+  // quietly deleted, so the roadmap stays honest about what changed.
+  dropped: { label: "Dropped", className: "bg-destructive/10 text-destructive border-destructive/30 line-through" },
 };
 
 export const ROADMAP: RoadmapRelease[] = [
@@ -424,7 +427,7 @@ export const ROADMAP: RoadmapRelease[] = [
     status: "in-progress",
     timeframe: "Shipping now — most of it is live",
     summary:
-      "Turn the hub into somewhere players return to for years, not weeks: original music, stacking events, long-term streaks, deep booster and level rewards, and a proper analytics + ads control centre.",
+      "Turn the hub into somewhere players return to for years, not weeks: original music, stacking events, long-term streaks, deep booster and level rewards, and a proper analytics control centre.",
     groups: [
       {
         heading: "Long-term engagement",
@@ -440,7 +443,7 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Level-milestone unlocks",
             description:
-              "Hitting a level milestone unlocks a real feature, giving levelling a point beyond a number. Shipped in v1.2.3: L10 create groups · L15 stories. Still to come: L5 background music · L20 extra loadout preset slots · L30 a vanity profile URL · L50 an exclusive mythic cosmetic.",
+              "Hitting a level milestone unlocks a real feature, giving levelling a point beyond a number. Live now: L5 background music · L10 create groups · L15 stories · L30 a vanity profile URL. Still to come: L20 extra loadout preset slots · L50 an exclusive mythic cosmetic.",
             status: "in-progress",
           },
           {
@@ -465,8 +468,9 @@ export const ROADMAP: RoadmapRelease[] = [
         items: [
           {
             title: "Bonus daily challenges",
-            description: "Two extra daily challenges on top of everyone else's — more ways to earn, every day.",
-            status: "later",
+            description:
+              "An extra daily challenge on top of everyone else's — more ways to earn, every day. Everyone can see it, so the perk is visible, but only boosters can claim it.",
+            status: "shipped",
           },
           {
             title: "Monthly cosmetic drop",
@@ -499,8 +503,9 @@ export const ROADMAP: RoadmapRelease[] = [
           },
           {
             title: "Vanity profile URL",
-            description: "Claim a custom profile link (e.g. /u/yourname) while you're boosting.",
-            status: "idea",
+            description:
+              "Claim a custom profile link (e.g. /u/yourname). Unlocked by boosting, by reaching level 30, or by being staff — claim or change it from Settings.",
+            status: "shipped",
           },
         ],
       },
@@ -535,13 +540,13 @@ export const ROADMAP: RoadmapRelease[] = [
         ],
       },
       {
-        heading: "Analytics, ads & admin",
+        heading: "Analytics & admin",
         icon: "BarChart3",
         items: [
           {
-            title: "Admin analytics & ads centre",
+            title: "Admin analytics centre",
             description:
-              "A dedicated admin section for analytics — site clicks, popular games, active players, retention and revenue — alongside full ad controls: force-shutdown all ads instantly, choose where ads appear, and tune placements without touching code.",
+              "A dedicated admin section for analytics — site clicks, popular games, active players and retention — plus control over which surfaces appear across the site, without touching code.",
             status: "shipped",
           },
           {
@@ -551,10 +556,10 @@ export const ROADMAP: RoadmapRelease[] = [
             status: "shipped",
           },
           {
-            title: "NitroPay ad integration",
+            title: "Rewarded ads & NitroPay",
             description:
-              "Ads are planned to run through NitroPay (nitropay.com), wired so they can be paused or relocated entirely from the admin ads centre. Pending final evaluation.",
-            status: "idea",
+              "The plan to run ads — the simulated 'watch to double your credits' flow and a NitroPay integration — has been dropped. It complicated the reward maths and there was never a network behind it, so the whole programme was removed rather than left half-built. Credits now come from playing, streaks and boosts alone.",
+            status: "dropped",
           },
         ],
       },
@@ -564,7 +569,7 @@ export const ROADMAP: RoadmapRelease[] = [
     version: "v1.4.0",
     codename: "New Dimensions",
     status: "in-progress",
-    timeframe: "First titles shipping",
+    timeframe: "Shipping now — multiplayer and parties are live",
     summary:
       "The big games update: a step into 3D, real multiplayer with parties, and store-decorated avatars that show up when you play together — plus admin control over the home screen itself.",
     groups: [
@@ -589,18 +594,20 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Real multiplayer games",
             description:
-              "Games multiple people can play together — online across accounts or locally on one device. Local pass-and-play has landed in Tic-Tac-Toe (the 2P toggle); online play across accounts is next.",
-            status: "in-progress",
+              "Games multiple people can play together, online across accounts. Tic-Tac-Toe, Connect 4 and Reversi are true head-to-head matches on one shared board with alternating turns; every other game becomes a score race — same game, same moment, live standings. Local pass-and-play remains in Tic-Tac-Toe via the 2P toggle.",
+            status: "shipped",
           },
           {
             title: "Parties",
             description:
-              "Group up into a party to jump into multiplayer games together, with invites and a shared lobby — the social backbone that multiplayer is built on.",
+              "Group up into a party to jump into multiplayer games together. Create one, share a six-character code or invite friends straight from your friends list, and the leader picks the game and starts it for everyone at once.",
+            status: "shipped",
           },
           {
             title: "Store-decorated avatars",
             description:
-              "Decorate your avatar — your profile picture — with items bought from the store, so you show up in style in multiplayer lobbies and parties.",
+              "Decorate your avatar — your profile picture — with items bought from the store, so you show up in style in multiplayer lobbies and parties. Avatar frames are live; layered decorations that sit on top of the picture are still to come.",
+            status: "next",
           },
         ],
       },

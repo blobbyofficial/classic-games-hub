@@ -1,5 +1,6 @@
 import { ActivityType, Client, Events, GatewayIntentBits, type PresenceStatusData } from "discord.js";
 import { config } from "./config.js";
+import { db } from "./db.js";
 import { startHealthServer } from "./health.js";
 import { runAutomod } from "./features/automod.js";
 import { handleChatXp } from "./features/leveling.js";
@@ -67,9 +68,23 @@ client.once(Events.ClientReady, (c) => {
   setPresence();
   setInterval(setPresence, 10 * 60_000);
 
+  startHeartbeat();
   startLiveFeed(c);
   startServerStats(c);
 });
+
+/**
+ * Tell the site we're alive. `platform_status()` treats a heartbeat older than
+ * three minutes as offline, so beat every minute — two can be lost to a blip
+ * without /status flipping the bot to "Offline".
+ */
+function startHeartbeat(): void {
+  const version = process.env.npm_package_version ?? null;
+  const beat = () =>
+    void db.heartbeat(version).catch((err) => console.error("[heartbeat] failed:", err));
+  beat();
+  setInterval(beat, 60_000);
+}
 
 client.on(Events.MessageCreate, (message) => {
   void (async () => {

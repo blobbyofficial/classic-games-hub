@@ -3,6 +3,69 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## Unreleased — "New Dimensions" (parties & online multiplayer)
+
+Roadmap v1.4.0. Playing together stops being a plan and becomes a feature, and
+four migrations that were live in the database finally have code to reach them.
+
+### 🎉 Parties
+
+- `/party` creates or joins a party by six-character code, with a live roster,
+  presence, leader controls and one-tap invites from your friends list.
+- One party per person, size limits, block-list checks and leadership handover
+  when the leader leaves are all enforced in the database (`0044`), not in the
+  UI — the tables are RLS-locked to "you can only see a party you're in" and
+  every write goes through a `SECURITY DEFINER` RPC.
+- Party invites arrive as notifications carrying the code, so the recipient
+  still chooses whether to join.
+
+### 🎮 Online multiplayer
+
+- **Head-to-head**: Tic-Tac-Toe, Connect 4 and Reversi become real online
+  matches on one shared board with alternating turns and a fixed seat order.
+  Engines opt in through an optional `net` context — every other engine is
+  untouched and behaves exactly as before.
+- **Score races**: every other game becomes a race — same game, same countdown,
+  live standings.
+- Live match state rides a Supabase Realtime broadcast channel keyed by party
+  id and is never persisted; scores still go through the ordinary
+  `submit_score` path, so party play earns exactly what solo play earns.
+
+### 📊 Status page
+
+- A public `/status` renders `platform_status()` in one round trip: players
+  online, plays today, community and economy counts, and Discord worker
+  liveness. Moderation counts are staff-only.
+- The gateway worker now actually reports in — it calls `bot_heartbeat()` on
+  connect and every 60 seconds. Without this the status page showed the bot as
+  permanently offline no matter how healthy it was (`0043` shipped the RPC, but
+  nothing ever called it).
+
+### 🔗 Vanity URLs & booster dailies
+
+- `/u/<slug>` resolves either a username or a vanity slug, so every profile
+  link, share card and metadata route works with both. Claim or clear yours in
+  Settings — unlocked by boosting, by reaching level 30, or by being staff
+  (`0045`).
+- The fourth daily challenge is a boosters' perk: visible to everyone, but only
+  boosters can claim it (`0046`).
+
+### 🧹 Rewarded ads removed
+
+- The simulated rewarded-ad programme is gone root and branch: the opt-in
+  setting, the "watch to double your credits" overlay, the admin ads centre and
+  the feature flags that gated them. `0042` rewrites `claim_daily_reward` and
+  `submit_score` without their ad branches and drops the columns that stored ad
+  state; boost stacking, seasonal multipliers and challenge bumps are unchanged.
+- The roadmap now records this as **Dropped** rather than quietly deleting it,
+  and gained a status of that name to say so honestly.
+
+### 🗃️ Migrations
+
+- `0042`–`0046` were applied to the database but never reached the repository,
+  leaving git two migrations behind the deployed schema. The SQL is recovered
+  verbatim from the migration ledger; only the file header comments are new.
+
 ## Unreleased — "One Bot" (Discord consolidation)
 
 The Hub's own Discord bot now covers everything Appy, Sapphire, Arcane and
