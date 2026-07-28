@@ -60,6 +60,20 @@ four migrations that were live in the database finally have code to reach them.
 - The roadmap now records this as **Dropped** rather than quietly deleting it,
   and gained a status of that name to say so honestly.
 
+### 🤖 Register commands without a terminal
+
+- **Admin → Discord bot → "Register slash commands"** does what
+  `POST /api/discord/register` does, but from the dashboard — the cron route
+  needs a bearer token, which suits a scheduler and not a person. Both call the
+  same Discord endpoint with the same command set, and registration is a full
+  replace, so repeating it is harmless.
+
+### 📗 CLAUDE.md
+
+- Added, so a session starting cold finds the plan (`lib/roadmap.ts`), the
+  history (`lib/update-log.ts`), the rule that shipped work *moves* between
+  them, where invariants belong, and that `bot/` typechecks separately.
+
 ### 📜 Update log
 
 - New public **`/updates`** page: every release and the features it brought,
