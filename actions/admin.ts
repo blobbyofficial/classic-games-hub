@@ -396,6 +396,33 @@ export async function adminCreateLevelRoles(): Promise<RpcResult & { detail?: st
   };
 }
 
+export interface DiscordEnvStatus {
+  botToken: boolean;
+  appId: boolean;
+  publicKey: boolean;
+  guildId: boolean;
+  cronSecret: boolean;
+}
+
+/**
+ * Which Discord environment variables are present on this deployment.
+ *
+ * Booleans only — never the values. Without this, an unset variable surfaces
+ * as "could not be verified" from Discord or a generic failure here, and the
+ * only way to tell which one is missing is to guess.
+ */
+export async function adminDiscordEnvStatus(): Promise<DiscordEnvStatus> {
+  await requireStaff();
+  const { discordEnv } = await import("@/lib/discord/env");
+  return {
+    botToken: Boolean(discordEnv.botToken),
+    appId: Boolean(discordEnv.appId),
+    publicKey: Boolean(discordEnv.publicKey),
+    guildId: Boolean(discordEnv.guildId),
+    cronSecret: Boolean(discordEnv.cronSecret),
+  };
+}
+
 /**
  * Registers the slash commands with Discord.
  *
