@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/queries";
 import { DiscordBotSettings } from "@/features/admin/discord-bot-settings";
 import type { LevelingConfig, RoleSyncConfig } from "@/features/admin/discord-bot-settings";
-import { DiscordConsole } from "@/features/admin/discord-console";
+import { DiscordTabs } from "@/features/admin/discord-tabs";
 import { DiscordServerSettings } from "@/features/admin/discord-server-settings";
 import type {
   LevelRolesConfig,
@@ -48,17 +48,17 @@ export default async function AdminDiscordPage() {
   // The v3 sections share their defaults with the bot itself, so an
   // unconfigured server still renders sensible values.
   return (
-    <div className="space-y-6">
-      {/* Actions first: this is the page you open to *do* something. */}
-      <DiscordConsole />
-      <DiscordBotSettings leveling={leveling} roleSync={roleSync} />
-      <DiscordServerSettings
-        verification={mergeConfig("verification", config.verification) as VerificationConfig}
-        moderation={mergeConfig("moderation", config.moderation) as ModerationConfig}
-        tickets={mergeConfig("tickets", config.tickets) as TicketsConfig}
-        stats={mergeConfig("stats", config.stats) as StatsConfig}
-        levelRoles={mergeConfig("level_roles", config.level_roles) as LevelRolesConfig}
-      />
-    </div>
+    <DiscordTabs
+      levelling={<DiscordBotSettings leveling={leveling} roleSync={roleSync} />}
+      server={
+        <DiscordServerSettings
+          verification={mergeConfig("verification", config.verification) as VerificationConfig}
+          moderation={mergeConfig("moderation", config.moderation) as ModerationConfig}
+          tickets={mergeConfig("tickets", config.tickets) as TicketsConfig}
+          stats={mergeConfig("stats", config.stats) as StatsConfig}
+          levelRoles={mergeConfig("level_roles", config.level_roles) as LevelRolesConfig}
+        />
+      }
+    />
   );
 }

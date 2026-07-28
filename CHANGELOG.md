@@ -60,6 +60,21 @@ four migrations that were live in the database finally have code to reach them.
 - The roadmap now records this as **Dropped** rather than quietly deleting it,
   and gained a status of that name to say so honestly.
 
+### 🧹 Admin dashboard tidy-up
+
+- **Admin → Discord bot** was one page carrying roughly thirteen cards and
+  several hundred form fields. It is now four tabs grouped by why you came —
+  **Actions** (announce, moderation, channel tools), **Sync** (register
+  commands, credential checklist, push settings), **Levelling**, and
+  **Server**. Same URL, so bookmarks still work.
+- Registering commands and the environment checklist moved out of the settings
+  form into Sync, where they belong: they are things you do once after a
+  deploy, not settings you tune.
+- The admin nav was eleven equal links in one scrolling row. Now three short
+  labelled groups — Community, Content, System — with Overview above them.
+  Eleven items get re-scanned every visit; three groups are learned once.
+- Removed the now-unused `DiscordConsole` wrapper.
+
 ### 🏷️ The bot is "Classic Games Bot"
 
 - The site and community are the Hub; the bot that serves them is now named
