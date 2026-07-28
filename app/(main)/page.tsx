@@ -14,6 +14,7 @@ import { CategoryRail } from "@/components/games/category-rail";
 import { HomeLeaderboardPreview } from "@/features/leaderboards/home-preview";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { compactNumber } from "@/lib/utils";
 
 // Section keys the admin can reorder/hide from Admin → Flags ("home_layout").
@@ -74,14 +75,14 @@ export default async function HomePage() {
     ),
     categories: <CategoryRail key="categories" />,
     all_games: (
-      <section key="all_games" className="grid gap-6 lg:grid-cols-[1fr_360px]">
+      <section key="all_games" className="grid gap-6 defer-paint lg:grid-cols-[1fr_360px]">
         <div>
           <SectionHeader title="All games" subtitle={`${allGames.length} classics and counting`} icon={Gamepad2} href="/games" />
           <GameGrid games={allGames.slice(0, 10)} favorites={favorites} />
         </div>
         <div className="space-y-4">
           <SectionHeader title="Top players" icon={Trophy} href="/leaderboards" className="mb-3" />
-          <Suspense fallback={<div className="h-80 rounded-2xl bg-muted/40" />}>
+          <Suspense fallback={<Skeleton className="h-80 rounded-2xl" />}>
             <HomeLeaderboardPreview />
           </Suspense>
         </div>
@@ -90,7 +91,7 @@ export default async function HomePage() {
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-10 sm:space-y-14">
       <Hero
         gameCount={allGames.length}
         totalPlays={totalPlays}
@@ -114,31 +115,35 @@ function Hero({
   displayName?: string | null;
 }) {
   return (
-    <section className="relative overflow-hidden rounded-3xl border border-border bg-grid px-6 py-12 sm:px-10 sm:py-16">
-      <div className="pointer-events-none absolute -left-20 top-0 size-72 rounded-full bg-primary/20 blur-3xl" />
-      <div className="pointer-events-none absolute -right-10 bottom-0 size-72 rounded-full bg-[oklch(0.7_0.18_330)]/20 blur-3xl" />
-      <div className="relative max-w-2xl">
-        <Badge variant="neon" className="mb-4">
-          <Zap className="size-3" /> Rebuilt for 2026
+    /* The ambient glow is painted as a background gradient rather than two
+       blurred divs — same look, no filter for the compositor to maintain, which
+       is what kept this section janky while scrolling on low-end phones. */
+    <section className="relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
+      <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid" />
+      <div className="relative max-w-2xl motion-safe:animate-rise">
+        <Badge variant="neon" className="mb-5">
+          <Zap /> Rebuilt for 2026
         </Badge>
-        {displayName ? (
-          <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">
-            Welcome back,
-            <br />
-            <span className="text-gradient">{displayName}</span>
-          </h1>
-        ) : (
-          <h1 className="text-4xl font-black leading-[1.05] tracking-tight sm:text-6xl">
-            Your arcade,
-            <br />
-            <span className="text-gradient">reimagined.</span>
-          </h1>
-        )}
-        <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
+        <h1 className="text-display font-black">
+          {displayName ? (
+            <>
+              Welcome back,
+              <br />
+              <span className="text-gradient">{displayName}</span>
+            </>
+          ) : (
+            <>
+              Your arcade,
+              <br />
+              <span className="text-gradient">reimagined.</span>
+            </>
+          )}
+        </h1>
+        <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
           Play {gameCount} timeless games, earn credits and XP, unlock achievements, climb the
           leaderboards and hang out with friends. No pay-to-win — just the classics, done right.
         </p>
-        <div className="mt-7 flex flex-wrap gap-3">
+        <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Button size="lg" variant="gradient" asChild>
             <Link href="/games">
               <Gamepad2 /> Browse games
@@ -150,11 +155,11 @@ function Hero({
             </Button>
           )}
         </div>
-        <div className="mt-8 flex flex-wrap gap-x-8 gap-y-3 text-sm">
+        <dl className="mt-9 flex flex-wrap gap-x-8 gap-y-3 text-sm">
           <Stat icon={Gamepad2} label="Games" value={gameCount.toString()} />
           <Stat icon={Users} label="Plays" value={compactNumber(totalPlays)} />
           <Stat icon={Star} label="Free forever" value="100%" />
-        </div>
+        </dl>
       </div>
     </section>
   );
@@ -163,9 +168,9 @@ function Hero({
 function Stat({ icon: Icon, label, value }: { icon: typeof Star; label: string; value: string }) {
   return (
     <div className="flex items-center gap-2">
-      <Icon className="size-4 text-primary" />
-      <span className="font-bold">{value}</span>
-      <span className="text-muted-foreground">{label}</span>
+      <Icon className="size-4 shrink-0 text-primary" />
+      <dd className="font-bold tnum">{value}</dd>
+      <dt className="text-muted-foreground">{label}</dt>
     </div>
   );
 }

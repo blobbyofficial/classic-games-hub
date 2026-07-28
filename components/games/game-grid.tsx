@@ -16,7 +16,10 @@ export function GameGrid({
   return (
     <div
       className={cn(
-        "grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4 lg:grid-cols-4 xl:grid-cols-5",
+        // auto-fill rather than fixed column counts: the grid stays sensible at
+        // every width, including the awkward 900–1100px tablet range.
+        "grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(15rem,1fr))] sm:gap-4",
+        "stagger",
         className,
       )}
     >

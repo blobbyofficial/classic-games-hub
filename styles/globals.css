@@ -18,21 +18,31 @@
   --secondary: oklch(0.95 0.01 285);
   --secondary-foreground: oklch(0.25 0.03 285);
   --muted: oklch(0.95 0.01 285);
-  --muted-foreground: oklch(0.5 0.02 285);
+  /* 4.6:1 on --background — AA for body text, not just large text. */
+  --muted-foreground: oklch(0.47 0.02 285);
   --accent: oklch(0.93 0.03 var(--brand-h));
   --accent-foreground: oklch(0.3 0.1 var(--brand-h));
-  --destructive: oklch(0.6 0.23 25);
+  --destructive: oklch(0.58 0.23 25);
   --destructive-foreground: oklch(0.98 0.01 25);
-  --success: oklch(0.65 0.17 155);
-  --warning: oklch(0.78 0.16 75);
+  --success: oklch(0.58 0.16 155);
+  --warning: oklch(0.72 0.16 75);
   --border: oklch(0.9 0.01 285);
   --input: oklch(0.9 0.01 285);
   --ring: oklch(0.55 var(--brand-c) var(--brand-h));
   --neon: oklch(0.75 0.15 195);
   --gold: oklch(0.8 0.14 85);
-  --radius: 0.75rem;
-  --glass: oklch(1 0 0 / 60%);
-  --glass-border: oklch(0.9 0.01 285 / 60%);
+  --radius: 0.875rem;
+  --glass: oklch(1 0 0 / 72%);
+  --glass-border: oklch(0.9 0.01 285 / 70%);
+
+  /* Elevation. Brand-tinted rather than neutral black so shadows sit in the
+     same colour world as the surfaces casting them. */
+  --shadow-color: 285 12% 12%;
+  --shadow-xs: 0 1px 2px -1px hsl(var(--shadow-color) / 0.1);
+  --shadow-sm: 0 1px 3px -1px hsl(var(--shadow-color) / 0.1), 0 1px 2px -1px hsl(var(--shadow-color) / 0.06);
+  --shadow-md: 0 4px 12px -3px hsl(var(--shadow-color) / 0.1), 0 2px 4px -2px hsl(var(--shadow-color) / 0.06);
+  --shadow-lg: 0 12px 28px -8px hsl(var(--shadow-color) / 0.14), 0 4px 10px -4px hsl(var(--shadow-color) / 0.08);
+  --shadow-xl: 0 24px 56px -16px hsl(var(--shadow-color) / 0.2), 0 8px 20px -8px hsl(var(--shadow-color) / 0.1);
 }
 
 .dark {
@@ -47,20 +57,27 @@
   --secondary: oklch(0.26 0.03 286);
   --secondary-foreground: oklch(0.9 0.01 285);
   --muted: oklch(0.25 0.025 286);
-  --muted-foreground: oklch(0.68 0.02 285);
+  --muted-foreground: oklch(0.72 0.02 285);
   --accent: oklch(0.3 0.06 var(--brand-h));
   --accent-foreground: oklch(0.9 0.04 var(--brand-h));
   --destructive: oklch(0.65 0.21 25);
   --destructive-foreground: oklch(0.98 0.01 25);
-  --success: oklch(0.7 0.16 155);
+  --success: oklch(0.72 0.16 155);
   --warning: oklch(0.8 0.15 75);
   --border: oklch(0.29 0.025 286);
   --input: oklch(0.29 0.025 286);
   --ring: oklch(0.65 calc(var(--brand-c) - 0.02) var(--brand-h));
   --neon: oklch(0.8 0.14 195);
   --gold: oklch(0.82 0.14 85);
-  --glass: oklch(0.2 0.025 286 / 55%);
+  --glass: oklch(0.2 0.025 286 / 62%);
   --glass-border: oklch(0.95 0.01 285 / 10%);
+  /* Dark surfaces need deeper, wider shadows to read as elevation at all. */
+  --shadow-color: 285 40% 2%;
+  --shadow-xs: 0 1px 2px -1px hsl(var(--shadow-color) / 0.4);
+  --shadow-sm: 0 1px 3px -1px hsl(var(--shadow-color) / 0.5), 0 1px 2px -1px hsl(var(--shadow-color) / 0.4);
+  --shadow-md: 0 4px 14px -3px hsl(var(--shadow-color) / 0.55), 0 2px 6px -2px hsl(var(--shadow-color) / 0.4);
+  --shadow-lg: 0 14px 34px -8px hsl(var(--shadow-color) / 0.6), 0 5px 12px -4px hsl(var(--shadow-color) / 0.45);
+  --shadow-xl: 0 28px 64px -16px hsl(var(--shadow-color) / 0.7), 0 10px 24px -8px hsl(var(--shadow-color) / 0.5);
 }
 
 /* ── Global site colour themes (settings → Appearance) ─────────────────────
@@ -160,13 +177,92 @@ html[data-site-theme="aurora"] {
   --color-ring: var(--ring);
   --color-neon: var(--neon);
   --color-gold: var(--gold);
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
+  --radius-sm: calc(var(--radius) - 6px);
+  --radius-md: calc(var(--radius) - 4px);
+  --radius-lg: calc(var(--radius) - 2px);
+  --radius-xl: var(--radius);
+  --radius-2xl: calc(var(--radius) + 4px);
+  --radius-3xl: calc(var(--radius) + 12px);
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
+
+  /* Elevation scale — `shadow-xs` … `shadow-xl` resolve to the tokens above,
+     so cards pick up the right depth in both themes without per-use overrides. */
+  --shadow-xs: var(--shadow-xs);
+  --shadow-sm: var(--shadow-sm);
+  --shadow-md: var(--shadow-md);
+  --shadow-lg: var(--shadow-lg);
+  --shadow-xl: var(--shadow-xl);
+  --shadow-2xl: var(--shadow-xl);
+
+  /* One easing curve for interface motion, one for entrances. Using the same
+     two everywhere is most of what makes the animation feel deliberate. */
+  --ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
+  --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
+
+  /* Fluid display sizes for hero/page headings — no breakpoint jumps. */
+  --text-display: clamp(2.25rem, 1.4rem + 3.6vw, 4rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.035em;
+  --text-title: clamp(1.5rem, 1.3rem + 0.9vw, 1.875rem);
+  --text-title--line-height: 1.16;
+  --text-title--letter-spacing: -0.025em;
+
   --animate-shimmer: shimmer 2s linear infinite;
+  /* Skeleton sweep — a transform, so it composites instead of repainting. */
+  --animate-skeleton: cgh-skeleton 1.6s ease-in-out infinite;
+  --animate-rise: cgh-rise 0.42s var(--ease-standard) both;
+  --animate-fade: cgh-fade 0.3s var(--ease-standard) both;
+  --animate-pop: cgh-pop 0.32s var(--ease-spring) both;
+  --animate-roll-in: cgh-roll-in 0.22s var(--ease-standard);
+
+  @keyframes cgh-rise {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes cgh-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes cgh-pop {
+    from {
+      opacity: 0;
+      transform: scale(0.94) translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
+  @keyframes cgh-skeleton {
+    from {
+      transform: translateX(-100%);
+    }
+    to {
+      transform: translateX(100%);
+    }
+  }
+  /* A value rolling up into place — used when a live counter changes. */
+  @keyframes cgh-roll-in {
+    from {
+      opacity: 0;
+      transform: translateY(-70%);
+    }
+    to {
+      opacity: 1;
+      transform: none;
+    }
+  }
   --animate-float: float 5s ease-in-out infinite;
   --animate-glow-pulse: glow-pulse 3s ease-in-out infinite;
   /* Cosmetic motion utilities (Discord-tier). Referenced as `animate-*`. */
@@ -303,12 +399,40 @@ html[data-site-theme="aurora"] {
   }
   html {
     scroll-behavior: smooth;
+    /* Anchored sections and #main clear the sticky navbar. */
+    scroll-padding-top: 5rem;
+    -webkit-tap-highlight-color: transparent;
   }
   body {
     @apply bg-background text-foreground antialiased;
+    text-rendering: optimizeLegibility;
+    /* Contextual alternates on, but tabular figures stay opt-in so prose keeps
+       proportional numerals. */
+    font-feature-settings: "cv11", "ss01";
+    font-variant-ligatures: contextual;
   }
+
+  /* Headings are the loudest thing on any page; tighten them once here rather
+     than repeating tracking utilities on every h1/h2 in the app. */
+  h1,
+  h2,
+  h3,
+  h4 {
+    @apply font-semibold tracking-tight;
+    text-wrap: balance;
+  }
+  p {
+    text-wrap: pretty;
+  }
+
   ::selection {
     @apply bg-primary/30;
+  }
+
+  /* Firefox honours these; WebKit/Blink use the ::-webkit rules below. */
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: color-mix(in oklch, var(--muted-foreground) 30%, transparent) transparent;
   }
   ::-webkit-scrollbar {
     width: 10px;
@@ -319,17 +443,38 @@ html[data-site-theme="aurora"] {
   }
   ::-webkit-scrollbar-thumb {
     @apply rounded-full bg-muted-foreground/25;
+    background-clip: padding-box;
+    border: 2px solid transparent;
   }
   ::-webkit-scrollbar-thumb:hover {
-    @apply bg-muted-foreground/40;
+    @apply bg-muted-foreground/45;
   }
+
+  /* Keyboard focus is always visible and always the same shape. Pointer
+     interaction never draws it, so the UI stays quiet for mouse users. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  /* Images should never blow out a layout before their intrinsic size lands. */
+  img,
+  svg,
+  video,
+  canvas {
+    max-width: 100%;
+  }
+
   @media (prefers-reduced-motion: reduce) {
+    html {
+      scroll-behavior: auto;
+    }
     *,
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
       animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
     }
   }
 }
@@ -339,6 +484,103 @@ html[data-site-theme="aurora"] {
   border: 1px solid var(--glass-border);
   backdrop-filter: blur(16px) saturate(1.4);
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
+}
+
+/* Blur is expensive to composite. On devices that can't do it — and on any
+   device the user has asked to keep still — fall back to an opaque surface
+   rather than shipping a janky translucent one. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .glass {
+    background: var(--card);
+  }
+}
+
+/* A card that responds to the pointer: lifts a little, gains depth, and picks
+   up a brand-tinted border. Transform-only, so it stays on the compositor. */
+@utility hover-lift {
+  transition:
+    transform 0.22s var(--ease-standard),
+    box-shadow 0.22s var(--ease-standard),
+    border-color 0.22s var(--ease-standard);
+  will-change: transform;
+
+  @media (hover: hover) and (prefers-reduced-motion: no-preference) {
+    &:hover {
+      transform: translateY(-3px);
+    }
+  }
+  &:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: color-mix(in oklch, var(--primary) 30%, var(--border));
+  }
+}
+
+/* Below-the-fold sections skip layout and paint until they approach the
+   viewport. `contain-intrinsic-size` keeps the scrollbar honest meanwhile. */
+@utility defer-paint {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 400px;
+}
+
+/* Horizontal rails: snap, momentum, and no visible scrollbar chrome. */
+@utility rail {
+  display: flex;
+  overflow-x: auto;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+  > * {
+    scroll-snap-align: start;
+    flex: none;
+  }
+}
+
+@utility no-scrollbar {
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Entrance stagger for grids and lists. Children animate in on a short delay
+   ladder that stops compounding after ten items, so long grids never feel
+   like they're loading slowly. */
+@utility stagger {
+  @media (prefers-reduced-motion: no-preference) {
+    > * {
+      animation: cgh-rise 0.45s var(--ease-standard) both;
+    }
+    > *:nth-child(1) { animation-delay: 0ms; }
+    > *:nth-child(2) { animation-delay: 40ms; }
+    > *:nth-child(3) { animation-delay: 80ms; }
+    > *:nth-child(4) { animation-delay: 120ms; }
+    > *:nth-child(5) { animation-delay: 160ms; }
+    > *:nth-child(6) { animation-delay: 200ms; }
+    > *:nth-child(7) { animation-delay: 240ms; }
+    > *:nth-child(8) { animation-delay: 280ms; }
+    > *:nth-child(9) { animation-delay: 320ms; }
+    > *:nth-child(n + 10) { animation-delay: 360ms; }
+  }
+}
+
+/* Skip link — visually hidden until focused, then pinned to the top-left. */
+@utility skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  transform: translateY(-200%);
+  transition: transform 0.2s var(--ease-standard);
+
+  &:focus-visible {
+    transform: none;
+  }
 }
 
 /* Fullscreen game shell: the whole player (HUD + stage + touch controls)
@@ -381,6 +623,23 @@ html[data-site-theme="aurora"] {
     linear-gradient(to right, oklch(0.5 0.02 285 / 7%) 1px, transparent 1px),
     linear-gradient(to bottom, oklch(0.5 0.02 285 / 7%) 1px, transparent 1px);
   background-size: 48px 48px;
+  /* Fade the grid out towards the edges so it reads as texture, not a table. */
+  mask-image: radial-gradient(120% 100% at 20% 0%, black 20%, transparent 78%);
+}
+
+/* Ambient brand glow behind hero and empty-state panels. Two soft radial
+   washes, painted as a background rather than blurred elements — no filter
+   cost, and nothing for the compositor to keep in memory. */
+@utility bg-aurora {
+  background-image:
+    radial-gradient(60% 70% at 12% 0%, oklch(from var(--primary) l c h / 18%), transparent 62%),
+    radial-gradient(55% 65% at 92% 100%, oklch(from var(--neon) l c h / 14%), transparent 60%);
+}
+
+/* Numeric readouts: fixed-width digits so live counters don't jitter. */
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum";
 }
 
 @utility focus-visible-ring {

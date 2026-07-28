@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { cn, timeAgo } from "@/lib/utils";
 import type { NotificationRow } from "@/types";
+import { EmptyState } from "@/components/empty-state";
 
 const fullDateFmt = new Intl.DateTimeFormat(undefined, { dateStyle: "medium", timeStyle: "short" });
 
@@ -100,10 +101,11 @@ export function NotificationsList({ initial }: { initial: NotificationRow[] }) {
 
   if (items.length === 0) {
     return (
-      <div className="grid place-items-center rounded-2xl border border-dashed border-border py-16 text-center">
-        <Bell className="size-8 text-muted-foreground/50" />
-        <p className="mt-2 text-sm text-muted-foreground">You&apos;re all caught up!</p>
-      </div>
+      <EmptyState
+        icon={Bell}
+        title="You're all caught up"
+        description="Friend requests, achievements and replies will show up here."
+      />
     );
   }
 

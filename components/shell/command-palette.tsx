@@ -19,10 +19,39 @@ import {
   Sun,
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { useQuery } from "@tanstack/react-query";
 import { createClient } from "@/lib/supabase/client";
 import { useUIStore } from "@/lib/stores/ui-store";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
+
+type GameHit = { slug: string; title: string; category: string };
+
+/**
+ * The game list is small, identical for every visitor and changes about as often
+ * as a release, so it's fetched once per page load and kept in module scope.
+ * That replaced a whole query-cache dependency for this single call site.
+ */
+let gamesCache: GameHit[] | null = null;
+let gamesInFlight: Promise<GameHit[]> | null = null;
+
+async function loadGames(): Promise<GameHit[]> {
+  if (gamesCache) return gamesCache;
+  gamesInFlight ??= (async () => {
+    try {
+      const { data } = await createClient()
+        .from("games")
+        .select("slug, title, category")
+        .eq("status", "published")
+        .order("sort_weight", { ascending: false });
+      gamesCache = (data as GameHit[] | null) ?? [];
+      return gamesCache;
+    } catch {
+      // Let the next open retry rather than caching a network blip forever.
+      gamesInFlight = null;
+      return [];
+    }
+  })();
+  return gamesInFlight;
+}
 
 const NAV = [
   { label: "Home", href: "/", icon: Home },
@@ -55,20 +84,18 @@ export function CommandPalette() {
     return () => document.removeEventListener("keydown", down);
   }, [toggle]);
 
-  const { data: games = [] } = useQuery({
-    queryKey: ["command-games"],
-    enabled: open,
-    staleTime: 5 * 60_000,
-    queryFn: async () => {
-      const supabase = createClient();
-      const { data } = await supabase
-        .from("games")
-        .select("slug, title, category")
-        .eq("status", "published")
-        .order("sort_weight", { ascending: false });
-      return data ?? [];
-    },
-  });
+  const [games, setGames] = useState<GameHit[]>([]);
+
+  useEffect(() => {
+    if (!open) return;
+    let live = true;
+    loadGames().then((list) => {
+      if (live) setGames(list);
+    });
+    return () => {
+      live = false;
+    };
+  }, [open]);
 
   const go = (href: string) => {
     setOpen(false);
@@ -77,22 +104,25 @@ export function CommandPalette() {
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
-      <DialogContent hideClose className="max-w-xl overflow-hidden p-0">
+      <DialogContent
+        hideClose
+        className="top-[12%] max-w-xl translate-y-0 gap-0 overflow-hidden p-0 sm:top-[15%]"
+      >
         <DialogTitle className="sr-only">Command palette</DialogTitle>
-        <Command
-          className="[&_[cmdk-input-wrapper]]:border-b [&_[cmdk-input-wrapper]]:border-border"
-          loop
-        >
-          <div className="flex items-center gap-2 px-4">
+        <Command loop>
+          <div className="flex items-center gap-2.5 border-b border-border px-4">
             <Search className="size-4 shrink-0 text-muted-foreground" />
             <Command.Input
               placeholder="Search games, pages, actions…"
-              className="h-12 w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+              className="h-14 w-full bg-transparent text-base outline-none placeholder:text-muted-foreground/80 sm:text-sm"
             />
+            <kbd className="hidden shrink-0 rounded border border-border px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground sm:block">
+              esc
+            </kbd>
           </div>
-          <Command.List className="max-h-[60vh] overflow-y-auto p-2">
-            <Command.Empty className="py-8 text-center text-sm text-muted-foreground">
-              No results found.
+          <Command.List className="max-h-[min(60vh,26rem)] overflow-y-auto overscroll-contain p-2">
+            <Command.Empty className="px-4 py-10 text-center text-sm text-muted-foreground">
+              Nothing matches that. Try a game title or a page name.
             </Command.Empty>
 
             <Command.Group heading="Games" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground">
@@ -136,7 +166,7 @@ function Item({ children, onSelect }: { children: React.ReactNode; onSelect: () 
   return (
     <Command.Item
       onSelect={onSelect}
-      className="flex cursor-pointer items-center gap-2 rounded-lg px-2 py-2.5 text-sm outline-none data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground"
+      className="flex cursor-pointer items-center gap-2.5 rounded-lg px-2.5 py-2.5 text-sm outline-none transition-colors data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground"
     >
       {children}
     </Command.Item>

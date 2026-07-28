@@ -48,6 +48,7 @@ const ICONS: Record<string, LucideIcon> = {
   LayoutDashboard,
   Megaphone,
   Bot,
+  Rocket,
 };
 
 function Stat({ icon: Icon, value, label }: { icon: LucideIcon; value: number; label: string }) {

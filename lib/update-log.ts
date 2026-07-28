@@ -49,6 +49,98 @@ export const REPO_URL = "https://github.com/blobbyofficial/classic-games-hub";
 
 export const RELEASES: UpdateRelease[] = [
   {
+    version: "v1.4.1",
+    codename: "Refined",
+    date: "28 Jul 2026",
+    summary:
+      "A ground-up pass over how the site looks, feels and performs. One design system instead of many near-copies, motion that stays out of the way, and a lighter page on every device — the whole animation runtime and the query cache left the bundle entirely.",
+    groups: [
+      {
+        heading: "Design system",
+        icon: "Palette",
+        blurb:
+          "The parts every page is built from, fixed once so eight screens stop drifting into eight slightly different looks.",
+        items: [
+          {
+            title: "Elevation, motion and type tokens",
+            description:
+              "Shadows are now brand-tinted tokens that deepen properly in dark mode, headings scale fluidly instead of jumping at breakpoints, and every transition uses one of two shared easing curves. Body text meets AA contrast in both themes.",
+          },
+          {
+            title: "One page header, one empty state",
+            description:
+              "Every top-level page opens with the same masthead, and every 'nothing here yet' surface — no friends, no messages, an empty inventory, no search results — uses the same component, with a real explanation and a way forward rather than a bare sentence.",
+          },
+          {
+            title: "Rebuilt primitives",
+            description:
+              "Buttons gained a proper loading state that doesn't resize mid-click, cards gained surface variants, inputs and selects finally match each other, and dialogs stay inside a short phone screen instead of overflowing off it.",
+          },
+        ],
+      },
+      {
+        heading: "Motion & interaction",
+        icon: "Sparkles",
+        blurb: "Enough to feel alive, little enough to stay out of the way.",
+        items: [
+          {
+            title: "Micro-interactions throughout",
+            description:
+              "Cards lift on hover, grids stagger in, the credit balance rolls when it changes, menus scale from the button that opened them, and the play button on a game card springs up under the pointer. All of it is transform and opacity only, so it runs on the compositor.",
+          },
+          {
+            title: "Reduced motion is a real mode",
+            description:
+              "Every animation is gated behind a motion-safe check rather than merely shortened, so choosing 'reduce motion' gives a genuinely still interface instead of a fast one.",
+          },
+        ],
+      },
+      {
+        heading: "Performance",
+        icon: "Rocket",
+        blurb: "Fewer bytes to download, fewer pixels to repaint.",
+        items: [
+          {
+            title: "Two dependencies removed",
+            description:
+              "The animation library was doing six small jobs that CSS does natively, and the query cache existed for a single call in the command palette. Both are gone; the palette now caches the game list in module scope, and every animation they powered still works.",
+          },
+          {
+            title: "Cheaper painting",
+            description:
+              "Hero and auth backdrops swapped full-viewport blur filters for background gradients, skeleton shimmer became a transform instead of an animated gradient position, and below-the-fold sections skip layout and paint until they approach the viewport.",
+          },
+          {
+            title: "Faster first paint",
+            description:
+              "Fonts swap in rather than blocking, the mono face no longer preloads, and the image size ladder was trimmed to the widths the layout actually requests.",
+          },
+        ],
+      },
+      {
+        heading: "Accessibility & responsiveness",
+        icon: "Users",
+        items: [
+          {
+            title: "Keyboard and screen-reader fixes",
+            description:
+              "A skip link opens every page, focus rings are consistent everywhere and never fire on a mouse click, navigation marks the current page, loading skeletons announce themselves, and progress bars report their value.",
+          },
+          {
+            title: "Built for touch first",
+            description:
+              "The favourite button no longer hides behind a hover state on phones, tab bars and filter rows scroll instead of wrapping, every tap target clears 44px, text inputs stay at 16px so iOS won't zoom, and toasts sit above the mobile tab bar.",
+          },
+          {
+            title: "Grids that fit every width",
+            description:
+              "Game grids fill available space rather than snapping between fixed column counts, which fixes the awkward tablet range where four columns were too many and three left a gap.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.4.0",
     codename: "New Dimensions",
     date: "22 Jul 2026",

@@ -3,6 +3,7 @@ import { Award, Lock, Coins, Zap } from "lucide-react";
 import { getAllAchievements, getUnlockedAchievementIds } from "@/services/achievements";
 import { getSessionUser } from "@/lib/supabase/queries";
 import { DynamicIcon } from "@/components/dynamic-icon";
+import { PageHeader } from "@/components/page-header";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 
@@ -40,25 +41,24 @@ export default async function AchievementsPage() {
 
   return (
     <div className="mx-auto max-w-4xl space-y-6">
-      <div className="flex items-center gap-3">
-        <span className="grid size-11 place-items-center rounded-xl bg-gold/15 text-[oklch(0.6_0.13_85)] dark:text-gold">
-          <Award className="size-6" />
-        </span>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Achievements</h1>
-          <p className="text-sm text-muted-foreground">
-            {user ? `${done} of ${total} unlocked` : `${total} achievements to unlock`}
-          </p>
-        </div>
-      </div>
+      <PageHeader
+        icon={Award}
+        title="Achievements"
+        description={user ? `${done} of ${total} unlocked` : `${total} achievements to unlock`}
+        className="mb-0"
+      />
 
       {user && (
-        <div className="rounded-2xl border border-border bg-card p-4">
+        <div className="rounded-2xl border border-border bg-card p-4 shadow-xs">
           <div className="mb-2 flex items-center justify-between text-sm">
             <span className="font-medium">Overall progress</span>
-            <span className="text-muted-foreground">{Math.round(percent)}%</span>
+            <span className="tnum text-muted-foreground">{Math.round(percent)}%</span>
           </div>
-          <Progress value={percent} indicatorClassName="bg-[linear-gradient(90deg,var(--gold),var(--primary))]" />
+          <Progress
+            value={percent}
+            aria-label="Achievements unlocked"
+            indicatorClassName="bg-[linear-gradient(90deg,var(--gold),var(--primary))]"
+          />
         </div>
       )}
 

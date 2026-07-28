@@ -4,7 +4,6 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
-import { QueryProvider } from "@/components/providers/query-provider";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cookies } from "next/headers";
 import { SITE } from "@/lib/constants";
@@ -12,8 +11,24 @@ import { getCurrentSettings } from "@/lib/supabase/queries";
 import { SITE_THEME_IDS } from "@/lib/themes";
 import "@/styles/globals.css";
 
-const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
-const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"] });
+// `display: swap` shows the fallback immediately rather than blocking first
+// paint on a slow connection; `preload` on the body face only — the mono face
+// is used in a handful of small labels and isn't worth a render-blocking hint.
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+  display: "swap",
+  preload: true,
+  fallback: ["system-ui", "arial"],
+  adjustFontFallback: true,
+});
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+  fallback: ["ui-monospace", "monospace"],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
@@ -68,18 +83,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
         <ThemeProvider>
-          <QueryProvider>
-            <TooltipProvider delayDuration={200}>
-              {children}
-              <Toaster
-                position="bottom-right"
-                theme="system"
-                richColors
-                closeButton
-                toastOptions={{ classNames: { toast: "glass !border-border" } }}
-              />
-            </TooltipProvider>
-          </QueryProvider>
+          <TooltipProvider delayDuration={250} skipDelayDuration={400}>
+            {children}
+            <Toaster
+              // Above the mobile tab bar on phones, bottom-right everywhere else.
+              position="bottom-right"
+              theme="system"
+              richColors
+              closeButton
+              gap={10}
+              offset={16}
+              mobileOffset={{ bottom: 84, left: 12, right: 12 }}
+              toastOptions={{ classNames: { toast: "glass !border-border !rounded-xl" } }}
+            />
+          </TooltipProvider>
         </ThemeProvider>
         <Analytics />
         <SpeedInsights />

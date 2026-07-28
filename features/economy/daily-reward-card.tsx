@@ -3,7 +3,6 @@
 import { useState, useTransition } from "react";
 import { Gift, Flame, Sparkles } from "lucide-react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
 import { claimDailyReward } from "@/actions/economy";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { Button } from "@/components/ui/button";
@@ -62,11 +61,15 @@ export function DailyRewardCard({
               : "Claim free credits every day. Streaks pay more."}
           </p>
         </div>
-        <motion.div whileTap={{ scale: 0.96 }}>
-          <Button variant="gradient" onClick={claim} disabled={claimed || pending} className="shrink-0">
-            {claimed ? "Claimed" : pending ? "Claiming…" : "Claim"}
-          </Button>
-        </motion.div>
+        <Button
+          variant={claimed ? "outline" : "gradient"}
+          onClick={claim}
+          disabled={claimed}
+          loading={pending}
+          className="shrink-0"
+        >
+          {claimed ? "Claimed" : "Claim"}
+        </Button>
       </div>
     </Card>
   );

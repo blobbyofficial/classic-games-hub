@@ -67,8 +67,12 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
-      <Link href="/games" className="inline-flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground">
-        <ChevronLeft className="size-4" /> All games
+      <Link
+        href="/games"
+        className="group inline-flex items-center gap-1 rounded-lg py-1 text-sm text-muted-foreground transition-colors hover:text-foreground"
+      >
+        <ChevronLeft className="size-4 transition-transform duration-200 ease-[var(--ease-standard)] group-hover:-translate-x-0.5" />
+        All games
       </Link>
 
       <div className="grid gap-6 lg:grid-cols-[1fr_340px]">
@@ -76,14 +80,14 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
           {/* Header */}
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold tracking-tight">{game.title}</h1>
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+                <h1 className="text-title font-bold">{game.title}</h1>
                 <Badge variant="outline" className={meta?.color}>
                   {game.category}
                 </Badge>
               </div>
-              {game.tagline && <p className="mt-1 text-muted-foreground">{game.tagline}</p>}
-              <div className="mt-2 flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+              {game.tagline && <p className="mt-1.5 text-muted-foreground">{game.tagline}</p>}
+              <div className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1.5 text-sm text-muted-foreground">
                 {game.rating_count > 0 && (
                   <span className="flex items-center gap-1.5">
                     <RatingStars value={game.rating} />
