@@ -7,6 +7,7 @@ import { getUserAchievements, getUserBestScores } from "@/services/profiles";
 import { createClient } from "@/lib/supabase/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSettings } from "@/features/settings/profile-settings";
+import { VanityUrl } from "@/features/settings/vanity-url";
 import { AppearanceSettings } from "@/features/settings/appearance-settings";
 import { BannerCustomizer } from "@/features/settings/banner-customizer";
 import { PreferencesSettings } from "@/features/settings/preferences-settings";
@@ -70,6 +71,7 @@ export default async function SettingsPage({
 
         <TabsContent value="profile" className="space-y-6">
           <ProfileSettings profile={profile} />
+          <VanityUrl profile={profile} />
           <AppearanceSettings
             profile={profile}
             achievements={achievements.map((a) => ({ slug: a.slug, name: a.name }))}

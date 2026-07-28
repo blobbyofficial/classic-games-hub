@@ -12,9 +12,11 @@ const LINKS = {
     { label: "Achievements", href: "/achievements" },
   ],
   Community: [
+    { label: "Party", href: "/party" },
     { label: "Friends", href: "/friends" },
     { label: "Challenges", href: "/challenges" },
     { label: "Roadmap", href: "/roadmap" },
+    { label: "Status", href: "/status" },
     { label: "Discord", href: SITE.discord, external: true },
     { label: "Founder", href: SITE.founder, external: true },
   ],

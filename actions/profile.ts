@@ -136,6 +136,32 @@ export async function chooseUsername(next: string): Promise<RpcResult> {
   return data as RpcResult;
 }
 
+/**
+ * Claim (or clear, with an empty string) a vanity URL — the second handle that
+ * makes /u/<slug> work alongside /u/<username>. Eligibility and uniqueness are
+ * both decided in `set_vanity_slug`; this only translates its codes.
+ */
+export async function setVanitySlug(slug: string): Promise<RpcResult> {
+  const { supabase } = await requireUser();
+  const { data, error } = await supabase.rpc("set_vanity_slug", { p_slug: slug.trim() || null });
+  if (error) return { ok: false, error: error.message };
+
+  const res = data as RpcResult;
+  if (!res.ok) {
+    const messages: Record<string, string> = {
+      not_eligible: "Vanity URLs unlock at level 30, or by boosting the Discord server.",
+      bad_format: "Use 3–24 characters: letters, numbers, hyphens or underscores.",
+      reserved: "That one's reserved.",
+      taken: "That one's already taken.",
+    };
+    return { ok: false, error: messages[res.error ?? ""] ?? res.error };
+  }
+
+  revalidatePath("/settings");
+  revalidatePath("/u/[username]", "page");
+  return res;
+}
+
 export async function setAvatarUrl(url: string | null): Promise<RpcResult> {
   const { supabase, user } = await requireUser();
   const { error } = await supabase.from("profiles").update({ avatar_url: url }).eq("id", user.id);

@@ -5,6 +5,18 @@ import type { Profile, ProfileStats } from "@/types";
 export const getProfileByUsername = cache(async (username: string): Promise<Profile | null> => {
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select("*").eq("username", username).maybeSingle();
+  if (!data) {
+    // Not a username — it may be somebody's vanity slug (0045). One RPC maps
+    // either form to the canonical username, preferring real usernames.
+    const { data: canonical } = await supabase.rpc("resolve_profile_slug", { p_slug: username });
+    if (!canonical) return null;
+    const { data: viaSlug } = await supabase
+      .from("profiles")
+      .select("*")
+      .eq("username", canonical)
+      .maybeSingle();
+    return viaSlug;
+  }
   return data;
 });
 
