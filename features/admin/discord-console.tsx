@@ -20,7 +20,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 /**
- * Runs the bot's commands from the dashboard.
+ * The bot's commands, as cards. Arranged into tabs by discord-tabs.tsx.
  *
  * Each button calls the same function the matching slash command calls, so a
  * case opened here is numbered, DM'd and logged exactly as one opened in
@@ -61,18 +61,7 @@ const PUSH_SECTIONS = [
   { key: "stats" as const, label: "Counters" },
 ];
 
-export function DiscordConsole() {
-  return (
-    <div className="space-y-6">
-      <PushCard />
-      <AnnounceCard />
-      <ModerationCard />
-      <ChannelCard />
-    </div>
-  );
-}
-
-function PushCard() {
+export function PushCard() {
   const [state, setState] = useState<Feedback>(null);
   const [pending, start] = useTransition();
 
@@ -123,7 +112,7 @@ function PushCard() {
   );
 }
 
-function AnnounceCard() {
+export function AnnounceCard() {
   const [channelId, setChannelId] = useState("");
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
@@ -211,7 +200,7 @@ const ACTIONS = [
   { value: "unban", label: "Unban" },
 ];
 
-function ModerationCard() {
+export function ModerationCard() {
   const [action, setAction] = useState("warn");
   const [targetId, setTargetId] = useState("");
   const [reason, setReason] = useState("");
@@ -289,7 +278,7 @@ function ModerationCard() {
   );
 }
 
-function ChannelCard() {
+export function ChannelCard() {
   const [channelId, setChannelId] = useState("");
   const [count, setCount] = useState("10");
   const [seconds, setSeconds] = useState("0");
