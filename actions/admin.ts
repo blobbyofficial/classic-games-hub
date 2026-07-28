@@ -489,15 +489,9 @@ export async function adminEndCommunityEvent(id: string): Promise<RpcResult> {
   return { ok: true };
 }
 
-// ── Admin-configured site surfaces (ads, home layout, roadmap override) ─
+// ── Admin-configured site surfaces (home layout, roadmap override) ──
 
 const HOME_SECTIONS = ["event", "daily", "recent", "featured", "categories", "all_games"] as const;
-
-const adsPlacementsSchema = z.object({
-  home: z.boolean(),
-  games: z.boolean(),
-  shop: z.boolean(),
-});
 
 const homeLayoutSchema = z.object({
   order: z.array(z.enum(HOME_SECTIONS)).max(10),
@@ -532,13 +526,12 @@ const roadmapOverrideSchema = z.object({
 });
 
 const FLAG_SCHEMAS: Record<string, z.ZodTypeAny> = {
-  ads_placements: adsPlacementsSchema,
   home_layout: homeLayoutSchema,
   roadmap_override: roadmapOverrideSchema,
 };
 
 export async function adminSetFlagConfig(
-  key: "ads_placements" | "home_layout" | "roadmap_override",
+  key: "home_layout" | "roadmap_override",
   enabled: boolean,
   payload: unknown,
 ): Promise<RpcResult> {

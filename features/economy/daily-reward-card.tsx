@@ -22,7 +22,6 @@ export function DailyRewardCard({
   const [pending, start] = useTransition();
   const setCredits = useSessionStore((s) => s.setCredits);
   const profile = useSessionStore((s) => s.profile);
-  const adsEnabled = useSessionStore((s) => s.settings?.ads_enabled);
 
   const claim = () =>
     start(async () => {
@@ -36,7 +35,7 @@ export function DailyRewardCard({
       setStreak(res.streak ?? currentStreak + 1);
       if (profile && res.credits) setCredits(profile.credits + res.credits);
       toast.success(`+${res.credits} credits!`, {
-        description: res.ads_doubled ? "Doubled by your ads bonus 🎉" : `Day ${res.streak} streak`,
+        description: `Day ${res.streak} streak`,
         icon: <Sparkles className="size-4" />,
       });
     });
@@ -60,9 +59,7 @@ export function DailyRewardCard({
           <p className="text-sm text-muted-foreground">
             {claimed
               ? "Claimed — come back tomorrow to keep your streak alive."
-              : adsEnabled
-                ? "Free credits every day, doubled by your ads bonus."
-                : "Claim free credits every day. Streaks pay more."}
+              : "Claim free credits every day. Streaks pay more."}
           </p>
         </div>
         <motion.div whileTap={{ scale: 0.96 }}>

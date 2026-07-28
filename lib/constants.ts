@@ -13,6 +13,7 @@ import {
   Sparkles,
   Package,
   Target,
+  PartyPopper,
   type LucideIcon,
 } from "lucide-react";
 
@@ -43,6 +44,7 @@ export const PRIMARY_NAV: NavItem[] = [
 ];
 
 export const SOCIAL_NAV: NavItem[] = [
+  { href: "/party", label: "Party", icon: PartyPopper, auth: true },
   { href: "/friends", label: "Friends", icon: Users, auth: true, badgeKey: "friendRequests" },
   { href: "/messages", label: "Messages", icon: MessageSquare, auth: true },
   { href: "/notifications", label: "Notifications", icon: Bell, auth: true, badgeKey: "notifications" },

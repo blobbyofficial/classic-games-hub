@@ -116,7 +116,6 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
               title={game.title}
               bestScore={bestScore}
               isAuthed={Boolean(user)}
-              adsProgramEnabled={flags.rewarded_ads ?? true}
             />
           )}
 

@@ -12,7 +12,7 @@ import { useSessionStore } from "@/lib/stores/session-store";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
 import { TouchControls } from "./touch-controls";
-import { RewardOverlay, SimulatedAd } from "./reward-overlay";
+import { RewardOverlay } from "./reward-overlay";
 import type { GameEngineHandle, ScoreResult } from "@/types";
 
 interface Props {
@@ -21,11 +21,9 @@ interface Props {
   title: string;
   bestScore: number;
   isAuthed: boolean;
-  /** Site-wide rewarded-ads program flag. When off, no ads show for anyone. */
-  adsProgramEnabled: boolean;
 }
 
-export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProgramEnabled }: Props) {
+export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<GameEngineHandle | null>(null);
@@ -35,8 +33,6 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
 
   const setCredits = useSessionStore((s) => s.setCredits);
   const profile = useSessionStore((s) => s.profile);
-  // Ads only run when the admin program flag is on AND the player opted in.
-  const adsEnabled = useSessionStore((s) => (s.settings?.ads_enabled ?? false) && adsProgramEnabled);
 
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(bestScore);
@@ -46,7 +42,6 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
   const [gameOver, setGameOver] = useState(false);
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
-  const [showAd, setShowAd] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
 
   const { w, h } = canvasFor(engineId);
@@ -67,10 +62,6 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
         return;
       }
 
-      // Occasionally show a (simulated) rewarded ad when the player opted in.
-      const wantsAd = adsEnabled && Math.random() < 0.34 && finalScore > 0;
-      if (wantsAd) setShowAd(true);
-
       setSubmitting(true);
       const res = await submitScore(slug, finalScore, duration);
       setResult(res);
@@ -80,7 +71,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
       }
       submittingRef.current = false;
     },
-    [adsEnabled, best, isAuthed, profile, setCredits, slug],
+    [best, isAuthed, profile, setCredits, slug],
   );
 
   // (Re)build the engine. Also re-runs on theme change so palettes update.
@@ -90,7 +81,6 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
     handleRef.current?.destroy();
     setLoadingEngine(true);
     setGameOver(false);
-    setShowAd(false);
     setResult(null);
     setScore(0);
     setPaused(false);
@@ -311,13 +301,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed, adsProg
           </button>
         )}
 
-        {gameOver && showAd && (
-          <SimulatedAd onDone={() => setShowAd(false)} onSkip={() => setShowAd(false)} />
-        )}
-
-        {gameOver && !showAd && (
-          <RewardOverlay score={score} result={result} loading={submitting} onReplay={replay} />
-        )}
+        {gameOver && <RewardOverlay score={score} result={result} loading={submitting} onReplay={replay} />}
       </div>
 
       {/* Touch controls for touch devices; keyboard hints for pointer devices. */}

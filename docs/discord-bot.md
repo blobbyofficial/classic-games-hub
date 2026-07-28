@@ -20,6 +20,8 @@ Any scheduler ─────────▶ /api/cron/discord-stats ───�
 
 bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handling,
      automod, live feed, counters — and the bot's Online status
+     │
+     └──every 60s──▶ bot_heartbeat() ──▶ /status shows the worker as Online
 ```
 
 | Piece | Where it runs | Cost |
@@ -189,13 +191,29 @@ Connections, or `/unlink` for code links.
    see `bot/README.md`.
 8. Fine-tune wording, limits and automod at **Admin → Discord bot**.
 
+## Health & the status page
+
+The public `/status` page has a **Discord bot** panel driven by the worker's
+heartbeat. On connect, and every 60 seconds after, the worker calls
+`bot_heartbeat()`, which stamps `last_seen` into `discord_bot_config`.
+`platform_status()` treats a heartbeat older than **3 minutes** as offline, so
+two beats can be lost to a network blip without the panel flipping.
+
+The heartbeat requires the worker to be running — it is not sent by the
+serverless endpoint. If you don't deploy `bot/`, `/status` will correctly
+report the worker as Offline while slash commands carry on working.
+
+For a liveness check that doesn't touch the database, the worker also serves
+`GET /health` on `$PORT` with the gateway status, ping and uptime.
+
 ## Failure modes
 
 - **Bot env vars unset** → commands answer with a friendly error; the site is
   unaffected.
 - **Worker down** → slash commands, verification, tickets and moderation all
-  keep working; chat XP, automod, the live feed and the Online dot pause. The
-  nightly reconcile repairs milestone roles afterwards.
+  keep working; chat XP, automod, the live feed and the Online dot pause, and
+  `/status` shows the worker Offline within 3 minutes. The nightly reconcile
+  repairs milestone roles afterwards.
 - **Discord API down / rate-limited** → role syncs skip and are corrected by
   the nightly reconcile; counter renames are skipped until the next tick.
 - **Bot's role below a managed role** → that role is skipped, and `/sync` and

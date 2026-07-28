@@ -13,8 +13,9 @@ const DIRS = [
 type Cell = 0 | 1 | 2; // 0 empty, 1 player(red), 2 ai(yellow)
 
 /** Connect Four with gravity-drop animation, an animated win highlight, a hover
- *  ghost disc and an alpha-beta minimax AI. Mobile-first (tap a column). */
-const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus }) => {
+ *  ghost disc and an alpha-beta minimax AI — or, in a party, online head-to-head
+ *  against another member (v1.5). Mobile-first (tap a column). */
+const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus, net }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
   const cell = Math.min(width / COLS, height / (ROWS + 1));
@@ -38,6 +39,17 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
   const RED = "#f87171";
   const YELLOW = pal.gold;
 
+  // Online: seat 1 is red and drops first, seat 2 is yellow. Offline, the
+  // local player is always red and player 2 is the AI.
+  const isNet = Boolean(net);
+  const me: 1 | 2 = net?.seat === 2 ? 2 : 1;
+  const foe: 1 | 2 = me === 1 ? 2 : 1;
+  let turn: 1 | 2 = 1;
+
+  function turnStatus() {
+    onStatus?.(turn === me ? "Your turn — tap a column" : `${net!.opponentName} is thinking…`);
+  }
+
   function reset() {
     board = Array.from({ length: ROWS }, () => Array<Cell>(COLS).fill(0));
     over = false;
@@ -45,7 +57,12 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
     falling = null;
     winCells = null;
     winPulse = 0;
+    turn = 1;
     onScore(wins * 100);
+    if (isNet) {
+      onStatus?.(`You are ${me === 1 ? "red" : "yellow"} — ${turn === me ? "your move" : `${net!.opponentName} starts`}`);
+      return;
+    }
     onStatus?.("You are red — tap a column");
   }
 
@@ -159,6 +176,19 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
     if (w) {
       winCells = w;
       over = true;
+      if (isNet) {
+        const won = player === me;
+        onStatus?.(won ? "Four in a row — you win! 🎉" : `${net!.opponentName} got four`);
+        net!.onResult(won ? "win" : "loss");
+        onGameOver(won ? 100 : 0, 0);
+        if (won) {
+          beep(660, 0.08);
+          setTimeout(() => beep(880, 0.12), 90);
+        } else {
+          beep(150, 0.25, "sawtooth");
+        }
+        return;
+      }
       if (player === 1) {
         wins++;
         onScore(wins * 100);
@@ -176,8 +206,21 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
     }
     if (isFull(board)) {
       over = true;
+      if (isNet) {
+        onStatus?.("Board full — draw");
+        net!.onResult("draw");
+        onGameOver(40, 0);
+        return;
+      }
       onStatus?.("Board full — draw. Tap to retry");
       onGameOver(20, 0);
+      return;
+    }
+    if (isNet) {
+      // Hand the turn over; the opponent's drop arrives as a remote move.
+      turn = player === 1 ? 2 : 1;
+      busy = false;
+      turnStatus();
       return;
     }
     if (player === 1) {
@@ -220,9 +263,9 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
     ctx.fillStyle = pal.bg;
     ctx.fillRect(0, 0, width, height);
 
-    if (!over && !busy && landingRow(board, hoverCol) >= 0) {
+    if (!over && !busy && (!isNet || turn === me) && landingRow(board, hoverCol) >= 0) {
       const cx = ox + hoverCol * cell + cell / 2;
-      ctx.fillStyle = "rgba(248,113,113,0.35)";
+      ctx.fillStyle = me === 2 ? "rgba(251,191,36,0.35)" : "rgba(248,113,113,0.35)";
       ctx.beginPath();
       ctx.arc(cx, oy - cell / 2, rad, 0, Math.PI * 2);
       ctx.fill();
@@ -267,6 +310,15 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
   }
 
   const onDown = (e: PointerEvent) => {
+    if (isNet) {
+      // No tap-to-restart online: rematches are the party leader's call.
+      if (over || busy || turn !== me) return;
+      const col = colAt(e);
+      if (landingRow(board, col) < 0) return;
+      startDrop(col, me);
+      net!.send({ i: col });
+      return;
+    }
     if (over) return reset();
     if (busy) return;
     startDrop(colAt(e), 1);
@@ -289,6 +341,11 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
     restart: () => {
       wins = 0;
       reset();
+    },
+    applyRemoteMove: ({ i }) => {
+      if (!isNet || over || busy || turn !== foe) return;
+      if (i < 0 || i >= COLS || landingRow(board, i) < 0) return;
+      startDrop(i, foe);
     },
     destroy: () => {
       cancelAnimationFrame(raf);

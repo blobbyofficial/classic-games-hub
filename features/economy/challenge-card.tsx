@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { Coins, Zap, Check, Target } from "lucide-react";
+import { Coins, Zap, Check, Target, Sparkles, Lock } from "lucide-react";
 import { toast } from "sonner";
 import { claimChallenge } from "@/actions/economy";
 import { useSessionStore } from "@/lib/stores/session-store";
@@ -18,6 +18,14 @@ export function ChallengeCard({ challenge }: { challenge: ChallengeWithProgress 
 
   const target = challenge.requirement.target;
   const pct = Math.min(100, (challenge.progress / target) * 100);
+
+  // Booster-only challenges (0046) stay visible to everyone — they advertise
+  // the perk — but claim_challenge is what actually enforces eligibility.
+  const boosterOnly = challenge.booster_only;
+  const canClaimBooster =
+    profile != null &&
+    (profile.booster_since != null || profile.role === "admin" || profile.role === "moderator");
+  const locked = boosterOnly && !canClaimBooster;
 
   const claim = () =>
     start(async () => {
@@ -36,14 +44,27 @@ export function ChallengeCard({ challenge }: { challenge: ChallengeWithProgress 
       className={cn(
         "rounded-xl border p-4 transition-colors",
         challenge.completed && !claimed ? "border-primary/40 bg-primary/5" : "border-border bg-card",
+        boosterOnly && "border-fuchsia-500/40 bg-fuchsia-500/5",
       )}
     >
       <div className="flex items-start gap-3">
-        <span className="grid size-10 shrink-0 place-items-center rounded-lg bg-primary/10 text-primary">
-          <Target className="size-5" />
+        <span
+          className={cn(
+            "grid size-10 shrink-0 place-items-center rounded-lg",
+            boosterOnly ? "bg-fuchsia-500/10 text-fuchsia-500" : "bg-primary/10 text-primary",
+          )}
+        >
+          {boosterOnly ? <Sparkles className="size-5" /> : <Target className="size-5" />}
         </span>
         <div className="min-w-0 flex-1">
-          <p className="font-semibold">{challenge.name}</p>
+          <p className="flex items-center gap-1.5 font-semibold">
+            {challenge.name}
+            {boosterOnly && (
+              <span className="rounded-full bg-fuchsia-500/15 px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-fuchsia-500">
+                Boosters
+              </span>
+            )}
+          </p>
           <p className="text-xs text-muted-foreground">{challenge.description}</p>
         </div>
         <div className="flex flex-col items-end gap-0.5 text-xs">
@@ -63,6 +84,10 @@ export function ChallengeCard({ challenge }: { challenge: ChallengeWithProgress 
         {claimed ? (
           <Button size="sm" variant="secondary" disabled>
             <Check /> Claimed
+          </Button>
+        ) : locked ? (
+          <Button size="sm" variant="outline" disabled title="Boost the Discord server to claim this">
+            <Lock /> Boosters
           </Button>
         ) : challenge.completed ? (
           <Button size="sm" variant="gradient" onClick={claim} disabled={pending}>

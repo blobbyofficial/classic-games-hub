@@ -38,7 +38,6 @@ export const reportSchema = z.object({
 });
 
 export const settingsSchema = z.object({
-  ads_enabled: z.boolean().optional(),
   theme: z.enum(["system", "light", "dark"]).optional(),
   reduced_motion: z.boolean().optional(),
   show_online_status: z.boolean().optional(),

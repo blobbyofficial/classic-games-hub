@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { User, SlidersHorizontal, Coins, Shield, Lock, Link2 } from "lucide-react";
-import { getCurrentProfile, getCurrentSettings, getFeatureFlags } from "@/lib/supabase/queries";
+import { User, SlidersHorizontal, Shield, Lock, Link2 } from "lucide-react";
+import { getCurrentProfile, getCurrentSettings } from "@/lib/supabase/queries";
 import { getUserAchievements, getUserBestScores } from "@/services/profiles";
 import { createClient } from "@/lib/supabase/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSettings } from "@/features/settings/profile-settings";
+import { VanityUrl } from "@/features/settings/vanity-url";
 import { AppearanceSettings } from "@/features/settings/appearance-settings";
 import { BannerCustomizer } from "@/features/settings/banner-customizer";
 import { PreferencesSettings } from "@/features/settings/preferences-settings";
-import { AdsSettings } from "@/features/settings/ads-settings";
 import { SecuritySettings } from "@/features/settings/security-settings";
 import { BlockedUsers } from "@/features/settings/blocked-users";
 import { ConnectionsSettings, type DiscordConnection } from "@/features/settings/connections-settings";
@@ -18,7 +18,7 @@ import { SiteThemePicker } from "@/features/settings/site-theme-picker";
 
 export const metadata: Metadata = { title: "Settings" };
 
-const TABS = ["profile", "preferences", "rewards", "privacy", "security", "connections"];
+const TABS = ["profile", "preferences", "privacy", "security", "connections"];
 
 export default async function SettingsPage({
   searchParams,
@@ -27,11 +27,7 @@ export default async function SettingsPage({
 }) {
   const { tab } = await searchParams;
   const initialTab = TABS.includes(tab ?? "") ? (tab as string) : "profile";
-  const [profile, settings, flags] = await Promise.all([
-    getCurrentProfile(),
-    getCurrentSettings(),
-    getFeatureFlags(),
-  ]);
+  const [profile, settings] = await Promise.all([getCurrentProfile(), getCurrentSettings()]);
   if (!profile || !settings) redirect("/login?next=/settings");
 
   const [achievements, bestScores] = await Promise.all([
@@ -62,9 +58,6 @@ export default async function SettingsPage({
           <TabsTrigger value="preferences">
             <SlidersHorizontal className="size-4" /> Preferences
           </TabsTrigger>
-          <TabsTrigger value="rewards">
-            <Coins className="size-4" /> Rewards
-          </TabsTrigger>
           <TabsTrigger value="privacy">
             <Shield className="size-4" /> Privacy
           </TabsTrigger>
@@ -78,6 +71,7 @@ export default async function SettingsPage({
 
         <TabsContent value="profile" className="space-y-6">
           <ProfileSettings profile={profile} />
+          <VanityUrl profile={profile} />
           <AppearanceSettings
             profile={profile}
             achievements={achievements.map((a) => ({ slug: a.slug, name: a.name }))}
@@ -95,9 +89,6 @@ export default async function SettingsPage({
               profile.role === "moderator"
             }
           />
-        </TabsContent>
-        <TabsContent value="rewards">
-          <AdsSettings settings={settings} enabled={flags.rewarded_ads ?? true} />
         </TabsContent>
         <TabsContent value="privacy" className="space-y-4">
           <BlockedUsers initial={blocked} />

@@ -14,14 +14,12 @@ export default async function AdminSitePage() {
   const { data } = await supabase
     .from("feature_flags")
     .select("key, enabled, payload")
-    .in("key", ["ads_placements", "home_layout", "roadmap_override", "rewarded_ads"]);
+    .in("key", ["home_layout", "roadmap_override"]);
 
   const flags = Object.fromEntries((data ?? []).map((f) => [f.key, f]));
 
   return (
     <SiteSurfaces
-      rewardedAds={flags.rewarded_ads ?? { key: "rewarded_ads", enabled: true, payload: {} }}
-      adsPlacements={flags.ads_placements ?? { key: "ads_placements", enabled: true, payload: { home: true, games: true, shop: false } }}
       homeLayout={flags.home_layout ?? { key: "home_layout", enabled: false, payload: { order: [], hidden: [] } }}
       roadmapOverride={flags.roadmap_override ?? { key: "roadmap_override", enabled: false, payload: {} }}
     />

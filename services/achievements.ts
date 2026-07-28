@@ -31,6 +31,8 @@ export interface ChallengeWithProgress {
   completed: boolean;
   claimed: boolean;
   ends_at: string;
+  /** Boosters-only reward (0046); claim_challenge enforces it server-side. */
+  booster_only: boolean;
 }
 
 export const getActiveChallenges = cache(async (): Promise<ChallengeWithProgress[]> => {
@@ -79,6 +81,7 @@ export const getActiveChallenges = cache(async (): Promise<ChallengeWithProgress
       completed: Boolean(p?.completed_at),
       claimed: Boolean(p?.claimed_at),
       ends_at: c.ends_at,
+      booster_only: c.booster_only,
     };
   });
 });
