@@ -60,6 +60,21 @@ four migrations that were live in the database finally have code to reach them.
 - The roadmap now records this as **Dropped** rather than quietly deleting it,
   and gained a status of that name to say so honestly.
 
+### 🐛 Audit-log reasons broke every write to Discord
+
+- **`/setup levels`, `/setup verification` and `/setup stats` could never create
+  anything**, and moderation commands failed on any reason containing an emoji
+  or an accent. The audit-log reason goes in an HTTP header, header values must
+  be Latin-1, and the bot's own reasons contain an em dash ("Classic Games Hub
+  — …"). `fetch` threw before the request was sent.
+- The reason is now URL-encoded, as Discord documents it. Reads were never
+  affected — they send no reason header — which is why listing roles worked
+  while creating them didn't, and why `/setup modlog` (database only) was the
+  one setup command that succeeded.
+- `discordFetch` reports the real exception instead of a bare "network". That
+  one word hid a `TypeError` thrown by `fetch` itself and turned a five-minute
+  fix into a hunt for a permissions problem that never existed.
+
 ### 🔎 Discord setup diagnostics
 
 - `/setup` now quotes **Discord's own error** for a failed create, plus the
