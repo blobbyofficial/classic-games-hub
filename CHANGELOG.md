@@ -60,6 +60,31 @@ four migrations that were live in the database finally have code to reach them.
 - The roadmap now records this as **Dropped** rather than quietly deleting it,
   and gained a status of that name to say so honestly.
 
+### 🩹 Three dashboard settings that couldn't take effect
+
+- **Tickets: the panel channel was dropped on every save.** `panel_channel_id`
+  was missing from the tickets validation schema, and zod strips unknown keys —
+  so the field never persisted and the panel could never be posted or re-posted
+  from the dashboard. The Tickets card now has the field, and saving posts the
+  panel there.
+- **Live counters ignored the Discord-members channel entirely.** Setup looped
+  over three of the four counters, so an ID linked for that one was neither
+  recognised nor used. All four are handled now.
+- **Counter naming is left to the refresh pass.** Setup only knew three
+  template variables and hard-coded the Discord member count to zero, so
+  renaming there wrote a worse name than the refresh that immediately followed
+  — and burned one of Discord's two renames per ten minutes doing it. Setup now
+  adopts and creates; refresh names.
+- Pushing counters while **Counters enabled** is off now says so, instead of
+  quietly doing nothing.
+- Panels are **edited in place** rather than re-posted. Now that saving pushes
+  automatically, a re-posted panel meant a trail of duplicates down the channel
+  after a few edits; the live panel also updates its own wording where people
+  already see it.
+- The push buttons say they use your **last saved** settings, and the "no panel
+  channel" messages name the field to fill in rather than telling you to run a
+  slash command.
+
 ### 🔗 Linked roles and channels are used, not duplicated
 
 - Pasting a role or channel ID into **Admin → Discord bot** now means *use this

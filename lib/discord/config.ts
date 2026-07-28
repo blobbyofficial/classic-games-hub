@@ -23,6 +23,8 @@ export interface VerificationConfig {
   verified_role_id: string | null;
   unverified_role_id: string | null;
   panel_channel_id: string | null;
+  /** The panel message itself, so re-posting edits it instead of duplicating. */
+  panel_message_id: string | null;
   log_channel_id: string | null;
   min_account_age_hours: number;
   panel_title: string;
@@ -58,6 +60,8 @@ export interface TicketsConfig {
   enabled: boolean;
   /** Where the panel was last posted, so it can be re-posted from the site. */
   panel_channel_id: string | null;
+  /** The panel message itself, so re-posting edits it instead of duplicating. */
+  panel_message_id: string | null;
   category_id: string | null;
   staff_role_id: string | null;
   log_channel_id: string | null;
@@ -95,6 +99,7 @@ export interface LevelRolesConfig {
 }
 
 export const VERIFICATION_DEFAULTS: VerificationConfig = {
+  panel_message_id: null,
   enabled: true,
   mode: "button",
   verified_role_id: null,
@@ -132,6 +137,7 @@ export const MODERATION_DEFAULTS: ModerationConfig = {
 };
 
 export const TICKETS_DEFAULTS: TicketsConfig = {
+  panel_message_id: null,
   enabled: true,
   panel_channel_id: null,
   category_id: null,

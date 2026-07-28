@@ -99,9 +99,11 @@ function PushCard() {
       <CardHeader>
         <CardTitle>Push settings to Discord</CardTitle>
         <CardDescription>
-          Saving a section already applies it. Use this to re-apply everything — after someone edits
-          roles by hand, or to repair the server after the bot was offline. All of it is idempotent:
-          existing roles and channels are reused, never duplicated.
+          These push your <strong>last saved</strong> settings — if you have just typed an ID into a
+          section below, press that section&apos;s Save instead, which saves and applies in one go.
+          Use these to re-apply after someone edits roles by hand, or to repair the server once the
+          bot is back online. All idempotent: existing roles and channels are reused, never
+          duplicated.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-3">

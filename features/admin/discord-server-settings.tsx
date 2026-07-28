@@ -61,6 +61,7 @@ export interface ModerationConfig {
 
 export interface TicketsConfig {
   enabled: boolean;
+  panel_channel_id: string | null;
   category_id: string | null;
   staff_role_id: string | null;
   log_channel_id: string | null;
@@ -586,6 +587,13 @@ export function DiscordServerSettings({
             <Label htmlFor="tk-enabled">Tickets enabled</Label>
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
+            <IdField
+              id="tk-panel"
+              label="Panel channel ID"
+              value={tickets.panel_channel_id}
+              onChange={(v) => setTickets((c) => ({ ...c, panel_channel_id: v }))}
+              hint="Where the “open a ticket” button is posted. Saving posts it here."
+            />
             <IdField
               id="tk-category"
               label="Ticket category ID"

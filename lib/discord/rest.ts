@@ -280,6 +280,13 @@ export const discordRest = {
   },
 
   /** Edit the original response of a deferred interaction. */
+  /** Edit a message we posted, so panels are updated rather than duplicated. */
+  editMessage: (channelId: string, messageId: string, payload: unknown) =>
+    discordFetch(`/channels/${channelId}/messages/${messageId}`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+
   editOriginalResponse: (appId: string, token: string, payload: unknown) =>
     discordFetch(`/webhooks/${appId}/${token}/messages/@original`, {
       method: "PATCH",
