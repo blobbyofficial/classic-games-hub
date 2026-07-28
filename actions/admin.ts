@@ -420,10 +420,21 @@ export async function adminCreateLevelRoles(): Promise<RpcResult & { detail?: st
     };
   }
   revalidatePath("/admin/discord");
-  const summary = `Created ${res.created.length}, reused ${res.reused.length}, failed ${res.failed.length}.`;
+  const summary = [
+    `Created ${res.created.length}`,
+    `updated ${res.updated.length}`,
+    `already correct ${res.reused.length}`,
+    `failed ${res.failed.length}`,
+  ].join(", ") + ".";
+  const missing = res.missing.length
+    ? ` Linked roles not found in the server: ${res.missing.join(", ")} — left alone rather than replaced. Clear the ID to have a new one created.`
+    : "";
   // Same reasoning as the Discord embed: report what Discord said rather than
   // a guess, so a permissions problem and a role-limit problem look different.
-  return { ok: true, detail: res.detail ? `${summary} Discord said: ${res.detail}` : summary };
+  return {
+    ok: true,
+    detail: (res.detail ? `${summary} Discord said: ${res.detail}` : summary) + missing,
+  };
 }
 
 export interface DiscordEnvStatus {

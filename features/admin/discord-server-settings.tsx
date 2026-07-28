@@ -144,7 +144,11 @@ function IdField({
         value={value ?? ""}
         onChange={(e) => onChange(e.target.value.trim() || null)}
       />
-      {hint ? <p className="text-xs text-muted-foreground">{hint}</p> : null}
+      <p className="text-xs text-muted-foreground">
+        {hint ? `${hint} ` : ""}
+        Paste an ID to use that one — saving renames it to match these settings. Leave empty and one
+        is created for you.
+      </p>
     </div>
   );
 }

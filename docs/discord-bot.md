@@ -150,6 +150,24 @@ Connections, or `/unlink` for code links.
   reported rather than silently swallowed; banned Hub accounts lose every
   managed role.
 
+## Linking your own roles and channels
+
+Every role/channel ID field in **Admin → Discord bot** means *use this one*.
+
+- **ID set, and it exists** → the bot adopts it and brings it in line with your
+  settings: a milestone role is renamed to the name template and recoloured, a
+  counter channel is renamed to show the number. Nothing new is created.
+- **ID set, but no longer in the server** → reported as *not found* and **left
+  alone**. It is never silently replaced with a fresh default-named one; a
+  surprise duplicate you then have to hunt down is worse than a clear warning.
+  Clear the field if you want a new one created.
+- **ID empty** → the bot looks for a role whose name already matches, and only
+  creates one if there isn't a match.
+
+The "📊 Hub stats" category is created only when a counter channel actually
+needs creating, so linking your own channels no longer leaves an empty category
+behind.
+
 ## Running the bot from the dashboard
 
 **Admin → Discord bot** is not just a settings form. Every command that does

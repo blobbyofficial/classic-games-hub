@@ -60,6 +60,23 @@ four migrations that were live in the database finally have code to reach them.
 - The roadmap now records this as **Dropped** rather than quietly deleting it,
   and gained a status of that name to say so honestly.
 
+### 🔗 Linked roles and channels are used, not duplicated
+
+- Pasting a role or channel ID into **Admin → Discord bot** now means *use this
+  one*. The bot adopts it and updates it to match your settings — a milestone
+  role is renamed and recoloured, a counter channel renamed to show its number.
+  Previously a linked ID was adopted but never updated, so your own role kept
+  whatever name and colour it already had.
+- A configured ID that no longer exists is reported as **not found and left
+  alone**, instead of being silently replaced by a brand-new default-named
+  role or channel. That silent replacement was the confusing part: one wrong
+  digit and you got a duplicate to hunt down, with nothing saying why.
+- The "📊 Hub stats" category is only created when a counter channel actually
+  needs creating, so linking your own channels stops leaving an empty category
+  behind on every push.
+- Summaries now separate **created**, **updated**, **already correct** and
+  **not found**, in Discord and in the dashboard alike.
+
 ### 🎛️ Run the bot from the dashboard
 
 - **Admin → Discord bot** gains a console: **Announce**, **Moderation** (warn,
