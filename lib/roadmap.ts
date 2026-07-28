@@ -82,12 +82,6 @@ export const ROADMAP: RoadmapRelease[] = [
               "Recolour your whole profile card — buttons, highlights and dividers — with a curated accent theme, so a visitor feels your vibe the moment the page loads. Hand-picked palettes only, so nothing ever clashes.",
           },
           {
-            title: "Profile frames",
-            description:
-              "Optional Discord-like decorative frames around your entire profile card — seasonal, achievement-gated and cosmetic-shop variants.",
-            status: "idea",
-          },
-          {
             title: "Display-name styles",
             description:
               "A curated set of display fonts plus particle, glow, shimmer and gradient treatments for your name — expressive but always legible.",
@@ -120,12 +114,6 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "Discord link on profile",
             description:
               "An optional 'Connect' button that surfaces your Discord for verified players who want it shown — off by default, entirely your call.",
-          },
-          {
-            title: "More expressive extras",
-            description:
-              "A backlog of stretch cosmetics inspired by the platforms we love: profile entrance animations, custom cursor trails on your page, an optional profile-view counter, a mini 'now playing' game widget, and short looping profile music (from the v1.3 track library).",
-            status: "idea",
           },
         ],
       },
@@ -178,12 +166,6 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "Rich presence",
             description:
               "Upgrade online status to online / offline / do-not-disturb / sleep, add a 'last online' time, and even an optional 'playing now' game — each with fine-grained controls over exactly who can see it.",
-          },
-          {
-            title: "Friends activity feed",
-            description:
-              "An opt-in feed of what friends are up to — new achievements, level-ups and personal-best scores — respecting everyone's visibility settings.",
-            status: "idea",
           },
           {
             title: "Wishlist & gifting",
@@ -424,8 +406,8 @@ export const ROADMAP: RoadmapRelease[] = [
   {
     version: "v1.3.0",
     codename: "Living Arcade",
-    status: "in-progress",
-    timeframe: "Shipping now — most of it is live",
+    status: "shipped",
+    timeframe: "Shipped",
     summary:
       "Turn the hub into somewhere players return to for years, not weeks: original music, stacking events, long-term streaks, deep booster and level rewards, and a proper analytics control centre.",
     groups: [
@@ -443,20 +425,14 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Level-milestone unlocks",
             description:
-              "Hitting a level milestone unlocks a real feature, giving levelling a point beyond a number. Live now: L5 background music · L10 create groups · L15 stories · L30 a vanity profile URL. Still to come: L20 extra loadout preset slots · L50 an exclusive mythic cosmetic.",
-            status: "in-progress",
+              "Hitting a level milestone unlocks a real feature, giving levelling a point beyond a number: L5 background music · L10 create groups · L15 stories · L30 a vanity profile URL. Two further milestones are planned for v1.5.0.",
+            status: "shipped",
           },
           {
             title: "Message streaks",
             description:
               "A Snapchat-style daily streak, but with messages instead of images — keep a conversation going day after day with a friend to build a streak and earn rewards, giving people a reason to check in on each other.",
             status: "shipped",
-          },
-          {
-            title: "Collections & seasons",
-            description:
-              "Collectable cosmetic sets and seasonal passes with a fresh theme each season, so there's always a longer-term goal to chip away at and a reason to come back after a break.",
-            status: "idea",
           },
         ],
       },
@@ -473,12 +449,6 @@ export const ROADMAP: RoadmapRelease[] = [
             status: "shipped",
           },
           {
-            title: "Monthly cosmetic drop",
-            description:
-              "An exclusive cosmetic every month you're boosting — a nameplate, decoration or effect that only boosters of that month receive, so the collection tells a story over time.",
-            status: "later",
-          },
-          {
             title: "Boost-tenure badge tiers",
             description:
               "The Booster badge evolves the longer you've boosted (1 month → 3 → 6 → 12), with a visibly fancier treatment at each tier to recognise loyalty.",
@@ -488,18 +458,6 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "Bigger daily & streak bonuses",
             description: "A larger daily reward and a faster-growing streak multiplier while your boost is active.",
             status: "shipped",
-          },
-          {
-            title: "Early access",
-            description:
-              "A head start on new games and features — try them a week before everyone else and help shape them before launch.",
-            status: "later",
-          },
-          {
-            title: "Monthly gift token",
-            description:
-              "A free token each month to gift a temporary cosmetic to a friend — spread the perks and pull friends in.",
-            status: "idea",
           },
           {
             title: "Vanity profile URL",
@@ -524,18 +482,6 @@ export const ROADMAP: RoadmapRelease[] = [
             description:
               "Credit boosts stack up to 5× (10× for Discord boosters). Buy another beyond the cap and it doesn't go to waste — it joins an effect queue and automatically takes over the moment the current boost runs out, so your boosts are always working.",
             status: "shipped",
-          },
-        ],
-      },
-      {
-        heading: "Polish & performance",
-        icon: "Sparkles",
-        items: [
-          {
-            title: "More animation, better reduced-motion",
-            description:
-              "More life and motion across the whole site — page transitions, micro-interactions and celebratory moments — paired with a genuinely well-optimised, snappy experience for players who prefer animations off.",
-            status: "later",
           },
         ],
       },
@@ -568,8 +514,8 @@ export const ROADMAP: RoadmapRelease[] = [
   {
     version: "v1.4.0",
     codename: "New Dimensions",
-    status: "in-progress",
-    timeframe: "Shipping now — multiplayer and parties are live",
+    status: "shipped",
+    timeframe: "Shipped",
     summary:
       "The big games update: a step into 3D, real multiplayer with parties, and store-decorated avatars that show up when you play together — plus admin control over the home screen itself.",
     groups: [
@@ -581,8 +527,8 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Playable 3D games",
             description:
-              "Browser-based 3D titles running smoothly on desktop and mobile. First out: Turbo Horizon, an OutRun-style pseudo-3D racer — with more (a Rubik's cube and true-3D titles) to come.",
-            status: "in-progress",
+              "Browser-based 3D titles running smoothly on desktop and mobile. First out: Turbo Horizon, an OutRun-style pseudo-3D racer. Further titles are planned for v1.5.0.",
+            status: "shipped",
           },
         ],
       },
@@ -603,12 +549,6 @@ export const ROADMAP: RoadmapRelease[] = [
               "Group up into a party to jump into multiplayer games together. Create one, share a six-character code or invite friends straight from your friends list, and the leader picks the game and starts it for everyone at once.",
             status: "shipped",
           },
-          {
-            title: "Store-decorated avatars",
-            description:
-              "Decorate your avatar — your profile picture — with items bought from the store, so you show up in style in multiplayer lobbies and parties. Avatar frames are live; layered decorations that sit on top of the picture are still to come.",
-            status: "next",
-          },
         ],
       },
       {
@@ -620,6 +560,124 @@ export const ROADMAP: RoadmapRelease[] = [
             description:
               "Rearrange the homepage straight from the admin dashboard — reorder or hide any section from Admin → Site, no code required.",
             status: "shipped",
+          },
+        ],
+      },
+    ],
+  },
+  {
+    version: "v1.5.0",
+    codename: "Collector's Edition",
+    status: "next",
+    timeframe: "Next up",
+    summary:
+      "Everything from earlier releases that hasn't been built yet, gathered in one place rather than left scattered as loose ends. The theme that emerged: long-term collecting. Seasons to chase, cosmetics that layer and evolve, booster perks that accumulate month after month, the last two level milestones, and more 3D on the way.",
+    groups: [
+      {
+        heading: "Collections & seasons",
+        icon: "Gift",
+        blurb:
+          "The longest loop we've attempted: something to chip away at over months, and a reason to come back after a break.",
+        items: [
+          {
+            title: "Collections & seasons",
+            description:
+              "Collectable cosmetic sets and seasonal passes with a fresh theme each season, so there's always a longer-term goal to work towards and a reason to return after time away.",
+            status: "next",
+          },
+          {
+            title: "The last two level milestones",
+            description:
+              "Finishing what v1.3.0 started: L20 unlocks extra loadout preset slots, and L50 unlocks an exclusive mythic cosmetic. The earlier milestones (L5 music, L10 groups, L15 stories, L30 vanity URL) are already live.",
+            status: "next",
+          },
+        ],
+      },
+      {
+        heading: "Cosmetics & profile",
+        icon: "Palette",
+        blurb: "The expressive extras that didn't make the v1.2.0 cut — layered, optional, never pay-to-win.",
+        items: [
+          {
+            title: "Layered avatar decorations",
+            description:
+              "Decorations that sit on top of your profile picture rather than around it, bought from the store and shown wherever your avatar appears — including party lobbies and multiplayer matches. Avatar frames are already live; this is the layer above them.",
+            status: "next",
+          },
+          {
+            title: "Profile frames",
+            description:
+              "Optional Discord-like decorative frames around your entire profile card — seasonal, achievement-gated and cosmetic-shop variants.",
+            status: "later",
+          },
+          {
+            title: "More expressive extras",
+            description:
+              "A backlog of stretch cosmetics inspired by the platforms we love: profile entrance animations, custom cursor trails on your page, an optional profile-view counter, a mini 'now playing' game widget, and short looping profile music drawn from the v1.3 track library.",
+            status: "idea",
+          },
+        ],
+      },
+      {
+        heading: "Booster rewards",
+        icon: "Heart",
+        blurb:
+          "Perks that accumulate the longer you boost — the tenure badge and bigger daily bonuses already do; these three are the rest of the plan.",
+        items: [
+          {
+            title: "Monthly cosmetic drop",
+            description:
+              "An exclusive cosmetic every month you're boosting — a nameplate, decoration or effect that only boosters of that month receive, so the collection tells a story over time.",
+            status: "next",
+          },
+          {
+            title: "Early access",
+            description:
+              "A head start on new games and features — try them a week before everyone else and help shape them before launch.",
+            status: "later",
+          },
+          {
+            title: "Monthly gift token",
+            description:
+              "A free token each month to gift a temporary cosmetic to a friend — spread the perks and pull friends in.",
+            status: "idea",
+          },
+        ],
+      },
+      {
+        heading: "Social",
+        icon: "Users",
+        items: [
+          {
+            title: "Friends activity feed",
+            description:
+              "A quiet feed of what your friends have been up to — new high scores, achievements unlocked, games they've picked up — so the hub feels inhabited even when nobody's talking.",
+            status: "later",
+          },
+        ],
+      },
+      {
+        heading: "More dimensions",
+        icon: "Box",
+        blurb: "Turbo Horizon proved the browser can carry it. These are the follow-ups.",
+        items: [
+          {
+            title: "More 3D titles",
+            description:
+              "Beyond the pseudo-3D racer: a playable Rubik's cube, and true-3D titles running smoothly on desktop and mobile.",
+            status: "later",
+          },
+        ],
+      },
+      {
+        heading: "Polish & performance",
+        icon: "Sparkles",
+        items: [
+          {
+            title: "More animation, better reduced-motion",
+            description:
+              "More life and motion across the whole site — page transitions, micro-interactions and celebratory moments — paired with a genuinely well-optimised, snappy experience for players who prefer animations off.",
+            status: "later",
           },
         ],
       },

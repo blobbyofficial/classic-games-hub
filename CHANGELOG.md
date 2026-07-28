@@ -60,6 +60,17 @@ four migrations that were live in the database finally have code to reach them.
 - The roadmap now records this as **Dropped** rather than quietly deleting it,
   and gained a status of that name to say so honestly.
 
+### 🗺️ Roadmap restructure
+
+- Everything still unbuilt across v1.2.0–v1.4.0 — eleven items that had been
+  left scattered as loose ends — is gathered into a new **v1.5.0 "Collector's
+  Edition"** and removed from the releases that had moved on without them.
+- With those carried forward, **v1.3.0 and v1.4.0 are now fully shipped** and
+  marked as such. Two partly-done items were split rather than moved wholesale:
+  the level milestones that are live (L5/L10/L15/L30) stay in v1.3.0 as shipped
+  with only L20 and L50 carried forward, and Turbo Horizon stays in v1.4.0 with
+  only the remaining 3D titles carried forward.
+
 ### 🗃️ Migrations
 
 - `0042`–`0046` were applied to the database but never reached the repository,
