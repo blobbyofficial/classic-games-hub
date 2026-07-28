@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlertCircle, CheckCircle2, RefreshCcw, Save, Wand2 } from "lucide-react";
+import { AlertCircle, CheckCircle2, RefreshCcw, Save, Terminal, Wand2 } from "lucide-react";
 import {
   adminCreateLevelRoles,
   adminRefreshStatChannels,
+  adminRegisterSlashCommands,
   adminSetBotSection,
 } from "@/actions/admin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -154,6 +155,7 @@ export function DiscordServerSettings({
   const [ticketsState, setTicketsState] = useState<Feedback>(null);
   const [statsState, setStatsState] = useState<Feedback>(null);
   const [levelRolesState, setLevelRolesState] = useState<Feedback>(null);
+  const [commandsState, setCommandsState] = useState<Feedback>(null);
   const [pending, startTransition] = useTransition();
 
   const save = (
@@ -173,6 +175,13 @@ export function DiscordServerSettings({
       setLevelRolesState(res.ok ? { message: res.detail ?? "Done." } : { error: res.error });
     });
 
+  const registerCommands = () =>
+    startTransition(async () => {
+      setCommandsState({ message: "Registering with Discord…" });
+      const res = await adminRegisterSlashCommands();
+      setCommandsState(res.ok ? { message: res.detail ?? "Done." } : { error: res.error });
+    });
+
   const refreshCounters = () =>
     startTransition(async () => {
       setStatsState({ message: "Refreshing…" });
@@ -182,6 +191,24 @@ export function DiscordServerSettings({
 
   return (
     <div className="space-y-6">
+      {/* ── Slash commands ─────────────────────────────────────────── */}
+      <Card>
+        <CardHeader>
+          <CardTitle>Slash commands</CardTitle>
+          <CardDescription>
+            Discord only shows commands it has been told about. Press this after your first deploy,
+            and again whenever the command set changes — it replaces the whole set, so pressing it
+            twice is harmless.
+          </CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          <FeedbackLine state={commandsState} />
+          <Button onClick={registerCommands} disabled={pending} variant="gradient">
+            <Terminal className="size-4" /> Register slash commands
+          </Button>
+        </CardContent>
+      </Card>
+
       {/* ── Verification (replaces Appy) ───────────────────────────── */}
       <Card>
         <CardHeader>

@@ -396,6 +396,57 @@ export async function adminCreateLevelRoles(): Promise<RpcResult & { detail?: st
   };
 }
 
+/**
+ * Registers the slash commands with Discord.
+ *
+ * The same job as POST /api/discord/register, but reachable from the admin UI
+ * instead of a terminal — the cron route needs a bearer token, which is fine
+ * for a scheduler and awkward for a person. Both call the same Discord
+ * endpoint with the same command set, so either route is safe to use.
+ *
+ * Registration is a full replace (PUT), so running it twice is harmless — it
+ * is how you push a changed command set, not something that accumulates.
+ */
+export async function adminRegisterSlashCommands(): Promise<RpcResult & { detail?: string }> {
+  await requireStaff();
+  const { SLASH_COMMANDS } = await import("@/lib/discord/commands");
+  const { discordEnv } = await import("@/lib/discord/env");
+
+  if (!discordEnv.botToken || !discordEnv.appId) {
+    return { ok: false, error: "Set DISCORD_BOT_TOKEN and DISCORD_CLIENT_ID first." };
+  }
+
+  // Guild-scoped registration appears instantly; global can take up to an hour.
+  const path = discordEnv.guildId
+    ? `/applications/${discordEnv.appId}/guilds/${discordEnv.guildId}/commands`
+    : `/applications/${discordEnv.appId}/commands`;
+
+  const res = await fetch(`https://discord.com/api/v10${path}`, {
+    method: "PUT",
+    headers: { Authorization: `Bot ${discordEnv.botToken}`, "Content-Type": "application/json" },
+    body: JSON.stringify(SLASH_COMMANDS),
+  }).catch(() => null);
+
+  if (!res) return { ok: false, error: "Couldn't reach Discord. Try again in a moment." };
+  if (!res.ok) {
+    const detail = await res.text().catch(() => "");
+    return {
+      ok: false,
+      error:
+        res.status === 401
+          ? "Discord rejected the bot token — check DISCORD_BOT_TOKEN."
+          : `Discord returned ${res.status}. ${detail.slice(0, 200)}`,
+    };
+  }
+
+  return {
+    ok: true,
+    detail: discordEnv.guildId
+      ? `Registered ${SLASH_COMMANDS.length} commands to your server — they appear immediately.`
+      : `Registered ${SLASH_COMMANDS.length} commands globally — Discord can take up to an hour to show them.`,
+  };
+}
+
 /** Renames the live counter channels right now. */
 export async function adminRefreshStatChannels(): Promise<RpcResult & { detail?: string }> {
   await requireStaff();
