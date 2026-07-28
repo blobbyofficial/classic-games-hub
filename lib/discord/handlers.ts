@@ -729,11 +729,24 @@ export async function deferredAnnounce(
 
 function setupSummary(
   title: string,
-  res: { created: string[]; reused: string[]; failed: string[]; detail?: string },
+  res: {
+    created: string[];
+    reused: string[];
+    updated?: string[];
+    missing?: string[];
+    failed: string[];
+    detail?: string;
+  },
 ): Embed {
   const parts = [
     res.created.length ? `✅ Created: ${res.created.join(", ")}` : "",
-    res.reused.length ? `♻️ Reused: ${res.reused.join(", ")}` : "",
+    res.updated?.length ? `✏️ Updated: ${res.updated.join(", ")}` : "",
+    res.reused.length ? `♻️ Already correct: ${res.reused.join(", ")}` : "",
+    // A configured ID that no longer resolves is called out rather than
+    // quietly replaced — a surprise duplicate is worse than a clear warning.
+    res.missing?.length
+      ? `🔗 Not found: ${res.missing.join(", ")} — I left these alone rather than making replacements. Clear the ID to have me create a fresh one.`
+      : "",
     res.failed.length ? `⚠️ Failed: ${res.failed.join(", ")}` : "",
     // Discord's own words beat a guess. "Missing Permissions" and "Maximum
     // number of guild roles reached" need completely different fixes, and the

@@ -361,11 +361,18 @@ export async function pushSection(section: PushSection): Promise<OpResult> {
   }
 }
 
-function summarise(res: { created: string[]; reused: string[]; failed: string[] }, noun: string): string {
+function summarise(
+  res: { created: string[]; reused: string[]; updated?: string[]; missing?: string[]; failed: string[] },
+  noun: string,
+): string {
   const bits = [
     res.created.length ? `created ${res.created.length}` : "",
-    res.reused.length ? `reused ${res.reused.length}` : "",
+    res.updated?.length ? `updated ${res.updated.length}` : "",
+    res.reused.length ? `already correct ${res.reused.length}` : "",
     res.failed.length ? `failed ${res.failed.length}` : "",
   ].filter(Boolean);
-  return `${noun}s: ${bits.join(", ") || "nothing to do"}.`;
+  const missing = res.missing?.length
+    ? ` Linked ${noun}${res.missing.length === 1 ? "" : "s"} not found in the server: ${res.missing.join(", ")} — left alone, not replaced.`
+    : "";
+  return `${noun}s: ${bits.join(", ") || "nothing to do"}.${missing}`;
 }

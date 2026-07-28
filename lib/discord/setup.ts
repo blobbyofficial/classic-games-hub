@@ -25,6 +25,16 @@ export interface SetupResult {
   error?: string;
   created: string[];
   reused: string[];
+  /** Existing roles/channels that were renamed or restyled to match settings. */
+  updated: string[];
+  /**
+   * IDs that are configured but no longer exist in the server. These are never
+   * silently replaced with a new role or channel: an ID typed into the
+   * dashboard is an instruction to use *that* one, so if it can't be found the
+   * honest answer is to say so, not to hand back a default-named duplicate the
+   * admin then has to hunt down and delete.
+   */
+  missing: string[];
   failed: string[];
   /**
    * Discord's own words for the first failure, e.g. "Missing Permissions
@@ -35,7 +45,13 @@ export interface SetupResult {
   detail?: string;
 }
 
-const empty = (): Omit<SetupResult, "ok" | "error"> => ({ created: [], reused: [], failed: [] });
+const empty = (): Omit<SetupResult, "ok" | "error"> => ({
+  created: [],
+  reused: [],
+  updated: [],
+  missing: [],
+  failed: [],
+});
 
 /** Discord's message and code for a failed call, for showing to an admin. */
 function describe(res: { status?: number; error?: string }): string {
@@ -62,11 +78,36 @@ export async function setupLevelRoles(): Promise<SetupResult> {
 
   for (const [index, level] of milestones.entries()) {
     const name = template(cfg.name_template || "Level {level}", { level });
+    const color = MILESTONE_COLORS[Math.min(index, MILESTONE_COLORS.length - 1)];
     const mapped = roles[String(level)];
-    if (mapped && byId.has(mapped)) {
-      result.reused.push(name);
+
+    // An ID in the config means "use this role". Bring it in line with the
+    // current name template and colour rather than leaving it as it was.
+    if (mapped) {
+      const role = byId.get(mapped);
+      if (!role) {
+        result.missing.push(`${name} (${mapped})`);
+        continue;
+      }
+      if (role.name !== name || role.color !== color) {
+        const patched = await discordRest.modifyRole(
+          guildId,
+          mapped,
+          { name, color },
+          "Classic Games Hub — level milestone role",
+        );
+        if (patched.ok) result.updated.push(name);
+        else {
+          result.failed.push(name);
+          result.detail ??= describe(patched);
+        }
+      } else {
+        result.reused.push(name);
+      }
       continue;
     }
+
+    // No ID configured: adopt a role that already has the right name.
     const found = byName.get(name.toLowerCase());
     if (found) {
       roles[String(level)] = found.id;
@@ -75,12 +116,7 @@ export async function setupLevelRoles(): Promise<SetupResult> {
     }
     const created = await discordRest.createRole(
       guildId,
-      {
-        name,
-        color: MILESTONE_COLORS[Math.min(index, MILESTONE_COLORS.length - 1)],
-        hoist: false,
-        mentionable: false,
-      },
+      { name, color, hoist: false, mentionable: false },
       "Classic Games Hub — level milestone role",
     );
     if (created.ok && created.data) {
@@ -112,8 +148,28 @@ export async function setupVerificationRoles(): Promise<SetupResult & { verified
   const result: SetupResult & { verified?: string; unverified?: string } = { ok: true, ...empty() };
 
   const ensure = async (name: string, color: number, current: string | null) => {
-    if (current && byId.has(current)) {
-      result.reused.push(name);
+    // A linked role is used and brought in line — never swapped for a new one.
+    if (current) {
+      const role = byId.get(current);
+      if (!role) {
+        result.missing.push(`${name} (${current})`);
+        return current;
+      }
+      if (role.name !== name || role.color !== color) {
+        const patched = await discordRest.modifyRole(
+          guildId,
+          current,
+          { name, color },
+          "Classic Games Hub — verification",
+        );
+        if (patched.ok) result.updated.push(name);
+        else {
+          result.failed.push(name);
+          result.detail ??= describe(patched);
+        }
+      } else {
+        result.reused.push(name);
+      }
       return current;
     }
     const found = byName.get(name.toLowerCase());
@@ -179,17 +235,22 @@ export async function setupStatsChannels(): Promise<SetupResult> {
   const result: SetupResult = { ok: true, ...empty() };
 
   // A category to keep the counters together at the top of the channel list.
+  // Resolved lazily: if every counter is already linked to a channel there is
+  // nothing to file, and creating an empty "📊 Hub stats" category each push
+  // was its own small mess.
   let categoryId = channels.data.find(
     (c) => c.type === ChannelType.GuildCategory && c.name.toLowerCase() === "📊 hub stats",
   )?.id;
-  if (!categoryId) {
+  const ensureCategory = async () => {
+    if (categoryId) return categoryId;
     const cat = await discordRest.createChannel(
       guildId,
       { name: "📊 Hub stats", type: ChannelType.GuildCategory },
       "Classic Games Hub — stat counters",
     );
     if (cat.ok && cat.data) categoryId = cat.data.id;
-  }
+    return categoryId;
+  };
 
   const next: Record<string, string | null> = { ...cfg.channels };
   const stats = await botDb.statsExtended();
@@ -202,17 +263,39 @@ export async function setupStatsChannels(): Promise<SetupResult> {
 
   for (const key of ["online", "members", "plays"] as const) {
     const current = cfg.channels[key];
-    if (current && byId.has(current)) {
-      result.reused.push(key);
+    const name = template(cfg.templates[key], vars);
+
+    // A linked channel is renamed to show the number, not replaced.
+    if (current) {
+      const channel = byId.get(current);
+      if (!channel) {
+        result.missing.push(`${key} (${current})`);
+        continue;
+      }
+      if (channel.name !== name) {
+        const renamed = await discordRest.modifyChannel(
+          current,
+          { name },
+          "Classic Games Hub — stat counter",
+        );
+        if (renamed.ok) result.updated.push(key);
+        else {
+          result.failed.push(key);
+          result.detail ??= describe(renamed);
+        }
+      } else {
+        result.reused.push(key);
+      }
+      await new Promise((r) => setTimeout(r, 150));
       continue;
     }
-    const name = template(cfg.templates[key], vars);
+
     const created = await discordRest.createChannel(
       guildId,
       {
         name,
         type: ChannelType.GuildVoice,
-        parent_id: categoryId ?? undefined,
+        parent_id: (await ensureCategory()) ?? undefined,
         // Visible to everyone, joinable by nobody — it's a display, not a call.
         permission_overwrites: [
           { id: guildId, type: 0, allow: String(Permissions.ViewChannel), deny: String(Permissions.Connect) },

@@ -171,6 +171,19 @@ export const discordRest = {
       body: JSON.stringify({ permissions: "0", ...body }),
     }),
 
+  /** Rename/recolour an existing role, so a linked role is adopted, not replaced. */
+  modifyRole: (
+    guildId: string,
+    roleId: string,
+    body: { name?: string; color?: number; hoist?: boolean; mentionable?: boolean },
+    reason: string,
+  ) =>
+    discordFetch<GuildRole>(`/guilds/${guildId}/roles/${roleId}`, {
+      method: "PATCH",
+      headers: { "X-Audit-Log-Reason": reason },
+      body: JSON.stringify(body),
+    }),
+
   listGuildChannels: (guildId: string) =>
     discordFetch<GuildChannel[]>(`/guilds/${guildId}/channels`),
 
