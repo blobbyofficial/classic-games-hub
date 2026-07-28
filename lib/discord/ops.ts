@@ -330,20 +330,28 @@ export async function pushSection(section: PushSection): Promise<OpResult> {
         const posted = await postVerificationPanel(cfg.panel_channel_id);
         panel = posted.ok ? " Verify panel re-posted." : " Couldn't re-post the verify panel.";
       } else {
-        panel = " No verify channel set, so no panel was posted.";
+        panel =
+          " No panel was posted: set **Panel channel ID** under Join verification below, then press Save.";
       }
       return { ok: true, detail: summarise(roles, "role") + panel };
     }
     case "tickets": {
       const cfg = await getBotConfig("tickets");
       if (!cfg.panel_channel_id) {
-        return { ok: false, error: "Post the ticket panel once with `/setup tickets` first — then this can re-post it." };
+        return {
+          ok: false,
+          error: "Set **Panel channel ID** under Tickets below, then press Save — that posts the panel and lets this re-post it.",
+        };
       }
       const posted = await postTicketPanel(cfg.panel_channel_id);
       if (!posted.ok) return failed(posted.status, posted.error, "post the ticket panel");
       return { ok: true, detail: "Ticket panel re-posted." };
     }
     case "stats": {
+      const cfg = await getBotConfig("stats");
+      if (!cfg.enabled) {
+        return { ok: false, error: "Counters are switched off — tick **Counters enabled** under Live counters and save." };
+      }
       const created = await setupStatsChannels();
       if (!created.ok) return { ok: false, error: `Couldn't sync counters: ${created.error}` };
       const refreshed = await refreshStatChannels();

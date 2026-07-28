@@ -310,6 +310,9 @@ const moderationConfigSchema = z.object({
 
 const ticketsConfigSchema = z.object({
   enabled: z.boolean(),
+  // Without this the field was silently dropped on every save, so the panel
+  // channel could never be remembered and re-posting was impossible.
+  panel_channel_id: snowflake,
   category_id: snowflake,
   staff_role_id: snowflake,
   log_channel_id: snowflake,

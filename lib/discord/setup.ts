@@ -204,18 +204,46 @@ export async function setupVerificationRoles(): Promise<SetupResult & { verified
 /** Posts (or re-posts) the verification panel into a channel. */
 export async function postVerificationPanel(channelId: string) {
   const cfg = await getBotConfig("verification");
-  const res = await discordRest.createMessage(channelId, verificationPanel(cfg));
-  if (res.ok) await botDb.patchConfig("verification", { panel_channel_id: channelId, enabled: true });
+  return upsertPanel("verification", channelId, cfg.panel_message_id, verificationPanel(cfg));
+}
+
+/**
+ * Posts a panel, or edits the existing one when we already have its message.
+ *
+ * Saving a section pushes it, so a panel that was re-posted every time would
+ * leave a trail of duplicates down the channel after a few edits. Editing in
+ * place also means the panel's wording updates where people already see it,
+ * instead of the live one going stale below a newer copy.
+ */
+async function upsertPanel(
+  key: "verification" | "tickets",
+  channelId: string,
+  messageId: string | null,
+  payload: unknown,
+) {
+  if (messageId) {
+    const edited = await discordRest.editMessage(channelId, messageId, payload);
+    if (edited.ok) {
+      await botDb.patchConfig(key, { panel_channel_id: channelId, enabled: true });
+      return edited;
+    }
+    // Deleted by hand, or the channel changed — fall through and post a new one.
+  }
+  const res = await discordRest.createMessage(channelId, payload);
+  if (res.ok) {
+    await botDb.patchConfig(key, {
+      panel_channel_id: channelId,
+      panel_message_id: res.data?.id ?? null,
+      enabled: true,
+    });
+  }
   return res;
 }
 
 /** Posts (or re-posts) the ticket panel into a channel. */
 export async function postTicketPanel(channelId: string) {
   const cfg = await getBotConfig("tickets");
-  const res = await discordRest.createMessage(channelId, ticketPanel(cfg));
-  // Record where it went, so the dashboard can re-post it after an edit.
-  if (res.ok) await botDb.patchConfig("tickets", { enabled: true, panel_channel_id: channelId });
-  return res;
+  return upsertPanel("tickets", channelId, cfg.panel_message_id, ticketPanel(cfg));
 }
 
 /**
@@ -254,6 +282,12 @@ export async function setupStatsChannels(): Promise<SetupResult> {
 
   const next: Record<string, string | null> = { ...cfg.channels };
   const stats = await botDb.statsExtended();
+
+  // Only a placeholder name for freshly created channels. `refreshStatChannels`
+  // runs straight after and does the real naming: it is the only one that
+  // resolves every template variable ({plays_total}, {linked}) and fetches the
+  // Discord member count, so naming here as well would write a worse name and
+  // burn one of Discord's two renames per ten minutes doing it.
   const vars = {
     online: stats?.online ?? 0,
     members: stats?.members ?? 0,
@@ -261,34 +295,21 @@ export async function setupStatsChannels(): Promise<SetupResult> {
     discord_members: 0,
   };
 
-  for (const key of ["online", "members", "plays"] as const) {
+  for (const key of ["online", "members", "plays", "discord_members"] as const) {
     const current = cfg.channels[key];
-    const name = template(cfg.templates[key], vars);
 
-    // A linked channel is renamed to show the number, not replaced.
+    // A linked channel is adopted as-is; the refresh pass renames it.
     if (current) {
-      const channel = byId.get(current);
-      if (!channel) {
-        result.missing.push(`${key} (${current})`);
-        continue;
-      }
-      if (channel.name !== name) {
-        const renamed = await discordRest.modifyChannel(
-          current,
-          { name },
-          "Classic Games Hub — stat counter",
-        );
-        if (renamed.ok) result.updated.push(key);
-        else {
-          result.failed.push(key);
-          result.detail ??= describe(renamed);
-        }
-      } else {
-        result.reused.push(key);
-      }
-      await new Promise((r) => setTimeout(r, 150));
+      if (byId.has(current)) result.reused.push(key);
+      else result.missing.push(`${key} (${current})`);
       continue;
     }
+
+    // Only the Discord member counter is optional — the rest are created when
+    // no channel is linked. Without an ID here there is nothing to count into.
+    if (key === "discord_members") continue;
+
+    const name = template(cfg.templates[key], vars);
 
     const created = await discordRest.createChannel(
       guildId,
