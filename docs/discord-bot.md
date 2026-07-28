@@ -240,5 +240,13 @@ For a liveness check that doesn't touch the database, the worker also serves
 - **Discord API down / rate-limited** → role syncs skip and are corrected by
   the nightly reconcile; counter renames are skipped until the next tick.
 - **Bot's role below a managed role** → that role is skipped, and `/sync` and
-  `/setup` say so explicitly.
+  `/setup` say so explicitly. Note this affects *assigning* an existing role,
+  never *creating* one: a newly created role always starts at the bottom of the
+  list, so hierarchy cannot be the reason a `/setup` creation failed.
+- **`/setup` reports failures** → the summary now quotes Discord's own error
+  and what to change. `Missing Permissions (50013)` means the bot's own role
+  lacks Manage Roles/Channels; `Missing Access (50001)` means the app was
+  invited with `applications.commands` but not the `bot` scope, so its commands
+  appear while it isn't really a member; `Maximum number of guild roles` means
+  the server is at Discord's 250-role cap.
 - **User not in the server** → sync is a no-op until they join.

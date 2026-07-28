@@ -802,15 +802,41 @@ export async function deferredAnnounce(
 
 // ── /setup … (admin, run once per server) ────────────────────────────
 
-function setupSummary(title: string, res: { created: string[]; reused: string[]; failed: string[] }): Embed {
+function setupSummary(
+  title: string,
+  res: { created: string[]; reused: string[]; failed: string[]; detail?: string },
+): Embed {
   const parts = [
     res.created.length ? `✅ Created: ${res.created.join(", ")}` : "",
     res.reused.length ? `♻️ Reused: ${res.reused.join(", ")}` : "",
-    res.failed.length
-      ? `⚠️ Failed: ${res.failed.join(", ")} — check my permissions and that my role is high enough.`
-      : "",
+    res.failed.length ? `⚠️ Failed: ${res.failed.join(", ")}` : "",
+    // Discord's own words beat a guess. "Missing Permissions" and "Maximum
+    // number of guild roles reached" need completely different fixes, and the
+    // old catch-all sent people to check role hierarchy for both — which is
+    // never the cause of a failed *creation*, since a new role starts at the
+    // bottom regardless of who made it.
+    res.failed.length && res.detail ? `Discord said: **${res.detail}**` : "",
+    res.failed.length ? hintFor(res.detail) : "",
   ].filter(Boolean);
   return brandEmbed({ title, description: parts.join("\n") || "Nothing to do — already set up." });
+}
+
+/** Turns Discord's error text into the thing to actually go and change. */
+function hintFor(detail: string | undefined): string {
+  const d = (detail ?? "").toLowerCase();
+  if (d.includes("missing permissions") || d.includes("50013")) {
+    return "→ Give my role **Manage Roles** (and **Manage Channels** for channel setup). If I already have Administrator, check you granted it to *my* role — the one with my name — and not a role I don't hold.";
+  }
+  if (d.includes("missing access") || d.includes("50001")) {
+    return "→ I'm not properly in this server. Re-invite me using an OAuth2 URL that ticks **both** the `bot` and `applications.commands` scopes — commands can appear without the `bot` scope, but I can't act.";
+  }
+  if (d.includes("maximum number of guild roles")) {
+    return "→ This server has hit Discord's 250-role limit. Delete some unused roles and run this again.";
+  }
+  if (d.includes("http 429") || d.includes("rate limit")) {
+    return "→ Discord is rate-limiting me. Wait a minute and run it again; anything already made will be reused.";
+  }
+  return "→ Check that my role has the permission for this action, then run it again.";
 }
 
 const SETUP_ERRORS: Record<string, string> = {

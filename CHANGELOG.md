@@ -62,6 +62,14 @@ four migrations that were live in the database finally have code to reach them.
 
 ### 🔎 Discord setup diagnostics
 
+- `/setup` now quotes **Discord's own error** for a failed create, plus the
+  thing to actually change. The old summary guessed — "check my permissions and
+  that my role is high enough" — for every cause alike, and the hierarchy half
+  of that guess is never right for a creation: a new role starts at the bottom
+  no matter who made it. Missing permissions, a bot invited without the `bot`
+  scope, and a server at the 250-role cap all need different fixes and now read
+  differently. The admin panel's role button reports the same detail.
+
 - **Admin → Discord bot** now lists which Discord environment variables the
   deployment actually has (presence only, never values). An unset variable
   previously surfaced as "could not be verified" from Discord, or a generic
