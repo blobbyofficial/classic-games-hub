@@ -22,19 +22,15 @@ import type { Embed } from "./types";
  * `deferred` handlers wired in the route with next/server `after()`.
  */
 
-const BRAND_COLOR = 0x7a3dff;
+import { brandEmbed, errorEmbed } from "./embeds";
+import { announce as opsAnnounce, recordModAction } from "./ops";
+
 const EPHEMERAL = 64;
 
 const siteUrl = () =>
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://classic-games-hub.blobbyofficial.com";
 
-export function brandEmbed(extra: Embed = {}): Embed {
-  return { color: BRAND_COLOR, footer: { text: "Classic Games Hub" }, ...extra };
-}
-
-export function errorEmbed(message: string): Embed {
-  return { color: 0xef4444, description: `❌ ${message}` };
-}
+export { brandEmbed, errorEmbed };
 
 export function reply(embeds: Embed[], ephemeral = false) {
   return { type: 4, data: { embeds, flags: ephemeral ? EPHEMERAL : 0 } };
@@ -401,59 +397,6 @@ export async function deferredSync(discordId: string, token: string) {
   await discordRest.editOriginalResponse(discordEnv.appId, token, { embeds: [embed] });
 }
 
-/**
- * Shared tail of every moderation command: record a numbered case, DM the
- * member (when configured), and post to the mod-log channel. Mirrors what
- * Sapphire did, but the case history lives in the Hub's own database so it
- * also shows up in the website's audit trail.
- */
-async function recordModAction(input: {
-  actorId: string;
-  actorName: string;
-  targetId: string;
-  targetName?: string | null;
-  action: string;
-  reason: string;
-  minutes?: number | null;
-  dm?: string | null;
-}): Promise<number | undefined> {
-  const cfg = await getBotConfig("moderation");
-  const created = await botDb.addCase({
-    actor: input.actorId,
-    target: input.targetId,
-    action: input.action,
-    reason: input.reason,
-    minutes: input.minutes ?? null,
-    targetUsername: input.targetName ?? null,
-  });
-  // Keep the older audit-log RPC in the loop so nothing that reads it breaks.
-  await botDb.logMod(input.actorId, input.targetId, input.action, input.reason);
-
-  if (cfg.dm_on_action && input.dm) {
-    await discordRest.dmUser(input.targetId, input.dm);
-  }
-  if (cfg.log_channel_id) {
-    await discordRest.createMessage(cfg.log_channel_id, {
-      embeds: [
-        brandEmbed({
-          title: `${ACTION_EMOJI[input.action] ?? "🛡️"} ${input.action} — case #${created?.case ?? "?"}`,
-          description: [
-            `**Member:** <@${input.targetId}> (\`${input.targetId}\`)`,
-            `**Moderator:** <@${input.actorId}>`,
-            input.minutes ? `**Duration:** ${input.minutes} minute(s)` : "",
-            `**Reason:** ${input.reason || "No reason given"}`,
-          ]
-            .filter(Boolean)
-            .join("\n"),
-          timestamp: new Date().toISOString(),
-        }),
-      ],
-      allowed_mentions: { parse: [] },
-    });
-  }
-  return created?.case;
-}
-
 const ACTION_EMOJI: Record<string, string> = {
   warn: "⚠️",
   timeout: "🔇",
@@ -776,27 +719,9 @@ export async function deferredAnnounce(
   actor: { id: string; name: string },
   token: string,
 ) {
-  const body = message.replace(/\\n/g, "\n");
-  const content = pingRoleId ? `<@&${pingRoleId}>` : undefined;
-  const payload = plain
-    ? { content: [content, body].filter(Boolean).join("\n") }
-    : {
-        content,
-        embeds: [
-          brandEmbed({
-            title: title || "📣 Announcement",
-            description: body,
-            ...(imageUrl && /^https:\/\//.test(imageUrl) ? { image: { url: imageUrl } } : {}),
-            timestamp: new Date().toISOString(),
-          }),
-        ],
-      };
-
-  const res = await discordRest.createMessage(channelId, {
-    ...payload,
-    allowed_mentions: pingRoleId ? { roles: [pingRoleId] } : { parse: [] },
-  });
-  if (!res.ok) return finish(token, restError(res.status, "post in that channel"));
+  void actor;
+  const res = await opsAnnounce({ channelId, message, title, pingRoleId, imageUrl, plain });
+  if (!res.ok) return finish(token, errorEmbed(res.error ?? "Couldn't post that."));
   await finish(token, brandEmbed({ title: "📣 Announcement posted", description: `Sent to <#${channelId}>.` }));
 }
 

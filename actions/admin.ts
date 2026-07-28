@@ -14,6 +14,7 @@ import {
   seasonalEventSchema,
   usernameSchema,
 } from "@/lib/validators";
+import type { PushSection } from "@/lib/discord/ops";
 import type { RpcResult } from "@/types";
 
 export async function adminAdjustCredits(userId: string, amount: number, reason: string): Promise<RpcResult> {
@@ -355,7 +356,24 @@ const BOT_SECTIONS = {
 export type BotSection = keyof typeof BOT_SECTIONS;
 
 /** Saves one of the newer bot config sections (migration 0037). */
-export async function adminSetBotSection(section: BotSection, input: unknown): Promise<RpcResult> {
+/**
+ * Saves a settings section — and applies it to Discord.
+ *
+ * Saving used to write to Postgres and stop there, so the dashboard and the
+ * server disagreed until someone ran the matching `/setup` command. Now the
+ * save is followed by a push, and the result says what actually changed in
+ * Discord.
+ *
+ * The push is best-effort on purpose: the settings are saved either way. A
+ * Discord outage or a missing permission must not cost you your edit, so a
+ * failed push is reported as a warning against a successful save, not as a
+ * failure that leaves you wondering whether to retype everything.
+ */
+export async function adminSetBotSection(
+  section: BotSection,
+  input: unknown,
+  push = true,
+): Promise<RpcResult & { detail?: string; warning?: string }> {
   await requireStaff();
   const schema = BOT_SECTIONS[section];
   if (!schema) return { ok: false, error: "Unknown settings section" };
@@ -372,8 +390,20 @@ export async function adminSetBotSection(section: BotSection, input: unknown): P
   const res = data as { ok?: boolean; error?: string } | null;
   if (!res?.ok) return { ok: false, error: res?.error ?? "Failed to save" };
   revalidatePath("/admin/discord");
-  return { ok: true };
+
+  if (!push || !PUSHABLE.has(section)) return { ok: true, detail: "Saved." };
+
+  const { pushSection } = await import("@/lib/discord/ops");
+  const applied = await pushSection(section as PushSection);
+  return {
+    ok: true,
+    detail: applied.ok ? `Saved and pushed to Discord — ${applied.detail}` : "Saved.",
+    warning: applied.ok ? applied.error : `Saved, but couldn't push to Discord: ${applied.error}`,
+  };
 }
+
+/** Sections with something to apply in Discord; the rest are read on use. */
+const PUSHABLE = new Set<string>(["verification", "level_roles", "tickets", "stats"]);
 
 /** Creates any missing milestone level roles in Discord and stores their IDs. */
 export async function adminCreateLevelRoles(): Promise<RpcResult & { detail?: string }> {

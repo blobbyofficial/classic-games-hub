@@ -150,6 +150,30 @@ Connections, or `/unlink` for code links.
   reported rather than silently swallowed; banned Hub accounts lose every
   managed role.
 
+## Running the bot from the dashboard
+
+**Admin → Discord bot** is not just a settings form. Every command that does
+something to the server can be run from there, through the *same functions* the
+slash commands call (`lib/discord/ops.ts`) — so a case opened on the website is
+numbered, DM'd and mod-logged identically to one opened in Discord. There is no
+second implementation to drift.
+
+- **Announce** — `/announce`, with the same role-scoped pings.
+- **Moderation** — warn, timeout, remove timeout, kick, ban, unban. Recorded
+  against the staff member's *linked* Discord account; an unlinked admin is
+  refused, because an unattributable case is worse than none.
+- **Channel tools** — purge, slowmode, lock, unlock.
+- **Push settings to Discord** — re-applies a section (or all of them) to the
+  server: creates missing roles, re-posts panels, renames counters.
+
+Saving a section now **also pushes it**. It used to write to Postgres and stop,
+so the dashboard and the server disagreed until someone ran the matching
+`/setup`. The push is best-effort by design — the settings are saved either
+way, so a Discord outage costs you a retry of the push, never your edit.
+
+Pushing is idempotent: existing roles and channels with the expected names are
+reused rather than duplicated, so it is safe to press repeatedly.
+
 ## Environment variables
 
 On **Vercel** (the website — all server-only, none reach the browser):

@@ -56,6 +56,8 @@ export interface ModerationConfig {
 
 export interface TicketsConfig {
   enabled: boolean;
+  /** Where the panel was last posted, so it can be re-posted from the site. */
+  panel_channel_id: string | null;
   category_id: string | null;
   staff_role_id: string | null;
   log_channel_id: string | null;
@@ -131,6 +133,7 @@ export const MODERATION_DEFAULTS: ModerationConfig = {
 
 export const TICKETS_DEFAULTS: TicketsConfig = {
   enabled: true,
+  panel_channel_id: null,
   category_id: null,
   staff_role_id: null,
   log_channel_id: null,
