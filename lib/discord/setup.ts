@@ -2,6 +2,7 @@ import "server-only";
 import { botDb } from "./bot-db";
 import { getBotConfig, template } from "./config";
 import { verificationPanel, ticketPanel } from "./components";
+import { BOT_NAME } from "./embeds";
 import { discordEnv } from "./env";
 import { ChannelType, Permissions, discordRest } from "./rest";
 
@@ -77,7 +78,7 @@ export async function setupLevelRoles(): Promise<SetupResult> {
   const milestones = [...(cfg.milestones ?? [])].sort((a, b) => a - b);
 
   for (const [index, level] of milestones.entries()) {
-    const name = template(cfg.name_template || "Level {level}", { level });
+    const name = template(cfg.name_template || "Level {level}", { level }).slice(0, 100);
     const color = MILESTONE_COLORS[Math.min(index, MILESTONE_COLORS.length - 1)];
     const mapped = roles[String(level)];
 
@@ -94,7 +95,7 @@ export async function setupLevelRoles(): Promise<SetupResult> {
           guildId,
           mapped,
           { name, color },
-          "Classic Games Hub — level milestone role",
+          `${BOT_NAME} — level milestone role`,
         );
         if (patched.ok) result.updated.push(name);
         else {
@@ -117,7 +118,7 @@ export async function setupLevelRoles(): Promise<SetupResult> {
     const created = await discordRest.createRole(
       guildId,
       { name, color, hoist: false, mentionable: false },
-      "Classic Games Hub — level milestone role",
+      `${BOT_NAME} — level milestone role`,
     );
     if (created.ok && created.data) {
       roles[String(level)] = created.data.id;
@@ -160,7 +161,7 @@ export async function setupVerificationRoles(): Promise<SetupResult & { verified
           guildId,
           current,
           { name, color },
-          "Classic Games Hub — verification",
+          `${BOT_NAME} — verification`,
         );
         if (patched.ok) result.updated.push(name);
         else {
@@ -180,7 +181,7 @@ export async function setupVerificationRoles(): Promise<SetupResult & { verified
     const created = await discordRest.createRole(
       guildId,
       { name, color, hoist: false, mentionable: false },
-      "Classic Games Hub — verification",
+      `${BOT_NAME} — verification`,
     );
     if (created.ok && created.data) {
       result.created.push(name);
@@ -274,7 +275,7 @@ export async function setupStatsChannels(): Promise<SetupResult> {
     const cat = await discordRest.createChannel(
       guildId,
       { name: "📊 Hub stats", type: ChannelType.GuildCategory },
-      "Classic Games Hub — stat counters",
+      `${BOT_NAME} — stat counters`,
     );
     if (cat.ok && cat.data) categoryId = cat.data.id;
     return categoryId;
@@ -309,7 +310,7 @@ export async function setupStatsChannels(): Promise<SetupResult> {
     // no channel is linked. Without an ID here there is nothing to count into.
     if (key === "discord_members") continue;
 
-    const name = template(cfg.templates[key], vars);
+    const name = template(cfg.templates[key], vars).slice(0, 100);
 
     const created = await discordRest.createChannel(
       guildId,
@@ -322,7 +323,7 @@ export async function setupStatsChannels(): Promise<SetupResult> {
           { id: guildId, type: 0, allow: String(Permissions.ViewChannel), deny: String(Permissions.Connect) },
         ],
       },
-      "Classic Games Hub — stat counter",
+      `${BOT_NAME} — stat counter`,
     );
     if (created.ok && created.data) {
       next[key] = created.data.id;

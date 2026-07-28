@@ -23,15 +23,14 @@ import {
  * slash commands — no gateway process involved.
  */
 
-const BRAND_COLOR = 0x7a3dff;
+import { BRAND_COLOR, brandEmbed } from "./embeds";
+
 const DISCORD_EPOCH = 1420070400000n;
 
 const siteUrl = () =>
   process.env.NEXT_PUBLIC_SITE_URL ?? "https://classic-games-hub.blobbyofficial.com";
 
-function brand(extra: Embed = {}): Embed {
-  return { color: BRAND_COLOR, footer: { text: "Classic Games Hub" }, ...extra };
-}
+const brand = brandEmbed;
 
 function fail(message: string): Embed {
   return { color: 0xef4444, description: `❌ ${message}` };

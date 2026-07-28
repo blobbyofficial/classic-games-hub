@@ -24,14 +24,19 @@ function eventEmbed(ev: FeedEvent): EmbedBuilder {
 
 async function poll(client: Client): Promise<void> {
   const rows = await db.recentFeed(lastId);
+
+  // Prime on the first poll whatever it returns. Returning early on an empty
+  // first poll left `primed` false, so on a quiet server the *next* poll — the
+  // one carrying the first real event — was treated as the backlog and thrown
+  // away. The first score of the day simply never appeared.
+  const wasPriming = !primed;
+  primed = true;
+
   if (!rows || rows.length === 0) return;
   lastId = Math.max(lastId, ...rows.map((r) => r.id));
 
   // Skip the backlog that already existed when the bot started.
-  if (!primed) {
-    primed = true;
-    return;
-  }
+  if (wasPriming) return;
 
   const channel = await client.channels.fetch(config.liveScoresChannelId).catch(() => null);
   if (!channel || !channel.isTextBased() || !("send" in channel)) return;

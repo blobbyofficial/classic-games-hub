@@ -22,7 +22,7 @@ import type { Embed } from "./types";
  * `deferred` handlers wired in the route with next/server `after()`.
  */
 
-import { brandEmbed, errorEmbed } from "./embeds";
+import { BOT_NAME, brandEmbed, errorEmbed } from "./embeds";
 import { announce as opsAnnounce, recordModAction } from "./ops";
 
 const EPHEMERAL = 64;
@@ -332,7 +332,7 @@ export function handleHelp() {
   return reply(
     [
       brandEmbed({
-        title: "🎮 Classic Games Hub bot",
+        title: `🎮 ${BOT_NAME}`,
         description: [
           "**Account**",
           "`/link` — connect your Discord to your Hub account",
@@ -653,11 +653,23 @@ export async function deferredLock(
   reason: string,
   token: string,
 ) {
+  // Same care as the dashboard path: an overwrite edit replaces the whole
+  // overwrite, so read it first rather than flattening every other rule on the
+  // channel — and clear an explicit allow, which would otherwise beat the deny.
   const SEND_MESSAGES = 1n << 11n;
+  const channel = await discordRest.getChannel(channelId);
+  const existing = channel.data?.permission_overwrites?.find((o) => o.id === guildId);
+  const allow = BigInt(existing?.allow ?? "0");
+  const deny = BigInt(existing?.deny ?? "0");
+
   const res = await discordRest.editChannelPermissions(
     channelId,
     guildId, // @everyone's role id is the guild id
-    lock ? { type: 0, deny: String(SEND_MESSAGES) } : { type: 0, deny: "0" },
+    {
+      type: 0,
+      allow: String(lock ? allow & ~SEND_MESSAGES : allow),
+      deny: String(lock ? deny | SEND_MESSAGES : deny & ~SEND_MESSAGES),
+    },
     reason,
   );
   if (!res.ok) return finish(token, restError(res.status, `${lock ? "lock" : "unlock"} this channel`));

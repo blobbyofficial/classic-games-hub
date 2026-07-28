@@ -17,7 +17,7 @@ export interface RestResult<T = unknown> {
 
 /**
  * HTTP header values must be Latin-1, and our audit reasons contain an em dash
- * ("Classic Games Hub — …"). Passing one straight through makes `fetch` throw
+ * ("Classic Games Bot — …"). Passing one straight through makes `fetch` throw
  * *before the request is sent*, which surfaced as a network error and had
  * admins hunting for a permissions problem that did not exist. Discord
  * documents this header as URL-encoded, so encode it — Discord decodes it back
@@ -86,6 +86,7 @@ export interface GuildChannel {
   id: string;
   name: string;
   type: number;
+  permission_overwrites?: { id: string; type: 0 | 1; allow: string; deny: string }[];
   parent_id?: string | null;
   position?: number;
 }
@@ -209,7 +210,7 @@ export const discordRest = {
   modifyChannel: (
     channelId: string,
     body: Record<string, unknown>,
-    reason = "Classic Games Hub bot",
+    reason = "Classic Games Bot",
   ) =>
     discordFetch<GuildChannel>(`/channels/${channelId}`, {
       method: "PATCH",
