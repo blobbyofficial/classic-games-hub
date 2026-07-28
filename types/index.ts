@@ -48,10 +48,37 @@ export interface ScoreResult extends RpcResult {
   xp_earned?: number;
   best_score?: number;
   new_best?: boolean;
-  ads_doubled?: boolean;
   event_multiplier?: number;
   rewarded?: boolean;
 }
+
+/** One player in a party, as returned by the `party_state` RPC. */
+export interface PartyMember {
+  user_id: string;
+  username: string;
+  display_name: string | null;
+  avatar_url: string | null;
+  level: number;
+  is_leader: boolean;
+  online: boolean;
+  joined_at: string;
+}
+
+/** The whole lobby in one object — `party_state` returns exactly this. */
+export type PartyState =
+  | { in_party: false }
+  | {
+      in_party: true;
+      id: string;
+      name: string | null;
+      invite_code: string;
+      game_slug: string | null;
+      max_size: number;
+      is_leader: boolean;
+      leader_id: string;
+      created_at: string;
+      members: PartyMember[];
+    };
 
 /** Resolved, display-ready config for the site-wide seasonal event. */
 export interface SeasonalEvent {
@@ -76,6 +103,41 @@ export interface GameEngineHandle {
   pause: () => void;
   resume: () => void;
   restart: () => void;
+  /**
+   * Play a move that arrived from the opponent. Only engines that opt into
+   * head-to-head play (see `GameNetContext`) implement this.
+   */
+  applyRemoteMove?: (move: GameMove) => void;
+}
+
+/**
+ * A move in a head-to-head board game, small enough to fit in a broadcast
+ * payload. `i` is whatever index that game plays in: a board cell for
+ * tic-tac-toe and reversi, a column for Connect 4.
+ */
+export interface GameMove {
+  i: number;
+}
+
+/** Seat 1 always moves first; the leader assigns seats when the match starts. */
+export type Seat = 1 | 2;
+
+export type MatchOutcome = "win" | "loss" | "draw";
+
+/**
+ * Wiring handed to an engine that is playing a networked opponent rather than
+ * the AI. Its presence is what switches the engine into head-to-head mode: the
+ * AI and the local pass-and-play toggle both stay out of the way, and the
+ * engine only accepts input on this seat's turn.
+ */
+export interface GameNetContext {
+  seat: Seat;
+  /** Opponent's display name, for on-canvas turn prompts. */
+  opponentName: string;
+  /** Send a move this player just made to the opponent. */
+  send: (move: GameMove) => void;
+  /** Called once the board resolves, from this seat's point of view. */
+  onResult: (outcome: MatchOutcome) => void;
 }
 
 export interface GameEngineContext {
@@ -89,6 +151,8 @@ export interface GameEngineContext {
   /** Report transient status text (e.g. "Paused", "Level 3"). */
   onStatus?: (status: string) => void;
   reducedMotion: boolean;
+  /** Present only for an online head-to-head match; see `GameNetContext`. */
+  net?: GameNetContext;
 }
 
 export type GameEngineFactory = (ctx: GameEngineContext) => GameEngineHandle;

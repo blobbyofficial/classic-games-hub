@@ -57,6 +57,8 @@ export interface Database {
           featured_achievement: string | null;
           showcase: Json;
           profile_flags: Json;
+          /** Optional second handle for /u/<slug>; see 0045_vanity_urls. */
+          vanity_slug: string | null;
           last_seen_at: string;
           created_at: string;
           updated_at: string;
@@ -68,7 +70,6 @@ export interface Database {
       user_settings: {
         Row: {
           user_id: string;
-          ads_enabled: boolean;
           theme: "system" | "light" | "dark";
           reduced_motion: boolean;
           show_online_status: boolean;
@@ -181,7 +182,6 @@ export interface Database {
           duration_seconds: number;
           xp_earned: number;
           credits_earned: number;
-          ads_doubled: boolean;
           created_at: string;
         };
         Insert: never;
@@ -388,6 +388,8 @@ export interface Database {
           xp_reward: number;
           starts_at: string;
           ends_at: string;
+          /** Boosters-only reward; claim_challenge enforces it server-side. */
+          booster_only: boolean;
           created_at: string;
         };
         Insert: Partial<Database["public"]["Tables"]["challenges"]["Row"]>;
@@ -566,6 +568,32 @@ export interface Database {
           messages: number;
           last_xp_at: string | null;
           updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      parties: {
+        Row: {
+          id: string;
+          leader_id: string;
+          name: string | null;
+          invite_code: string;
+          game_slug: string | null;
+          max_size: number;
+          created_at: string;
+          updated_at: string;
+        };
+        // Writes go through the party RPCs only (0044_parties).
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      party_members: {
+        Row: {
+          party_id: string;
+          user_id: string;
+          joined_at: string;
         };
         Insert: never;
         Update: never;
@@ -764,6 +792,22 @@ export interface Database {
       bot_open_ticket_count: { Args: { p_discord: string }; Returns: Json };
       bot_ticket_close: { Args: { p_channel: string; p_by?: string | null }; Returns: Json };
       bot_stats_extended: { Args: Record<string, never>; Returns: Json };
+      // ── Status page (0043) ──
+      platform_status: { Args: Record<string, never>; Returns: Json };
+      bot_heartbeat: { Args: { p_version?: string | null }; Returns: Json };
+      // ── Parties (0044) ──
+      my_party_id: { Args: Record<string, never>; Returns: string | null };
+      party_state: { Args: Record<string, never>; Returns: Json };
+      create_party: { Args: { p_name?: string | null }; Returns: Json };
+      join_party: { Args: { p_code: string }; Returns: Json };
+      leave_party: { Args: Record<string, never>; Returns: Json };
+      kick_from_party: { Args: { p_user: string }; Returns: Json };
+      set_party_game: { Args: { p_slug: string | null }; Returns: Json };
+      invite_to_party: { Args: { p_user: string }; Returns: Json };
+      purge_stale_parties: { Args: Record<string, never>; Returns: undefined };
+      // ── Vanity URLs (0045) ──
+      set_vanity_slug: { Args: { p_slug: string | null }; Returns: Json };
+      resolve_profile_slug: { Args: { p_slug: string }; Returns: string | null };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

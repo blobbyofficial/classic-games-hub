@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlertCircle, ArrowDown, ArrowUp, CheckCircle2, Eye, EyeOff, Map, Megaphone, LayoutDashboard, Save } from "lucide-react";
+import { AlertCircle, ArrowDown, ArrowUp, CheckCircle2, Eye, EyeOff, Map, LayoutDashboard, Save } from "lucide-react";
 import { adminSetFlag, adminSetFlagConfig } from "@/actions/admin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -42,35 +42,13 @@ const SECTION_LABELS: Record<string, string> = {
 const ALL_SECTIONS = Object.keys(SECTION_LABELS);
 
 export function SiteSurfaces({
-  rewardedAds,
-  adsPlacements,
   homeLayout,
   roadmapOverride,
 }: {
-  rewardedAds: FlagRow;
-  adsPlacements: FlagRow;
   homeLayout: FlagRow;
   roadmapOverride: FlagRow;
 }) {
   const [pending, start] = useTransition();
-
-  // ── Ads centre ──
-  const [adsOn, setAdsOn] = useState(rewardedAds.enabled);
-  const placementsInit = (adsPlacements.payload ?? {}) as Record<string, boolean>;
-  const [placements, setPlacements] = useState({
-    home: placementsInit.home ?? true,
-    games: placementsInit.games ?? true,
-    shop: placementsInit.shop ?? false,
-  });
-  const [adsState, setAdsState] = useState<Feedback>(null);
-
-  const saveAds = () =>
-    start(async () => {
-      const master = await adminSetFlag("rewarded_ads", adsOn);
-      if (!master.ok) return setAdsState({ error: master.error });
-      const res = await adminSetFlagConfig("ads_placements", true, placements);
-      setAdsState(res.ok ? { message: "Ad settings saved." } : { error: res.error });
-    });
 
   // ── Home layout ──
   const layoutInit = (homeLayout.payload ?? {}) as { order?: string[]; hidden?: string[] };
@@ -125,44 +103,6 @@ export function SiteSurfaces({
 
   return (
     <div className="space-y-6">
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Megaphone className="size-5 text-primary" /> Ads centre
-          </CardTitle>
-          <CardDescription>
-            The master switch pauses the whole rewarded-ads programme instantly (players keep 1×
-            earnings). Placements control where rewarded ads may appear once an ad provider
-            (NitroPay is planned, pending evaluation) is wired in — no code changes needed later.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="flex items-center gap-3">
-            <Switch id="ads-master" checked={adsOn} onCheckedChange={setAdsOn} />
-            <Label htmlFor="ads-master">Rewarded-ads programme enabled</Label>
-          </div>
-          <div className="grid gap-2 sm:grid-cols-3">
-            {(Object.keys(placements) as (keyof typeof placements)[]).map((k) => (
-              <label
-                key={k}
-                className="flex cursor-pointer items-center justify-between gap-2 rounded-lg border border-border/60 px-3 py-2 text-sm"
-              >
-                <span className="capitalize">{k}</span>
-                <Switch
-                  checked={placements[k]}
-                  onCheckedChange={(v) => setPlacements((p) => ({ ...p, [k]: v }))}
-                  disabled={!adsOn}
-                />
-              </label>
-            ))}
-          </div>
-          <FeedbackLine state={adsState} />
-          <Button onClick={saveAds} disabled={pending} variant="gradient">
-            <Save className="size-4" /> Save ad settings
-          </Button>
-        </CardContent>
-      </Card>
-
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2">

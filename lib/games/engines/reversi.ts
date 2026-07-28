@@ -18,8 +18,9 @@ const WEIGHTS = [
 type Owner = 0 | 1 | 2; // 1 = player (dark), 2 = ai (light)
 
 /** Reversi / Othello with animated disc flips, a positional alpha-beta AI, live
- *  score bars, valid-move hints and a hover ghost. Mobile-first, tap to place. */
-const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus }) => {
+ *  score bars, valid-move hints and a hover ghost — or online head-to-head
+ *  inside a party (v1.5). Mobile-first, tap to place. */
+const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus, net }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
   const size = Math.min(width, height) - 8;
@@ -38,6 +39,13 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
   let raf = 0;
   let last = performance.now();
 
+  // Online: seat 1 plays dark and moves first (as the local player does
+  // offline), seat 2 plays light in the AI's place.
+  const isNet = Boolean(net);
+  const me: 1 | 2 = net?.seat === 2 ? 2 : 1;
+  const foe: 1 | 2 = me === 1 ? 2 : 1;
+  let turn: 1 | 2 = 1;
+
   function reset() {
     board = Array.from({ length: N }, () => Array<Owner>(N).fill(0));
     anim = Array.from({ length: N }, () => Array.from({ length: N }, () => ({ from: 0 as Owner, to: 0 as Owner, t: 1, pop: 1 })));
@@ -47,7 +55,14 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
     over = false;
     busy = false;
     lastMove = null;
+    turn = 1;
     updateScore();
+    if (isNet) {
+      onStatus?.(
+        `You are ${me === 1 ? "dark" : "light"} — ${turn === me ? "tap a highlighted square" : `${net!.opponentName} starts`}`,
+      );
+      return;
+    }
     onStatus?.("You are dark — tap a highlighted square");
   }
 
@@ -160,12 +175,28 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
   }
 
   function updateScore() {
-    onScore(counts().dark * 10);
+    const { dark, light } = counts();
+    onScore((me === 2 ? light : dark) * 10);
   }
 
   function endGame() {
     over = true;
     const { dark, light } = counts();
+
+    if (isNet) {
+      const mine = me === 1 ? dark : light;
+      const theirs = me === 1 ? light : dark;
+      const msg = mine > theirs ? "You win! 🎉" : mine < theirs ? `${net!.opponentName} wins` : "Draw";
+      onStatus?.(`${msg} — ${mine}:${theirs}`);
+      net!.onResult(mine > theirs ? "win" : mine < theirs ? "loss" : "draw");
+      onGameOver(mine > theirs ? 500 + mine * 10 : mine * 10, 0);
+      if (mine > theirs) {
+        beep(660, 0.08, "sine", 0.05);
+        setTimeout(() => beep(880, 0.12, "sine", 0.05), 90);
+      } else beep(160, 0.25, "sawtooth", 0.05);
+      return;
+    }
+
     const msg = dark > light ? "You win! 🎉" : dark < light ? "AI wins" : "Draw";
     onStatus?.(`${msg} — ${dark}:${light} · tap to replay`);
     onGameOver(dark > light ? 500 + dark * 10 : dark * 10, 0);
@@ -178,6 +209,24 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
   function nextTurn(justMoved: 1 | 2) {
     updateScore();
     const other = justMoved === 1 ? 2 : 1;
+
+    if (isNet) {
+      // Same pass rules as offline, but nobody is asked to think for the
+      // opponent: the turn simply sits with whoever has a legal move.
+      if (validMoves(board, other).length) {
+        turn = other;
+        onStatus?.(turn === me ? "Your move" : `${net!.opponentName}'s move`);
+      } else if (validMoves(board, justMoved).length) {
+        turn = justMoved;
+        onStatus?.(
+          turn === me ? `${net!.opponentName} passes — your move again` : `You pass — ${net!.opponentName} moves again`,
+        );
+      } else {
+        endGame();
+      }
+      return;
+    }
+
     if (validMoves(board, other).length) {
       if (other === 2) aiTurn();
       else onStatus?.("Your move");
@@ -215,6 +264,14 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
   }
 
   function play(r: number, c: number) {
+    if (isNet) {
+      // No tap-to-restart online: rematches are the party leader's call.
+      if (over || turn !== me || !applyAnimated(r, c, me)) return;
+      beep(520, 0.05, "sine", 0.05);
+      net!.send({ i: r * N + c });
+      nextTurn(me);
+      return;
+    }
     if (over) {
       reset();
       return;
@@ -255,7 +312,7 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
       ctx.stroke();
     }
 
-    const valid = over || busy ? [] : validMoves(board, 1);
+    const valid = over || busy || (isNet && turn !== me) ? [] : validMoves(board, me);
     const pulse = 0.5 + 0.5 * Math.sin(now / 300);
 
     for (let r = 0; r < N; r++)
@@ -335,7 +392,7 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
   const onDown = (e: PointerEvent) => {
     const pos = cellAt(e);
     if (!pos) {
-      if (over) reset();
+      if (over && !isNet) reset();
       return;
     }
     play(pos[0], pos[1]);
@@ -362,6 +419,14 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
       raf = requestAnimationFrame(render);
     },
     restart: () => reset(),
+    applyRemoteMove: ({ i }) => {
+      if (!isNet || over || turn !== foe) return;
+      const r = Math.floor(i / N);
+      const c = i % N;
+      if (r < 0 || r >= N || c < 0 || c >= N || !applyAnimated(r, c, foe)) return;
+      beep(300, 0.05, "triangle", 0.05);
+      nextTurn(foe);
+    },
     destroy: () => {
       cancelAnimationFrame(raf);
       canvas.removeEventListener("pointerdown", onDown);

@@ -11,8 +11,9 @@ type Mark = null | "X" | "O";
 
 /** Polished tic-tac-toe: animated placement, an animated winning strike, hover
  *  feedback and a near-unbeatable minimax AI — plus a local two-player
- *  pass-and-play mode (roadmap v1.4). Mobile-first. */
-const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus }) => {
+ *  pass-and-play mode (roadmap v1.4) and online head-to-head against another
+ *  member of your party (v1.5). Mobile-first. */
+const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus, net }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
   const size = Math.min(width, height) * 0.92;
@@ -30,10 +31,18 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
   let winT = 0; // winning-strike progress 0..1
   let hover = -1;
   let shakeT = 0;
-  let mode: "ai" | "2p" = "ai";
+  // An online match is decided by the host, not by the mode pill — seat 1
+  // plays X and moves first, so both clients agree without negotiating.
+  let mode: "ai" | "2p" | "net" = net ? "net" : "ai";
+  const myMark: "X" | "O" = net?.seat === 2 ? "O" : "X";
   let turn: "X" | "O" = "X";
   let raf = 0;
   let last = performance.now();
+
+  function turnStatus() {
+    if (mode !== "net") return;
+    onStatus?.(turn === myMark ? "Your turn" : `${net!.opponentName}'s turn`);
+  }
 
   function reset() {
     board = Array(9).fill(null);
@@ -46,6 +55,10 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
     shakeT = 0;
     turn = "X";
     onScore(streak * 100);
+    if (mode === "net") {
+      onStatus?.(`You are ${myMark} — ${turn === myMark ? "your move" : `${net!.opponentName} starts`}`);
+      return;
+    }
     onStatus?.(mode === "ai" ? "You are X — your move" : "Pass & play — X starts");
   }
 
@@ -77,6 +90,32 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
     const w = winnerOf(board);
     if (!w) return;
     over = true;
+
+    // Online: the result is reported from this seat's point of view, and the
+    // score that gets submitted is the same for both players' clients.
+    if (mode === "net") {
+      if (w === "draw") {
+        onStatus?.("Draw!");
+        net!.onResult("draw");
+        onGameOver(40, 0);
+        beep(300, 0.1, "triangle");
+        return;
+      }
+      winLine = w.line;
+      const won = w.who === myMark;
+      onStatus?.(won ? "You win! 🎉" : `${net!.opponentName} wins`);
+      net!.onResult(won ? "win" : "loss");
+      onGameOver(won ? 100 : 0, 0);
+      if (won) {
+        beep(660, 0.08);
+        setTimeout(() => beep(880, 0.12), 90);
+      } else {
+        shakeT = 1;
+        beep(160, 0.25, "sawtooth");
+      }
+      return;
+    }
+
     if (w === "draw") {
       onStatus?.(mode === "2p" ? "Draw — tap for a rematch" : "Draw — tap to play again");
       onGameOver(mode === "2p" ? 30 : streak * 100 + 20, mode === "2p" ? 0 : streak);
@@ -127,6 +166,20 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
   }
 
   function play(i: number) {
+    if (mode === "net") {
+      // No tap-to-restart online: rematches are the party leader's call.
+      if (over || board[i] || turn !== myMark) return;
+      board[i] = myMark;
+      anim[i] = 0.001;
+      beep(myMark === "X" ? 540 : 330, 0.05);
+      net!.send({ i });
+      finish();
+      if (!over) {
+        turn = myMark === "X" ? "O" : "X";
+        turnStatus();
+      }
+      return;
+    }
     if (over) return reset();
     if (board[i] || busy) return;
     if (mode === "2p") {
@@ -258,7 +311,7 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
     }
 
     ctx.restore();
-    drawModePill();
+    if (mode !== "net") drawModePill();
     raf = requestAnimationFrame(render);
   }
 
@@ -271,13 +324,14 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
   }
 
   const onDown = (e: PointerEvent) => {
-    if (pillHit(e)) {
+    if (mode !== "net" && pillHit(e)) {
       mode = mode === "ai" ? "2p" : "ai";
       if (mode === "2p") streak = 0;
       reset();
       return;
     }
     const i = at(e);
+    if (mode === "net") return i >= 0 ? play(i) : undefined;
     if (over) return reset();
     if (i >= 0) play(i);
   };
@@ -303,6 +357,18 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
     restart: () => {
       streak = 0;
       reset();
+    },
+    applyRemoteMove: ({ i }) => {
+      if (mode !== "net" || over || turn === myMark) return;
+      if (i < 0 || i > 8 || board[i]) return;
+      board[i] = turn;
+      anim[i] = 0.001;
+      beep(turn === "X" ? 540 : 330, 0.05);
+      finish();
+      if (!over) {
+        turn = myMark;
+        turnStatus();
+      }
     },
     destroy: () => {
       cancelAnimationFrame(raf);

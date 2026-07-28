@@ -107,8 +107,8 @@ export default function PrivacyPage() {
         <p>
           The Hub uses only <strong>essential cookies</strong>: the authentication cookies that keep
           you signed in (set by our Supabase-based auth). There are no advertising or cross-site
-          tracking cookies. If you enable the optional rewarded-ads programme in Settings and an ads
-          provider is active, we will update this policy first to describe exactly what it sets.
+          tracking cookies, and the Hub runs no advertising programme. If that ever changes we will
+          update this policy first to describe exactly what any such cookie sets.
         </p>
       </section>
 
@@ -126,8 +126,7 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Consent</strong> — optional features you actively turn on, such as linking your
-            Discord account or enabling rewarded ads. You can withdraw consent by unlinking or
-            turning the feature off.
+            Discord account. You can withdraw consent by unlinking or turning the feature off.
           </li>
         </ul>
       </section>
