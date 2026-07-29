@@ -372,6 +372,12 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      booster_drops: {
+        Row: { month: string; item_id: string; note: string | null; created_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       loadout_presets: {
         // Writes go through the RPCs, which is what enforces the slot limit;
         // RLS grants select only, so Insert/Update are deliberately never.
@@ -664,6 +670,8 @@ export interface Database {
       my_loadout_presets: { Args: Record<string, never>; Returns: Json };
       my_collections: { Args: Record<string, never>; Returns: Json };
       claim_collection: { Args: { p_slug: string }; Returns: Json };
+      my_booster_drop: { Args: Record<string, never>; Returns: Json };
+      grant_booster_drops: { Args: Record<string, never>; Returns: Json };
       change_username: { Args: { p_new: string }; Returns: Json };
       set_username: { Args: { p_new: string }; Returns: Json };
       admin_set_username: { Args: { p_user: string; p_new: string }; Returns: Json };

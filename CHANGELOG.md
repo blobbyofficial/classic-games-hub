@@ -5,6 +5,23 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 💗 Monthly booster drop
+
+- One exclusive cosmetic per calendar month for everyone boosting the Discord
+  server, shown on `/collections` (`0051`). July is Booster Wings, August is the
+  Bloom nameplate, September is the Comet effect. Holding one is proof you were
+  boosting that month, and there is no way to get it afterwards.
+- **Boost at any point in the month and it is yours.** Requiring a full month
+  would mean nobody could earn the drop for the month they started boosting,
+  which is exactly the month worth rewarding.
+- The grant runs **daily**, not monthly. A once-a-month job gets one chance to
+  fire, and a failure would silently cost a whole month of boosters their drop;
+  a daily idempotent run has thirty chances and the repeats are free. It is
+  scheduled after the Discord role sync, since that is what refreshes who is
+  actually boosting.
+- The drop is visible to non-boosters too. The point of a monthly exclusive is
+  being able to see what you are missing while there is still time to get it.
+
 ### 🏆 Collections
 
 - Five collectable sets at `/collections` - Aurora, Neon Nights, Deep Space,

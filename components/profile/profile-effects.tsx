@@ -265,6 +265,39 @@ function Singularity() {
   );
 }
 
+/** September 2026 booster drop. Unbuyable; only that month's boosters hold it. */
+function Comet() {
+  const comets = Array.from({ length: 5 });
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden"
+      aria-hidden
+      data-decorative
+    >
+      {comets.map((_, i) => {
+        const top = rand(i + 81) * 70;
+        const duration = 2.8 + rand(i + 82) * 2.2;
+        const delay = rand(i + 83) * duration;
+        const len = 60 + rand(i + 84) * 70;
+        return (
+          <span
+            key={i}
+            className="absolute h-[2px] rounded-full"
+            style={{
+              top: `${top}%`,
+              left: "-30%",
+              width: len,
+              background: "linear-gradient(90deg, transparent, #e0f2fe, #38bdf8)",
+              boxShadow: "0 0 8px #38bdf8",
+              animation: `cgh-comet-streak ${duration}s linear ${delay}s infinite`,
+            }}
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 function Fireflies() {
   const dots = Array.from({ length: 22 });
   return (
@@ -318,6 +351,8 @@ export function ProfileEffects({ slug, reduced }: { slug?: string | null; reduce
       return <StaffShimmer />;
     case "effect-singularity":
       return <Singularity />;
+    case "effect-booster-comet":
+      return <Comet />;
     default:
       return null;
   }

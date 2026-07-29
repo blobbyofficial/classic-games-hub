@@ -301,3 +301,34 @@ For a liveness check that doesn't touch the database, the worker also serves
   appear while it isn't really a member; `Maximum number of guild roles` means
   the server is at Discord's 250-role cap.
 - **User not in the server** → sync is a no-op until they join.
+
+## Monthly booster drops
+
+One exclusive cosmetic per calendar month, granted to everyone boosting the
+server that month (migration `0051`). Configured ahead of time in
+`booster_drops` - one row per month, keyed to the first of the month. A month
+with no row simply grants nothing, so the job is safe to leave running forever
+without anyone topping the table up.
+
+`/api/cron/booster-drops` calls `grant_booster_drops()` with the service key.
+It is scheduled **daily** in `vercel.json`, at 06:00 UTC - after the role sync
+at 04:30, because that job is what refreshes `profiles.booster_since` from
+Discord, and running the grant first would hand out drops based on yesterday's
+boost list.
+
+Daily rather than monthly is deliberate: a once-a-month job has exactly one
+chance to fire, and a failure costs a whole month of boosters their drop. The
+grant is idempotent (`on conflict do nothing`, and the notification only goes
+to users who were actually granted something), so the repeats cost nothing and
+a run that grants zero items is the normal case.
+
+Because the grant runs daily against whoever is boosting at the time, boosting
+at any point during the month earns that month's drop.
+
+**Adding next month's drop:** insert the cosmetic into `shop_items` with
+`available = false` (so it can never be bought), add a `booster_drops` row for
+the first of that month, and - importantly - add a renderer for it, or the
+reward will be granted but draw nothing. Decorations live in
+`components/profile/avatar-decoration.tsx`, nameplates in
+`components/profile/nameplate.tsx`, effects in
+`components/profile/profile-effects.tsx`.

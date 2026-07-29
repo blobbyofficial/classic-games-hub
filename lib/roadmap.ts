@@ -93,12 +93,6 @@ export const ROADMAP: RoadmapRelease[] = [
           "Perks that accumulate the longer you boost - the tenure badge and bigger daily bonuses already do; these three are the rest of the plan.",
         items: [
           {
-            title: "Monthly cosmetic drop",
-            description:
-              "An exclusive cosmetic every month you're boosting - a nameplate, decoration or effect that only boosters of that month receive, so the collection tells a story over time.",
-            status: "next",
-          },
-          {
             title: "Early access",
             description:
               "A head start on new games and features - try them a week before everyone else and help shape them before launch.",

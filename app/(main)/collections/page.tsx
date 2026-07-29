@@ -2,8 +2,9 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Gift } from "lucide-react";
 import { getSessionUser } from "@/lib/supabase/queries";
-import { getCollections } from "@/services/shop";
+import { getCollections, getBoosterDrop } from "@/services/shop";
 import { CollectionCard } from "@/features/economy/collection-card";
+import { BoosterDropCard } from "@/features/economy/booster-drop-card";
 
 export const metadata: Metadata = {
   title: "Collections",
@@ -14,7 +15,7 @@ export default async function CollectionsPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/collections");
 
-  const collections = await getCollections();
+  const [collections, boosterDrop] = await Promise.all([getCollections(), getBoosterDrop()]);
   const done = collections.filter((c) => c.items.length > 0 && c.items.every((i) => i.owned)).length;
 
   return (
@@ -31,6 +32,8 @@ export default async function CollectionsPage() {
           </p>
         </div>
       </div>
+
+      {boosterDrop?.item && <BoosterDropCard drop={boosterDrop} />}
 
       {collections.length === 0 ? (
         <p className="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">

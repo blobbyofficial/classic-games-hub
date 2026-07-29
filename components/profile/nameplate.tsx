@@ -17,6 +17,12 @@ export const NAMEPLATE_STYLES: Record<
     plate: "bg-[linear-gradient(120deg,#059669,#10b981)]",
     text: "text-white",
   },
+  // August 2026 booster drop.
+  "nameplate-booster-bloom": {
+    plate: "bg-[linear-gradient(120deg,#fb7185,#fbbf24,#fb7185)] bg-[length:200%_100%] motion-safe:animate-gradient-flow",
+    text: "text-white",
+    sheen: true,
+  },
   "nameplate-cyber": {
     plate: "bg-[linear-gradient(120deg,#22d3ee,#3b82f6,#22d3ee)] bg-[length:200%_100%] motion-safe:animate-gradient-flow",
     text: "text-white",

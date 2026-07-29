@@ -111,7 +111,18 @@ const Storm: DecorationRender = ({ colors: [cloud, bolt] }) => (
   </>
 );
 
+/** July 2026 booster drop. Unbuyable; only that month's boosters hold it. */
+const Wings: DecorationRender = ({ colors: [outer, inner] }) => (
+  <g className="motion-safe:animate-glow-pulse">
+    <path d="M20 46 C2 38 -2 58 8 70 C16 80 30 82 38 74 C30 70 24 60 20 46 Z" fill={outer} opacity={0.92} />
+    <path d="M22 52 C12 50 8 60 14 68 C20 74 28 74 32 70 C27 66 24 60 22 52 Z" fill={inner} opacity={0.8} />
+    <path d="M80 46 C98 38 102 58 92 70 C84 80 70 82 62 74 C70 70 76 60 80 46 Z" fill={outer} opacity={0.92} />
+    <path d="M78 52 C88 50 92 60 86 68 C80 74 72 74 68 70 C73 66 76 60 78 52 Z" fill={inner} opacity={0.8} />
+  </g>
+);
+
 const DECORATIONS: Record<string, { render: DecorationRender; colors: [string, string] }> = {
+  "deco-booster-wings": { render: Wings, colors: ["#f472b6", "#a855f7"] },
   "deco-cat-ears": { render: CatEars, colors: ["#f472b6", "#1f2937"] },
   "deco-halo": { render: Halo, colors: ["#fde68a", "#f59e0b"] },
   "deco-crown": { render: Crown, colors: ["#fbbf24", "#b45309"] },

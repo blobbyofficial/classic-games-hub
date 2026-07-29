@@ -134,3 +134,10 @@ export const getCollections = cache(async (): Promise<Collection[]> => {
   const { data } = await supabase.rpc("my_collections");
   return (data ?? []) as unknown as Collection[];
 });
+
+/** This month's booster-exclusive drop, and whether the viewer has it yet. */
+export const getBoosterDrop = cache(async (): Promise<import("@/features/economy/booster-drop-card").BoosterDrop | null> => {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("my_booster_drop");
+  return (data ?? null) as unknown as import("@/features/economy/booster-drop-card").BoosterDrop | null;
+});
