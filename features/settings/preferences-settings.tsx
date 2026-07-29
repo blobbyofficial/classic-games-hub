@@ -77,7 +77,11 @@ export function PreferencesSettings({ settings }: { settings: UserSettings }) {
               </SelectContent>
             </Select>
           </Row>
-          <Row icon={Zap} title="Reduced motion" description="Minimize animations and transitions.">
+          <Row
+            icon={Zap}
+            title="Reduced motion"
+            description="Turns off animations, blur and profile effects. Also makes the Hub lighter to run on a slower device."
+          >
             <Switch checked={local.reduced_motion} onCheckedChange={(v) => update("reduced_motion", v)} />
           </Row>
         </CardContent>

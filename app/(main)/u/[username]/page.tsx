@@ -15,7 +15,7 @@ import {
 import { getProfileByUsername, getProfileStats, getUserAchievements, getUserBestScores, getEquippedBadges } from "@/services/profiles";
 import { getUserWishlist } from "@/services/shop";
 import { ProfileWishlist } from "@/features/social/profile-wishlist";
-import { getSessionUser } from "@/lib/supabase/queries";
+import { getSessionUser, getReducedMotion } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -53,13 +53,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
   const profile = await getProfileByUsername(username);
   if (!profile) notFound();
 
-  const [user, stats, achievements, bestScores, badges, wishlist] = await Promise.all([
+  const [user, stats, achievements, bestScores, badges, wishlist, reducedMotion] = await Promise.all([
     getSessionUser(),
     getProfileStats(profile.id),
     getUserAchievements(profile.id),
     getUserBestScores(profile.id, 6),
     getEquippedBadges(profile.id),
     getUserWishlist(profile.id),
+    getReducedMotion(),
   ]);
 
   // Friendship, social stats, the viewer's private note and the showcase all
@@ -122,12 +123,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
       {/* Banner */}
       <div className="overflow-hidden rounded-3xl border border-border">
         <div className="relative h-40 sm:h-56" style={{ background: bannerBackground(profile.equipped) }}>
-          {!profile.banner_url && <ProfileBackdrop equipped={profile.equipped} />}
+          {!profile.banner_url && <ProfileBackdrop equipped={profile.equipped} reduced={reducedMotion} />}
           {profile.banner_url && (
             <Image src={profile.banner_url} alt="" fill className="object-cover" sizes="1024px" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-          <ProfileEffects slug={profile.equipped?.effect} />
+          <ProfileEffects slug={profile.equipped?.effect} reduced={reducedMotion} />
         </div>
 
         <div className="relative px-5 pb-5 sm:px-8">

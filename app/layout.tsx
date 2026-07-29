@@ -54,10 +54,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const rawTheme = (settings as { site_theme?: string } | null)?.site_theme ?? "default";
   const siteTheme = SITE_THEME_IDS.has(rawTheme) ? rawTheme : "default";
 
+  // Reduced motion has to land on the server-rendered html tag: applying it
+  // after hydration would mean the animations play once before being switched
+  // off, which is the opposite of what the setting is for.
+  const reducedMotion = Boolean((settings as { reduced_motion?: boolean } | null)?.reduced_motion);
+
   const supabaseOrigin = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "");
 
   return (
-    <html lang="en" suppressHydrationWarning data-site-theme={siteTheme}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      data-site-theme={siteTheme}
+      data-reduced-motion={reducedMotion ? "true" : undefined}
+    >
       <head>
         {supabaseOrigin && (
           <>

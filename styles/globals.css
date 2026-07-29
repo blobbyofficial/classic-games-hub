@@ -332,6 +332,47 @@ html[data-site-theme="aurora"] {
       transition-duration: 0.01ms !important;
     }
   }
+
+  /* The in-app "Reduced motion" switch, set on <html> by the root layout.
+     The OS-level media query above can't be driven by a preference stored in
+     our database, so the setting gets its own selector and does the same job
+     plus the parts that cost frames rather than just movement. */
+  html[data-reduced-motion="true"] *,
+  html[data-reduced-motion="true"] *::before,
+  html[data-reduced-motion="true"] *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Beyond movement: these are the things that keep the compositor busy even
+     when nothing appears to be moving. Turning them off is where the setting
+     actually buys frames on a weaker device.
+
+     - backdrop-filter forces a live blur of everything behind the element, and
+       it is repainted on every scroll.
+     - The animated theme hues drive a @property animation on the root, which
+       invalidates colour on the whole document.
+     - The skeleton shimmer runs an infinite gradient sweep on every placeholder
+       on screen at once. */
+  html[data-reduced-motion="true"] .glass,
+  html[data-reduced-motion="true"] [class*="backdrop-blur"] {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  html[data-reduced-motion="true"][data-site-theme="synthwave"],
+  html[data-reduced-motion="true"][data-site-theme="aurora"] {
+    animation: none !important;
+  }
+
+  /* Decorative cosmetic layers are pure ornament: hidden rather than frozen,
+     so they stop costing paint entirely. Profile effects and backdrops skip
+     rendering server-side too, so this covers the client-rendered previews. */
+  html[data-reduced-motion="true"] [data-decorative] {
+    display: none !important;
+  }
 }
 
 @utility glass {

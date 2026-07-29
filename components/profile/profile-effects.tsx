@@ -21,7 +21,7 @@ const MATRIX_GLYPHS = "01ｱｲｳｴｵｶｷｸ日本ﾊﾋﾌﾍ月火水".sp
 function Confetti() {
   const pieces = Array.from({ length: 30 });
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden data-decorative>
       {pieces.map((_, i) => {
         const left = rand(i + 1) * 100;
         const duration = 2.4 + rand(i + 2) * 1.8;
@@ -50,7 +50,7 @@ function Confetti() {
 function Matrix() {
   const columns = Array.from({ length: 20 });
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden bg-[radial-gradient(ellipse_at_center,transparent,rgba(0,0,0,0.25))] motion-reduce:hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden bg-[radial-gradient(ellipse_at_center,transparent,rgba(0,0,0,0.25))] motion-reduce:hidden" aria-hidden data-decorative>
       {columns.map((_, i) => {
         const left = (i / columns.length) * 100;
         const duration = 2.4 + rand(i + 11) * 2.4;
@@ -85,7 +85,7 @@ function Matrix() {
 function Snow() {
   const flakes = Array.from({ length: 34 });
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden data-decorative>
       {flakes.map((_, i) => {
         const left = rand(i + 21) * 100;
         const depth = rand(i + 22); // 0 = far, 1 = near
@@ -115,7 +115,7 @@ function Snow() {
 function Embers() {
   const embers = Array.from({ length: 28 });
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden data-decorative>
       <div className="absolute inset-x-0 bottom-0 h-1/3 bg-[linear-gradient(to_top,rgba(249,115,22,0.22),transparent)]" />
       {embers.map((_, i) => {
         const left = rand(i + 31) * 100;
@@ -144,7 +144,7 @@ function Embers() {
 
 function StaffShimmer() {
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden data-decorative>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(244,63,94,0.22),transparent_65%)]" />
       <div
         className="absolute -inset-y-4 -left-1/3 w-1/3 animate-sheen"
@@ -176,7 +176,7 @@ function Aurora() {
     { color: "#f472b6", left: "80%", w: 40, delay: 1.7 },
   ];
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden data-decorative>
       {curtains.map((c, i) => (
         <span
           key={i}
@@ -210,7 +210,7 @@ function Aurora() {
 function Fireflies() {
   const dots = Array.from({ length: 22 });
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden data-decorative>
       {dots.map((_, i) => {
         const left = rand(i + 61) * 100;
         const top = rand(i + 62) * 92;
@@ -237,7 +237,12 @@ function Fireflies() {
   );
 }
 
-export function ProfileEffects({ slug }: { slug?: string | null }) {
+export function ProfileEffects({ slug, reduced }: { slug?: string | null; reduced?: boolean }) {
+  // CSS hides these for reduced-motion viewers, but hidden particles are still
+  // built, sent and hydrated. Skipping the render drops up to 30 elements per
+  // effect before they ever reach the browser.
+  if (reduced) return null;
+
   switch (slug) {
     case "effect-confetti":
       return <Confetti />;
