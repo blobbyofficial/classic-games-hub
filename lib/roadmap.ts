@@ -144,12 +144,6 @@ export const ROADMAP: RoadmapRelease[] = [
         icon: "Sparkles",
         items: [
           {
-            title: "New icons and thumbnails",
-            description:
-              "A proper redraw of the whole icon set - the app icon and favicon, and all twenty-four game thumbnails as one consistent family rather than a set of unrelated drawings.",
-            status: "next",
-          },
-          {
             title: "More animation, better reduced-motion",
             description:
               "More life and motion across the whole site - page transitions, micro-interactions and celebratory moments - paired with a genuinely well-optimised, snappy experience for players who prefer animations off.",

@@ -1,13 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">
   <defs>
-    <linearGradient id="bg3" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0369a1"/><stop offset="1" stop-color="#0c4a6e"/>
+    <linearGradient id="b3" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1a1430"/><stop offset="1" stop-color="#0b0a14"/>
     </linearGradient>
-    <pattern id="grid3" width="24" height="24" patternUnits="userSpaceOnUse">
-      <path d="M24 0H0V24" fill="none" stroke="#ffffff" stroke-opacity="0.06"/>
+    <radialGradient id="w3" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#38bdf8" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="v3" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+    </radialGradient>
+    <pattern id="g3" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#38bdf8" stroke-opacity="0.10"/>
     </pattern>
   </defs>
-  <rect width="480" height="300" fill="url(#bg3)"/>
-  <rect width="480" height="300" fill="url(#grid3)"/>
-  <g transform="translate(240 150)" fill="#fff"><rect x="-90" y="-40" width="42" height="18" rx="3" opacity="0.9"/><rect x="-44" y="-40" width="42" height="18" rx="3" opacity="0.9"/><rect x="2" y="-40" width="42" height="18" rx="3" opacity="0.9"/><rect x="48" y="-40" width="42" height="18" rx="3" opacity="0.9"/><rect x="-90" y="-18" width="42" height="18" rx="3" opacity="0.7"/><rect x="-44" y="-18" width="42" height="18" rx="3" opacity="0.7"/><rect x="2" y="-18" width="42" height="18" rx="3" opacity="0.7"/><rect x="48" y="-18" width="42" height="18" rx="3" opacity="0.7"/><rect x="-90" y="4" width="42" height="18" rx="3" opacity="0.5"/><rect x="-44" y="4" width="42" height="18" rx="3" opacity="0.5"/><rect x="2" y="4" width="42" height="18" rx="3" opacity="0.5"/><rect x="48" y="4" width="42" height="18" rx="3" opacity="0.5"/><circle cx="0" cy="52" r="8"/></g>
+  <rect width="480" height="300" fill="url(#b3)"/>
+  <rect width="480" height="300" fill="url(#g3)"/>
+  <ellipse cx="240" cy="150" rx="195" ry="145" fill="url(#w3)"/>
+  <rect width="480" height="300" fill="url(#v3)"/>
+  <g transform="translate(240 150) scale(1.35)" fill="#ffffff"><rect x="-90" y="-40" width="42" height="18" rx="3" opacity="0.9"/><rect x="-44" y="-40" width="42" height="18" rx="3" opacity="0.9"/><rect x="2" y="-40" width="42" height="18" rx="3" opacity="0.9"/><rect x="48" y="-40" width="42" height="18" rx="3" opacity="0.9"/><rect x="-90" y="-18" width="42" height="18" rx="3" opacity="0.7"/><rect x="-44" y="-18" width="42" height="18" rx="3" opacity="0.7"/><rect x="2" y="-18" width="42" height="18" rx="3" opacity="0.7"/><rect x="48" y="-18" width="42" height="18" rx="3" opacity="0.7"/><rect x="-90" y="4" width="42" height="18" rx="3" opacity="0.5"/><rect x="-44" y="4" width="42" height="18" rx="3" opacity="0.5"/><rect x="2" y="4" width="42" height="18" rx="3" opacity="0.5"/><rect x="48" y="4" width="42" height="18" rx="3" opacity="0.5"/><circle cx="0" cy="52" r="8"/></g>
+  <rect x="0.5" y="0.5" width="479" height="299" fill="none" stroke="#38bdf8" stroke-opacity="0.22"/>
 </svg>

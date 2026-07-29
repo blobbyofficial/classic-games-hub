@@ -5,6 +5,28 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 🎨 New icons and thumbnails
+
+- **The favicon now matches the logo.** The app icon was an unrelated
+  arrangement of dots and a cross while the site header uses a joystick, so a
+  browser tab and the product did not look like the same thing. `public/icon.svg`
+  is redrawn as that same joystick on the brand violet-to-pink gradient, and
+  every PWA and Apple size regenerates from it.
+- Drawn for 16px first: three solid shapes with generous gaps and nothing finer
+  than a few pixels once scaled down, checked at 16, 32, 64, 128 and 256 on both
+  light and dark backgrounds. The glyph sits inside the middle 60% so the
+  maskable icon can crop to a circle without clipping it.
+- **All twenty-four game thumbnails are now one visual system.** Each game
+  previously had its own arbitrary dark gradient - teal, amber, slate, green -
+  so the library read as a pile of unrelated art. They now share a near-black
+  base, grid, vignette and glyph treatment, and a game's identity comes from a
+  single accent hue drawn from a six-colour ramp.
+- Two glyphs were redrawn because they did not read: the runner was a head and
+  one rectangle that looked like a barbell, and Simon's wedges were hand-placed
+  arcs that rendered lopsided.
+- Still generated SVG, so the whole set is a few kB, stays sharp at any card
+  size, and changing the system is one edit rather than twenty-four.
+
 ### 🖼️ Profile frames
 
 - Six decorative frames around your **entire profile card** - Gilded, Obsidian,

@@ -1,5 +1,15 @@
-// Generates simple, on-brand SVG thumbnails for every game so the library and
-// cards have consistent art without external image dependencies.
+// Generates the game thumbnails as ONE visual system.
+//
+// The previous set gave every game its own arbitrary dark gradient - teal,
+// amber, slate, green - so twenty-four cards side by side read as a pile of
+// unrelated art rather than one product. Now every thumbnail shares the same
+// near-black base, the same grid, the same vignette and the same glyph
+// treatment, and a game's identity comes from a single accent hue drawn from a
+// six-colour ramp. Consistent frame, varied accent.
+//
+// Still SVG and still generated, so the whole set costs a few kB, stays sharp
+// at any card size, and a change to the system is one edit here rather than
+// twenty-four.
 import { mkdirSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -8,32 +18,44 @@ const root = join(dirname(fileURLToPath(import.meta.url)), "..");
 const outDir = join(root, "public", "games", "thumbs");
 mkdirSync(outDir, { recursive: true });
 
-/** slug -> { grad: [from, to], glyph: inner SVG markup, label } */
+/**
+ * The accent ramp. Six hues, all pulled toward the site's neon palette so they
+ * sit together; nothing muddy or desaturated, which is what made the old set
+ * look accidental.
+ */
+const VIOLET = "#a78bfa";
+const CYAN = "#22d3ee";
+const PINK = "#f472b6";
+const AMBER = "#fbbf24";
+const EMERALD = "#34d399";
+const SKY = "#38bdf8";
+
+/** slug -> { accent, glyph: inner SVG markup } */
 const GAMES = {
-  snake: { grad: ["#0e7490", "#065f46"], glyph: dots() },
-  tetris: { grad: ["#7c3aed", "#4338ca"], glyph: tetromino() },
-  "2048": { grad: ["#b45309", "#78350f"], glyph: tile("2048") },
-  breakout: { grad: ["#0369a1", "#0c4a6e"], glyph: bricks() },
-  pong: { grad: ["#334155", "#0f172a"], glyph: pong() },
-  asteroids: { grad: ["#1e293b", "#020617"], glyph: ship() },
-  invaders: { grad: ["#166534", "#052e16"], glyph: invader() },
-  frogger: { grad: ["#15803d", "#14532d"], glyph: frog() },
-  runner: { grad: ["#0891b2", "#155e75"], glyph: runner() },
-  target: { grad: ["#dc2626", "#7f1d1d"], glyph: target() },
-  match3: { grad: ["#db2777", "#831843"], glyph: gems() },
-  bubble: { grad: ["#2563eb", "#1e3a8a"], glyph: bubbles() },
-  mines: { grad: ["#475569", "#1e293b"], glyph: mine() },
-  memory: { grad: ["#7c3aed", "#5b21b6"], glyph: cards() },
-  slide: { grad: ["#0d9488", "#134e4a"], glyph: tile("15") },
-  mastermind: { grad: ["#9333ea", "#581c87"], glyph: pegs() },
-  hangman: { grad: ["#57534e", "#292524"], glyph: word() },
-  simon: { grad: ["#ca8a04", "#713f12"], glyph: simon() },
-  tictactoe: { grad: ["#0284c7", "#075985"], glyph: grid3() },
-  connect4: { grad: ["#1d4ed8", "#1e3a8a"], glyph: connect() },
-  reversi: { grad: ["#065f46", "#022c22"], glyph: reversi() },
-  whack: { grad: ["#a16207", "#713f12"], glyph: mole() },
-  lightsout: { grad: ["#4f46e5", "#312e81"], glyph: lights() },
-  racer: { grad: ["#6d28d9", "#1e1b4b"], glyph: racecar() },
+  snake: { accent: EMERALD, glyph: dots() },
+  tetris: { accent: VIOLET, glyph: tetromino() },
+  "2048": { accent: AMBER, glyph: tile("2048") },
+  breakout: { accent: SKY, glyph: bricks() },
+  pong: { accent: CYAN, glyph: pong() },
+  asteroids: { accent: VIOLET, glyph: ship() },
+  invaders: { accent: EMERALD, glyph: invader() },
+  frogger: { accent: EMERALD, glyph: frog() },
+  runner: { accent: CYAN, glyph: runner() },
+  target: { accent: PINK, glyph: target() },
+  match3: { accent: PINK, glyph: gems() },
+  bubble: { accent: SKY, glyph: bubbles() },
+  mines: { accent: AMBER, glyph: mine() },
+  memory: { accent: VIOLET, glyph: cards() },
+  slide: { accent: CYAN, glyph: tile("15") },
+  mastermind: { accent: VIOLET, glyph: pegs() },
+  hangman: { accent: SKY, glyph: word() },
+  simon: { accent: AMBER, glyph: simon() },
+  tictactoe: { accent: CYAN, glyph: grid3() },
+  connect4: { accent: SKY, glyph: connect() },
+  reversi: { accent: EMERALD, glyph: reversi() },
+  whack: { accent: AMBER, glyph: mole() },
+  lightsout: { accent: VIOLET, glyph: lights() },
+  racer: { accent: PINK, glyph: racecar() },
 };
 
 function racecar() {
@@ -51,19 +73,36 @@ function racecar() {
   </g>`;
 }
 
-function wrap(id, from, to, inner) {
+function wrap(id, accent, inner) {
+  // Glyphs are scaled up as a group: they were drawn for the old flat cards
+  // and sat marooned in the middle of the new vignette.
+  // Shared frame, accent-driven identity. Layer order matters: base, then the
+  // accent grid, then the glow on top of it so the grid reads through the
+  // brightest area, then the vignette to pull the eye to the centre, then the
+  // glyph, then a hairline of the accent to tie the card to its art.
   return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">
   <defs>
-    <linearGradient id="bg${id}" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="${from}"/><stop offset="1" stop-color="${to}"/>
+    <linearGradient id="b${id}" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1a1430"/><stop offset="1" stop-color="#0b0a14"/>
     </linearGradient>
-    <pattern id="grid${id}" width="24" height="24" patternUnits="userSpaceOnUse">
-      <path d="M24 0H0V24" fill="none" stroke="#ffffff" stroke-opacity="0.06"/>
+    <radialGradient id="w${id}" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="${accent}" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="${accent}" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="v${id}" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+    </radialGradient>
+    <pattern id="g${id}" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="${accent}" stroke-opacity="0.10"/>
     </pattern>
   </defs>
-  <rect width="480" height="300" fill="url(#bg${id})"/>
-  <rect width="480" height="300" fill="url(#grid${id})"/>
-  <g transform="translate(240 150)" fill="#fff">${inner}</g>
+  <rect width="480" height="300" fill="url(#b${id})"/>
+  <rect width="480" height="300" fill="url(#g${id})"/>
+  <ellipse cx="240" cy="150" rx="195" ry="145" fill="url(#w${id})"/>
+  <rect width="480" height="300" fill="url(#v${id})"/>
+  <g transform="translate(240 150) scale(1.35)" fill="#ffffff">${inner}</g>
+  <rect x="0.5" y="0.5" width="479" height="299" fill="none" stroke="${accent}" stroke-opacity="0.22"/>
 </svg>`;
 }
 
@@ -94,7 +133,18 @@ function frog() {
   return `<circle cx="0" cy="6" r="34"/><circle cx="-16" cy="-24" r="12"/><circle cx="16" cy="-24" r="12"/><circle cx="-16" cy="-24" r="5" fill="#14532d"/><circle cx="16" cy="-24" r="5" fill="#14532d"/>`;
 }
 function runner() {
-  return `<circle cx="-6" cy="-34" r="12"/><rect x="-14" y="-20" width="16" height="34" rx="6" transform="rotate(12)"/><rect x="-40" y="40" width="90" height="8" rx="4" opacity="0.4"/>`;
+  // A figure mid-stride: head, leaning torso, one leg forward and one back,
+  // one arm driving. The old version was a head and a single rectangle, which
+  // read as a barbell rather than a person.
+  return `<g stroke="#fff" stroke-width="11" stroke-linecap="round" fill="none">
+    <path d="M-4 -18 L10 6"/>
+    <path d="M10 6 L-14 26"/>
+    <path d="M10 6 L34 22"/>
+    <path d="M-4 -14 L-30 -2"/>
+    <path d="M-4 -14 L22 -22"/>
+  </g>
+  <circle cx="0" cy="-38" r="14"/>
+  <rect x="-46" y="42" width="92" height="7" rx="3.5" opacity="0.35"/>`;
 }
 function target() {
   return `<circle r="46" fill="none" stroke="#fff" stroke-width="8"/><circle r="28" fill="none" stroke="#fff" stroke-width="8" opacity="0.8"/><circle r="8"/>`;
@@ -121,8 +171,24 @@ function word() {
   return `<rect x="-70" y="30" width="140" height="8" rx="4"/><text x="0" y="0" font-family="monospace" font-weight="800" font-size="46" text-anchor="middle">_A_</text>`;
 }
 function simon() {
-  return `<path d="M-50 -50 A70 70 0 0 1 0 -70 L0 -8 Z" fill="#22c55e"/><path d="M0 -70 A70 70 0 0 1 50 -50 L0 -8 Z" fill="#ef4444"/><path d="M50 -50 A70 70 0 0 1 0 12 L0 -8 Z" fill="#eab308" transform="rotate(90)"/><circle cx="0" cy="-8" r="18" fill="#111"/>`;
+  // Four quadrants of a disc with a dark hub. The old version used three
+  // hand-placed arcs, one of them rotated, so it rendered lopsided.
+  const q = (a, b, fill) => {
+    const r = 62;
+    const [x1, y1] = [Math.cos(a) * r, Math.sin(a) * r];
+    const [x2, y2] = [Math.cos(b) * r, Math.sin(b) * r];
+    return `<path d="M0 0 L${x1.toFixed(1)} ${y1.toFixed(1)} A${r} ${r} 0 0 1 ${x2.toFixed(1)} ${y2.toFixed(1)} Z" fill="${fill}"/>`;
+  };
+  const H = Math.PI / 2;
+  return (
+    q(Math.PI, -H, "#22c55e") +
+    q(-H, 0, "#ef4444") +
+    q(0, H, "#eab308") +
+    q(H, Math.PI, "#3b82f6") +
+    `<circle r="20" fill="#0b0a14"/>`
+  );
 }
+
 function grid3() {
   return `<g stroke="#fff" stroke-width="6"><line x1="-18" y1="-54" x2="-18" y2="54"/><line x1="18" y1="-54" x2="18" y2="54"/><line x1="-54" y1="-18" x2="54" y2="-18"/><line x1="-54" y1="18" x2="54" y2="18"/></g><text x="-36" y="-24" font-size="30" font-weight="800" text-anchor="middle">X</text><circle cx="36" cy="36" r="13" fill="none" stroke="#fff" stroke-width="6"/>`;
 }
@@ -148,7 +214,7 @@ function lights() {
 }
 
 let n = 0;
-for (const [slug, { grad, glyph }] of Object.entries(GAMES)) {
-  writeFileSync(join(outDir, `${slug}.svg`), wrap(n++, grad[0], grad[1], glyph));
+for (const [slug, { accent, glyph }] of Object.entries(GAMES)) {
+  writeFileSync(join(outDir, `${slug}.svg`), wrap(n++, accent, glyph));
 }
 console.log(`Generated ${n} thumbnails in public/games/thumbs`);
