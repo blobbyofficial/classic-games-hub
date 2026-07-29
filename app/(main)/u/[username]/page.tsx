@@ -11,8 +11,9 @@ import {
   Coins,
   Calendar,
   ShieldCheck,
+  Eye,
 } from "lucide-react";
-import { getProfileByUsername, getProfileStats, getUserAchievements, getUserBestScores, getEquippedBadges } from "@/services/profiles";
+import { getProfileByUsername, getProfileStats, getUserAchievements, getUserBestScores, getEquippedBadges, getNowPlaying } from "@/services/profiles";
 import { getUserWishlist } from "@/services/shop";
 import { ProfileWishlist } from "@/features/social/profile-wishlist";
 import { getSessionUser, getReducedMotion } from "@/lib/supabase/queries";
@@ -32,6 +33,7 @@ import { NameStyle } from "@/components/profile/name-style";
 import { ProfileEffects } from "@/components/profile/profile-effects";
 import { ProfileBackdrop } from "@/components/profile/profile-backdrop";
 import { ProfileFrame } from "@/components/profile/profile-frame";
+import { NowPlayingChip } from "@/features/social/now-playing";
 import { RARITY_META, formatNumber, timeAgo, cn } from "@/lib/utils";
 import type { FriendshipRelation } from "@/types";
 
@@ -54,7 +56,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
   const profile = await getProfileByUsername(username);
   if (!profile) notFound();
 
-  const [user, stats, achievements, bestScores, badges, wishlist, reducedMotion] = await Promise.all([
+  const [user, stats, achievements, bestScores, badges, wishlist, reducedMotion, nowPlaying] = await Promise.all([
     getSessionUser(),
     getProfileStats(profile.id),
     getUserAchievements(profile.id),
@@ -62,6 +64,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
     getEquippedBadges(profile.id),
     getUserWishlist(profile.id),
     getReducedMotion(),
+    getNowPlaying(profile.id),
   ]);
 
   // Friendship, social stats, the viewer's private note and the showcase all
@@ -70,6 +73,13 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
   // on an earlier result (relation === "incoming"), so it stays behind.
   const supabaseSocial = await createClient();
   const isOther = Boolean(user && user.id !== profile.id);
+
+  // Records the visit and returns the count in one call. Deliberately not
+  // cache()-wrapped: it writes, and it is idempotent per viewer per day.
+  const { data: viewData } = await supabaseSocial.rpc("record_profile_view", {
+    p_profile: profile.id,
+  });
+  const views = viewData as { shown: boolean; views?: number } | null;
   const showcaseSlugs = Array.isArray(profile.showcase) ? (profile.showcase as string[]) : [];
 
   const [friendshipRes, socialRes, noteRes, showcaseRes] = await Promise.all([
@@ -181,6 +191,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                 {profile.status_text && (
                   <p className="mt-0.5 text-sm text-foreground/80">{profile.status_text}</p>
                 )}
+                {nowPlaying && (
+                  <div className="mt-2">
+                    <NowPlayingChip playing={nowPlaying} />
+                  </div>
+                )}
               </div>
             </div>
 
@@ -275,8 +290,16 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
             </div>
           )}
 
-          <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Calendar className="size-3.5" /> Joined {timeAgo(profile.created_at)}
+          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="size-3.5" /> Joined {timeAgo(profile.created_at)}
+            </span>
+            {views?.shown && (
+              <span className="flex items-center gap-1.5">
+                <Eye className="size-3.5" /> {formatNumber(views.views ?? 0)}{" "}
+                {views.views === 1 ? "visitor" : "visitors"}
+              </span>
+            )}
           </p>
         </div>
         </div>

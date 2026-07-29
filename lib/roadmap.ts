@@ -61,7 +61,7 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "More expressive extras",
             description:
-              "A backlog of stretch cosmetics inspired by the platforms we love: profile entrance animations, custom cursor trails on your page, an optional profile-view counter, a mini 'now playing' game widget, and short looping profile music drawn from the v1.3 track library.",
+              "The rest of the stretch-cosmetic backlog: profile entrance animations, custom cursor trails, and short looping profile music drawn from the v1.3 track library. The profile-view counter and the 'now playing' widget have shipped; the three left all add motion or audio, so they wait on the animation work.",
             status: "idea",
           },
         ],

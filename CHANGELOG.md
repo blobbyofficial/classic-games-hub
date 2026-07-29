@@ -5,6 +5,27 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 👀 Profile views and "now playing"
+
+- Two of the expressive extras from the roadmap (`0057`).
+- **"Now playing"** on a profile shows what someone is playing, or last played,
+  as a small chip under their name. Entirely derived from `play_sessions`, so
+  there is nothing to record, nothing to keep in sync, and no way for it to
+  claim someone is playing a game they stopped playing last week. It respects
+  the **existing** "show online status" switch rather than adding a second one -
+  "playing Snake right now" is presence arriving through a different door.
+- **Profile views** are opt-in and off by default, under Settings → Privacy. A
+  view counter is fun for some people and quietly stressful for others, which is
+  why the roadmap called it optional.
+- It counts **unique visitors per day, not raw hits**: a raw counter measures
+  how often someone refreshed, which is not interesting and is trivially
+  inflated. Self-views never count. Views are recorded even while the setting is
+  off, so turning it on shows a real history rather than starting from zero and
+  implying nobody ever visited - only the display is optional, not the
+  recording.
+- Nobody can read the rows directly; the count comes back through the RPC, so a
+  visitor can never enumerate who looked at whom.
+
 ### 🔓 Booster early access
 
 - A game can now go out to boosters ahead of everyone else (`0056`). Set it from

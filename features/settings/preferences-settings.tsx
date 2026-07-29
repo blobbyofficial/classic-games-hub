@@ -96,6 +96,16 @@ export function PreferencesSettings({ settings }: { settings: UserSettings }) {
           <Row icon={Eye} title="Show online status" description="Master switch - hide your presence entirely.">
             <Switch checked={local.show_online_status} onCheckedChange={(v) => update("show_online_status", v)} />
           </Row>
+          <Row
+            icon={Eye}
+            title="Show profile views"
+            description="Display how many people have visited your profile. Counts unique visitors, never you."
+          >
+            <Switch
+              checked={local.show_profile_views}
+              onCheckedChange={(v) => update("show_profile_views", v)}
+            />
+          </Row>
           <Row icon={Circle} title="Status" description="Set how you appear to others.">
             <Select value={local.presence_status} onValueChange={(v) => update("presence_status", v)}>
               <SelectTrigger className="w-36">

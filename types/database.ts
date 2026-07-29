@@ -82,6 +82,8 @@ export interface Database {
           presence_visibility: PresenceVisibility;
           friends_visibility: FriendsVisibility;
           site_theme: string;
+          /** Opt-in profile view counter (0057). Off by default. */
+          show_profile_views: boolean;
           updated_at: string;
         };
         Insert: { user_id: string } & Partial<Database["public"]["Tables"]["user_settings"]["Row"]>;
@@ -393,6 +395,10 @@ export interface Database {
         Row: { user_id: string; season_id: string; tier: number; claimed_at: string };
         Insert: never; Update: never; Relationships: [];
       };
+      profile_views: {
+        Row: { profile_id: string; viewer_id: string; day: string };
+        Insert: never; Update: never; Relationships: [];
+      };
       gift_tokens: {
         Row: {
           user_id: string; month: string; granted_at: string;
@@ -700,6 +706,8 @@ export interface Database {
       claim_collection: { Args: { p_slug: string }; Returns: Json };
       my_booster_drop: { Args: Record<string, never>; Returns: Json };
       my_gift_token: { Args: Record<string, never>; Returns: Json };
+      record_profile_view: { Args: { p_profile: string }; Returns: Json };
+      now_playing: { Args: { p_user: string }; Returns: Json };
       grant_gift_tokens: { Args: Record<string, never>; Returns: Json };
       gift_with_token: { Args: { p_slug: string; p_to: string }; Returns: Json };
       my_season: { Args: Record<string, never>; Returns: Json };
