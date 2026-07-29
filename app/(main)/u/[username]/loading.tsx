@@ -1,8 +1,8 @@
-import { Skeleton } from "@/components/ui/skeleton";
+import { Skeleton, SkeletonRegion } from "@/components/ui/skeleton";
 
 export default function Loading() {
   return (
-    <div className="mx-auto max-w-4xl space-y-6">
+    <SkeletonRegion label="Loading profile" className="mx-auto max-w-4xl space-y-6">
       <Skeleton className="h-44 w-full rounded-3xl" />
       <div className="flex items-end gap-4 px-4">
         <Skeleton className="-mt-16 size-28 rounded-full border-4 border-background" />
@@ -17,6 +17,6 @@ export default function Loading() {
         ))}
       </div>
       <Skeleton className="h-64 rounded-2xl" />
-    </div>
+    </SkeletonRegion>
   );
 }

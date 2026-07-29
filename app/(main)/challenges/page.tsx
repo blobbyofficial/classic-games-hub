@@ -6,6 +6,8 @@ import { getActiveChallenges } from "@/services/achievements";
 import { getDailyRewardStatus } from "@/services/economy";
 import { ChallengeCard } from "@/features/economy/challenge-card";
 import { DailyRewardCard } from "@/features/economy/daily-reward-card";
+import { PageHeader } from "@/components/page-header";
+import { EmptyState } from "@/components/empty-state";
 
 export const metadata: Metadata = { title: "Challenges" };
 
@@ -20,15 +22,12 @@ export default async function ChallengesPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-6">
-      <div className="flex items-center gap-3">
-        <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
-          <Target className="size-6" />
-        </span>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Challenges</h1>
-          <p className="text-sm text-muted-foreground">Complete daily & weekly goals for bonus rewards.</p>
-        </div>
-      </div>
+      <PageHeader
+        icon={Target}
+        title="Challenges"
+        description="Complete daily and weekly goals for bonus rewards."
+        className="mb-0"
+      />
 
       <DailyRewardCard alreadyClaimed={daily.claimed} streak={daily.streak} />
 
@@ -37,11 +36,12 @@ export default async function ChallengesPage() {
           <Flame className="size-4 text-orange-500" /> Today&apos;s challenges
         </h2>
         {dailyChallenges.length === 0 ? (
-          <div className="grid place-items-center rounded-2xl border border-dashed border-border py-12 text-center">
-            <p className="text-sm text-muted-foreground">
-              Play a game to generate today&apos;s challenges, then check back here!
-            </p>
-          </div>
+          <EmptyState
+            icon={Flame}
+            title="No challenges yet today"
+            description="Play a game to generate today's challenges, then check back here."
+            compact
+          />
         ) : (
           dailyChallenges.map((c) => <ChallengeCard key={c.id} challenge={c} />)
         )}

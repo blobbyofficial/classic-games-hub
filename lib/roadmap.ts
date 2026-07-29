@@ -149,18 +149,6 @@ export const ROADMAP: RoadmapRelease[] = [
           },
         ],
       },
-      {
-        heading: "Polish & performance",
-        icon: "Sparkles",
-        items: [
-          {
-            title: "More animation, better reduced-motion",
-            description:
-              "More life and motion across the whole site — page transitions, micro-interactions and celebratory moments — paired with a genuinely well-optimised, snappy experience for players who prefer animations off.",
-            status: "later",
-          },
-        ],
-      },
     ],
   },
 ];

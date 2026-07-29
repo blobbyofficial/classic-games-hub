@@ -1,8 +1,8 @@
 "use client";
 
 import { Coins, Zap, Trophy, RotateCcw } from "lucide-react";
-import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatNumber } from "@/lib/utils";
 import type { ScoreResult } from "@/types";
 
@@ -19,32 +19,30 @@ export function RewardOverlay({
   onReplay: () => void;
 }) {
   return (
-    <motion.div
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      className="absolute inset-0 z-20 grid place-items-center rounded-2xl bg-black/70 backdrop-blur-sm p-4"
+    <div
+      role="dialog"
+      aria-label="Run complete"
+      className="absolute inset-0 z-20 grid place-items-center rounded-2xl bg-black/70 p-4 backdrop-blur-sm motion-safe:animate-fade"
     >
-      <motion.div
-        initial={{ scale: 0.9, y: 10 }}
-        animate={{ scale: 1, y: 0 }}
-        transition={{ type: "spring", stiffness: 300, damping: 22 }}
-        className="w-full max-w-xs rounded-2xl border border-border bg-card p-6 text-center shadow-2xl"
-      >
+      <div className="w-full max-w-xs rounded-2xl border border-border bg-card p-6 text-center shadow-xl motion-safe:animate-pop">
         {result?.new_best && (
-          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-[oklch(0.6_0.13_85)] dark:text-gold">
+          <div className="mb-2 inline-flex items-center gap-1.5 rounded-full bg-gold/15 px-3 py-1 text-xs font-semibold text-[oklch(0.52_0.13_85)] dark:text-gold">
             <Trophy className="size-3.5" /> New personal best!
           </div>
         )}
         <h3 className="text-lg font-bold">Game over</h3>
-        <p className="mt-1 text-4xl font-black tabular-nums text-gradient">{formatNumber(score)}</p>
+        <p className="mt-1 text-4xl font-black tnum text-gradient">{formatNumber(score)}</p>
         <p className="text-xs text-muted-foreground">points</p>
 
         {loading ? (
-          <div className="mt-5 h-16 animate-pulse rounded-xl bg-muted" />
+          <div className="mt-5 flex justify-center gap-2" aria-label="Working out your rewards">
+            <Skeleton className="h-[74px] flex-1 rounded-xl" />
+            <Skeleton className="h-[74px] flex-1 rounded-xl" />
+          </div>
         ) : result?.ok ? (
-          <div className="mt-5 space-y-2">
+          <div className="mt-5">
             {result.rewarded === false ? (
-              <p className="text-xs text-muted-foreground">
+              <p className="text-xs leading-relaxed text-muted-foreground">
                 Play limit reached for this hour — scores still count, but no rewards.
               </p>
             ) : (
@@ -55,14 +53,16 @@ export function RewardOverlay({
             )}
           </div>
         ) : (
-          <p className="mt-5 text-xs text-muted-foreground">{result?.error ?? "Log in to earn rewards."}</p>
+          <p className="mt-5 text-xs leading-relaxed text-muted-foreground">
+            {result?.error ?? "Log in to earn rewards."}
+          </p>
         )}
 
-        <Button onClick={onReplay} variant="gradient" className="mt-6 w-full">
-          <RotateCcw className="size-4" /> Play again
+        <Button onClick={onReplay} variant="gradient" size="lg" className="mt-6 w-full" autoFocus>
+          <RotateCcw /> Play again
         </Button>
-      </motion.div>
-    </motion.div>
+      </div>
+    </div>
   );
 }
 
@@ -80,7 +80,7 @@ function Reward({
   return (
     <div className="flex-1 rounded-xl bg-muted/50 p-3">
       <Icon className={`mx-auto size-5 ${accent}`} />
-      <p className="mt-1 text-lg font-bold tabular-nums">{value}</p>
+      <p className="mt-1 text-lg font-bold tnum">{value}</p>
       <p className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</p>
     </div>
   );

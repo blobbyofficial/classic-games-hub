@@ -6,6 +6,7 @@ import { listConversations, getActiveStories } from "@/services/social";
 import { ConversationList } from "@/features/social/conversation-list";
 import { NewGroupButton } from "@/features/social/new-group";
 import { StoriesStrip } from "@/features/social/stories-strip";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = { title: "Messages" };
 
@@ -20,16 +21,13 @@ export default async function MessagesPage() {
 
   return (
     <div className="mx-auto max-w-2xl space-y-5">
-      <div className="flex items-center gap-3">
-        <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
-          <MessageSquare className="size-6" />
-        </span>
-        <div className="flex-1">
-          <h1 className="text-2xl font-bold tracking-tight">Messages</h1>
-          <p className="text-sm text-muted-foreground">Chat with your friends in real time.</p>
-        </div>
-        <NewGroupButton />
-      </div>
+      <PageHeader
+        icon={MessageSquare}
+        title="Messages"
+        description="Chat with your friends in real time."
+        actions={<NewGroupButton />}
+        className="mb-0"
+      />
 
       {profile && (
         <StoriesStrip

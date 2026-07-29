@@ -16,7 +16,6 @@ const nextConfig: NextConfig = {
   experimental: {
     optimizePackageImports: [
       "lucide-react",
-      "framer-motion",
       "cmdk",
       "sonner",
       "@radix-ui/react-dropdown-menu",
@@ -28,6 +27,11 @@ const nextConfig: NextConfig = {
   images: {
     formats: ["image/avif", "image/webp"],
     minimumCacheTTL: 604800, // 7 days — game thumbnails/avatars rarely change
+    // Widths the layout actually asks for: game cards top out around 320px on a
+    // 2x phone, avatars far below that. Trimming the default ladder means fewer
+    // variants to generate and a better cache hit rate on the edge.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920],
+    imageSizes: [32, 48, 64, 96, 128, 256, 384],
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },

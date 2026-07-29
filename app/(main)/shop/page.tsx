@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Store, Coins, Sparkles } from "lucide-react";
+import { PageHeader } from "@/components/page-header";
 import { getShopItems, getOwnedSlugs } from "@/services/shop";
 import { getSessionUser, getCurrentProfile } from "@/lib/supabase/queries";
 import { ShopGrid } from "@/features/economy/shop-grid";
@@ -22,32 +24,29 @@ export default async function ShopPage() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
-            <Store className="size-6" />
-          </span>
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Shop</h1>
-            <p className="text-sm text-muted-foreground">Cosmetics & boosts — never pay-to-win.</p>
-          </div>
-        </div>
-        {profile && (
-          <Card className="flex items-center gap-2 border-gold/30 bg-gold/5 px-4 py-2.5">
-            <Coins className="size-5 text-[oklch(0.6_0.13_85)] dark:text-gold" />
-            <span className="text-lg font-bold tabular-nums">{formatNumber(profile.credits)}</span>
-            <span className="text-sm text-muted-foreground">credits</span>
-          </Card>
-        )}
-      </div>
+      <PageHeader
+        icon={Store}
+        title="Shop"
+        description="Cosmetics and boosts — never pay-to-win."
+        className="mb-0"
+        actions={
+          profile && (
+            <Card className="flex items-center gap-2 border-gold/30 bg-gold/5 px-4 py-2.5">
+              <Coins className="size-5 text-[oklch(0.52_0.13_85)] dark:text-gold" />
+              <span className="text-lg font-bold tnum">{formatNumber(profile.credits)}</span>
+              <span className="text-sm text-muted-foreground">credits</span>
+            </Card>
+          )
+        }
+      />
 
       {!user && (
-        <div className="flex items-center gap-2 rounded-xl border border-primary/30 bg-primary/5 px-4 py-3 text-sm">
-          <Sparkles className="size-4 text-primary" />
+        <div className="flex items-center gap-2.5 rounded-xl border border-primary/25 bg-primary/5 px-4 py-3 text-sm">
+          <Sparkles className="size-4 shrink-0 text-primary" />
           <span>
-            <a href="/register" className="font-medium text-primary hover:underline">
+            <Link href="/register" className="font-semibold text-primary hover:underline">
               Create an account
-            </a>{" "}
+            </Link>{" "}
             to earn credits from playing and buy cosmetics.
           </span>
         </div>

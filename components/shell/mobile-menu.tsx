@@ -4,8 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
-import { motion } from "framer-motion";
-import { Menu, X, ExternalLink, LogOut, Settings, UserRound } from "lucide-react";
+import { Menu, X, ExternalLink, LogOut, Settings, Map } from "lucide-react";
 import { Logo } from "./logo";
 import { ThemeToggle } from "./theme-toggle";
 import { DiscordIcon } from "@/components/icons";
@@ -38,7 +37,7 @@ export function MobileMenu() {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 lg:hidden" />
         <Dialog.Content
-          className="fixed inset-y-0 left-0 z-50 flex w-[80%] max-w-xs flex-col border-r border-border bg-background shadow-2xl duration-200 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left lg:hidden"
+          className="fixed inset-y-0 left-0 z-50 flex w-[84%] max-w-xs flex-col border-r border-border bg-background shadow-xl duration-300 ease-[var(--ease-standard)] data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left lg:hidden"
           aria-describedby={undefined}
         >
           <Dialog.Title className="sr-only">Navigation menu</Dialog.Title>
@@ -107,9 +106,9 @@ export function MobileMenu() {
             <Link
               href="/roadmap"
               onClick={close}
-              className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+              className="flex min-h-11 items-center gap-3 rounded-xl px-3.5 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
             >
-              <UserRound className="size-[18px]" /> Roadmap
+              <Map className="size-[18px]" /> Roadmap
             </Link>
             {userId && (
               <Link
@@ -177,22 +176,24 @@ function DrawerLink({ item, onNavigate }: { item: NavItem; onNavigate: () => voi
     <Link
       href={item.href}
       onClick={onNavigate}
+      aria-current={active ? "page" : undefined}
       className={cn(
-        "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors",
-        active ? "text-primary" : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
+        "relative flex min-h-11 items-center gap-3 rounded-xl py-2.5 pl-3.5 pr-3 text-sm font-medium transition-colors",
+        active
+          ? "bg-primary/10 text-primary"
+          : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
       )}
     >
       {active && (
-        <motion.span
-          layoutId="mobile-menu-active"
-          className="absolute inset-0 rounded-xl bg-primary/10"
-          transition={{ type: "spring", stiffness: 400, damping: 32 }}
+        <span
+          aria-hidden
+          className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-primary"
         />
       )}
-      <item.icon className="relative z-10 size-[18px]" />
-      <span className="relative z-10">{item.label}</span>
+      <item.icon className="size-[18px] shrink-0" />
+      <span className="truncate">{item.label}</span>
       {badge > 0 && (
-        <span className="relative z-10 ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold text-white tabular-nums">
+        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold tnum text-white">
           {badge > 9 ? "9+" : badge}
         </span>
       )}

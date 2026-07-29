@@ -3,6 +3,7 @@ import { Crown, Trophy } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { UserAvatar } from "@/components/ui/avatar";
 import { formatNumber } from "@/lib/utils";
+import { EmptyState } from "@/components/empty-state";
 
 export async function GameLeaderboard({ slug, currentUserId }: { slug: string; currentUserId?: string }) {
   const supabase = await createClient();
@@ -11,10 +12,12 @@ export async function GameLeaderboard({ slug, currentUserId }: { slug: string; c
 
   if (rows.length === 0) {
     return (
-      <div className="grid place-items-center rounded-xl border border-dashed border-border py-10 text-center">
-        <Trophy className="size-8 text-muted-foreground/50" />
-        <p className="mt-2 text-sm text-muted-foreground">No scores yet — be the first!</p>
-      </div>
+      <EmptyState
+        icon={Trophy}
+        title="No scores yet"
+        description="Play a round and you'll take the top spot by default."
+        compact
+      />
     );
   }
 
