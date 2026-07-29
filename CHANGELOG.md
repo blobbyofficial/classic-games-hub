@@ -5,6 +5,26 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 🗓️ Seasons
+
+- **Neon Summer**, the first season, runs on `/collections`: a five-tier track
+  unlocked by season XP, each tier claimed once for credits and, at three of
+  them, a cosmetic that is never sold.
+- **Season XP is derived, never stored** (`0054`) - it is the XP you earned from
+  play sessions inside the season's window. Because it is a sum over
+  `play_sessions`, it can never drift from what actually happened, and seasons
+  needed **no hook into `add_xp` or `submit_score`**: nothing on the hot path
+  changed to add this feature.
+- Three open product questions are answered as **data rather than schema**, so
+  changing any of them later costs an `UPDATE` and not a migration:
+  season length is `starts_at`/`ends_at` per season; there is no paid track (the
+  free track only, and no payment integration exists to build one on); and a
+  past season's cosmetics return only if someone deliberately adds them to a new
+  season's tiers.
+- Claiming re-derives progress server-side before paying out, so a stale page
+  cannot claim a tier that has not been reached, and the claim row's primary key
+  refuses a second attempt - the same guard collections use.
+
 ### 🎨 New icons and thumbnails
 
 - **The favicon now matches the logo.** The app icon was an unrelated

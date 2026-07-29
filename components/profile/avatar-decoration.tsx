@@ -121,7 +121,20 @@ const Wings: DecorationRender = ({ colors: [outer, inner] }) => (
   </g>
 );
 
+/** Season one reward. Not sold; only earned on the Neon Summer track. */
+const Shades: DecorationRender = ({ colors: [lens, accent] }) => (
+  <>
+    <rect x="18" y="40" width="64" height="7" rx="3.5" fill={lens} />
+    <rect x="16" y="42" width="30" height="24" rx="8" fill={lens} />
+    <rect x="54" y="42" width="30" height="24" rx="8" fill={lens} />
+    <rect x="46" y="46" width="8" height="6" rx="3" fill={lens} />
+    <rect x="20" y="46" width="10" height="7" rx="3" fill={accent} opacity={0.85} />
+    <rect x="58" y="46" width="10" height="7" rx="3" fill={accent} opacity={0.85} />
+  </>
+);
+
 const DECORATIONS: Record<string, { render: DecorationRender; colors: [string, string] }> = {
+  "deco-shades": { render: Shades, colors: ["#0b0a14", "#f472b6"] },
   "deco-booster-wings": { render: Wings, colors: ["#f472b6", "#a855f7"] },
   "deco-cat-ears": { render: CatEars, colors: ["#f472b6", "#1f2937"] },
   "deco-halo": { render: Halo, colors: ["#fde68a", "#f59e0b"] },

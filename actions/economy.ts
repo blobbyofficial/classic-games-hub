@@ -120,3 +120,12 @@ export async function claimCollection(slug: string): Promise<RpcResult> {
   revalidatePath("/", "layout");
   return data as RpcResult;
 }
+
+export async function claimSeasonTier(tier: number): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("claim_season_tier", { p_tier: tier });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/collections");
+  revalidatePath("/", "layout");
+  return data as RpcResult;
+}

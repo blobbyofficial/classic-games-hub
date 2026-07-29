@@ -54,20 +54,6 @@ export const ROADMAP: RoadmapRelease[] = [
       "Everything from earlier releases that hasn't been built yet, gathered in one place rather than left scattered as loose ends. The theme that emerged: long-term collecting. Seasons to chase, cosmetics that layer and evolve, booster perks that accumulate month after month, the last two level milestones, and more 3D on the way.",
     groups: [
       {
-        heading: "Collections & seasons",
-        icon: "Gift",
-        blurb:
-          "The longest loop we've attempted: something to chip away at over months, and a reason to come back after a break.",
-        items: [
-          {
-            title: "Seasons",
-            description:
-              "Seasonal passes with a fresh theme each season, so there's always a reason to return after time away. Collections have shipped and are the foundation this builds on; the remaining questions are how long a season runs, whether there's a paid track, and whether a past season's cosmetics ever come back.",
-            status: "next",
-          },
-        ],
-      },
-      {
         heading: "Cosmetics & profile",
         icon: "Palette",
         blurb: "The expressive extras that didn't make the v1.2.0 cut - layered, optional, never pay-to-win.",

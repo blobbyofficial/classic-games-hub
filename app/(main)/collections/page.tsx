@@ -2,20 +2,25 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Gift } from "lucide-react";
 import { getSessionUser } from "@/lib/supabase/queries";
-import { getCollections, getBoosterDrop } from "@/services/shop";
+import { getCollections, getBoosterDrop, getSeason } from "@/services/shop";
 import { CollectionCard } from "@/features/economy/collection-card";
 import { BoosterDropCard } from "@/features/economy/booster-drop-card";
+import { SeasonTrack } from "@/features/economy/season-track";
 
 export const metadata: Metadata = {
   title: "Collections",
-  description: "Complete cosmetic sets for credits and badges that cannot be bought.",
+  description: "The current season, collectable cosmetic sets, and this month's booster drop.",
 };
 
 export default async function CollectionsPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/collections");
 
-  const [collections, boosterDrop] = await Promise.all([getCollections(), getBoosterDrop()]);
+  const [collections, boosterDrop, season] = await Promise.all([
+    getCollections(),
+    getBoosterDrop(),
+    getSeason(),
+  ]);
   const done = collections.filter((c) => c.items.length > 0 && c.items.every((i) => i.owned)).length;
 
   return (
@@ -32,6 +37,8 @@ export default async function CollectionsPage() {
           </p>
         </div>
       </div>
+
+      {season && <SeasonTrack season={season} />}
 
       {boosterDrop?.item && <BoosterDropCard drop={boosterDrop} />}
 

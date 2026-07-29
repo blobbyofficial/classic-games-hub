@@ -373,6 +373,24 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      seasons: {
+        Row: {
+          id: string; slug: string; name: string; description: string | null;
+          icon: string; starts_at: string; ends_at: string; active: boolean; created_at: string;
+        };
+        Insert: never; Update: never; Relationships: [];
+      };
+      season_tiers: {
+        Row: {
+          season_id: string; tier: number; xp_required: number;
+          reward_credits: number; reward_item_id: string | null;
+        };
+        Insert: never; Update: never; Relationships: [];
+      };
+      season_claims: {
+        Row: { user_id: string; season_id: string; tier: number; claimed_at: string };
+        Insert: never; Update: never; Relationships: [];
+      };
       booster_drops: {
         Row: { month: string; item_id: string; note: string | null; created_at: string };
         Insert: never;
@@ -672,6 +690,9 @@ export interface Database {
       my_collections: { Args: Record<string, never>; Returns: Json };
       claim_collection: { Args: { p_slug: string }; Returns: Json };
       my_booster_drop: { Args: Record<string, never>; Returns: Json };
+      my_season: { Args: Record<string, never>; Returns: Json };
+      season_xp: { Args: { p_user: string; p_season: string }; Returns: number };
+      claim_season_tier: { Args: { p_tier: number }; Returns: Json };
       friends_activity: {
         Args: { p_limit?: number; p_before?: string | null; p_before_id?: number | null };
         Returns: Json;

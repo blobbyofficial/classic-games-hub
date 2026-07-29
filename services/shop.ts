@@ -141,3 +141,30 @@ export const getBoosterDrop = cache(async (): Promise<import("@/features/economy
   const { data } = await supabase.rpc("my_booster_drop");
   return (data ?? null) as unknown as import("@/features/economy/booster-drop-card").BoosterDrop | null;
 });
+
+export interface SeasonTier {
+  tier: number;
+  xp_required: number;
+  reward_credits: number;
+  reward_item: { slug: string; name: string; kind: string; rarity: string } | null;
+  claimed: boolean;
+}
+
+export interface Season {
+  slug: string;
+  name: string;
+  description: string | null;
+  icon: string;
+  starts_at: string;
+  ends_at: string;
+  /** Derived from play sessions inside the season window, never stored. */
+  xp: number;
+  tiers: SeasonTier[];
+}
+
+/** The season running right now, with the viewer's progress. Null between seasons. */
+export const getSeason = cache(async (): Promise<Season | null> => {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("my_season");
+  return (data ?? null) as unknown as Season | null;
+});

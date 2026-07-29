@@ -54,6 +54,13 @@ const PROFILE_FRAMES: Record<string, FrameStyle> = {
     width: 3,
     flow: true,
   },
+  // Season one reward. Not sold; only earned on the Neon Summer track.
+  "pframe-neon-summer": {
+    gradient: "linear-gradient(120deg, #f472b6, #fbbf24, #22d3ee, #f472b6)",
+    glow: "shadow-[0_0_30px_-6px] shadow-pink-400/55",
+    width: 3,
+    flow: true,
+  },
   // Level 40. The only one that rotates, so it reads as the rarest.
   "pframe-prism": {
     gradient: "conic-gradient(from 0deg, #f43f5e, #f59e0b, #22c55e, #3b82f6, #a855f7, #f43f5e)",
