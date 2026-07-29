@@ -30,18 +30,19 @@ export default async function SettingsPage({
   const [profile, settings] = await Promise.all([getCurrentProfile(), getCurrentSettings()]);
   if (!profile || !settings) redirect("/login?next=/settings");
 
-  const [achievements, bestScores] = await Promise.all([
+  // Everything below needs only profile.id, so it goes out as one batch instead
+  // of three sequential round trips.
+  const supabase = await createClient();
+  const [achievements, bestScores, { data: connectionData }, { data: blocks }] = await Promise.all([
     getUserAchievements(profile.id),
     getUserBestScores(profile.id, 24),
+    supabase.rpc("my_discord_connection"),
+    supabase
+      .from("user_blocks")
+      .select("profiles!user_blocks_blocked_id_fkey(id, username, display_name, avatar_url)")
+      .eq("blocker_id", profile.id),
   ]);
-
-  const supabase = await createClient();
-  const { data: connectionData } = await supabase.rpc("my_discord_connection");
   const connection = (connectionData ?? { linked: false }) as unknown as DiscordConnection;
-  const { data: blocks } = await supabase
-    .from("user_blocks")
-    .select("profiles!user_blocks_blocked_id_fkey(id, username, display_name, avatar_url)")
-    .eq("blocker_id", profile.id);
   const blocked = (blocks ?? []).map(
     (b) => b.profiles as unknown as { id: string; username: string; display_name: string | null; avatar_url: string | null },
   );

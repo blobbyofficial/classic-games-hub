@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { getShopItemBySlug, getOwnedSlugs, getWishlistSlugs } from "@/services/shop";
-import { getSessionUser, getCurrentProfile } from "@/lib/supabase/queries";
+import { getCurrentProfile } from "@/lib/supabase/queries";
 import { ShopItemDetail } from "@/features/economy/shop-item-detail";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
@@ -13,18 +13,19 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 
 export default async function ShopItemPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
-  const item = await getShopItemBySlug(slug);
+  // Each of these resolves to an empty/null value when signed out and they all
+  // share the cached session, so one batch replaces four sequential trips.
+  const [item, profile, ownedSet, wishlist] = await Promise.all([
+    getShopItemBySlug(slug),
+    getCurrentProfile(),
+    getOwnedSlugs(),
+    getWishlistSlugs(),
+  ]);
   if (!item || !item.available) notFound();
 
   // Staff-only items are only viewable by staff.
-  const user = await getSessionUser();
-  const profile = user ? await getCurrentProfile() : null;
   const isStaff = profile?.role === "admin" || profile?.role === "moderator";
   if (item.staff_only && !isStaff) notFound();
-
-  const [ownedSet, wishlist] = user
-    ? await Promise.all([getOwnedSlugs(), getWishlistSlugs()])
-    : [new Set<string>(), [] as string[]];
 
   return (
     <div className="py-2">

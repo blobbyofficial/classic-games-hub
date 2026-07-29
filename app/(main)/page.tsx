@@ -21,14 +21,16 @@ const DEFAULT_ORDER = ["event", "daily", "recent", "featured", "categories", "al
 type SectionKey = (typeof DEFAULT_ORDER)[number];
 
 export default async function HomePage() {
-  const [profile, featured, allGames, layoutFlag] = await Promise.all([
+  // getFavoriteGameIds resolves to an empty set when signed out, so it joins the
+  // batch rather than costing a second round trip after the profile lands.
+  const [profile, featured, allGames, layoutFlag, favorites] = await Promise.all([
     getCurrentProfile(),
     getFeaturedGames(),
     getPublishedGames(),
     getFlagPayload("home_layout"),
+    getFavoriteGameIds(),
   ]);
   const user = profile;
-  const favorites = user ? await getFavoriteGameIds() : new Set<string>();
   const totalPlays = allGames.reduce((sum, g) => sum + g.play_count, 0);
   const displayName = profile ? profile.display_name ?? profile.username : null;
 
