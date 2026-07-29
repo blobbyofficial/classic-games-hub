@@ -60,9 +60,9 @@ export const ROADMAP: RoadmapRelease[] = [
           "The longest loop we've attempted: something to chip away at over months, and a reason to come back after a break.",
         items: [
           {
-            title: "Collections & seasons",
+            title: "Seasons",
             description:
-              "Collectable cosmetic sets and seasonal passes with a fresh theme each season, so there's always a longer-term goal to work towards and a reason to return after time away.",
+              "Seasonal passes with a fresh theme each season, so there's always a reason to return after time away. Collections have shipped and are the foundation this builds on; the remaining questions are how long a season runs, whether there's a paid track, and whether a past season's cosmetics ever come back.",
             status: "next",
           },
         ],

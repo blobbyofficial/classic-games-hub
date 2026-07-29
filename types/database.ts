@@ -342,6 +342,36 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      collections: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          description: string | null;
+          icon: string;
+          season: string | null;
+          reward_credits: number;
+          reward_item_id: string | null;
+          sort_weight: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      collection_items: {
+        Row: { collection_id: string; item_id: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      collection_claims: {
+        Row: { user_id: string; collection_id: string; claimed_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       loadout_presets: {
         // Writes go through the RPCs, which is what enforces the slot limit;
         // RLS grants select only, so Insert/Update are deliberately never.
@@ -632,6 +662,8 @@ export interface Database {
       apply_loadout_preset: { Args: { p_id: string }; Returns: Json };
       delete_loadout_preset: { Args: { p_id: string }; Returns: Json };
       my_loadout_presets: { Args: Record<string, never>; Returns: Json };
+      my_collections: { Args: Record<string, never>; Returns: Json };
+      claim_collection: { Args: { p_slug: string }; Returns: Json };
       change_username: { Args: { p_new: string }; Returns: Json };
       set_username: { Args: { p_new: string }; Returns: Json };
       admin_set_username: { Args: { p_user: string; p_new: string }; Returns: Json };

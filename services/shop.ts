@@ -103,3 +103,34 @@ export const getLoadoutPresets = cache(
     return { presets: payload.presets ?? [], limit: payload.limit ?? 0 };
   },
 );
+
+export interface CollectionItem {
+  slug: string;
+  name: string;
+  kind: string;
+  rarity: string;
+  owned: boolean;
+}
+
+export interface Collection {
+  slug: string;
+  name: string;
+  description: string | null;
+  icon: string;
+  season: string | null;
+  reward_credits: number;
+  reward_item: { slug: string; name: string; kind: string; rarity: string } | null;
+  claimed: boolean;
+  items: CollectionItem[];
+}
+
+/**
+ * Collections with the viewer's ownership already resolved per item. Progress
+ * is derived in the database rather than stored, so this is always the truth
+ * even after an item expires or a purchase is refunded.
+ */
+export const getCollections = cache(async (): Promise<Collection[]> => {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("my_collections");
+  return (data ?? []) as unknown as Collection[];
+});

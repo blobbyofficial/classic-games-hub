@@ -111,3 +111,12 @@ export async function deleteLoadoutPreset(id: string): Promise<RpcResult> {
   revalidatePath("/inventory");
   return data as RpcResult;
 }
+
+export async function claimCollection(slug: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("claim_collection", { p_slug: slug });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/collections");
+  revalidatePath("/", "layout");
+  return data as RpcResult;
+}

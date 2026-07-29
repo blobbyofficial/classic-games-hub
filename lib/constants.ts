@@ -14,6 +14,7 @@ import {
   Package,
   Target,
   PartyPopper,
+  Gift,
   type LucideIcon,
 } from "lucide-react";
 
@@ -52,6 +53,7 @@ export const SOCIAL_NAV: NavItem[] = [
 
 export const LIBRARY_NAV: NavItem[] = [
   { href: "/inventory", label: "Inventory", icon: Package, auth: true },
+  { href: "/collections", label: "Collections", icon: Gift, auth: true },
   { href: "/challenges", label: "Challenges", icon: Target, auth: true },
 ];
 

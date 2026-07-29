@@ -5,6 +5,21 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 🏆 Collections
+
+- Five collectable sets at `/collections` - Aurora, Neon Nights, Deep Space,
+  Head to Toe and Full Soundtrack. Own everything in a set and claim it for
+  credits plus an exclusive badge that **cannot be bought at any price**. That
+  badge is the point: it is proof you finished something, which is a different
+  kind of prize from anything on the shelf.
+- Progress is derived, never stored (`0050`). "Do you own these six things" is a
+  join away at any moment, and a stored counter would just be a second copy of
+  the truth that drifts when an item expires or a purchase is refunded.
+- The claim row is the guard against double payouts: `claim_collection()`
+  inserts it first and lets the primary key refuse a second attempt, rather than
+  checking and then writing with a window in between. If the set turns out to be
+  incomplete the claim is rolled back, so it can still be earned properly.
+
 ### 🎩 Layered avatar decorations
 
 - Seven decorations that sit **on top of** your avatar rather than around it -
