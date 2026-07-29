@@ -48,10 +48,10 @@ export const ROADMAP: RoadmapRelease[] = [
   {
     version: "v1.5.0",
     codename: "Collector's Edition",
-    status: "next",
-    timeframe: "Next up",
+    status: "in-progress",
+    timeframe: "In progress",
     summary:
-      "Everything from earlier releases that hasn't been built yet, gathered in one place rather than left scattered as loose ends. The theme that emerged: long-term collecting. Seasons to chase, cosmetics that layer and evolve, booster perks that accumulate month after month, the last two level milestones, and more 3D on the way.",
+      "Long-term collecting, and the loose ends from earlier releases. Most of it is built: seasons and collectable sets, cosmetics that layer three deep, a monthly booster drop, the last two level milestones, a friends activity feed, a faster hub and a redrawn icon set. What's still listed below is what hasn't been built yet.",
     groups: [
       {
         heading: "Cosmetics & profile",
@@ -70,7 +70,7 @@ export const ROADMAP: RoadmapRelease[] = [
         heading: "Booster rewards",
         icon: "Heart",
         blurb:
-          "Perks that accumulate the longer you boost - the tenure badge and bigger daily bonuses already do; these three are the rest of the plan.",
+          "Perks that accumulate the longer you boost. The tenure badge, bigger daily bonuses and the monthly cosmetic drop are live; these two are the rest of the plan.",
         items: [
           {
             title: "Early access",
@@ -96,32 +96,6 @@ export const ROADMAP: RoadmapRelease[] = [
             description:
               "Beyond the pseudo-3D racer: a playable Rubik's cube, and true-3D titles running smoothly on desktop and mobile.",
             status: "later",
-          },
-        ],
-      },
-      {
-        heading: "Speed",
-        icon: "Gauge",
-        blurb:
-          "The hub should feel instant. Less to download before the first paint, pages that arrive in pieces rather than all at once, and a loading state only when there's genuinely something to wait for.",
-        items: [
-          {
-            title: "Smaller first load",
-            description:
-              "Cutting what every page has to download before it can do anything - heavy libraries now load only for the players and moments that actually need them.",
-            status: "in-progress",
-          },
-          {
-            title: "Pages that load in sections",
-            description:
-              "Instead of waiting on the slowest query before showing anything, the page shell and its quick parts appear straight away and the rest fills in as it arrives.",
-            status: "in-progress",
-          },
-          {
-            title: "Honest loading states",
-            description:
-              "Skeletons shaped like the page they're standing in for, and only once a wait is long enough to notice - a placeholder that flashes for a moment is worse than none at all.",
-            status: "in-progress",
           },
         ],
       },
