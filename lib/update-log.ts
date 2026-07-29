@@ -528,9 +528,9 @@ export const RELEASES: UpdateRelease[] = [
               "A proper mobile hamburger menu - today's bar is far too cramped for the space - plus a cleaner desktop nav with more breathing room between items, better spacing and smoother animations. It should simply look and feel good.",
           },
           {
-            title: "Organised inventory & presets",
+            title: "Organised inventory",
             description:
-              "A rebuilt inventory with clear 'applied' indicators on every item, one-tap apply/disable, and saved loadout presets so you can switch your entire look - banner, nameplate, effects and name style - in a single tap.",
+              "A rebuilt inventory with clear 'applied' indicators on every item and one-tap apply/disable.",
           },
           {
             title: "Easier event customisation",

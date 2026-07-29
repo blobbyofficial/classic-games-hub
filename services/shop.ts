@@ -82,3 +82,24 @@ export const getOwnedSlugs = cache(async (): Promise<Set<string>> => {
   const items = await getInventory();
   return new Set(items.filter((i) => !i.expires_at || new Date(i.expires_at) > new Date()).map((i) => i.slug));
 });
+
+export interface LoadoutPreset {
+  id: string;
+  name: string;
+  equipped: Record<string, string>;
+  updated_at: string;
+}
+
+/**
+ * The player's saved looks plus how many slots they currently have. The limit
+ * comes from the database rather than being recomputed here, so the level-20
+ * milestone lives in exactly one place.
+ */
+export const getLoadoutPresets = cache(
+  async (): Promise<{ presets: LoadoutPreset[]; limit: number }> => {
+    const supabase = await createClient();
+    const { data } = await supabase.rpc("my_loadout_presets");
+    const payload = (data ?? {}) as { presets?: LoadoutPreset[]; limit?: number };
+    return { presets: payload.presets ?? [], limit: payload.limit ?? 0 };
+  },
+);

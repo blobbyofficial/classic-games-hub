@@ -5,6 +5,33 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 🎚️ The last two level milestones
+
+- **L20: saved looks.** A preset snapshots everything you have equipped, so
+  switching your whole appearance is one tap instead of five. One slot to start
+  with, five from level 20, and staff are uncapped. The limit lives in
+  `preset_slot_limit()` and the UI reads it rather than hard-coding a number.
+- Applying a preset re-derives the equipped map from what you **currently** own
+  (`0047`). A saved slug is not proof of ownership - boosts expire, items get
+  refunded, staff-only items must stay staff-only - so anything you no longer
+  own is dropped rather than equipped, and the rest of the preset still applies.
+  Writes go only through the RPCs; `loadout_presets` grants select and nothing
+  else, so a direct insert cannot bypass the slot limit.
+- **L50: Singularity.** The mythic effect was already being granted by `add_xp`
+  on the way past level 50, but no renderer existed, so the reward was
+  invisible. It now draws: a collapsing violet core with an accretion disc and
+  matter spiralling inward. Players who passed level 50 before the grant existed
+  are backfilled.
+
+### ♿ Reduced motion
+
+- The setting was stored, validated and switchable, but **nothing read it** - it
+  had no effect at all. It now applies on the server-rendered `<html>` tag, so
+  animations never play once before being switched off.
+- It also drops `backdrop-filter`, stops the animated theme hues drifting, and
+  skips rendering profile effects and backdrops entirely rather than hiding
+  them, making it a genuine performance setting on a weaker device.
+
 ### ⚡ Performance
 
 - **The Supabase client no longer ships in the first load.** At ~241 kB it was

@@ -65,12 +65,6 @@ export const ROADMAP: RoadmapRelease[] = [
               "Collectable cosmetic sets and seasonal passes with a fresh theme each season, so there's always a longer-term goal to work towards and a reason to return after time away.",
             status: "next",
           },
-          {
-            title: "The last two level milestones",
-            description:
-              "Finishing what v1.3.0 started: L20 unlocks extra loadout preset slots, and L50 unlocks an exclusive mythic cosmetic. The earlier milestones (L5 music, L10 groups, L15 stories, L30 vanity URL) are already live.",
-            status: "next",
-          },
         ],
       },
       {

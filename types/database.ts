@@ -341,6 +341,21 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      loadout_presets: {
+        // Writes go through the RPCs, which is what enforces the slot limit;
+        // RLS grants select only, so Insert/Update are deliberately never.
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          equipped: Record<string, string>;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       achievements: {
         Row: {
           id: string;
@@ -611,6 +626,11 @@ export interface Database {
       purchase_shop_item: { Args: { p_slug: string }; Returns: Json };
       equip_item: { Args: { p_slug: string }; Returns: Json };
       unequip_item: { Args: { p_kind: string }; Returns: undefined };
+      preset_slot_limit: { Args: { p_user: string }; Returns: number };
+      save_loadout_preset: { Args: { p_name: string; p_id?: string | null }; Returns: Json };
+      apply_loadout_preset: { Args: { p_id: string }; Returns: Json };
+      delete_loadout_preset: { Args: { p_id: string }; Returns: Json };
+      my_loadout_presets: { Args: Record<string, never>; Returns: Json };
       change_username: { Args: { p_new: string }; Returns: Json };
       set_username: { Args: { p_new: string }; Returns: Json };
       admin_set_username: { Args: { p_user: string; p_new: string }; Returns: Json };

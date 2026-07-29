@@ -297,6 +297,26 @@ html[data-site-theme="aurora"] {
   50% { transform: translateX(8%) scaleY(1.15); }
 }
 
+/* Singularity (level 50, mythic): matter spirals inward and is swallowed.
+   Rotation and shrink happen together so the path reads as a spiral rather
+   than a circle that happens to get smaller. */
+@keyframes cgh-singularity-fall {
+  0% {
+    transform: rotate(0deg) translateX(var(--orbit)) scale(1);
+    opacity: 0;
+  }
+  12% { opacity: 1; }
+  85% { opacity: 0.9; }
+  100% {
+    transform: rotate(520deg) translateX(0) scale(0.2);
+    opacity: 0;
+  }
+}
+@keyframes cgh-singularity-core {
+  0%, 100% { transform: scale(1); opacity: 0.9; }
+  50% { transform: scale(1.12); opacity: 1; }
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

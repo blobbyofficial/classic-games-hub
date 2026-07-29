@@ -207,6 +207,64 @@ function Aurora() {
   );
 }
 
+/**
+ * The level-50 mythic. Unbuyable and granted automatically by add_xp, so it is
+ * the only effect a player cannot preview before earning - it should read as
+ * the rarest thing on the page.
+ */
+function Singularity() {
+  const motes = Array.from({ length: 18 });
+  return (
+    <div
+      className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden"
+      aria-hidden
+      data-decorative
+    >
+      {/* The well itself: a dark core with a violet event-horizon glow. */}
+      <span
+        className="absolute left-1/2 top-1/2 size-24 -translate-x-1/2 -translate-y-1/2 rounded-full"
+        style={{
+          background: "radial-gradient(circle, #0b0a12 38%, #7a3dff 62%, transparent 72%)",
+          filter: "blur(6px)",
+          animation: "cgh-singularity-core 3.6s ease-in-out infinite",
+        }}
+      />
+      {/* Accretion disc, edge-on. */}
+      <span
+        className="absolute left-1/2 top-1/2 h-1.5 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full opacity-70 blur-[3px]"
+        style={{
+          background: "linear-gradient(90deg, transparent, #7a3dff, #c4b5fd, #7a3dff, transparent)",
+          animation: "cgh-spin 6s linear infinite",
+        }}
+      />
+      {motes.map((_, i) => {
+        const orbit = 60 + rand(i + 71) * 90;
+        const duration = 3.2 + rand(i + 72) * 2.6;
+        const delay = rand(i + 73) * duration;
+        const size = 2 + Math.floor(rand(i + 74) * 3);
+        return (
+          <span
+            key={i}
+            className="absolute left-1/2 top-1/2 rounded-full"
+            style={
+              {
+                width: size,
+                height: size,
+                marginLeft: -size / 2,
+                marginTop: -size / 2,
+                background: i % 3 === 0 ? "#c4b5fd" : "#7a3dff",
+                boxShadow: "0 0 6px currentColor",
+                "--orbit": `${orbit}px`,
+                animation: `cgh-singularity-fall ${duration}s linear ${delay}s infinite`,
+              } as React.CSSProperties
+            }
+          />
+        );
+      })}
+    </div>
+  );
+}
+
 function Fireflies() {
   const dots = Array.from({ length: 22 });
   return (
@@ -258,6 +316,8 @@ export function ProfileEffects({ slug, reduced }: { slug?: string | null; reduce
       return <Fireflies />;
     case "effect-staff-shimmer":
       return <StaffShimmer />;
+    case "effect-singularity":
+      return <Singularity />;
     default:
       return null;
   }
