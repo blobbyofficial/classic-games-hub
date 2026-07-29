@@ -5,6 +5,26 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 👥 Friends activity feed
+
+- `/friends` now shows a quiet feed of what your friends have been up to - high
+  scores, achievements, purchases and new friendships - so the hub feels
+  inhabited even when nobody is talking.
+- Nothing new is recorded. `activity_events` has been filling up since `0002`
+  and every profile already showed a player's own; `0052` just adds the other
+  direction. It exposes nothing that was not already public either - those rows
+  carry an "activity is public" policy, so the feed narrows what is readable
+  rather than widening it.
+- Blocks are enforced in both directions regardless. A feed that kept surfacing
+  someone you blocked would be a conspicuous hole in that promise even though
+  the underlying row is public.
+- Keyset pagination on `(created_at, id)` rather than `OFFSET`, because the feed
+  is append-heavy and an offset page two silently repeats or skips rows whenever
+  something new lands between requests.
+- Rendered on the server: it is read-only and nothing on it is interactive, so
+  none of it needs to reach the browser as JavaScript. Unrecognised event types
+  are skipped rather than rendered broken, since more will be added over time.
+
 ### 🪄 One-click Discord setup
 
 - Admin → Discord bot → Sync → **Run full setup** registers the slash commands,

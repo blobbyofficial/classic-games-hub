@@ -152,3 +152,27 @@ export const getConversation = cache(async (conversationId: string): Promise<Con
     })),
   };
 });
+
+export interface ActivityEvent {
+  id: number;
+  type: string;
+  data: Record<string, unknown>;
+  created_at: string;
+  actor: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    equipped: Record<string, string> | null;
+  };
+}
+
+/**
+ * Recent activity from the viewer's friends. Blocks are enforced in the RPC in
+ * both directions; the events themselves were already public (see 0002), so
+ * this narrows what is readable rather than widening it.
+ */
+export const getFriendsActivity = cache(async (limit = 30): Promise<ActivityEvent[]> => {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("friends_activity", { p_limit: limit });
+  return (data ?? []) as unknown as ActivityEvent[];
+});

@@ -671,6 +671,10 @@ export interface Database {
       my_collections: { Args: Record<string, never>; Returns: Json };
       claim_collection: { Args: { p_slug: string }; Returns: Json };
       my_booster_drop: { Args: Record<string, never>; Returns: Json };
+      friends_activity: {
+        Args: { p_limit?: number; p_before?: string | null; p_before_id?: number | null };
+        Returns: Json;
+      };
       grant_booster_drops: { Args: Record<string, never>; Returns: Json };
       change_username: { Args: { p_new: string }; Returns: Json };
       set_username: { Args: { p_new: string }; Returns: Json };

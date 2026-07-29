@@ -107,18 +107,6 @@ export const ROADMAP: RoadmapRelease[] = [
         ],
       },
       {
-        heading: "Social",
-        icon: "Users",
-        items: [
-          {
-            title: "Friends activity feed",
-            description:
-              "A quiet feed of what your friends have been up to - new high scores, achievements unlocked, games they've picked up - so the hub feels inhabited even when nobody's talking.",
-            status: "later",
-          },
-        ],
-      },
-      {
         heading: "More dimensions",
         icon: "Box",
         blurb: "Turbo Horizon proved the browser can carry it. These are the follow-ups.",
