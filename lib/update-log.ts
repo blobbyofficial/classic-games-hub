@@ -554,6 +554,15 @@ export const RELEASES: UpdateRelease[] = [
 ];
 
 export const LANDED: LandedChange[] = [
+  { sha: "2479a5e", date: "28 Jul 2026", subject: "Merged pull request from games-hub-online-multiplayer-hzzyf4", pr: 19 },
+  { sha: "3221adc", date: "28 Jul 2026", subject: "Merged pull request from games-hub-online-multiplayer-hzzyf4", pr: 18 },
+  { sha: "3ce4e03", date: "28 Jul 2026", subject: "Merged pull request from games-hub-online-multiplayer-hzzyf4", pr: 17 },
+  { sha: "a13d56c", date: "28 Jul 2026", subject: "Merged pull request from games-hub-online-multiplayer-hzzyf4", pr: 16 },
+  { sha: "d3986d0", date: "28 Jul 2026", subject: "Merged pull request from games-hub-online-multiplayer-hzzyf4", pr: 15 },
+  { sha: "1c16784", date: "28 Jul 2026", subject: "Merged pull request from games-hub-online-multiplayer-hzzyf4", pr: 14 },
+  { sha: "1da5a10", date: "28 Jul 2026", subject: "Merged pull request from games-hub-online-multiplayer-hzzyf4", pr: 13 },
+  { sha: "13ceba6", date: "28 Jul 2026", subject: "Merged pull request from games-hub-online-multiplayer-hzzyf4", pr: 12 },
+  { sha: "88a3df3", date: "28 Jul 2026", subject: "Merged pull request from games-hub-online-multiplayer-hzzyf4", pr: 11 },
   { sha: "f5da50b", date: "28 Jul 2026", subject: "Merged pull request from games-hub-online-multiplayer-hzzyf4", pr: 10 },
   { sha: "36848c8", date: "27 Jul 2026", subject: "Merged pull request from discord-bot-consolidation-2gq23j", pr: 9 },
   { sha: "4488be0", date: "27 Jul 2026", subject: "Add permissions configuration to settings.local.json" },
@@ -605,15 +614,61 @@ export const LANDED: LandedChange[] = [
   { sha: "d5a08bc", date: "27 Jun 2026", subject: "Refactor CSS variables and styles for Cabinet Ink theme" },
   { sha: "a57fb9c", date: "26 Jun 2026", subject: "Update" },
   { sha: "3fdb6e4", date: "21 Mar 2026", subject: "upd" },
+  { sha: "1a06437", date: "21 Mar 2026", subject: "ui upd" },
+  { sha: "96ca0cb", date: "21 Mar 2026", subject: "Set games as available in manifest.json" },
+  { sha: "84e0124", date: "21 Mar 2026", subject: "Merged pull request from add-localstorage-support-for-game-stats", pr: 1 },
+  { sha: "a408d76", date: "21 Mar 2026", subject: "Merged pull request from enhance-game-landing-page-structure", pr: 2 },
+  { sha: "903889f", date: "21 Mar 2026", subject: "Merged pull request from create-shared-frontend-assets", pr: 3 },
+  { sha: "9883ae3", date: "21 Mar 2026", subject: "Merged pull request from extend-metadata-in-games-manifest-and-ui", pr: 4 },
+  { sha: "9a556a2", date: "21 Mar 2026", subject: "Merged pull request from create-playable-game-folders-for-launch-titles", pr: 5 },
+  { sha: "1224426", date: "22 Oct 2025", subject: "Update manifest.json" },
+  { sha: "b7a5953", date: "04 Oct 2025", subject: "Update manifest.json" },
+  { sha: "2dd10f9", date: "04 Oct 2025", subject: "Update manifest.json" },
+  { sha: "6a2f8f7", date: "04 Oct 2025", subject: "Delete games/snake directory" },
+  { sha: "695a729", date: "04 Oct 2025", subject: "Add files via upload" },
+  { sha: "a01ed73", date: "14 Sep 2025", subject: "Delete games directory" },
+  { sha: "1fcda22", date: "14 Sep 2025", subject: "Add files via upload" },
+  { sha: "360d063", date: "14 Sep 2025", subject: "Delete index.html" },
+  { sha: "fad0349", date: "14 Sep 2025", subject: "Add files via upload" },
+  { sha: "9d2c158", date: "14 Sep 2025", subject: "Delete index.html" },
+  { sha: "efba839", date: "14 Sep 2025", subject: "Delete classic-games-hub.txt" },
+  { sha: "9d20ae6", date: "14 Sep 2025", subject: "Delete pages directory" },
+  { sha: "42fd1de", date: "14 Sep 2025", subject: "Delete games directory" },
+  { sha: "d8f0069", date: "14 Sep 2025", subject: "Delete assets/images directory" },
+  { sha: "0ba5d57", date: "14 Sep 2025", subject: "Delete assets/images/Icon.png" },
+  { sha: "c6a12d4", date: "14 Sep 2025", subject: "Add files via upload" },
+  { sha: "446163a", date: "14 Sep 2025", subject: "Delete README.md" },
+  { sha: "5f762cc", date: "14 Sep 2025", subject: "Delete index.html" },
+  { sha: "d9f100d", date: "14 Sep 2025", subject: "Delete folder-structure.txt" },
+  { sha: "564a66a", date: "14 Sep 2025", subject: "Delete js directory" },
+  { sha: "4458386", date: "14 Sep 2025", subject: "Delete html directory" },
+  { sha: "13236f1", date: "14 Sep 2025", subject: "Delete css directory" },
+  { sha: "64200fe", date: "14 Sep 2025", subject: "Delete assets directory" },
+  { sha: "acade23", date: "14 Sep 2025", subject: "Delete assets/music/song2.mp3" },
+  { sha: "a80e51a", date: "14 Sep 2025", subject: "Delete assets/music/song1.mp3" },
+  { sha: "ed02044", date: "14 Sep 2025", subject: "Delete assets/click.mp3" },
+  { sha: "54528d3", date: "12 Sep 2025", subject: "Update index.html" },
+  { sha: "3343e4d", date: "12 Sep 2025", subject: "Update index.html" },
+  { sha: "5e8d374", date: "12 Sep 2025", subject: "Update index.html" },
+  { sha: "0238cac", date: "30 Mar 2025", subject: "Update about.html" },
+  { sha: "0792f75", date: "30 Mar 2025", subject: "Add files via upload" },
+  { sha: "a8a5978", date: "30 Mar 2025", subject: "Add files via upload" },
+  { sha: "236114b", date: "19 Mar 2025", subject: "Update README.md" },
+  { sha: "3379d82", date: "19 Mar 2025", subject: "Update README.md" },
+  { sha: "4ee2e0b", date: "19 Mar 2025", subject: "Update README.md" },
+  { sha: "8e4daf9", date: "19 Mar 2025", subject: "Update README.md" },
+  { sha: "ae19a88", date: "19 Mar 2025", subject: "Update README.md" },
+  { sha: "f2a00ad", date: "19 Mar 2025", subject: "Update README.md" },
+  { sha: "b12c432", date: "19 Mar 2025", subject: "Update README.md" },
+  { sha: "2c1c86c", date: "08 Mar 2025", subject: "Initial commit" },
 ];
 
 /**
  * Every pull request merged into `main`, from the GitHub API.
  *
- * This is a longer list than the merge commits visible in `LANDED`: #1–#5 were
- * merged in March 2026, before the repository was rebuilt as a Next.js app, and
- * their merge commits are no longer reachable from `main`. GitHub still records
- * them, so they are kept here rather than lost.
+ * Each one also appears in `LANDED` as its merge commit. The two lists are kept
+ * separate because a PR's title says what it set out to do, which is more use
+ * on the page than the merge commit's generated subject.
  */
 export interface MergedPullRequest {
   number: number;
@@ -622,6 +677,15 @@ export interface MergedPullRequest {
 }
 
 export const PULL_REQUESTS: MergedPullRequest[] = [
+  { number: 19, title: "Tidy the admin dashboard: tabs for the Discord page, grouped nav", date: "28 Jul 2026" },
+  { number: 18, title: "Rename the bot to Classic Games Bot, and fix four bugs found in a sweep", date: "28 Jul 2026" },
+  { number: 17, title: "Fix three dashboard settings that could never take effect", date: "28 Jul 2026" },
+  { number: 16, title: "Use a linked role or channel, and update it — never replace it", date: "28 Jul 2026" },
+  { number: 15, title: "Run the bot from the dashboard, and make saving actually apply", date: "28 Jul 2026" },
+  { number: 14, title: "Fix: audit-log reason header broke every write to Discord", date: "28 Jul 2026" },
+  { number: 13, title: "Report Discord's actual error when /setup can't create something", date: "28 Jul 2026" },
+  { number: 12, title: "Show which Discord credentials are missing instead of failing opaquely", date: "28 Jul 2026" },
+  { number: 11, title: "Update log at /updates, a forward-only roadmap, and one-click slash-command registration", date: "28 Jul 2026" },
   { number: 10, title: "Parties & online multiplayer, /status, vanity URLs — plus the missing bot heartbeat", date: "28 Jul 2026" },
   { number: 9, title: "feat(discord): one bot replacing Appy, Sapphire, Arcane and ServerStats", date: "27 Jul 2026" },
   { number: 8, title: "Roadmap: restructure into v1.2.0 / v1.3.0 / v1.4.0 with new plans", date: "20 Jul 2026" },

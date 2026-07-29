@@ -180,9 +180,8 @@ export default function UpdatesPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-bold tracking-tight">Merged pull requests</h2>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Every pull request merged into <code className="rounded bg-muted px-1 py-0.5 text-xs">main</code>. The five
-          oldest predate the rebuild of the site as a Next.js app, so their commits are no longer reachable from the
-          current history — GitHub still remembers them.
+          Every pull request merged into <code className="rounded bg-muted px-1 py-0.5 text-xs">main</code>, titled by
+          what it set out to do. Each one also appears above as the commit that merged it.
         </p>
         <Card>
           <CardContent className="pt-6">
