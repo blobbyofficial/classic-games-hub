@@ -168,3 +168,16 @@ export const getSeason = cache(async (): Promise<Season | null> => {
   const { data } = await supabase.rpc("my_season");
   return (data ?? null) as unknown as Season | null;
 });
+
+export interface GiftToken {
+  boosting: boolean;
+  month: string;
+  token: { used: boolean; used_at: string | null; gifted_to: string | null; item: string | null } | null;
+}
+
+/** This month's booster gift token, and whether it has been spent. */
+export const getGiftToken = cache(async (): Promise<GiftToken | null> => {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("my_gift_token");
+  return (data ?? null) as unknown as GiftToken | null;
+});

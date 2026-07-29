@@ -5,6 +5,25 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 🎟️ Monthly gift token
+
+- Boosters get one token a month to give a friend any cosmetic for **30 days,
+  free** (`0055`). It appears as a second button on the gift dialog of any shop
+  item, and on `/collections` alongside the other booster perks.
+- **30 days** matches the token's own cadence: a friend gifted every month keeps
+  the cosmetic continuously, and one gifted once gets a proper trial rather than
+  a glimpse. Tokens do **not** stack - left to accumulate, a long-time booster
+  could hand out a dozen at once, turning a steady trickle into a windfall.
+- The temporary grant rides `inventory_items.expires_at`, which already existed
+  for boosts and is already respected by `equip_item`, `apply_loadout_preset`
+  and every ownership check, so nothing new had to learn about expiry.
+- Spending is guarded by the update itself: it only matches an unused row, so
+  two concurrent requests cannot both spend the same token. Every rule a paid
+  gift respects - blocks, staff-only items, no boosts, no gifting yourself - a
+  free one respects too.
+- Granted by the existing daily booster cron rather than a new job, since it
+  keys off the same `booster_since` the role sync refreshes an hour earlier.
+
 ### 🗓️ Seasons
 
 - **Neon Summer**, the first season, runs on `/collections`: a five-tier track

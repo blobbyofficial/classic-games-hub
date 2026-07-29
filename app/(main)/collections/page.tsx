@@ -2,10 +2,11 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Gift } from "lucide-react";
 import { getSessionUser } from "@/lib/supabase/queries";
-import { getCollections, getBoosterDrop, getSeason } from "@/services/shop";
+import { getCollections, getBoosterDrop, getSeason, getGiftToken } from "@/services/shop";
 import { CollectionCard } from "@/features/economy/collection-card";
 import { BoosterDropCard } from "@/features/economy/booster-drop-card";
 import { SeasonTrack } from "@/features/economy/season-track";
+import { GiftTokenCard } from "@/features/economy/gift-token-card";
 
 export const metadata: Metadata = {
   title: "Collections",
@@ -16,10 +17,11 @@ export default async function CollectionsPage() {
   const user = await getSessionUser();
   if (!user) redirect("/login?next=/collections");
 
-  const [collections, boosterDrop, season] = await Promise.all([
+  const [collections, boosterDrop, season, giftToken] = await Promise.all([
     getCollections(),
     getBoosterDrop(),
     getSeason(),
+    getGiftToken(),
   ]);
   const done = collections.filter((c) => c.items.length > 0 && c.items.every((i) => i.owned)).length;
 
@@ -41,6 +43,8 @@ export default async function CollectionsPage() {
       {season && <SeasonTrack season={season} />}
 
       {boosterDrop?.item && <BoosterDropCard drop={boosterDrop} />}
+
+      {giftToken && <GiftTokenCard token={giftToken} />}
 
       {collections.length === 0 ? (
         <p className="rounded-2xl border border-border bg-card p-8 text-center text-sm text-muted-foreground">

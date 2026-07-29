@@ -366,3 +366,20 @@ the settings below and saving posts the panel itself.
 `DISCORD_BOT_TOKEN` and `DISCORD_GUILD_ID` are checked up front, so a missing
 credential produces one clear message instead of six copies of "could not reach
 Discord".
+
+## Monthly gift token
+
+Boosters also receive one gift token per calendar month (`0055`), spendable on
+any available cosmetic to give a friend a **30-day** copy for free. It is
+granted by the same `/api/cron/booster-drops` run as the monthly drop, because
+both key off the `profiles.booster_since` that the role sync refreshes an hour
+earlier, and both are idempotent.
+
+Tokens do not stack: the primary key is `(user_id, month)`, so a month yields
+exactly one whether the job runs once or thirty times.
+
+Spending goes through `gift_with_token()`, which claims the token with an
+`update ... where used_at is null` - the update matching zero rows *is* the
+"already spent" check, so two concurrent requests cannot both win. The
+temporary grant uses `inventory_items.expires_at`, the same column boosts use,
+so every existing ownership check already handles it correctly.

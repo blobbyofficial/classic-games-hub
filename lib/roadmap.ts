@@ -70,19 +70,13 @@ export const ROADMAP: RoadmapRelease[] = [
         heading: "Booster rewards",
         icon: "Heart",
         blurb:
-          "Perks that accumulate the longer you boost. The tenure badge, bigger daily bonuses and the monthly cosmetic drop are live; these two are the rest of the plan.",
+          "Perks that accumulate the longer you boost. The tenure badge, bigger daily bonuses, the monthly cosmetic drop and the gift token are live; early access is the last one left.",
         items: [
           {
             title: "Early access",
             description:
               "A head start on new games and features - try them a week before everyone else and help shape them before launch.",
             status: "later",
-          },
-          {
-            title: "Monthly gift token",
-            description:
-              "A free token each month to gift a temporary cosmetic to a friend - spread the perks and pull friends in.",
-            status: "idea",
           },
         ],
       },

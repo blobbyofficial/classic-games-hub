@@ -3,7 +3,8 @@ import { discordEnv } from "@/lib/discord/env";
 import { createAdminClient } from "@/lib/supabase/server";
 
 /**
- * Grants the current month's booster cosmetic to everyone boosting right now.
+ * Grants the monthly booster perks to everyone boosting right now: this
+ * month's exclusive cosmetic, and the gift token they can spend on a friend.
  *
  *   curl -H "Authorization: Bearer $CRON_SECRET" https://<domain>/api/cron/booster-drops
  *
@@ -32,9 +33,16 @@ async function run(request: Request) {
     return NextResponse.json({ error: "service key not configured" }, { status: 500 });
   }
 
-  const { data, error } = await supabase.rpc("grant_booster_drops");
-  if (error) return NextResponse.json({ error: error.message }, { status: 500 });
-  return NextResponse.json(data);
+  // Both booster perks ride the same daily run: they key off the same
+  // booster_since that the role sync refreshed an hour earlier, and both are
+  // idempotent, so a repeat costs nothing.
+  const [drops, tokens] = await Promise.all([
+    supabase.rpc("grant_booster_drops"),
+    supabase.rpc("grant_gift_tokens"),
+  ]);
+  if (drops.error) return NextResponse.json({ error: drops.error.message }, { status: 500 });
+  if (tokens.error) return NextResponse.json({ error: tokens.error.message }, { status: 500 });
+  return NextResponse.json({ drops: drops.data, gift_tokens: tokens.data });
 }
 
 export const GET = run;

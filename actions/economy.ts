@@ -129,3 +129,12 @@ export async function claimSeasonTier(tier: number): Promise<RpcResult> {
   revalidatePath("/", "layout");
   return data as RpcResult;
 }
+
+export async function giftWithToken(slug: string, toUserId: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("gift_with_token", { p_slug: slug, p_to: toUserId });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/shop");
+  revalidatePath("/", "layout");
+  return data as RpcResult;
+}
