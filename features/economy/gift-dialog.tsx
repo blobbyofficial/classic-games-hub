@@ -3,7 +3,6 @@
 import { useEffect, useState, useTransition } from "react";
 import { Gift, Loader2, Search } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
 import { giftItem } from "@/actions/economy";
 import {
   Dialog,
@@ -37,6 +36,9 @@ export function GiftDialog({ item, children }: { item: ShopItem; children: React
   useEffect(() => {
     if (!open || friends) return;
     (async () => {
+      // Only needed once the dialog is actually opened, so the Supabase client
+      // loads on demand rather than sitting in the shop page's first load.
+      const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
       const { data } = await supabase.rpc("list_friends");
       setFriends(
