@@ -2,6 +2,7 @@ import "server-only";
 import { botDb } from "./bot-db";
 import { getBotConfig, template } from "./config";
 import { verificationPanel, ticketPanel } from "./components";
+import { SLASH_COMMANDS } from "./commands";
 import { BOT_NAME } from "./embeds";
 import { discordEnv } from "./env";
 import { ChannelType, Permissions, discordRest } from "./rest";
@@ -386,4 +387,174 @@ export async function refreshStatChannels(): Promise<{
   }
 
   return { ok: true, updated, skipped };
+}
+
+/* ────────────────────────────────────────────────────────────────────────────
+   One-click full setup
+   ──────────────────────────────────────────────────────────────────────────── */
+
+export interface SetupStep {
+  key: string;
+  label: string;
+  status: "ok" | "skipped" | "failed";
+  detail: string;
+}
+
+export interface FullSetupResult {
+  ok: boolean;
+  /** Set when nothing could run at all (missing credentials). */
+  error?: string;
+  steps: SetupStep[];
+}
+
+/**
+ * Runs every setup step in dependency order and reports on each one.
+ *
+ * Deliberately does NOT stop at the first failure. Setting up a Discord server
+ * fails in partial, unrelated ways - the bot may be able to create roles but
+ * not post in a channel it cannot see - and aborting at step two would hide
+ * the four things that would have worked. A finished report of six outcomes is
+ * far more useful to an admin than one error and an unknown state.
+ *
+ * Every step is idempotent (the underlying helpers reuse anything already
+ * present), so re-running after fixing a permission is always safe and only
+ * does the work still outstanding.
+ */
+export async function runFullSetup(): Promise<FullSetupResult> {
+  // Fail fast on credentials rather than letting six steps produce six copies
+  // of the same "couldn't reach Discord" message.
+  if (!discordEnv.botToken || !discordEnv.guildId) {
+    return {
+      ok: false,
+      error:
+        "DISCORD_BOT_TOKEN and DISCORD_GUILD_ID must both be set before setup can run.",
+      steps: [],
+    };
+  }
+
+  const steps: SetupStep[] = [];
+  const summarise = (res: SetupResult) =>
+    [
+      `created ${res.created.length}`,
+      `updated ${res.updated.length}`,
+      `already correct ${res.reused.length}`,
+      `failed ${res.failed.length}`,
+    ].join(", ") + (res.detail ? `. Discord said: ${res.detail}` : ".");
+
+  const record = async (key: string, label: string, run: () => Promise<SetupResult>) => {
+    try {
+      const res = await run();
+      steps.push({
+        key,
+        label,
+        status: res.ok ? (res.failed.length ? "skipped" : "ok") : "failed",
+        detail: res.ok
+          ? summarise(res)
+          : res.error === "missing_permissions"
+            ? "The bot needs Manage Roles and Manage Channels, and its own role must sit above any it manages."
+            : (res.detail ?? res.error ?? "Could not reach Discord."),
+      });
+    } catch (err) {
+      steps.push({
+        key,
+        label,
+        status: "failed",
+        detail: err instanceof Error ? err.message : "Unexpected error.",
+      });
+    }
+  };
+
+  // 1. Slash commands. First because every other feature is reached through
+  //    them, and it is the step most often forgotten - commands do not appear
+  //    in Discord until they are registered.
+  if (discordEnv.appId) {
+    const path = `/applications/${discordEnv.appId}/guilds/${discordEnv.guildId}/commands`;
+    try {
+      const res = await fetch(`https://discord.com/api/v10${path}`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bot ${discordEnv.botToken}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(SLASH_COMMANDS),
+      });
+      steps.push({
+        key: "commands",
+        label: "Slash commands",
+        status: res.ok ? "ok" : "failed",
+        detail: res.ok
+          ? `Registered ${SLASH_COMMANDS.length} commands to the guild.`
+          : `Discord returned HTTP ${res.status}.`,
+      });
+    } catch (err) {
+      steps.push({
+        key: "commands",
+        label: "Slash commands",
+        status: "failed",
+        detail: err instanceof Error ? err.message : "Could not reach Discord.",
+      });
+    }
+  } else {
+    steps.push({
+      key: "commands",
+      label: "Slash commands",
+      status: "skipped",
+      detail: "DISCORD_CLIENT_ID is not set, so commands could not be registered.",
+    });
+  }
+
+  // 2. Verification roles before the panel that hands them out.
+  await record("verification_roles", "Verification roles", setupVerificationRoles);
+
+  // 3. Level roles.
+  await record("level_roles", "Level roles", setupLevelRoles);
+
+  // 4. Counter channels.
+  await record("stats_channels", "Counter channels", setupStatsChannels);
+
+  // 5 & 6. Panels, which need a channel to be posted into. That channel is a
+  //        human decision - which one members should see - so a missing one is
+  //        reported as outstanding rather than guessed at by creating a
+  //        channel nobody asked for.
+  const verifyCfg = await getBotConfig("verification");
+  if (verifyCfg.panel_channel_id) {
+    const res = await postVerificationPanel(verifyCfg.panel_channel_id);
+    steps.push({
+      key: "verification_panel",
+      label: "Verification panel",
+      status: res.ok ? "ok" : "failed",
+      detail: res.ok
+        ? "Posted (or updated in place)."
+        : `Could not post: ${describe(res)}. Check the bot can see and send in that channel.`,
+    });
+  } else {
+    steps.push({
+      key: "verification_panel",
+      label: "Verification panel",
+      status: "skipped",
+      detail: "Pick a verification channel below, then save - the panel posts itself.",
+    });
+  }
+
+  const ticketCfg = await getBotConfig("tickets");
+  if (ticketCfg.panel_channel_id) {
+    const res = await postTicketPanel(ticketCfg.panel_channel_id);
+    steps.push({
+      key: "ticket_panel",
+      label: "Ticket panel",
+      status: res.ok ? "ok" : "failed",
+      detail: res.ok
+        ? "Posted (or updated in place)."
+        : `Could not post: ${describe(res)}. Check the bot can see and send in that channel.`,
+    });
+  } else {
+    steps.push({
+      key: "ticket_panel",
+      label: "Ticket panel",
+      status: "skipped",
+      detail: "Pick a ticket channel below, then save - the panel posts itself.",
+    });
+  }
+
+  return { ok: steps.some((s) => s.status === "ok"), steps };
 }

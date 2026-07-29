@@ -332,3 +332,37 @@ reward will be granted but draw nothing. Decorations live in
 `components/profile/avatar-decoration.tsx`, nameplates in
 `components/profile/nameplate.tsx`, effects in
 `components/profile/profile-effects.tsx`.
+
+## One-click setup
+
+Admin → Discord bot → Sync → **Run full setup** does everything a fresh server
+needs, in dependency order:
+
+1. Register the slash commands (first, because every other feature is reached
+   through them, and they do not appear in Discord until registered)
+2. Create the verification roles
+3. Create the level-milestone roles
+4. Create the live counter channels
+5. Post the verification panel
+6. Post the ticket panel
+
+It reports on each step separately rather than returning one success or
+failure. Discord setup fails in partial, unrelated ways - the bot can often
+create roles but not post in a channel it cannot see - so aborting at the first
+error would hide the steps that would have worked, and "setup failed" would
+send an admin looking in the wrong place. Each row shows what Discord itself
+said.
+
+Every step is idempotent: existing roles and channels with the expected names
+are reused, and panels are edited in place rather than re-posted. That makes
+the button safe to press repeatedly, and it doubles as a "fix whatever is
+missing" control after granting the bot a permission it was lacking.
+
+Two steps report as **skipped** rather than failed when no channel is
+configured for the verification or ticket panel. Which channel members should
+see is a human decision, so the button will not invent one; pick the channel in
+the settings below and saving posts the panel itself.
+
+`DISCORD_BOT_TOKEN` and `DISCORD_GUILD_ID` are checked up front, so a missing
+credential produces one clear message instead of six copies of "could not reach
+Discord".

@@ -675,3 +675,19 @@ export async function adminSetFlagConfig(
   revalidatePath("/roadmap");
   return { ok: true };
 }
+
+/**
+ * One-click full Discord setup: registers commands, creates the roles and
+ * counter channels, and posts the panels, reporting on each step.
+ *
+ * Safe to run repeatedly - every underlying step reuses what already exists
+ * rather than duplicating it, so this doubles as a "fix whatever is missing"
+ * button after a permission change.
+ */
+export async function adminRunFullDiscordSetup() {
+  await requireStaff();
+  const { runFullSetup } = await import("@/lib/discord/setup");
+  const res = await runFullSetup();
+  revalidatePath("/admin/discord");
+  return res;
+}

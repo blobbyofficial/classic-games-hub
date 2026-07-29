@@ -5,6 +5,22 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 🪄 One-click Discord setup
+
+- Admin → Discord bot → Sync → **Run full setup** registers the slash commands,
+  creates the verification and level roles and the live counter channels, and
+  posts both panels, in dependency order.
+- It reports on **each step separately** rather than returning one success or
+  failure. Discord setup fails in partial, unrelated ways - the bot can often
+  create roles but not post in a channel it cannot see - so aborting at the
+  first error would hide the four steps that would have worked, and "setup
+  failed" sends an admin looking in the wrong place. Each row quotes what
+  Discord itself said.
+- Every step is idempotent, so the button doubles as a "fix whatever is still
+  missing" control after granting the bot a permission it was lacking.
+- Missing credentials are caught up front, so an unset token gives one clear
+  message instead of six copies of "could not reach Discord".
+
 ### 💗 Monthly booster drop
 
 - One exclusive cosmetic per calendar month for everyone boosting the Discord
