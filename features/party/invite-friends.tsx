@@ -68,7 +68,7 @@ export function InviteFriends({ friends, members }: { friends: FriendRow[]; memb
                 const done = invited.has(f.user_id);
                 return (
                   <li key={f.user_id} className="flex items-center gap-2 rounded-xl px-1 py-1.5">
-                    <UserAvatar src={f.avatar_url} name={name} frame={f.equipped?.avatar_frame} className="size-8" />
+                    <UserAvatar src={f.avatar_url} name={name} frame={f.equipped?.avatar_frame} decoration={f.equipped?.decoration} className="size-8" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">
                         <PlayerName name={name} equipped={f.equipped} />

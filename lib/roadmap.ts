@@ -73,12 +73,6 @@ export const ROADMAP: RoadmapRelease[] = [
         blurb: "The expressive extras that didn't make the v1.2.0 cut - layered, optional, never pay-to-win.",
         items: [
           {
-            title: "Layered avatar decorations",
-            description:
-              "Decorations that sit on top of your profile picture rather than around it, bought from the store and shown wherever your avatar appears - including party lobbies and multiplayer matches. Avatar frames are already live; this is the layer above them.",
-            status: "next",
-          },
-          {
             title: "Profile frames",
             description:
               "Optional Discord-like decorative frames around your entire profile card - seasonal, achievement-gated and cosmetic-shop variants.",

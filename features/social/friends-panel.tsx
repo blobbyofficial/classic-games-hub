@@ -101,6 +101,7 @@ function PlayerResult({ player }: { player: PlayerSearchRow }) {
             src={player.avatar_url}
             name={player.display_name ?? player.username}
             frame={player.equipped?.avatar_frame}
+            decoration={player.equipped?.decoration}
             className="size-10"
           />
         </Link>
@@ -244,7 +245,7 @@ export function FriendsList({ friends }: { friends: FriendRow[] }) {
                 <Card key={f.user_id}>
                   <CardContent className="flex items-center gap-3 p-3">
                     <Link href={`/u/${f.username}`} className="relative">
-                      <UserAvatar src={f.avatar_url} name={f.display_name ?? f.username} frame={f.equipped?.avatar_frame} className="size-10" />
+                      <UserAvatar src={f.avatar_url} name={f.display_name ?? f.username} frame={f.equipped?.avatar_frame} decoration={f.equipped?.decoration} className="size-10" />
                       <span className="absolute -bottom-0.5 -right-0.5">
                         <PresenceDot lastSeen={f.is_online ? new Date().toISOString() : f.last_seen_at} className="size-3.5" />
                       </span>

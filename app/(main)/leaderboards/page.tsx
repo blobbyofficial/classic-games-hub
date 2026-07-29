@@ -86,6 +86,7 @@ export default async function LeaderboardsPage({
                         src={r.avatar_url}
                         name={r.display_name ?? r.username}
                         frame={r.equipped?.avatar_frame}
+                        decoration={r.equipped?.decoration}
                         className={cn(
                           "border-2 border-card ring-2 transition-transform group-hover:scale-105",
                           style.ring,
@@ -131,7 +132,7 @@ export default async function LeaderboardsPage({
                         {r.rank}
                       </span>
                       <Link href={`/u/${r.username}`} className="flex min-w-0 flex-1 items-center gap-2.5 hover:underline">
-                        <UserAvatar src={r.avatar_url} name={r.display_name ?? r.username} frame={r.equipped?.avatar_frame} className="size-8" />
+                        <UserAvatar src={r.avatar_url} name={r.display_name ?? r.username} frame={r.equipped?.avatar_frame} decoration={r.equipped?.decoration} className="size-8" />
                         <div className="min-w-0">
                           <p className="truncate text-sm font-medium">
                             <PlayerName name={r.display_name ?? r.username} equipped={r.equipped} />

@@ -21,6 +21,7 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
   const isFrame = item.kind === "avatar_frame";
   const isNameplate = item.kind === "nameplate";
   const isEffect = item.kind === "effect";
+  const isDecoration = item.kind === "decoration";
 
   // For banner/theme items, drive the real backdrop off a synthetic equipped map.
   const equipped: Record<string, string> | undefined = isBanner
@@ -42,8 +43,13 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
 
       {/* Avatar */}
       <div className="-mt-10 px-5">
-        {isFrame ? (
-          <UserAvatar name="SamplePlayer" frame={item.slug} className="size-20 border-4 border-card" />
+        {isFrame || isDecoration ? (
+          <UserAvatar
+            name="SamplePlayer"
+            frame={isFrame ? item.slug : undefined}
+            decoration={isDecoration ? item.slug : undefined}
+            className="size-20 border-4 border-card"
+          />
         ) : (
           <div className="inline-grid size-20 place-items-center rounded-full bg-card p-1">
             <div className="grid size-full place-items-center rounded-full border-4 border-card bg-gradient-to-br from-primary/30 to-accent/30">

@@ -13,7 +13,7 @@ import { GiftDialog } from "./gift-dialog";
 import { cn, formatNumber, RARITY_META } from "@/lib/utils";
 import type { ShopItem } from "@/types";
 
-const EQUIPPABLE = new Set(["avatar_frame", "profile_theme", "badge", "effect", "banner", "nameplate"]);
+const EQUIPPABLE = new Set(["avatar_frame", "profile_theme", "badge", "effect", "banner", "nameplate", "decoration"]);
 const KIND_LABEL: Record<string, string> = {
   avatar_frame: "Avatar frame",
   profile_theme: "Profile theme",

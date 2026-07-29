@@ -139,6 +139,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                   src={profile.avatar_url}
                   name={profile.display_name ?? profile.username}
                   frame={profile.equipped?.avatar_frame}
+                  decoration={profile.equipped?.decoration}
                   className="size-24 border-4 border-card sm:size-28"
                 />
                 <div className="absolute bottom-1 right-1">

@@ -5,6 +5,22 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 🎩 Layered avatar decorations
+
+- Seven decorations that sit **on top of** your avatar rather than around it -
+  cat ears, a halo, a crown, sparkles, flames, headphones and a personal
+  thundercloud. They layer with frames, so you can wear one of each.
+- A new `decoration` kind rather than more frame slugs, because
+  `profiles.equipped` holds one slug per kind and that is exactly what lets the
+  two stack (`0049`). No new mechanism: ownership, equipping and the staff-only
+  gate all go through the existing `equip_item()` path.
+- Drawn as inline SVG on a viewBox mapped to the avatar's own box, so they scale
+  to any avatar size with no hard-coded pixels, no extra requests and no blurry
+  upscaling - the same approach frames and profile effects already take.
+- Reduced motion drops their animation but keeps the decoration. It is a
+  cosmetic the player bought, not an effect; the setting exists to stop things
+  moving, not to confiscate their crown.
+
 ### 🎚️ The last two level milestones
 
 - **L20: saved looks.** A preset snapshots everything you have equipped, so

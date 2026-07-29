@@ -36,6 +36,7 @@ export async function HomeLeaderboardPreview() {
             src={r.avatar_url}
             name={r.display_name ?? r.username}
             frame={r.equipped?.avatar_frame}
+            decoration={r.equipped?.decoration}
             className="size-8"
           />
           <div className="min-w-0 flex-1">

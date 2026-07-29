@@ -94,6 +94,7 @@ export function ProfileSettings({ profile }: { profile: Profile }) {
               src={avatar}
               name={displayName || profile.username}
               frame={profile.equipped?.avatar_frame}
+              decoration={profile.equipped?.decoration}
               className="size-20"
             />
             <span className="absolute inset-0 grid place-items-center rounded-full bg-black/50 opacity-0 transition-opacity group-hover:opacity-100">
