@@ -4,6 +4,7 @@ import { Nameplate } from "@/components/profile/nameplate";
 import { UserAvatar } from "@/components/ui/avatar";
 import { ProfileEffects } from "@/components/profile/profile-effects";
 import { ProfileBackdrop } from "@/components/profile/profile-backdrop";
+import { ProfileFrame } from "@/components/profile/profile-frame";
 import { bannerBackground } from "@/components/profile/profile-theme";
 import type { ShopItem } from "@/types";
 
@@ -21,6 +22,7 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
   const isFrame = item.kind === "avatar_frame";
   const isNameplate = item.kind === "nameplate";
   const isEffect = item.kind === "effect";
+  const isProfileFrame = item.kind === "profile_frame";
   const isDecoration = item.kind === "decoration";
 
   // For banner/theme items, drive the real backdrop off a synthetic equipped map.
@@ -30,6 +32,7 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
   const bannerBg = isBanner ? bannerBackground(equipped) : undefined;
 
   return (
+    <ProfileFrame slug={isProfileFrame ? item.slug : undefined}>
     <div className="mx-auto w-full max-w-sm overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
       {/* Banner */}
       <div
@@ -94,5 +97,6 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
         <p className="text-sm text-muted-foreground">Level 12 · 3,400 credits</p>
       </div>
     </div>
+    </ProfileFrame>
   );
 }

@@ -73,12 +73,6 @@ export const ROADMAP: RoadmapRelease[] = [
         blurb: "The expressive extras that didn't make the v1.2.0 cut - layered, optional, never pay-to-win.",
         items: [
           {
-            title: "Profile frames",
-            description:
-              "Optional Discord-like decorative frames around your entire profile card - seasonal, achievement-gated and cosmetic-shop variants.",
-            status: "later",
-          },
-          {
             title: "More expressive extras",
             description:
               "A backlog of stretch cosmetics inspired by the platforms we love: profile entrance animations, custom cursor trails on your page, an optional profile-view counter, a mini 'now playing' game widget, and short looping profile music drawn from the v1.3 track library.",

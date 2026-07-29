@@ -9,6 +9,7 @@ const GROUPS: { key: string; label: string; kinds: string[] }[] = [
   { key: "all", label: "All", kinds: [] },
   { key: "frames", label: "Frames", kinds: ["avatar_frame"] },
   { key: "decorations", label: "Decorations", kinds: ["decoration"] },
+  { key: "profile-frames", label: "Profile frames", kinds: ["profile_frame"] },
   { key: "themes", label: "Themes", kinds: ["profile_theme", "banner"] },
   { key: "nameplates", label: "Nameplates", kinds: ["nameplate"] },
   { key: "badges", label: "Badges", kinds: ["badge"] },

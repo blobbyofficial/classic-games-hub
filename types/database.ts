@@ -23,7 +23,8 @@ export type ShopKind =
   | "xp_boost"
   | "credit_boost"
   | "track"
-  | "decoration";
+  | "decoration"
+  | "profile_frame";
 export type FriendStatus = "pending" | "accepted" | "declined";
 export type AllowDms = "everyone" | "friends" | "none";
 export type PresenceStatus = "auto" | "online" | "away" | "dnd" | "sleep" | "invisible";

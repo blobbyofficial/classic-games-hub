@@ -31,6 +31,7 @@ import { Nameplate } from "@/components/profile/nameplate";
 import { NameStyle } from "@/components/profile/name-style";
 import { ProfileEffects } from "@/components/profile/profile-effects";
 import { ProfileBackdrop } from "@/components/profile/profile-backdrop";
+import { ProfileFrame } from "@/components/profile/profile-frame";
 import { RARITY_META, formatNumber, timeAgo, cn } from "@/lib/utils";
 import type { FriendshipRelation } from "@/types";
 
@@ -120,8 +121,9 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      {/* Banner */}
-      <div className="overflow-hidden rounded-3xl border border-border">
+      {/* Banner, wrapped in the equipped profile frame (outermost layer). */}
+      <ProfileFrame slug={profile.equipped?.profile_frame}>
+        <div className="overflow-hidden rounded-3xl border border-border">
         <div className="relative h-40 sm:h-56" style={{ background: bannerBackground(profile.equipped) }}>
           {!profile.banner_url && <ProfileBackdrop equipped={profile.equipped} reduced={reducedMotion} />}
           {profile.banner_url && (
@@ -277,7 +279,8 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
             <Calendar className="size-3.5" /> Joined {timeAgo(profile.created_at)}
           </p>
         </div>
-      </div>
+        </div>
+      </ProfileFrame>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

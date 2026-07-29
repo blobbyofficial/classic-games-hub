@@ -5,6 +5,29 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 🖼️ Profile frames
+
+- Six decorative frames around your **entire profile card** - Gilded, Obsidian,
+  Sakura, Tide, Ember, and Prism at level 40. The third and outermost cosmetic
+  layer, and all three can be worn together:
+
+  | Kind | Where it sits |
+  | --- | --- |
+  | `avatar_frame` | rings the profile picture |
+  | `decoration` | sits on top of the picture |
+  | `profile_frame` | wraps the whole card |
+
+  That is exactly why each is its own shop kind - `profiles.equipped` holds one
+  slug per kind, so separate kinds are what let them stack instead of
+  overwriting each other (`0053`).
+- Drawn as CSS gradients rather than border images, so they stay sharp at any
+  card width and add no requests. The ring sits *behind* the card rather than
+  the card sitting inside a padded parent: rotating a padding box would carry
+  the card around with it, whereas rotating a layer behind leaves the card
+  still - the same approach the animated avatar frames already use.
+- Reduced motion leaves a static frame rather than removing it, matching the
+  call made for decorations.
+
 ### 👥 Friends activity feed
 
 - `/friends` now shows a quiet feed of what your friends have been up to - high

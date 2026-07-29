@@ -13,12 +13,13 @@ import { BoostTimer } from "./boost-timer";
 import { cn, RARITY_META } from "@/lib/utils";
 import type { OwnedItem } from "@/services/shop";
 
-const EQUIPPABLE = new Set(["avatar_frame", "profile_theme", "badge", "effect", "banner", "nameplate", "decoration"]);
+const EQUIPPABLE = new Set(["avatar_frame", "profile_theme", "badge", "effect", "banner", "nameplate", "decoration", "profile_frame"]);
 
 const TYPE_FILTERS: { key: string; label: string; kinds: string[] }[] = [
   { key: "all", label: "All", kinds: [] },
   { key: "frames", label: "Frames", kinds: ["avatar_frame"] },
   { key: "decorations", label: "Decorations", kinds: ["decoration"] },
+  { key: "profile-frames", label: "Profile frames", kinds: ["profile_frame"] },
   { key: "themes", label: "Themes", kinds: ["profile_theme"] },
   { key: "banners", label: "Banners", kinds: ["banner"] },
   { key: "nameplates", label: "Nameplates", kinds: ["nameplate"] },
