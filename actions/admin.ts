@@ -691,3 +691,24 @@ export async function adminRunFullDiscordSetup() {
   revalidatePath("/admin/discord");
   return res;
 }
+
+/**
+ * Puts a game into booster early access for a number of days, or opens it now
+ * when `days` is 0.
+ *
+ * Days rather than a date picker: "out early for a week" is how the decision is
+ * actually made, and it removes any chance of typing a date in the past and
+ * silently shipping a game that is already open.
+ */
+export async function adminSetEarlyAccess(id: string, days: number): Promise<RpcResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const until =
+    days > 0 ? new Date(Date.now() + days * 86_400_000).toISOString() : null;
+  const { error } = await supabase.from("games").update({ early_access_until: until }).eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/games");
+  revalidatePath("/games");
+  revalidatePath("/", "layout");
+  return { ok: true, until };
+}

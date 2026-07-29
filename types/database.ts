@@ -143,6 +143,8 @@ export interface Database {
           max_score: number | null;
           credit_divisor: number;
           max_credits_per_session: number;
+          /** While in the future, boosters and staff only. See 0056. */
+          early_access_until: string | null;
           created_at: string;
           updated_at: string;
         };

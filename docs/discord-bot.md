@@ -383,3 +383,32 @@ Spending goes through `gift_with_token()`, which claims the token with an
 "already spent" check, so two concurrent requests cannot both win. The
 temporary grant uses `inventory_items.expires_at`, the same column boosts use,
 so every existing ownership check already handles it correctly.
+
+## Early access
+
+A game with `games.early_access_until` set in the future is playable only by
+boosters and staff until that moment, then opens to everyone (`0056`). Set it
+from Admin → Games with the lock dropdown: 3 days, 1 week, 2 weeks, or "open to
+everyone" to end it early.
+
+Days rather than a date picker, because "out early for a week" is how the
+decision is actually made, and it removes any chance of typing a date in the
+past and silently shipping a game that is already open.
+
+**The gate is a trigger on `play_sessions`, not a check inside
+`submit_score()`.** That function is a hundred lines and has already been
+re-declared across five migrations; adding a sixth copy to insert one `if`
+would be another chance for the rest of the body to drift from what is live. A
+trigger states the rule once and keeps holding however `submit_score` is
+rewritten later. `play_sessions` is the right hook because `submit_score`
+inserts it before touching the leaderboard, so raising there aborts the whole
+transaction and no score, XP or credits land either.
+
+Note this gates **earning**, not the page. A determined non-booster could still
+load the engine in their browser; what they cannot do is record a score. That
+is the honest boundary - the UI hides the player, and the database refuses the
+result.
+
+The game stays listed for everyone throughout, shown with a lock badge and a
+countdown to the open date. A perk nobody can see is a perk nobody wants, and
+half the point of early access is that other people know it is happening.

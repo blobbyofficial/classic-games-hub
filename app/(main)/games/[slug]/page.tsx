@@ -5,9 +5,10 @@ import type { Metadata } from "next";
 import { Gamepad2, Trophy, Users, Keyboard, Info, MessageSquare, ChevronLeft } from "lucide-react";
 import { getGameBySlug, getPublishedGames } from "@/services/games";
 import { ControlsList } from "@/features/games/controls-list";
-import { getSessionUser, getFeatureFlags } from "@/lib/supabase/queries";
+import { getSessionUser, getFeatureFlags, getCurrentProfile } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { GamePlayer } from "@/features/games/game-player";
+import { EarlyAccessLock } from "@/features/games/early-access-lock";
 import { GameLeaderboard } from "@/features/leaderboards/game-leaderboard";
 import { RateGame } from "@/features/games/rate-game";
 import { GameCard } from "@/components/games/game-card";
@@ -36,7 +37,14 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
   const game = await getGameBySlug(slug);
   if (!game || (game.status !== "published" && game.status !== "coming_soon")) notFound();
 
-  const [user, allGames, flags] = await Promise.all([getSessionUser(), getPublishedGames(), getFeatureFlags()]);
+  // getCurrentProfile shares the cached session with getSessionUser, so adding
+  // it to the batch for the early-access check costs no extra round trip.
+  const [user, allGames, flags, profile] = await Promise.all([
+    getSessionUser(),
+    getPublishedGames(),
+    getFeatureFlags(),
+    getCurrentProfile(),
+  ]);
   const supabase = await createClient();
 
   // The public review list doesn't depend on the viewer, so it rides along with
@@ -67,6 +75,14 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
   const meta = CATEGORY_META[game.category];
   const related = allGames.filter((g) => g.category === game.category && g.id !== game.id).slice(0, 5);
   const comingSoon = game.status === "coming_soon";
+
+  // Booster early access. The database refuses to record a play for anyone who
+  // is not eligible (0056), so this only decides what to render.
+  const earlyUntil = game.early_access_until;
+  const inEarlyAccess = Boolean(earlyUntil && new Date(earlyUntil) > new Date());
+  const mayPlayEarly =
+    profile?.booster_since != null || profile?.role === "admin" || profile?.role === "moderator";
+  const earlyLocked = inEarlyAccess && !mayPlayEarly;
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -112,6 +128,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 <p className="text-muted-foreground">This game is on its way. Check back shortly!</p>
               </div>
             </Card>
+          ) : earlyLocked ? (
+            <EarlyAccessLock until={earlyUntil!} title={game.title} />
           ) : (
             <GamePlayer
               slug={game.slug}

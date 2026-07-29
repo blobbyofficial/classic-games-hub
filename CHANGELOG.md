@@ -5,6 +5,23 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 🔓 Booster early access
+
+- A game can now go out to boosters ahead of everyone else (`0056`). Set it from
+  Admin → Games: 3 days, 1 week, 2 weeks, or open it to everyone early.
+- **The game stays visible to everyone**, shown with a lock badge on its card
+  and, on its page, a countdown and a prompt to boost. A perk nobody can see is
+  a perk nobody wants, and half the point of early access is that other people
+  know it is running.
+- The gate is a **trigger on `play_sessions`**, not a check inside
+  `submit_score()`. That function is a hundred lines and has already been
+  re-declared across five migrations; a sixth copy to insert one `if` would be
+  another chance for the rest of it to drift from what is live. A trigger states
+  the rule once and keeps holding however `submit_score` is rewritten later.
+- It gates **earning, not the page**. A determined non-booster could still load
+  the engine; what they cannot do is record a score, XP or credits for it. The
+  UI hides the player, the database refuses the result.
+
 ### 🎟️ Monthly gift token
 
 - Boosters get one token a month to give a friend any cosmetic for **30 days,
