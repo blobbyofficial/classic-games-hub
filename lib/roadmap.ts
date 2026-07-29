@@ -150,9 +150,41 @@ export const ROADMAP: RoadmapRelease[] = [
         ],
       },
       {
-        heading: "Polish & performance",
+        heading: "Speed",
+        icon: "Gauge",
+        blurb:
+          "The hub should feel instant. Less to download before the first paint, pages that arrive in pieces rather than all at once, and a loading state only when there's genuinely something to wait for.",
+        items: [
+          {
+            title: "Smaller first load",
+            description:
+              "Cutting what every page has to download before it can do anything — heavy libraries now load only for the players and moments that actually need them.",
+            status: "in-progress",
+          },
+          {
+            title: "Pages that load in sections",
+            description:
+              "Instead of waiting on the slowest query before showing anything, the page shell and its quick parts appear straight away and the rest fills in as it arrives.",
+            status: "in-progress",
+          },
+          {
+            title: "Honest loading states",
+            description:
+              "Skeletons shaped like the page they're standing in for, and only once a wait is long enough to notice — a placeholder that flashes for a moment is worse than none at all.",
+            status: "in-progress",
+          },
+        ],
+      },
+      {
+        heading: "Polish & presentation",
         icon: "Sparkles",
         items: [
+          {
+            title: "New icons and thumbnails",
+            description:
+              "A proper redraw of the whole icon set — the app icon and favicon, and all twenty-four game thumbnails as one consistent family rather than a set of unrelated drawings.",
+            status: "next",
+          },
           {
             title: "More animation, better reduced-motion",
             description:

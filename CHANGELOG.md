@@ -3,6 +3,30 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## Unreleased — "Collector's Edition" (v1.5.0, in progress)
+
+### ⚡ Performance
+
+- **The Supabase client no longer ships in the first load.** At ~241 kB it was
+  the largest dependency in the bundle, and three components pulled it into
+  every route while rendering nothing until you interacted with them:
+  `SessionSync` (mounted by the layout, no-ops when signed out), the navbar
+  `MusicPlayer` (hidden unless you own a track) and `GiftDialog` (only queries
+  once opened). All three now load it on demand. Per-route client JS fell about
+  35% — the home page from 716 kB to 463 kB, and every route except `/party`
+  and `/messages/[id]`, which need the realtime socket to show anything, by a
+  similar margin.
+- **Server reads run in parallel.** Six routes were awaiting queries in sequence
+  that had no dependency on one another. The home page went from five round
+  trips to one, `/u/[username]` from six to two, settings from four to two, and
+  the `(main)` layout — which gates every single page — from two to one.
+- **Loading states are route-shaped and no longer flicker.** Every route already
+  had a fallback, but it was the home page's skeleton, so the shop, settings and
+  admin all flashed the wrong layout. Nine routes now have skeletons matching
+  their real content, with one shared admin skeleton covering twelve pages. New
+  `Deferred` and `DeferredSpinner` primitives stay invisible for 300 ms before
+  fading in, so quick loads show nothing at all instead of a flash.
+
 ## Unreleased — "New Dimensions" (parties & online multiplayer)
 
 Roadmap v1.4.0. Playing together stops being a plan and becomes a feature, and
