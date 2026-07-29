@@ -62,6 +62,23 @@ four migrations that were live in the database finally have code to reach them.
 
 ### 🧹 Admin dashboard tidy-up
 
+- **Sidebar layout.** The nav sat above the content, so every page opened by
+  pushing what you came for below the fold. It now sits beside the content on
+  desktop and stays put as you scroll.
+- **Every page has a heading.** Pages used to begin however their author felt
+  that day — a bare paragraph, a search box, an `h2` at whatever size. The
+  heading now comes from the route, so a new page gets a consistent one by
+  adding an entry rather than by remembering to match ten other pages.
+- **One set of shared pieces** (`features/admin/ui.tsx`): result lines, the
+  Discord-ID field, and empty states. The result line existed in five separate
+  copies and the ID field in two; they had already started to diverge.
+- Results now read as a tinted line rather than loose coloured text, so a
+  success and a failure are distinguishable at a glance.
+- **Open reports surface as a banner** on the Overview rather than a number to
+  notice — with a link straight to them.
+- The header is calmer: the shouty red shield is gone, and there's a "View
+  site" link back out.
+
 - **Admin → Discord bot** was one page carrying roughly thirteen cards and
   several hundred form fields. It is now four tabs grouped by why you came —
   **Actions** (announce, moderation, channel tools), **Sync** (register

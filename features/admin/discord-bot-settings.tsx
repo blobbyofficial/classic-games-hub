@@ -13,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { FeedbackLine, type Feedback } from "./ui";
 
 export interface LevelingConfig {
   enabled: boolean;
@@ -31,24 +32,6 @@ export interface LevelingConfig {
 export interface RoleSyncConfig {
   enabled: boolean;
   role_map: Record<string, string>;
-}
-
-type Feedback = { error?: string; message?: string } | null;
-
-function FeedbackLine({ state }: { state: Feedback }) {
-  if (!state) return null;
-  if (state.error) {
-    return (
-      <p className="flex items-center gap-2 text-sm text-destructive">
-        <AlertCircle className="size-4" /> {state.error}
-      </p>
-    );
-  }
-  return (
-    <p className="flex items-center gap-2 text-sm text-success">
-      <CheckCircle2 className="size-4" /> {state.message}
-    </p>
-  );
 }
 
 export function DiscordBotSettings({

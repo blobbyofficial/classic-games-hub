@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { AlertCircle, CheckCircle2, Terminal, XCircle } from "lucide-react";
+import { CheckCircle2, Terminal, XCircle } from "lucide-react";
 import { adminDiscordEnvStatus, adminRegisterSlashCommands } from "@/actions/admin";
 import type { DiscordEnvStatus } from "@/actions/admin";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { FeedbackLine, type Feedback } from "./ui";
 
 /**
  * Registering the commands, and what credentials this deployment has.
@@ -13,24 +14,6 @@ import { Button } from "@/components/ui/button";
  * Lives with the other syncing controls rather than buried in the settings
  * form: it is something you do once after a deploy, not a setting you tune.
  */
-
-type Feedback = { error?: string; message?: string } | null;
-
-function FeedbackLine({ state }: { state: Feedback }) {
-  if (!state) return null;
-  if (state.error) {
-    return (
-      <p className="flex items-start gap-2 text-sm text-destructive">
-        <AlertCircle className="mt-0.5 size-4 shrink-0" /> {state.error}
-      </p>
-    );
-  }
-  return (
-    <p className="flex items-start gap-2 text-sm text-success">
-      <CheckCircle2 className="mt-0.5 size-4 shrink-0" /> {state.message}
-    </p>
-  );
-}
 
 function EnvRow({ ok, name, need }: { ok: boolean; name: string; need: string }) {
   return (

@@ -8,27 +8,13 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
+import { FeedbackLine, type Feedback } from "./ui";
 import { cn } from "@/lib/utils";
 
 interface FlagRow {
   key: string;
   enabled: boolean;
   payload: unknown;
-}
-
-type Feedback = { error?: string; message?: string } | null;
-
-function FeedbackLine({ state }: { state: Feedback }) {
-  if (!state) return null;
-  return state.error ? (
-    <p className="flex items-center gap-2 text-sm text-destructive">
-      <AlertCircle className="size-4" /> {state.error}
-    </p>
-  ) : (
-    <p className="flex items-center gap-2 text-sm text-success">
-      <CheckCircle2 className="size-4" /> {state.message}
-    </p>
-  );
 }
 
 const SECTION_LABELS: Record<string, string> = {

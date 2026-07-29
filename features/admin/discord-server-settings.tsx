@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlertCircle, CheckCircle2, RefreshCcw, Save, Wand2 } from "lucide-react";
+import { RefreshCcw, Save, Wand2 } from "lucide-react";
 import {
   adminCreateLevelRoles,
   adminRefreshStatChannels,
@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
+import { FeedbackLine, IdField, type Feedback } from "./ui";
 import { Textarea } from "@/components/ui/textarea";
 
 /**
@@ -84,57 +85,7 @@ export interface LevelRolesConfig {
   roles: Record<string, string>;
 }
 
-type Feedback = { error?: string; message?: string } | null;
-
-function FeedbackLine({ state }: { state: Feedback }) {
-  if (!state) return null;
-  if (state.error) {
-    return (
-      <p className="flex items-center gap-2 text-sm text-destructive">
-        <AlertCircle className="size-4" /> {state.error}
-      </p>
-    );
-  }
-  return (
-    <p className="flex items-center gap-2 text-sm text-success">
-      <CheckCircle2 className="size-4" /> {state.message}
-    </p>
-  );
-}
-
 /** Snowflake input that stores "" as null. */
-function IdField({
-  id,
-  label,
-  value,
-  onChange,
-  hint,
-}: {
-  id: string;
-  label: string;
-  value: string | null;
-  onChange: (v: string | null) => void;
-  hint?: string;
-}) {
-  return (
-    <div className="space-y-1.5">
-      <Label htmlFor={id}>{label}</Label>
-      <Input
-        id={id}
-        inputMode="numeric"
-        placeholder="Discord ID"
-        value={value ?? ""}
-        onChange={(e) => onChange(e.target.value.trim() || null)}
-      />
-      <p className="text-xs text-muted-foreground">
-        {hint ? `${hint} ` : ""}
-        Paste an ID to use that one — saving renames it to match these settings. Leave empty and one
-        is created for you.
-      </p>
-    </div>
-  );
-}
-
 export function DiscordServerSettings({
   verification: initialVerification,
   moderation: initialModeration,

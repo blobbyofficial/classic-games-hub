@@ -4,6 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { StatTile } from "@/components/stat-tile";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatNumber, timeAgo } from "@/lib/utils";
+import { EmptyState } from "@/features/admin/ui";
 
 export default async function AdminOverviewPage() {
   const supabase = await createClient();
@@ -37,6 +38,19 @@ export default async function AdminOverviewPage() {
         <StatTile icon={Flag} label="Open reports" value={openReports ?? 0} accent="text-destructive" />
       </div>
 
+      {(openReports ?? 0) > 0 && (
+        <Link
+          href="/admin/reports"
+          className="flex items-center justify-between gap-3 rounded-xl border border-destructive/30 bg-destructive/10 px-4 py-3 text-sm transition-colors hover:bg-destructive/15"
+        >
+          <span className="flex items-center gap-2 font-medium text-destructive">
+            <Flag className="size-4" />
+            {openReports} report{openReports === 1 ? "" : "s"} waiting on you
+          </span>
+          <span className="text-xs text-destructive/80">Review →</span>
+        </Link>
+      )}
+
       <div className="grid gap-6 lg:grid-cols-2">
         <Card>
           <CardHeader>
@@ -60,7 +74,7 @@ export default async function AdminOverviewPage() {
               );
             })}
             {(recentSessions ?? []).length === 0 && (
-              <p className="text-sm text-muted-foreground">No plays yet.</p>
+              <EmptyState title="No plays yet" hint="Activity appears here as people play." />
             )}
           </CardContent>
         </Card>
