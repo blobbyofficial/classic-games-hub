@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * A loading state only ever helps if the wait is long enough to notice. Showing
- * a skeleton for 80ms reads as a flicker — worse than showing nothing — so
+ * a skeleton for 80ms reads as a flicker - worse than showing nothing - so
  * everything here stays invisible for `delay` and only then fades in. Fast
  * loads render nothing at all; slow ones get a proper placeholder.
  *
@@ -43,7 +43,7 @@ export function Deferred({ children, delay, className }: DeferredProps) {
 }
 
 /**
- * The same idea for inline pending states — a server action in flight, a panel
+ * The same idea for inline pending states - a server action in flight, a panel
  * refetching. Sized to sit inside a button or beside a label.
  */
 export function DeferredSpinner({

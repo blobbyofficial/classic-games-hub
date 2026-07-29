@@ -9,7 +9,7 @@ import { PartyRoom } from "@/features/party/party-room";
 
 export const metadata: Metadata = {
   title: "Party",
-  description: "Play together — head-to-head matches and score races with your friends.",
+  description: "Play together - head-to-head matches and score races with your friends.",
 };
 
 export default async function PartyPage() {

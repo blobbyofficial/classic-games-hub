@@ -76,7 +76,7 @@ export function GiftDialog({ item, children }: { item: ShopItem; children: React
             <Gift className="size-5 text-primary" /> Gift {item.name}
           </DialogTitle>
           <DialogDescription>
-            Gifting costs <b>{formatNumber(giftPrice)}</b> credits — 25% off the list price. Pick a friend to surprise.
+            Gifting costs <b>{formatNumber(giftPrice)}</b> credits - 25% off the list price. Pick a friend to surprise.
           </DialogDescription>
         </DialogHeader>
 

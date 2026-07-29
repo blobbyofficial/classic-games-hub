@@ -10,7 +10,7 @@ const LINES = [
 type Mark = null | "X" | "O";
 
 /** Polished tic-tac-toe: animated placement, an animated winning strike, hover
- *  feedback and a near-unbeatable minimax AI — plus a local two-player
+ *  feedback and a near-unbeatable minimax AI - plus a local two-player
  *  pass-and-play mode (roadmap v1.4) and online head-to-head against another
  *  member of your party (v1.5). Mobile-first. */
 const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus, net }) => {
@@ -31,7 +31,7 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
   let winT = 0; // winning-strike progress 0..1
   let hover = -1;
   let shakeT = 0;
-  // An online match is decided by the host, not by the mode pill — seat 1
+  // An online match is decided by the host, not by the mode pill - seat 1
   // plays X and moves first, so both clients agree without negotiating.
   let mode: "ai" | "2p" | "net" = net ? "net" : "ai";
   const myMark: "X" | "O" = net?.seat === 2 ? "O" : "X";
@@ -56,10 +56,10 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
     turn = "X";
     onScore(streak * 100);
     if (mode === "net") {
-      onStatus?.(`You are ${myMark} — ${turn === myMark ? "your move" : `${net!.opponentName} starts`}`);
+      onStatus?.(`You are ${myMark} - ${turn === myMark ? "your move" : `${net!.opponentName} starts`}`);
       return;
     }
-    onStatus?.(mode === "ai" ? "You are X — your move" : "Pass & play — X starts");
+    onStatus?.(mode === "ai" ? "You are X - your move" : "Pass & play - X starts");
   }
 
   function winnerOf(b: Mark[]): { who: "X" | "O"; line: number[] } | "draw" | null {
@@ -117,7 +117,7 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
     }
 
     if (w === "draw") {
-      onStatus?.(mode === "2p" ? "Draw — tap for a rematch" : "Draw — tap to play again");
+      onStatus?.(mode === "2p" ? "Draw - tap for a rematch" : "Draw - tap to play again");
       onGameOver(mode === "2p" ? 30 : streak * 100 + 20, mode === "2p" ? 0 : streak);
       beep(300, 0.1, "triangle");
       return;
@@ -140,7 +140,7 @@ const tictactoe: GameEngineFactory = ({ canvas, width, height, onScore, onGameOv
     } else {
       streak = 0;
       shakeT = 1;
-      onStatus?.("AI wins — tap to retry");
+      onStatus?.("AI wins - tap to retry");
       onGameOver(0, 0);
       beep(160, 0.25, "sawtooth");
     }

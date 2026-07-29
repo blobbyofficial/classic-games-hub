@@ -17,7 +17,7 @@ import {
  * Every Discord-affecting operation, with no interaction token in sight.
  *
  * These used to live inside the `/…` command handlers, which meant the admin
- * dashboard could only ever *store* settings — the Discord side of a change
+ * dashboard could only ever *store* settings - the Discord side of a change
  * happened when someone ran the matching slash command, and until then the
  * panel and the server disagreed. Both surfaces now call the same functions,
  * so a moderation case looks identical whether it came from `/ban` or from the
@@ -88,7 +88,7 @@ export async function recordModAction(input: {
     await discordRest.createMessage(cfg.log_channel_id, {
       embeds: [
         brandEmbed({
-          title: `${ACTION_EMOJI[input.action] ?? "🛡️"} ${input.action} — case #${created?.case ?? "?"}`,
+          title: `${ACTION_EMOJI[input.action] ?? "🛡️"} ${input.action} - case #${created?.case ?? "?"}`,
           description: [
             `**Member:** <@${input.targetId}> (\`${input.targetId}\`)`,
             `**Moderator:** <@${input.actorId}>`,
@@ -169,7 +169,7 @@ export async function moderate(input: ModInput): Promise<OpResult> {
   }
 
   const reason = input.reason.trim() || "No reason given";
-  const audit = `${reason} — by ${input.actor.name} (web)`;
+  const audit = `${reason} - by ${input.actor.name} (web)`;
 
   let res: { ok: boolean; status: number; error?: string };
   switch (input.action) {
@@ -244,10 +244,10 @@ export async function purge(
     .filter((m) => new Date(m.timestamp).getTime() > cutoff)
     .map((m) => m.id);
   if (ids.length === 0) {
-    return { ok: false, error: "Nothing to delete — messages older than 14 days can't be bulk-deleted." };
+    return { ok: false, error: "Nothing to delete - messages older than 14 days can't be bulk-deleted." };
   }
 
-  // Discord's bulk-delete endpoint rejects a single message — it takes 2–100.
+  // Discord's bulk-delete endpoint rejects a single message - it takes 2–100.
   const res =
     ids.length === 1
       ? await discordRest.deleteMessage(channelId, ids[0], `Purge by ${actor.name} (web)`)
@@ -284,7 +284,7 @@ export async function setChannelLock(
   if (!guildId) return { ok: false, error: "DISCORD_GUILD_ID isn't set." };
 
   // Editing a permission overwrite REPLACES it, so the current allow/deny have
-  // to be read first — otherwise locking a channel silently drops every other
+  // to be read first - otherwise locking a channel silently drops every other
   // @everyone rule on it (and unlocking dropped them too, by writing deny: 0).
   const SEND_MESSAGES = 1n << 11n;
   const channel = await discordRest.getChannel(channelId);
@@ -324,8 +324,8 @@ export type PushSection = "verification" | "level_roles" | "tickets" | "stats" |
  * Applies what is stored for a section to the Discord server.
  *
  * Saving a setting writes it to Postgres; this is what makes the server match.
- * Everything it does is idempotent — an existing role or channel with the
- * expected name is reused, and panels are re-posted rather than duplicated —
+ * Everything it does is idempotent - an existing role or channel with the
+ * expected name is reused, and panels are re-posted rather than duplicated -
  * so pushing repeatedly is safe.
  */
 export async function pushSection(section: PushSection): Promise<OpResult> {
@@ -336,7 +336,7 @@ export async function pushSection(section: PushSection): Promise<OpResult> {
       return {
         ok: true,
         detail: summarise(res, "role"),
-        error: res.detail ? `Some failed — Discord said: ${res.detail}` : undefined,
+        error: res.detail ? `Some failed - Discord said: ${res.detail}` : undefined,
       };
     }
     case "verification": {
@@ -358,7 +358,7 @@ export async function pushSection(section: PushSection): Promise<OpResult> {
       if (!cfg.panel_channel_id) {
         return {
           ok: false,
-          error: "Set **Panel channel ID** under Tickets below, then press Save — that posts the panel and lets this re-post it.",
+          error: "Set **Panel channel ID** under Tickets below, then press Save - that posts the panel and lets this re-post it.",
         };
       }
       const posted = await postTicketPanel(cfg.panel_channel_id);
@@ -368,7 +368,7 @@ export async function pushSection(section: PushSection): Promise<OpResult> {
     case "stats": {
       const cfg = await getBotConfig("stats");
       if (!cfg.enabled) {
-        return { ok: false, error: "Counters are switched off — tick **Counters enabled** under Live counters and save." };
+        return { ok: false, error: "Counters are switched off - tick **Counters enabled** under Live counters and save." };
       }
       const created = await setupStatsChannels();
       if (!created.ok) return { ok: false, error: `Couldn't sync counters: ${created.error}` };
@@ -382,8 +382,8 @@ export async function pushSection(section: PushSection): Promise<OpResult> {
     }
     case "moderation":
       // Automod rules and the log channel are read at the moment they're used,
-      // so there is genuinely nothing to push — saying so beats a fake tick.
-      return { ok: true, detail: "Moderation settings apply immediately — nothing to push." };
+      // so there is genuinely nothing to push - saying so beats a fake tick.
+      return { ok: true, detail: "Moderation settings apply immediately - nothing to push." };
   }
 }
 
@@ -398,7 +398,7 @@ function summarise(
     res.failed.length ? `failed ${res.failed.length}` : "",
   ].filter(Boolean);
   const missing = res.missing?.length
-    ? ` Linked ${noun}${res.missing.length === 1 ? "" : "s"} not found in the server: ${res.missing.join(", ")} — left alone, not replaced.`
+    ? ` Linked ${noun}${res.missing.length === 1 ? "" : "s"} not found in the server: ${res.missing.join(", ")} - left alone, not replaced.`
     : "";
   return `${noun}s: ${bits.join(", ") || "nothing to do"}.${missing}`;
 }

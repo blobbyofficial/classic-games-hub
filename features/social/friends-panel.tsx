@@ -233,8 +233,8 @@ export function FriendsList({ friends }: { friends: FriendRow[] }) {
   return (
     <div className="space-y-4">
       {[
-        { label: `Online — ${online.length}`, items: online },
-        { label: `Offline — ${offline.length}`, items: offline },
+        { label: `Online - ${online.length}`, items: online },
+        { label: `Offline - ${offline.length}`, items: offline },
       ].map(
         (group) =>
           group.items.length > 0 && (

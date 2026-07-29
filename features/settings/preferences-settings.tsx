@@ -93,7 +93,7 @@ export function PreferencesSettings({ settings }: { settings: UserSettings }) {
           <CardDescription>Control who can reach you and what they see.</CardDescription>
         </CardHeader>
         <CardContent className="divide-y divide-border/60">
-          <Row icon={Eye} title="Show online status" description="Master switch — hide your presence entirely.">
+          <Row icon={Eye} title="Show online status" description="Master switch - hide your presence entirely.">
             <Switch checked={local.show_online_status} onCheckedChange={(v) => update("show_online_status", v)} />
           </Row>
           <Row icon={Circle} title="Status" description="Set how you appear to others.">

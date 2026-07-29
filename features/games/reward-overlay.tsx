@@ -45,7 +45,7 @@ export function RewardOverlay({
           <div className="mt-5 space-y-2">
             {result.rewarded === false ? (
               <p className="text-xs text-muted-foreground">
-                Play limit reached for this hour — scores still count, but no rewards.
+                Play limit reached for this hour - scores still count, but no rewards.
               </p>
             ) : (
               <div className="flex justify-center gap-2">

@@ -18,13 +18,13 @@ export async function handleMemberJoin(member: GuildMember): Promise<void> {
   if (cfg.enabled && cfg.unverified_role_id) {
     await member.roles
       .add(cfg.unverified_role_id, "Awaiting verification")
-      .catch(() => console.warn("[verification] couldn't add the unverified role — check my role position"));
+      .catch(() => console.warn("[verification] couldn't add the unverified role - check my role position"));
   }
 
   if (cfg.enabled && cfg.dm_on_join && cfg.dm_message) {
     await member
       .send(template(cfg.dm_message, { server: member.guild.name, user: member.user.username, site: config.siteUrl }))
-      .catch(() => undefined); // DMs closed — nothing we can do
+      .catch(() => undefined); // DMs closed - nothing we can do
   }
 
   if (cfg.log_channel_id) {

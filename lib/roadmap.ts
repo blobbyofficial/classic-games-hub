@@ -1,12 +1,12 @@
 /**
- * Public roadmap data — what is *coming*, and nothing else.
+ * Public roadmap data - what is *coming*, and nothing else.
  *
  * Shipped releases live in lib/update-log.ts and render at /updates. Keeping
  * the two apart means the roadmap stays a short, readable statement of intent
  * instead of an ever-growing archive, and a release only has to be moved once:
  * out of here, into the log.
  *
- * This is a living plan — items are intentions, not promises, and can change,
+ * This is a living plan - items are intentions, not promises, and can change,
  * ship early, or be dropped. Rendered by app/(main)/roadmap/page.tsx.
  */
 
@@ -76,18 +76,18 @@ export const ROADMAP: RoadmapRelease[] = [
       {
         heading: "Cosmetics & profile",
         icon: "Palette",
-        blurb: "The expressive extras that didn't make the v1.2.0 cut — layered, optional, never pay-to-win.",
+        blurb: "The expressive extras that didn't make the v1.2.0 cut - layered, optional, never pay-to-win.",
         items: [
           {
             title: "Layered avatar decorations",
             description:
-              "Decorations that sit on top of your profile picture rather than around it, bought from the store and shown wherever your avatar appears — including party lobbies and multiplayer matches. Avatar frames are already live; this is the layer above them.",
+              "Decorations that sit on top of your profile picture rather than around it, bought from the store and shown wherever your avatar appears - including party lobbies and multiplayer matches. Avatar frames are already live; this is the layer above them.",
             status: "next",
           },
           {
             title: "Profile frames",
             description:
-              "Optional Discord-like decorative frames around your entire profile card — seasonal, achievement-gated and cosmetic-shop variants.",
+              "Optional Discord-like decorative frames around your entire profile card - seasonal, achievement-gated and cosmetic-shop variants.",
             status: "later",
           },
           {
@@ -102,24 +102,24 @@ export const ROADMAP: RoadmapRelease[] = [
         heading: "Booster rewards",
         icon: "Heart",
         blurb:
-          "Perks that accumulate the longer you boost — the tenure badge and bigger daily bonuses already do; these three are the rest of the plan.",
+          "Perks that accumulate the longer you boost - the tenure badge and bigger daily bonuses already do; these three are the rest of the plan.",
         items: [
           {
             title: "Monthly cosmetic drop",
             description:
-              "An exclusive cosmetic every month you're boosting — a nameplate, decoration or effect that only boosters of that month receive, so the collection tells a story over time.",
+              "An exclusive cosmetic every month you're boosting - a nameplate, decoration or effect that only boosters of that month receive, so the collection tells a story over time.",
             status: "next",
           },
           {
             title: "Early access",
             description:
-              "A head start on new games and features — try them a week before everyone else and help shape them before launch.",
+              "A head start on new games and features - try them a week before everyone else and help shape them before launch.",
             status: "later",
           },
           {
             title: "Monthly gift token",
             description:
-              "A free token each month to gift a temporary cosmetic to a friend — spread the perks and pull friends in.",
+              "A free token each month to gift a temporary cosmetic to a friend - spread the perks and pull friends in.",
             status: "idea",
           },
         ],
@@ -131,7 +131,7 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Friends activity feed",
             description:
-              "A quiet feed of what your friends have been up to — new high scores, achievements unlocked, games they've picked up — so the hub feels inhabited even when nobody's talking.",
+              "A quiet feed of what your friends have been up to - new high scores, achievements unlocked, games they've picked up - so the hub feels inhabited even when nobody's talking.",
             status: "later",
           },
         ],
@@ -158,7 +158,7 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Smaller first load",
             description:
-              "Cutting what every page has to download before it can do anything — heavy libraries now load only for the players and moments that actually need them.",
+              "Cutting what every page has to download before it can do anything - heavy libraries now load only for the players and moments that actually need them.",
             status: "in-progress",
           },
           {
@@ -170,7 +170,7 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Honest loading states",
             description:
-              "Skeletons shaped like the page they're standing in for, and only once a wait is long enough to notice — a placeholder that flashes for a moment is worse than none at all.",
+              "Skeletons shaped like the page they're standing in for, and only once a wait is long enough to notice - a placeholder that flashes for a moment is worse than none at all.",
             status: "in-progress",
           },
         ],
@@ -182,13 +182,13 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "New icons and thumbnails",
             description:
-              "A proper redraw of the whole icon set — the app icon and favicon, and all twenty-four game thumbnails as one consistent family rather than a set of unrelated drawings.",
+              "A proper redraw of the whole icon set - the app icon and favicon, and all twenty-four game thumbnails as one consistent family rather than a set of unrelated drawings.",
             status: "next",
           },
           {
             title: "More animation, better reduced-motion",
             description:
-              "More life and motion across the whole site — page transitions, micro-interactions and celebratory moments — paired with a genuinely well-optimised, snappy experience for players who prefer animations off.",
+              "More life and motion across the whole site - page transitions, micro-interactions and celebratory moments - paired with a genuinely well-optimised, snappy experience for players who prefer animations off.",
             status: "later",
           },
         ],

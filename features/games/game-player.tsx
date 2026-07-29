@@ -136,7 +136,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [gameOver]);
 
-  // Swipe-to-move on the canvas for grid/directional games — dispatched as
+  // Swipe-to-move on the canvas for grid/directional games - dispatched as
   // arrow keys so engines handle them the same as a keyboard or D-pad.
   useEffect(() => {
     if (!SWIPE_GAMES.has(engineId)) return;

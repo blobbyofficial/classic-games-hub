@@ -2,12 +2,12 @@ import { ImageResponse } from "next/og";
 import { SITE } from "@/lib/constants";
 
 /**
- * Social share card (Open Graph / Twitter). Generated at build time — no
- * runtime cost — and automatically wired to <meta property="og:image"> by
+ * Social share card (Open Graph / Twitter). Generated at build time - no
+ * runtime cost - and automatically wired to <meta property="og:image"> by
  * the App Router.
  */
 
-export const alt = `${SITE.name} — play the classics`;
+export const alt = `${SITE.name} - play the classics`;
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 

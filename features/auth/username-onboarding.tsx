@@ -21,7 +21,7 @@ export function UsernameOnboarding({ suggested }: { suggested: string }) {
         toast.error(res.error ?? "Could not set that username");
         return;
       }
-      toast.success("You're all set — welcome aboard!");
+      toast.success("You're all set - welcome aboard!");
       router.replace("/");
       router.refresh();
     });
@@ -41,7 +41,7 @@ export function UsernameOnboarding({ suggested }: { suggested: string }) {
           placeholder="your_name"
         />
         <p className="text-xs text-muted-foreground">
-          3–24 letters, numbers or underscores. This one&apos;s on us — you can change it later.
+          3–24 letters, numbers or underscores. This one&apos;s on us - you can change it later.
         </p>
       </div>
       <Button type="submit" variant="gradient" className="h-11 w-full" disabled={pending}>

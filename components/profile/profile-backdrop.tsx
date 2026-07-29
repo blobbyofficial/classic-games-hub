@@ -1,7 +1,7 @@
 /**
  * An animated motion layer for equipped `profile_theme` / `banner` cosmetics.
  * The flat gradient comes from `bannerBackground` on the container; this overlay
- * adds the Discord-tier movement on top — a travelling sheen and drifting colour
+ * adds the Discord-tier movement on top - a travelling sheen and drifting colour
  * wash for "flow" themes, or drifting nebulae + a twinkling starfield for
  * "space" themes. pointer-events-none and hidden under prefers-reduced-motion.
  */

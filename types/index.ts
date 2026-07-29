@@ -64,7 +64,7 @@ export interface PartyMember {
   joined_at: string;
 }
 
-/** The whole lobby in one object — `party_state` returns exactly this. */
+/** The whole lobby in one object - `party_state` returns exactly this. */
 export type PartyState =
   | { in_party: false }
   | {

@@ -57,7 +57,7 @@ export function InviteFriends({ friends, members }: { friends: FriendRow[]; memb
         {invitable.length === 0 ? (
           <p className="py-6 text-center text-sm text-muted-foreground">
             {friends.length === 0
-              ? "Add some friends first — then you can invite them here."
+              ? "Add some friends first - then you can invite them here."
               : "All your friends are already in the party."}
           </p>
         ) : (

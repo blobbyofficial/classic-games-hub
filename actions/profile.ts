@@ -137,7 +137,7 @@ export async function chooseUsername(next: string): Promise<RpcResult> {
 }
 
 /**
- * Claim (or clear, with an empty string) a vanity URL — the second handle that
+ * Claim (or clear, with an empty string) a vanity URL - the second handle that
  * makes /u/<slug> work alongside /u/<username>. Eligibility and uniqueness are
  * both decided in `set_vanity_slug`; this only translates its codes.
  */

@@ -101,7 +101,7 @@ export function BannerEditor({
             maxLength={200}
             placeholder={
               isSite
-                ? "e.g. Double credits all weekend — play now!"
+                ? "e.g. Double credits all weekend - play now!"
                 : "Scheduled maintenance in progress…"
             }
           />

@@ -137,8 +137,8 @@ export function sleep(ms: number) {
 
 /**
  * True when a message body is *exactly* a GIF link from a trusted host (Giphy).
- * We only ever inline-render images from this allowlist — users pick GIFs from
- * the Giphy picker, never paste arbitrary URLs — so a stray image link from
+ * We only ever inline-render images from this allowlist - users pick GIFs from
+ * the Giphy picker, never paste arbitrary URLs - so a stray image link from
  * anywhere else is shown as plain text, not embedded.
  */
 export function isGifUrl(content: string): boolean {

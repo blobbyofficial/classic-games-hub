@@ -21,7 +21,7 @@ export const config = {
   liveScoresChannelId: process.env.LIVE_SCORES_CHANNEL_ID ?? "",
   /** Health/keep-alive server port. Hosts like Render/Koyeb set $PORT. */
   port: Number(process.env.PORT ?? 8080),
-  /** This worker's own public URL — enables the anti-idle self-ping. */
+  /** This worker's own public URL - enables the anti-idle self-ping. */
   selfUrl: process.env.SELF_URL ?? "",
   /** Rich presence shown next to the bot's name in the member list. */
   presence: {

@@ -75,7 +75,7 @@ export function Footer() {
         <a href={SITE.founder} target="_blank" rel="noopener noreferrer" className="font-medium hover:text-foreground">
           BlobbyOfficial
         </a>
-        . A community arcade — no pay-to-win, ever.{" "}
+        . A community arcade - no pay-to-win, ever.{" "}
         <span className="whitespace-nowrap">
           <Link href="/legal/terms" className="hover:text-foreground">
             Terms

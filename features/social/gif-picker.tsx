@@ -65,7 +65,7 @@ export function GifPicker({ onSelect }: { onSelect: (url: string) => void }) {
             </div>
           ) : results.length === 0 ? (
             <p className="grid h-full place-items-center px-4 text-center text-sm text-muted-foreground">
-              {query.trim() ? "No GIFs found — try another search." : "GIF search is unavailable right now."}
+              {query.trim() ? "No GIFs found - try another search." : "GIF search is unavailable right now."}
             </p>
           ) : (
             <div className="columns-2 gap-2">

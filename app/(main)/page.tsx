@@ -138,7 +138,7 @@ function Hero({
         )}
         <p className="mt-4 max-w-xl text-base text-muted-foreground sm:text-lg">
           Play {gameCount} timeless games, earn credits and XP, unlock achievements, climb the
-          leaderboards and hang out with friends. No pay-to-win — just the classics, done right.
+          leaderboards and hang out with friends. No pay-to-win - just the classics, done right.
         </p>
         <div className="mt-7 flex flex-wrap gap-3">
           <Button size="lg" variant="gradient" asChild>

@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
-  title: { default: `${SITE.name} — Play the Classics`, template: `%s · ${SITE.name}` },
+  title: { default: `${SITE.name} - Play the Classics`, template: `%s · ${SITE.name}` },
   description: SITE.description,
   applicationName: SITE.name,
   manifest: "/manifest.webmanifest",
@@ -46,7 +46,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Apply the player's global colour theme before first paint (no flash).
   // Signed-out visitors always get the default theme, so skip the auth
-  // round-trip entirely unless a Supabase session cookie is actually present —
+  // round-trip entirely unless a Supabase session cookie is actually present -
   // that keeps anonymous traffic (and 404s) off the auth endpoint.
   const cookieStore = await cookies();
   const hasSession = cookieStore.getAll().some((c) => /^sb-.*auth-token/.test(c.name));

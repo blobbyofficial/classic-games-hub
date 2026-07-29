@@ -3,7 +3,7 @@ import { db } from "./db.js";
 /**
  * The worker reads the same admin-editable configuration the website does
  * (`discord_bot_config`), in one round trip, cached for a minute. Shapes
- * mirror lib/discord/config.ts — keep the two in step.
+ * mirror lib/discord/config.ts - keep the two in step.
  */
 
 export interface LevelingConfig {

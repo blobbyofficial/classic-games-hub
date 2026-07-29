@@ -25,7 +25,7 @@ import { FeedbackLine as Line, type Feedback } from "./ui";
  *
  * Each button calls the same function the matching slash command calls, so a
  * case opened here is numbered, DM'd and logged exactly as one opened in
- * Discord — there is no second implementation to drift.
+ * Discord - there is no second implementation to drift.
  */
 
 
@@ -46,7 +46,7 @@ export function PushCard() {
       const res = await adminPushAllBotSections();
       setState(
         res.ok
-          ? { message: [res.detail, res.error && `Problems — ${res.error}`].filter(Boolean).join(" | ") }
+          ? { message: [res.detail, res.error && `Problems - ${res.error}`].filter(Boolean).join(" | ") }
           : { error: res.error },
       );
     });
@@ -63,7 +63,7 @@ export function PushCard() {
       <CardHeader>
         <CardTitle>Push settings to Discord</CardTitle>
         <CardDescription>
-          These push your <strong>last saved</strong> settings — if you have just typed an ID into a
+          These push your <strong>last saved</strong> settings - if you have just typed an ID into a
           section below, press that section&apos;s Save instead, which saves and applies in one go.
           Use these to re-apply after someone edits roles by hand, or to repair the server once the
           bot is back online. All idempotent: existing roles and channels are reused, never
@@ -202,7 +202,7 @@ export function ModerationCard() {
           <Hammer className="size-4 text-primary" /> Moderation
         </CardTitle>
         <CardDescription>
-          Opens a numbered case, DMs the member if that&apos;s switched on, and posts to your mod-log —
+          Opens a numbered case, DMs the member if that&apos;s switched on, and posts to your mod-log -
           identical to running the command in Discord. Recorded against your linked Discord account,
           so link it first.
         </CardDescription>

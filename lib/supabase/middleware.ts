@@ -38,7 +38,7 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // Do not run code between createServerClient and getUser — it refreshes tokens.
+  // Do not run code between createServerClient and getUser - it refreshes tokens.
   const {
     data: { user },
   } = await supabase.auth.getUser();

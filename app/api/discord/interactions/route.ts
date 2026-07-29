@@ -54,7 +54,7 @@ import {
 } from "@/lib/discord/types";
 
 /**
- * Discord "Interactions Endpoint URL" — the serverless heart of the Classic
+ * Discord "Interactions Endpoint URL" - the serverless heart of the Classic
  * Games Hub bot. Set this route's public URL in the Discord Developer Portal
  * (General Information → Interactions Endpoint URL):
  *
@@ -63,7 +63,7 @@ import {
  * Discord signs every request with Ed25519; anything unverifiable is rejected
  * with 401 (Discord requires this to activate the endpoint). Slash commands,
  * the verification button, the captcha modal and the ticket panel all run
- * entirely on Vercel — no hosted gateway process is needed for any of them.
+ * entirely on Vercel - no hosted gateway process is needed for any of them.
  */
 
 export const runtime = "nodejs";
@@ -368,7 +368,7 @@ async function handleCommand(interaction: Interaction) {
   }
 }
 
-/** `/setup <sub-command>` — a sub-command carries its own nested options. */
+/** `/setup <sub-command>` - a sub-command carries its own nested options. */
 function handleSetup(interaction: Interaction, token: string) {
   const sub = interaction.data?.options?.[0] as
     | { name: string; options?: InteractionOption[] }

@@ -1,12 +1,12 @@
 /**
- * The update log — everything that has actually shipped.
+ * The update log - everything that has actually shipped.
  *
  * The roadmap (lib/roadmap.ts) is for what is *coming*; the moment something
  * ships it moves here, so neither page has to carry both jobs. Release entries
  * were moved verbatim out of the roadmap when v1.5.0 was formed, minus the
  * per-item statuses that only mattered while the work was pending.
  *
- * `LANDED` is generated from `git log --first-parent main` — every change that
+ * `LANDED` is generated from `git log --first-parent main` - every change that
  * reached production, whether it arrived through a pull request or as a direct
  * commit. Regenerate it after a release rather than editing by hand.
  */
@@ -54,12 +54,12 @@ export const RELEASES: UpdateRelease[] = [
     date: "22 Jul 2026",
     dateNote: "extended 28 Jul 2026",
     summary:
-      "The big games update: a step into 3D, real multiplayer with parties, and store-decorated avatars that show up when you play together — plus admin control over the home screen itself.",
+      "The big games update: a step into 3D, real multiplayer with parties, and store-decorated avatars that show up when you play together - plus admin control over the home screen itself.",
     groups: [
       {
         heading: "3D games",
         icon: "Box",
-        blurb: "Beyond the 2D arcade — fully playable 3D games in the browser.",
+        blurb: "Beyond the 2D arcade - fully playable 3D games in the browser.",
         items: [
           {
             title: "Playable 3D games",
@@ -71,12 +71,12 @@ export const RELEASES: UpdateRelease[] = [
       {
         heading: "Multiplayer & parties",
         icon: "Gamepad2",
-        blurb: "Play with other people — across accounts online, or on one device in the same room.",
+        blurb: "Play with other people - across accounts online, or on one device in the same room.",
         items: [
           {
             title: "Real multiplayer games",
             description:
-              "Games multiple people can play together, online across accounts. Tic-Tac-Toe, Connect 4 and Reversi are true head-to-head matches on one shared board with alternating turns; every other game becomes a score race — same game, same moment, live standings. Local pass-and-play remains in Tic-Tac-Toe via the 2P toggle.",
+              "Games multiple people can play together, online across accounts. Tic-Tac-Toe, Connect 4 and Reversi are true head-to-head matches on one shared board with alternating turns; every other game becomes a score race - same game, same moment, live standings. Local pass-and-play remains in Tic-Tac-Toe via the 2P toggle.",
           },
           {
             title: "Parties",
@@ -92,7 +92,7 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Customisable home screen",
             description:
-              "Rearrange the homepage straight from the admin dashboard — reorder or hide any section from Admin → Site, no code required.",
+              "Rearrange the homepage straight from the admin dashboard - reorder or hide any section from Admin → Site, no code required.",
           },
         ],
       },
@@ -108,12 +108,12 @@ export const RELEASES: UpdateRelease[] = [
       {
         heading: "Long-term engagement",
         icon: "Repeat",
-        blurb: "Daily streaks alone won't hold someone for a year — these loops are designed to.",
+        blurb: "Daily streaks alone won't hold someone for a year - these loops are designed to.",
         items: [
           {
             title: "Community mega-events",
             description:
-              "Server-wide co-op goals where everyone pulls in the same direction — e.g. 'play 500 games together this weekend' — with a live progress bar and an achievement plus bonus credits for everyone who took part.",
+              "Server-wide co-op goals where everyone pulls in the same direction - e.g. 'play 500 games together this weekend' - with a live progress bar and an achievement plus bonus credits for everyone who took part.",
           },
           {
             title: "Level-milestone unlocks",
@@ -123,7 +123,7 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Message streaks",
             description:
-              "A Snapchat-style daily streak, but with messages instead of images — keep a conversation going day after day with a friend to build a streak and earn rewards, giving people a reason to check in on each other.",
+              "A Snapchat-style daily streak, but with messages instead of images - keep a conversation going day after day with a friend to build a streak and earn rewards, giving people a reason to check in on each other.",
           },
         ],
       },
@@ -131,12 +131,12 @@ export const RELEASES: UpdateRelease[] = [
         heading: "Booster rewards",
         icon: "Heart",
         blurb:
-          "Boosters keep the community's home running — the perks should feel genuinely worth it, while never becoming pay-to-win.",
+          "Boosters keep the community's home running - the perks should feel genuinely worth it, while never becoming pay-to-win.",
         items: [
           {
             title: "Bonus daily challenges",
             description:
-              "An extra daily challenge on top of everyone else's — more ways to earn, every day. Everyone can see it, so the perk is visible, but only boosters can claim it.",
+              "An extra daily challenge on top of everyone else's - more ways to earn, every day. Everyone can see it, so the perk is visible, but only boosters can claim it.",
           },
           {
             title: "Boost-tenure badge tiers",
@@ -150,7 +150,7 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Vanity profile URL",
             description:
-              "Claim a custom profile link (e.g. /u/yourname). Unlocked by boosting, by reaching level 30, or by being staff — claim or change it from Settings.",
+              "Claim a custom profile link (e.g. /u/yourname). Unlocked by boosting, by reaching level 30, or by being staff - claim or change it from Settings.",
           },
         ],
       },
@@ -161,12 +161,12 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Background music tracks",
             description:
-              "Level 5+ players can buy original 'tracks' from the shop and play them in the background while they browse and play. Every track is composed in-house, so there are zero copyright concerns — and boosters can set one as their profile theme song.",
+              "Level 5+ players can buy original 'tracks' from the shop and play them in the background while they browse and play. Every track is composed in-house, so there are zero copyright concerns - and boosters can set one as their profile theme song.",
           },
           {
             title: "Stacking boosts + effect queue",
             description:
-              "Credit boosts stack up to 5× (10× for Discord boosters). Buy another beyond the cap and it doesn't go to waste — it joins an effect queue and automatically takes over the moment the current boost runs out, so your boosts are always working.",
+              "Credit boosts stack up to 5× (10× for Discord boosters). Buy another beyond the cap and it doesn't go to waste - it joins an effect queue and automatically takes over the moment the current boost runs out, so your boosts are always working.",
           },
         ],
       },
@@ -177,17 +177,17 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Admin analytics centre",
             description:
-              "A dedicated admin section for analytics — site clicks, popular games, active players and retention — plus control over which surfaces appear across the site, without touching code.",
+              "A dedicated admin section for analytics - site clicks, popular games, active players and retention - plus control over which surfaces appear across the site, without touching code.",
           },
           {
             title: "Editable roadmap from admin",
             description:
-              "Manage this very roadmap from the admin dashboard — add, edit and reorder releases and items without touching code, so plans stay fresh with a few clicks.",
+              "Manage this very roadmap from the admin dashboard - add, edit and reorder releases and items without touching code, so plans stay fresh with a few clicks.",
           },
           {
             title: "Rewarded ads & NitroPay",
             description:
-              "The plan to run ads — the simulated 'watch to double your credits' flow and a NitroPay integration — has been dropped. It complicated the reward maths and there was never a network behind it, so the whole programme was removed rather than left half-built. Credits now come from playing, streaks and boosts alone.",
+              "The plan to run ads - the simulated 'watch to double your credits' flow and a NitroPay integration - has been dropped. It complicated the reward maths and there was never a network behind it, so the whole programme was removed rather than left half-built. Credits now come from playing, streaks and boosts alone.",
             dropped: true,
           },
         ],
@@ -199,17 +199,17 @@ export const RELEASES: UpdateRelease[] = [
     codename: "The Bot Update",
     date: "22 Jul 2026",
     summary:
-      "The Discord bot becomes a first-class citizen — rebuilt serverlessly so it runs for free, with secure account linking, an Arcane-replacing level system, automatic role sync, and a proper legal foundation for the whole platform.",
+      "The Discord bot becomes a first-class citizen - rebuilt serverlessly so it runs for free, with secure account linking, an Arcane-replacing level system, automatic role sync, and a proper legal foundation for the whole platform.",
     groups: [
       {
         heading: "Discord bot 2.0",
         icon: "Bot",
-        blurb: "One bot, wired straight into your Hub account — no paid hosting anywhere.",
+        blurb: "One bot, wired straight into your Hub account - no paid hosting anywhere.",
         items: [
           {
             title: "Serverless slash commands",
             description:
-              "All commands (/link, /rank, /levels, /daily, /pay, /profile, /leaderboard, /sync, moderation) now run through Discord HTTP interactions served by the website itself — signature-verified, free, and always on.",
+              "All commands (/link, /rank, /levels, /daily, /pay, /profile, /leaderboard, /sync, moderation) now run through Discord HTTP interactions served by the website itself - signature-verified, free, and always on.",
           },
           {
             title: "Secure account linking",
@@ -219,12 +219,12 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Discord levels (goodbye Arcane)",
             description:
-              "Chat XP with configurable rates, cooldowns and level curve — anti-spam enforced in the database. /rank and /levels leaderboards, level-up announcements, website notifications, and an optional XP trickle into your Hub level.",
+              "Chat XP with configurable rates, cooldowns and level curve - anti-spam enforced in the database. /rank and /levels leaderboards, level-up announcements, website notifications, and an optional XP trickle into your Hub level.",
           },
           {
             title: "Role sync",
             description:
-              "Hub badges, achievements, staff status, nameplates and levels map to Discord roles. Synced on change, on join, on /sync and nightly — the website is always the source of truth.",
+              "Hub badges, achievements, staff status, nameplates and levels map to Discord roles. Synced on change, on join, on /sync and nightly - the website is always the source of truth.",
           },
           {
             title: "Admin bot controls",
@@ -240,17 +240,17 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Level-milestone unlocks",
             description:
-              "Levelling now unlocks real features: create groups at level 10 and post stories at level 15 — or link Discord for instant access, as before.",
+              "Levelling now unlocks real features: create groups at level 10 and post stories at level 15 - or link Discord for instant access, as before.",
           },
           {
             title: "Admin analytics",
             description:
-              "A new Admin → Analytics page: daily/weekly/monthly active players, plays per day, sign-ups per day and average session length — computed from existing data, no extra tracking.",
+              "A new Admin → Analytics page: daily/weekly/monthly active players, plays per day, sign-ups per day and average session length - computed from existing data, no extra tracking.",
           },
           {
             title: "Terms of Service & Privacy Policy",
             description:
-              "Proper, readable legal pages written for UK GDPR and linked from the footer, sign-up and settings — describing exactly what the platform actually collects.",
+              "Proper, readable legal pages written for UK GDPR and linked from the footer, sign-up and settings - describing exactly what the platform actually collects.",
           },
           {
             title: "Social share card",
@@ -265,17 +265,17 @@ export const RELEASES: UpdateRelease[] = [
     codename: "Arcade & Chat Polish",
     date: "21 Jul 2026",
     summary:
-      "A quality pass on the two things people do most — play and chat. Six more games rebuilt to a modern, tactile bar; the kept cosmetics given a Discord-tier animation glow-up; and messaging made genuinely reliable, now with GIFs.",
+      "A quality pass on the two things people do most - play and chat. Six more games rebuilt to a modern, tactile bar; the kept cosmetics given a Discord-tier animation glow-up; and messaging made genuinely reliable, now with GIFs.",
     groups: [
       {
         heading: "Messaging",
         icon: "MessageSquare",
-        blurb: "Chat should feel instant and alive — and a little more fun.",
+        blurb: "Chat should feel instant and alive - and a little more fun.",
         items: [
           {
             title: "Send GIFs",
             description:
-              "A Discord-style GIF picker in the composer, powered by Giphy: search or browse trending GIFs and tap one to send. It arrives as a message that renders inline as an image. You pick from Giphy only — no uploading or pasting your own image URLs — so it stays clean and safe.",
+              "A Discord-style GIF picker in the composer, powered by Giphy: search or browse trending GIFs and tap one to send. It arrives as a message that renders inline as an image. You pick from Giphy only - no uploading or pasting your own image URLs - so it stays clean and safe.",
           },
           {
             title: "Reliable sending",
@@ -285,7 +285,7 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Live, lightweight updates",
             description:
-              "The thread stays live for both sent and received messages without ever reloading the whole page — a cheap background sync fills in anything realtime misses, so you see new messages within seconds.",
+              "The thread stays live for both sent and received messages without ever reloading the whole page - a cheap background sync fills in anything realtime misses, so you see new messages within seconds.",
           },
         ],
       },
@@ -297,7 +297,7 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Six games rebuilt",
             description:
-              "Simon, 15 Puzzle, Lights Out, Bubble Pop, Target Rush and Reversi rebuilt from scratch as animated, mobile-first, tactile canvas games — glowing feedback, satisfying motion and smarter opponents where it counts.",
+              "Simon, 15 Puzzle, Lights Out, Bubble Pop, Target Rush and Reversi rebuilt from scratch as animated, mobile-first, tactile canvas games - glowing feedback, satisfying motion and smarter opponents where it counts.",
           },
         ],
       },
@@ -308,7 +308,7 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Cosmetics glow-up",
             description:
-              "The kept nameplates, frames, effects, themes, banners, badges and boosts had their particles and animations reworked to a Discord-tier bar — flowing gradients, travelling sheens, rotating rims and layered particle systems, all reduced-motion friendly.",
+              "The kept nameplates, frames, effects, themes, banners, badges and boosts had their particles and animations reworked to a Discord-tier bar - flowing gradients, travelling sheens, rotating rims and layered particle systems, all reduced-motion friendly.",
           },
           {
             title: "Shop refinement",
@@ -333,12 +333,12 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Notification detail overlay",
             description:
-              "Tap any notification to open it in full — the complete message, the exact date and time it was sent, and an Open button when a link is attached. Opening marks it read.",
+              "Tap any notification to open it in full - the complete message, the exact date and time it was sent, and an Open button when a link is attached. Opening marks it read.",
           },
           {
             title: "Linkable announcements",
             description:
-              "Admins can attach a call-to-action link to an announcement, and publishing with 'Notify everyone' now actually sends a notification (with that link) to every player — the toggle previously did nothing.",
+              "Admins can attach a call-to-action link to an announcement, and publishing with 'Notify everyone' now actually sends a notification (with that link) to every player - the toggle previously did nothing.",
           },
         ],
       },
@@ -371,12 +371,12 @@ export const RELEASES: UpdateRelease[] = [
         heading: "Profile customisation",
         icon: "Palette",
         blurb:
-          "Your profile should say who you are before you type a word. We're taking cues from Discord, Roblox, Steam and the big social platforms — layered, expressive, and never pay-to-win.",
+          "Your profile should say who you are before you type a word. We're taking cues from Discord, Roblox, Steam and the big social platforms - layered, expressive, and never pay-to-win.",
         items: [
           {
             title: "Nameplates everywhere",
             description:
-              "Your equipped nameplate stops living only on your profile page and follows you across the whole site — search results, friends lists, leaderboards, chat headers and message bubbles — so people recognise you instantly wherever you show up.",
+              "Your equipped nameplate stops living only on your profile page and follows you across the whole site - search results, friends lists, leaderboards, chat headers and message bubbles - so people recognise you instantly wherever you show up.",
           },
           {
             title: "Avatar decorations 2.0",
@@ -396,12 +396,12 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Profile themes & accents",
             description:
-              "Recolour your whole profile card — buttons, highlights and dividers — with a curated accent theme, so a visitor feels your vibe the moment the page loads. Hand-picked palettes only, so nothing ever clashes.",
+              "Recolour your whole profile card - buttons, highlights and dividers - with a curated accent theme, so a visitor feels your vibe the moment the page loads. Hand-picked palettes only, so nothing ever clashes.",
           },
           {
             title: "Display-name styles",
             description:
-              "A curated set of display fonts plus particle, glow, shimmer and gradient treatments for your name — expressive but always legible.",
+              "A curated set of display fonts plus particle, glow, shimmer and gradient treatments for your name - expressive but always legible.",
           },
           {
             title: "Trophy case & showcases",
@@ -415,22 +415,22 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "About-me widgets",
             description:
-              "Optional profile fields — pronouns, a one-line status, favourite game, join date and a short bio — arranged as tidy widgets you can show or hide.",
+              "Optional profile fields - pronouns, a one-line status, favourite game, join date and a short bio - arranged as tidy widgets you can show or hide.",
           },
           {
             title: "Cosmetic rarity tiers",
             description:
-              "Every cosmetic gets a rarity — common through mythic — with matching visual treatment and a clear label in the shop and inventory, so rare items actually feel rare.",
+              "Every cosmetic gets a rarity - common through mythic - with matching visual treatment and a clear label in the shop and inventory, so rare items actually feel rare.",
           },
           {
             title: "Staff-exclusive cosmetics",
             description:
-              "Genuinely special, unbuyable cosmetics for admins, mods and developers — distinct animated nameplates, frames and decorations — so staff are recognisable at a glance and the role feels earned.",
+              "Genuinely special, unbuyable cosmetics for admins, mods and developers - distinct animated nameplates, frames and decorations - so staff are recognisable at a glance and the role feels earned.",
           },
           {
             title: "Discord link on profile",
             description:
-              "An optional 'Connect' button that surfaces your Discord for verified players who want it shown — off by default, entirely your call.",
+              "An optional 'Connect' button that surfaces your Discord for verified players who want it shown - off by default, entirely your call.",
           },
         ],
       },
@@ -442,12 +442,12 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Mutual friends (opt-in)",
             description:
-              "See the friends you have in common with someone — shown only for users who choose to make their friends list visible, so it's discovery without exposure.",
+              "See the friends you have in common with someone - shown only for users who choose to make their friends list visible, so it's discovery without exposure.",
           },
           {
             title: "Follow users",
             description:
-              "A lightweight one-way follow alongside two-way friendships — keep up with players you admire without needing them to accept, and they're notified when you do.",
+              "A lightweight one-way follow alongside two-way friendships - keep up with players you admire without needing them to accept, and they're notified when you do.",
           },
           {
             title: "Friends-list visibility",
@@ -467,12 +467,12 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Modern messenger",
             description:
-              "Rework messaging to feel like WhatsApp — minus file/image/video/audio sharing and calls: clean threads, emoji reactions, replies, pinned and favourite chats, and delivered/seen receipts done right.",
+              "Rework messaging to feel like WhatsApp - minus file/image/video/audio sharing and calls: clean threads, emoji reactions, replies, pinned and favourite chats, and delivered/seen receipts done right.",
           },
           {
             title: "Emoji & a better mobile keyboard",
             description:
-              "A proper emoji picker and a solid mobile typing experience across the site — including fixing the frustrating built-in keyboard in Snakes & Ladders while we're in there.",
+              "A proper emoji picker and a solid mobile typing experience across the site - including fixing the frustrating built-in keyboard in Snakes & Ladders while we're in there.",
           },
           {
             title: "Stories",
@@ -482,34 +482,34 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Rich presence",
             description:
-              "Upgrade online status to online / offline / do-not-disturb / sleep, add a 'last online' time, and even an optional 'playing now' game — each with fine-grained controls over exactly who can see it.",
+              "Upgrade online status to online / offline / do-not-disturb / sleep, add a 'last online' time, and even an optional 'playing now' game - each with fine-grained controls over exactly who can see it.",
           },
           {
             title: "Wishlist & gifting",
             description:
-              "Add store items to a wishlist you can view and manage from your inventory, and gift items to other players at 75% of the normal price — deliberately cheaper than buying for yourself, so gifting is the generous and the smart move.",
+              "Add store items to a wishlist you can view and manage from your inventory, and gift items to other players at 75% of the normal price - deliberately cheaper than buying for yourself, so gifting is the generous and the smart move.",
           },
         ],
       },
       {
         heading: "Store & inventory",
         icon: "ShoppingBag",
-        blurb: "Buying, previewing and managing cosmetics should be effortless — and fun.",
+        blurb: "Buying, previewing and managing cosmetics should be effortless - and fun.",
         items: [
           {
             title: "Live item previews",
             description:
-              "Click any shop item to open a full preview page (in a new tab) that renders the effect live — see exactly how a nameplate, banner, effect or decoration looks on a real profile before you spend a single credit.",
+              "Click any shop item to open a full preview page (in a new tab) that renders the effect live - see exactly how a nameplate, banner, effect or decoration looks on a real profile before you spend a single credit.",
           },
           {
             title: "Apply straight from the shop",
             description:
-              "Already own an item? Apply it to your profile or avatar right from the shop page — no detour through the inventory required.",
+              "Already own an item? Apply it to your profile or avatar right from the shop page - no detour through the inventory required.",
           },
           {
             title: "Inventory search & filters",
             description:
-              "A search bar plus filters — by cost, rarity/exclusivity, date acquired and item type — so even a huge collection stays easy to browse and organise.",
+              "A search bar plus filters - by cost, rarity/exclusivity, date acquired and item type - so even a huge collection stays easy to browse and organise.",
           },
           {
             title: "Better boost display",
@@ -525,27 +525,27 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "Redesigned navigation",
             description:
-              "A proper mobile hamburger menu — today's bar is far too cramped for the space — plus a cleaner desktop nav with more breathing room between items, better spacing and smoother animations. It should simply look and feel good.",
+              "A proper mobile hamburger menu - today's bar is far too cramped for the space - plus a cleaner desktop nav with more breathing room between items, better spacing and smoother animations. It should simply look and feel good.",
           },
           {
             title: "Organised inventory & presets",
             description:
-              "A rebuilt inventory with clear 'applied' indicators on every item, one-tap apply/disable, and saved loadout presets so you can switch your entire look — banner, nameplate, effects and name style — in a single tap.",
+              "A rebuilt inventory with clear 'applied' indicators on every item, one-tap apply/disable, and saved loadout presets so you can switch your entire look - banner, nameplate, effects and name style - in a single tap.",
           },
           {
             title: "Easier event customisation",
             description:
-              "Spin up an event and set things like a credit multiplier, duration and banner in a couple of clicks — no fiddly config.",
+              "Spin up an event and set things like a credit multiplier, duration and banner in a couple of clicks - no fiddly config.",
           },
           {
             title: "Faster economy adjustments",
             description:
-              "Give or take XP, credits and levels from the admin panel with far less friction — search a player, adjust, done, with an audit trail.",
+              "Give or take XP, credits and levels from the admin panel with far less friction - search a player, adjust, done, with an audit trail.",
           },
           {
             title: "Auto device-appropriate controls",
             description:
-              "Detect the player's device and show on-screen touch controls on mobile and keyboard/desktop hints on desktop automatically — whichever they're actually using, without a manual toggle.",
+              "Detect the player's device and show on-screen touch controls on mobile and keyboard/desktop hints on desktop automatically - whichever they're actually using, without a manual toggle.",
           },
         ],
       },
@@ -622,7 +622,7 @@ export interface MergedPullRequest {
 }
 
 export const PULL_REQUESTS: MergedPullRequest[] = [
-  { number: 10, title: "Parties & online multiplayer, /status, vanity URLs — plus the missing bot heartbeat", date: "28 Jul 2026" },
+  { number: 10, title: "Parties & online multiplayer, /status, vanity URLs - plus the missing bot heartbeat", date: "28 Jul 2026" },
   { number: 9, title: "feat(discord): one bot replacing Appy, Sapphire, Arcane and ServerStats", date: "27 Jul 2026" },
   { number: 8, title: "Roadmap: restructure into v1.2.0 / v1.3.0 / v1.4.0 with new plans", date: "20 Jul 2026" },
   { number: 7, title: "Deploy: classic-games-hub", date: "20 Jul 2026" },

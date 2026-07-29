@@ -81,7 +81,7 @@ export interface ConversationDetail {
   other: ConversationMember | null;
   /** All other members (groups: everyone but me; used for sender lookup). */
   members: ConversationMember[];
-  /** When the other member last read this conversation — powers "Seen" receipts (DMs only). */
+  /** When the other member last read this conversation - powers "Seen" receipts (DMs only). */
   otherLastReadAt: string | null;
   messages: {
     id: number;

@@ -96,7 +96,7 @@ export const getBanners = cache(
     const site = rows.site_banner;
 
     const maintenance = maint?.enabled
-      ? coerceBanner(maint.payload, "Scheduled maintenance in progress — some features may be temporarily unavailable.")
+      ? coerceBanner(maint.payload, "Scheduled maintenance in progress - some features may be temporarily unavailable.")
       : null;
 
     let siteConfig: BannerConfig | null = null;

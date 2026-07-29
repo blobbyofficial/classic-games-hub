@@ -5,7 +5,7 @@ import { discordEnv } from "./env";
 import { discordRest } from "./rest";
 
 /**
- * Role synchronisation — the website is the source of truth.
+ * Role synchronisation - the website is the source of truth.
  *
  * The admin-editable `role_sync.role_map` (discord_bot_config) maps Hub facts
  * to Discord role ids. Supported keys:
@@ -90,7 +90,7 @@ export async function syncMemberRoles(discordId: string): Promise<RoleSyncOutcom
 
   const member = await discordRest.getGuildMember(discordEnv.guildId, discordId);
   if (!member.ok || !member.data) {
-    // 404 = the user isn't in the server (yet) — that's fine, nothing to do.
+    // 404 = the user isn't in the server (yet) - that's fine, nothing to do.
     return {
       ok: false,
       error: member.status === 403 ? "missing_permissions" : "not_in_guild",
@@ -99,7 +99,7 @@ export async function syncMemberRoles(discordId: string): Promise<RoleSyncOutcom
   }
 
   // Stamp Discord-booster status onto the Hub profile (powers booster perks
-  // and tenure badges) — best-effort, and only for linked members.
+  // and tenure badges) - best-effort, and only for linked members.
   if (state.linked) {
     await botDb.setBooster(discordId, member.data.premium_since ?? null);
   }
@@ -170,7 +170,7 @@ export async function syncAllMembers(maxMembers = 500): Promise<{
     if (res.ok && (res.added.length || res.removed.length)) changed++;
     if (!res.ok && res.error !== "not_in_guild") {
       errors++;
-      // Config-level failures affect everyone — stop early instead of
+      // Config-level failures affect everyone - stop early instead of
       // hammering the API with the same error N times.
       if (res.error === "no_role_map" || res.error === "not_configured" || res.error === "disabled") break;
     }

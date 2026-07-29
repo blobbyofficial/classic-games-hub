@@ -61,7 +61,7 @@ export async function syncMemberRoles(member: GuildMember): Promise<SyncOutcome>
     if (keys.has(key) || (!state.is_banned && levelKeySatisfied(key, state))) desired.add(roleId);
   }
 
-  // Milestone level roles — the Arcane-style level rewards.
+  // Milestone level roles - the Arcane-style level rewards.
   if (!state.is_banned && cfg.level_roles.enabled) {
     const earned = [...(cfg.level_roles.milestones ?? [])]
       .filter((m) => (state.discord_level ?? 0) >= m)

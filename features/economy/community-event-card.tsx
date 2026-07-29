@@ -75,8 +75,8 @@ export async function CommunityEventCard() {
         <div className="mt-1.5 flex flex-wrap items-center justify-between gap-2 text-xs">
           <span className="font-medium">
             {done
-              ? "🎊 Goal reached — rewards delivered to everyone who played!"
-              : `${formatNumber(event.progress)} / ${formatNumber(event.target)} plays — every game counts`}
+              ? "🎊 Goal reached - rewards delivered to everyone who played!"
+              : `${formatNumber(event.progress)} / ${formatNumber(event.target)} plays - every game counts`}
           </span>
           {event.my_contributions > 0 && (
             <span className="text-muted-foreground">You&rsquo;ve added {formatNumber(event.my_contributions)}</span>

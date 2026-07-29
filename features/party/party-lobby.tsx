@@ -48,7 +48,7 @@ export function PartyLobby({ party, me, present, games, friends, onChanged, onSt
       setCopied(true);
       setTimeout(() => setCopied(false), 1600);
     } catch {
-      toast.error("Couldn't copy — the code is " + party.invite_code);
+      toast.error("Couldn't copy - the code is " + party.invite_code);
     }
   };
 
@@ -146,7 +146,7 @@ export function PartyLobby({ party, me, present, games, friends, onChanged, onSt
               ) : (
                 <>
                   <Users2 className="size-3.5 text-primary" />
-                  Score race — everyone plays at once, highest score wins.
+                  Score race - everyone plays at once, highest score wins.
                   {HEAD_TO_HEAD.has(chosen.engine_id) && ready.length > 2 && " Drop to two players for a duel."}
                 </>
               )}
@@ -159,7 +159,7 @@ export function PartyLobby({ party, me, present, games, friends, onChanged, onSt
             </Button>
           ) : (
             <p className="text-center text-xs text-muted-foreground">
-              The leader starts the match — you&apos;ll be pulled in automatically.
+              The leader starts the match - you&apos;ll be pulled in automatically.
             </p>
           )}
           {party.is_leader && !canStart && (

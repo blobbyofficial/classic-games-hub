@@ -5,11 +5,11 @@ import { StatTile } from "@/components/stat-tile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatNumber } from "@/lib/utils";
 
-export const metadata: Metadata = { title: "Analytics — Admin" };
+export const metadata: Metadata = { title: "Analytics - Admin" };
 
 /**
  * Admin analytics centre (roadmap v1.3 "Analytics, ads & admin"). Read-only
- * aggregates over data staff can already see under RLS — no schema changes,
+ * aggregates over data staff can already see under RLS - no schema changes,
  * no extra tracking, no third-party analytics.
  */
 
@@ -126,7 +126,7 @@ export default async function AdminAnalyticsPage() {
         <StatTile
           icon={Clock}
           label="Avg session (7d)"
-          value={avgDuration ? `${Math.floor(avgDuration / 60)}m ${avgDuration % 60}s` : "—"}
+          value={avgDuration ? `${Math.floor(avgDuration / 60)}m ${avgDuration % 60}s` : "-"}
           accent="text-gold"
         />
       </div>
@@ -162,7 +162,7 @@ export default async function AdminAnalyticsPage() {
       </div>
 
       <p className="text-xs text-muted-foreground">
-        Aggregated from gameplay and profile data only — no extra tracking is collected for this
+        Aggregated from gameplay and profile data only - no extra tracking is collected for this
         page. Site-traffic analytics (page views, performance) live in the Vercel dashboard.
       </p>
     </div>

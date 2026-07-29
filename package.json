@@ -2,7 +2,7 @@
   "name": "classic-games-hub",
   "version": "2.0.0",
   "private": true,
-  "description": "Classic Games Hub — a modern arcade platform with accounts, social features, a credits economy, and 22 playable classics.",
+  "description": "Classic Games Hub - a modern arcade platform with accounts, social features, a credits economy, and 22 playable classics.",
   "scripts": {
     "dev": "next dev",
     "prebuild": "node scripts/generate-icons.mjs",

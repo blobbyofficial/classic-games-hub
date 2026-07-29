@@ -13,7 +13,7 @@ export async function GameLeaderboard({ slug, currentUserId }: { slug: string; c
     return (
       <div className="grid place-items-center rounded-xl border border-dashed border-border py-10 text-center">
         <Trophy className="size-8 text-muted-foreground/50" />
-        <p className="mt-2 text-sm text-muted-foreground">No scores yet — be the first!</p>
+        <p className="mt-2 text-sm text-muted-foreground">No scores yet - be the first!</p>
       </div>
     );
   }

@@ -90,7 +90,7 @@ export default async function RoadmapPage() {
           </div>
         </div>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          A living plan of what we&apos;re building next. Everything here is an idea or an intention — not a promise.
+          A living plan of what we&apos;re building next. Everything here is an idea or an intention - not a promise.
           Plans shift, features ship early or get dropped, and your feedback genuinely changes what comes next. For
           everything already shipped, see the{" "}
           <Link href="/updates" className="font-medium text-primary hover:underline">

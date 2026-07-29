@@ -6,7 +6,7 @@ export const getProfileByUsername = cache(async (username: string): Promise<Prof
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select("*").eq("username", username).maybeSingle();
   if (!data) {
-    // Not a username — it may be somebody's vanity slug (0045). One RPC maps
+    // Not a username - it may be somebody's vanity slug (0045). One RPC maps
     // either form to the canonical username, preferring real usernames.
     const { data: canonical } = await supabase.rpc("resolve_profile_slug", { p_slug: username });
     if (!canonical) return null;

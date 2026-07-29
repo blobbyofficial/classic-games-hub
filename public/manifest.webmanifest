@@ -1,7 +1,7 @@
 {
   "name": "Classic Games Hub",
   "short_name": "CG Hub",
-  "description": "A modern arcade platform — play classic games, earn credits, unlock achievements and play with friends.",
+  "description": "A modern arcade platform - play classic games, earn credits, unlock achievements and play with friends.",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",

@@ -9,7 +9,7 @@ import { ChannelType, Permissions, discordRest } from "./rest";
 /**
  * One-command server setup. These run from `/setup …` (admin-only slash
  * commands) so the roles, panels and counter channels the bot needs can be
- * created *inside Discord* — nothing to copy/paste into the dashboard, and
+ * created *inside Discord* - nothing to copy/paste into the dashboard, and
  * every ID it creates is written straight back into `discord_bot_config`.
  *
  * All of it is idempotent: an existing role/channel with the expected name is
@@ -40,7 +40,7 @@ export interface SetupResult {
   /**
    * Discord's own words for the first failure, e.g. "Missing Permissions
    * (50013)". Guessing at the cause in the summary sent people checking role
-   * hierarchy for problems that were nothing to do with it — a created role
+   * hierarchy for problems that were nothing to do with it - a created role
    * always lands at the bottom, so hierarchy cannot be why creation failed.
    */
   detail?: string;
@@ -60,7 +60,7 @@ function describe(res: { status?: number; error?: string }): string {
   return `${res.error ?? "unknown error"}${code}`;
 }
 
-/** Milestone level roles — the Arcane level-reward replacement. */
+/** Milestone level roles - the Arcane level-reward replacement. */
 export async function setupLevelRoles(): Promise<SetupResult> {
   const guildId = discordEnv.guildId;
   if (!guildId || !discordEnv.botToken) return { ok: false, error: "not_configured", ...empty() };
@@ -95,7 +95,7 @@ export async function setupLevelRoles(): Promise<SetupResult> {
           guildId,
           mapped,
           { name, color },
-          `${BOT_NAME} — level milestone role`,
+          `${BOT_NAME} - level milestone role`,
         );
         if (patched.ok) result.updated.push(name);
         else {
@@ -118,7 +118,7 @@ export async function setupLevelRoles(): Promise<SetupResult> {
     const created = await discordRest.createRole(
       guildId,
       { name, color, hoist: false, mentionable: false },
-      `${BOT_NAME} — level milestone role`,
+      `${BOT_NAME} - level milestone role`,
     );
     if (created.ok && created.data) {
       roles[String(level)] = created.data.id;
@@ -149,7 +149,7 @@ export async function setupVerificationRoles(): Promise<SetupResult & { verified
   const result: SetupResult & { verified?: string; unverified?: string } = { ok: true, ...empty() };
 
   const ensure = async (name: string, color: number, current: string | null) => {
-    // A linked role is used and brought in line — never swapped for a new one.
+    // A linked role is used and brought in line - never swapped for a new one.
     if (current) {
       const role = byId.get(current);
       if (!role) {
@@ -161,7 +161,7 @@ export async function setupVerificationRoles(): Promise<SetupResult & { verified
           guildId,
           current,
           { name, color },
-          `${BOT_NAME} — verification`,
+          `${BOT_NAME} - verification`,
         );
         if (patched.ok) result.updated.push(name);
         else {
@@ -181,7 +181,7 @@ export async function setupVerificationRoles(): Promise<SetupResult & { verified
     const created = await discordRest.createRole(
       guildId,
       { name, color, hoist: false, mentionable: false },
-      `${BOT_NAME} — verification`,
+      `${BOT_NAME} - verification`,
     );
     if (created.ok && created.data) {
       result.created.push(name);
@@ -228,7 +228,7 @@ async function upsertPanel(
       await botDb.patchConfig(key, { panel_channel_id: channelId, enabled: true });
       return edited;
     }
-    // Deleted by hand, or the channel changed — fall through and post a new one.
+    // Deleted by hand, or the channel changed - fall through and post a new one.
   }
   const res = await discordRest.createMessage(channelId, payload);
   if (res.ok) {
@@ -275,7 +275,7 @@ export async function setupStatsChannels(): Promise<SetupResult> {
     const cat = await discordRest.createChannel(
       guildId,
       { name: "📊 Hub stats", type: ChannelType.GuildCategory },
-      `${BOT_NAME} — stat counters`,
+      `${BOT_NAME} - stat counters`,
     );
     if (cat.ok && cat.data) categoryId = cat.data.id;
     return categoryId;
@@ -306,7 +306,7 @@ export async function setupStatsChannels(): Promise<SetupResult> {
       continue;
     }
 
-    // Only the Discord member counter is optional — the rest are created when
+    // Only the Discord member counter is optional - the rest are created when
     // no channel is linked. Without an ID here there is nothing to count into.
     if (key === "discord_members") continue;
 
@@ -318,12 +318,12 @@ export async function setupStatsChannels(): Promise<SetupResult> {
         name,
         type: ChannelType.GuildVoice,
         parent_id: (await ensureCategory()) ?? undefined,
-        // Visible to everyone, joinable by nobody — it's a display, not a call.
+        // Visible to everyone, joinable by nobody - it's a display, not a call.
         permission_overwrites: [
           { id: guildId, type: 0, allow: String(Permissions.ViewChannel), deny: String(Permissions.Connect) },
         ],
       },
-      `${BOT_NAME} — stat counter`,
+      `${BOT_NAME} - stat counter`,
     );
     if (created.ok && created.data) {
       next[key] = created.data.id;
@@ -341,7 +341,7 @@ export async function setupStatsChannels(): Promise<SetupResult> {
 
 /**
  * Renames the configured counter channels to the current numbers. Safe to
- * call on a schedule — Discord rate-limits channel renames to roughly two per
+ * call on a schedule - Discord rate-limits channel renames to roughly two per
  * ten minutes per channel, so don't call it more often than that.
  */
 export async function refreshStatChannels(): Promise<{

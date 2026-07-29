@@ -44,7 +44,7 @@ export async function generateMetadata({
   if (!profile) return { title: "Player not found" };
   return {
     title: `${profile.display_name ?? profile.username} (@${profile.username})`,
-    description: profile.bio ?? `${profile.username}'s Classic Games Hub profile — level ${profile.level}.`,
+    description: profile.bio ?? `${profile.username}'s Classic Games Hub profile - level ${profile.level}.`,
   };
 }
 

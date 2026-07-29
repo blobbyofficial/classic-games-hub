@@ -58,7 +58,7 @@ export function CommunityEventManager({ events }: { events: AdminCommunityEvent[
             <PartyPopper className="size-5 text-primary" /> Launch a community event
           </CardTitle>
           <CardDescription>
-            A server-wide co-op goal — every scored play counts toward the target, and everyone who
+            A server-wide co-op goal - every scored play counts toward the target, and everyone who
             took part earns the reward when it lands. One live event at a time.
           </CardDescription>
         </CardHeader>
@@ -68,7 +68,7 @@ export function CommunityEventManager({ events }: { events: AdminCommunityEvent[
               <Label htmlFor="ev-title">Title</Label>
               <Input
                 id="ev-title"
-                placeholder="e.g. Weekend Warriors — 500 games together"
+                placeholder="e.g. Weekend Warriors - 500 games together"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 maxLength={80}
@@ -113,7 +113,7 @@ export function CommunityEventManager({ events }: { events: AdminCommunityEvent[
           </Button>
           {live && (
             <p className="text-xs text-muted-foreground">
-              An event is already live — end it before launching a new one.
+              An event is already live - end it before launching a new one.
             </p>
           )}
         </CardContent>

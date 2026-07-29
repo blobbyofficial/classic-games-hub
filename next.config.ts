@@ -27,7 +27,7 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
-    minimumCacheTTL: 604800, // 7 days — game thumbnails/avatars rarely change
+    minimumCacheTTL: 604800, // 7 days - game thumbnails/avatars rarely change
     remotePatterns: [
       { protocol: "https", hostname: "*.supabase.co" },
       { protocol: "https", hostname: "avatars.githubusercontent.com" },

@@ -51,7 +51,7 @@ export function StoriesStrip({ stories, currentUser }: { stories: StoryItem[]; c
     start(async () => {
       const res = await postStory("text", text);
       if (!res.ok) return void toast.error(res.error ?? "Could not post");
-      toast.success("Story posted — visible for 24 hours");
+      toast.success("Story posted - visible for 24 hours");
       setText("");
       setComposeOpen(false);
       router.refresh();

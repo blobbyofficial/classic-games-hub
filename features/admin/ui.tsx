@@ -9,7 +9,7 @@ import { PAGE_META } from "./nav-items";
 /**
  * The pieces every admin page shares.
  *
- * Each page used to open however its author felt that day — a bare paragraph,
+ * Each page used to open however its author felt that day - a bare paragraph,
  * a search box, a `<h2>` at whatever size. Nothing was wrong individually, but
  * moving between them felt like moving between different products. These are
  * the four shapes that were being reinvented: a page heading, a result line, a

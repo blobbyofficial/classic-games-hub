@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 /**
  * Route skeletons were duplicating the same header markup, so the shapes every
  * page shares live here. The point of a route-shaped skeleton over a generic
- * spinner is that the layout doesn't jump when the real content lands — so
+ * spinner is that the layout doesn't jump when the real content lands - so
  * these mirror the real headers' sizes, not just "a grey box".
  */
 

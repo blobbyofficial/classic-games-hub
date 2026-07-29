@@ -147,7 +147,7 @@ export function DiscordServerSettings({
         <CardHeader>
           <CardTitle>Join verification</CardTitle>
           <CardDescription>
-            The gate new members pass through — replaces Appy. Run{" "}
+            The gate new members pass through - replaces Appy. Run{" "}
             <code>/setup verification</code> in Discord to create the roles and post the panel;
             these fields fine-tune it afterwards.
           </CardDescription>
@@ -289,7 +289,7 @@ export function DiscordServerSettings({
         <CardHeader>
           <CardTitle>Level milestone roles</CardTitle>
           <CardDescription>
-            Roles handed out automatically at each milestone level — the Arcane level-reward
+            Roles handed out automatically at each milestone level - the Arcane level-reward
             replacement. “Create missing roles” makes them in Discord for you and remembers their
             IDs; members see the ladder with <code>/rewards</code> and their progress with{" "}
             <code>/level</code>.
@@ -357,7 +357,7 @@ export function DiscordServerSettings({
             <Label>Created roles</Label>
             <p className="text-xs text-muted-foreground">
               {Object.keys(levelRoles.roles).length === 0
-                ? "None yet — press “Create missing roles”."
+                ? "None yet - press “Create missing roles”."
                 : Object.entries(levelRoles.roles)
                     .sort((a, b) => Number(a[0]) - Number(b[0]))
                     .map(([level, id]) => `Lvl ${level} → ${id}`)
@@ -386,7 +386,7 @@ export function DiscordServerSettings({
         <CardHeader>
           <CardTitle>Live counter channels</CardTitle>
           <CardDescription>
-            Voice channels renamed to live numbers — the ServerStats replacement. “Online” is how
+            Voice channels renamed to live numbers - the ServerStats replacement. “Online” is how
             many players are active on the website right now. Discord rate-limits renames, so
             counters refresh about every 10 minutes.
           </CardDescription>
@@ -412,7 +412,7 @@ export function DiscordServerSettings({
               <div key={key} className="space-y-3 rounded-lg border p-3">
                 <IdField
                   id={`st-${key}`}
-                  label={`${label} — channel ID`}
+                  label={`${label} - channel ID`}
                   value={stats.channels[key]}
                   onChange={(v) => setStats((c) => ({ ...c, channels: { ...c.channels, [key]: v } }))}
                 />

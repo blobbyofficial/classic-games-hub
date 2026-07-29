@@ -8,7 +8,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const { slug } = await params;
   const item = await getShopItemBySlug(slug);
   if (!item) return { title: "Item not found" };
-  return { title: `${item.name} — Shop`, description: item.description ?? undefined };
+  return { title: `${item.name} - Shop`, description: item.description ?? undefined };
 }
 
 export default async function ShopItemPage({ params }: { params: Promise<{ slug: string }> }) {

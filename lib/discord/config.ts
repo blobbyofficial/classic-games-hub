@@ -4,7 +4,7 @@ import { botDb } from "./bot-db";
 /**
  * Admin-editable bot configuration (`discord_bot_config`, migrations 0033 +
  * 0041). One shape per key, with defaults that make every feature safe to
- * leave unconfigured — a missing channel/role id simply disables that bit
+ * leave unconfigured - a missing channel/role id simply disables that bit
  * instead of erroring.
  */
 
@@ -110,7 +110,7 @@ export const VERIFICATION_DEFAULTS: VerificationConfig = {
   panel_title: "✅ Verify yourself",
   panel_body: "Press the button below to get access to the server.",
   button_label: "Verify me",
-  success_message: "You're verified — welcome in! 🎮",
+  success_message: "You're verified - welcome in! 🎮",
   welcome_channel_id: null,
   welcome_message: "Welcome {user} to **{server}**! You're member #{count}. Play at {site}",
   dm_on_join: false,
@@ -146,7 +146,7 @@ export const TICKETS_DEFAULTS: TicketsConfig = {
   panel_title: "🎫 Support tickets",
   panel_body: "Need help? Open a private ticket and a staff member will be with you.",
   button_label: "Open a ticket",
-  open_message: "Thanks {user} — describe your issue and staff will reply here.",
+  open_message: "Thanks {user} - describe your issue and staff will reply here.",
   max_open_per_user: 1,
 };
 

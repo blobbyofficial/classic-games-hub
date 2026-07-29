@@ -19,7 +19,7 @@ async function client() {
  */
 const MESSAGES: Record<string, string> = {
   suspended: "Your account is suspended.",
-  already_in_party: "You're already in a party — leave it first.",
+  already_in_party: "You're already in a party - leave it first.",
   already_in_a_party: "They're already in a party.",
   invalid_code: "No party with that code. Check it and try again.",
   party_full: "That party is full.",
@@ -27,7 +27,7 @@ const MESSAGES: Record<string, string> = {
   not_in_party: "You're not in a party.",
   not_leader: "Only the party leader can do that.",
   not_a_member: "They're not in your party.",
-  cannot_kick_self: "You can't remove yourself — leave the party instead.",
+  cannot_kick_self: "You can't remove yourself - leave the party instead.",
   unknown_game: "That game isn't available.",
 };
 

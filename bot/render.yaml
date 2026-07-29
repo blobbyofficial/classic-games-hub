@@ -1,10 +1,10 @@
-# Render blueprint — free plan.
+# Render blueprint - free plan.
 #
 # Render's free tier only offers *web services* (they idle out after 15 minutes
 # with no inbound traffic), which is why the worker also runs a tiny health
 # server: point a free uptime pinger (UptimeRobot, cron-job.org, BetterStack)
 # at https://<your-service>.onrender.com/health every 5 minutes and the
-# instance stays awake — which is what keeps the bot showing as Online.
+# instance stays awake - which is what keeps the bot showing as Online.
 #
 # Deploy: Render dashboard → New → Blueprint → pick this repo → set the secrets.
 services:
@@ -31,7 +31,7 @@ services:
         sync: false
       - key: SITE_URL
         value: https://classic-games-hub.blobbyofficial.com
-      # Set this to the service's own URL once Render assigns it — the worker
+      # Set this to the service's own URL once Render assigns it - the worker
       # then pings itself every 4 minutes as a second line of defence.
       - key: SELF_URL
         sync: false

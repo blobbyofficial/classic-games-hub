@@ -1,4 +1,4 @@
-# Classic Games Hub Discord bot — long-running worker (no HTTP port).
+# Classic Games Hub Discord bot - long-running worker (no HTTP port).
 FROM node:20-slim AS build
 WORKDIR /app
 COPY package.json package-lock.json* ./

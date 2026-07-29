@@ -5,7 +5,7 @@ import { getConfig } from "../hubConfig.js";
 
 /**
  * Light automod (the last piece of Sapphire): invite links, link spam, mention
- * spam and message flooding. Disabled by default — turn it on at
+ * spam and message flooding. Disabled by default - turn it on at
  * Admin → Discord bot. Link/invite rules need the **Message Content** intent;
  * mention and flood rules work without it.
  */

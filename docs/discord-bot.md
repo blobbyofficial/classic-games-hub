@@ -2,7 +2,7 @@
 
 The Discord bot for **Classic Games Hub**. The site and community are the Hub;
 the bot is **Classic Games Bot**, and that is what it signs its embeds and
-audit-log entries with (`BOT_NAME` in `lib/discord/embeds.ts` — one edit to
+audit-log entries with (`BOT_NAME` in `lib/discord/embeds.ts` - one edit to
 change it everywhere).
 
 Renaming it there does **not** rename the Discord application. That name is set
@@ -11,7 +11,7 @@ nickname in the member list can be changed by right-clicking it in your server.
 
 One bot instead of four. It replaces **Appy** (join verification), **Sapphire**
 (moderation, announcements, tickets), **Arcane** (levelling and level-reward
-roles) and **ServerStats** (live counter channels) — and it runs on the
+roles) and **ServerStats** (live counter channels) - and it runs on the
 existing free infrastructure (Vercel + Supabase + Discord).
 
 ## Architecture
@@ -28,7 +28,7 @@ Vercel cron (nightly) ──▶ /api/cron/discord-role-sync ──▶ reconcile 
 Any scheduler ─────────▶ /api/cron/discord-stats ──────▶ refresh counters
 
 bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handling,
-     automod, live feed, counters — and the bot's Online status
+     automod, live feed, counters - and the bot's Online status
      │
      └──every 60s──▶ bot_heartbeat() ──▶ /status shows the worker as Online
 ```
@@ -41,7 +41,7 @@ bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handlin
 | Account linking | Website (Supabase auth + `claim_discord_link`) | free |
 | Role sync + milestone roles | On change, `/sync`, nightly cron, level-up | free |
 | Level/XP storage & rules, cases, tickets | Supabase | free |
-| Chat XP, automod, join handling, live feed, **Online status** | `bot/` worker — any always-on Node host | free-ish (see `bot/README.md`) |
+| Chat XP, automod, join handling, live feed, **Online status** | `bot/` worker - any always-on Node host | free-ish (see `bot/README.md`) |
 
 ## What replaced what
 
@@ -50,7 +50,7 @@ bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handlin
 - `/setup verification channel:#verify` creates the **Verified** and
   **Unverified** roles (reusing any that already exist), posts the verify panel
   and stores every ID in Supabase.
-- Members press one button — or, with `captcha: true`, answer a maths question
+- Members press one button - or, with `captcha: true`, answer a maths question
   in a modal. The expected answer never leaves the server: the modal carries an
   HMAC of it, keyed with the bot token.
 - Optional `min_account_age_hours` blocks throwaway accounts. Verifications are
@@ -81,13 +81,13 @@ bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handlin
 ### Arcane → levelling and level rewards
 
 - XP per counted message is random in a configurable range (default 15–25) with
-  a configurable cooldown (default 60 s) — enforced **in Postgres**, so it
+  a configurable cooldown (default 60 s) - enforced **in Postgres**, so it
   can't be gamed by restarts. Bots, system messages and no-XP channels never
   count.
-- Level curve is configurable (`quad·n² + linear·n + base`; defaults 5/50/100 —
+- Level curve is configurable (`quad·n² + linear·n + base`; defaults 5/50/100 -
   the familiar MEE6/Arcane curve).
 - **Milestone roles:** `/setup levels` creates a role per milestone level
-  (defaults **1, 5, 10, 20, 30, 40, 50, 75, 100** — editable) and stores the
+  (defaults **1, 5, 10, 20, 30, 40, 50, 75, 100** - editable) and stores the
   IDs. Reaching a milestone grants the role immediately; `remove_previous`
   switches between stacking roles and keeping only the highest. The nightly
   role sync repairs anything missed while the worker was down.
@@ -101,7 +101,7 @@ bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handlin
 
 - `/setup stats` creates voice channels under a **📊 Hub stats** category:
   online players on the website, registered players, plays today (and
-  optionally the Discord member count). Nobody can join them — the name *is*
+  optionally the Discord member count). Nobody can join them - the name *is*
   the display.
 - "Online" comes from the website: profiles seen in the last 5 minutes
   (`bot_stats_extended`).
@@ -115,7 +115,7 @@ bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handlin
 
 ## Is there any way for the bot to always be online?
 
-Yes — run the gateway worker. Discord's green dot means "this application holds
+Yes - run the gateway worker. Discord's green dot means "this application holds
 a gateway (WebSocket) connection", nothing else. An HTTP-interactions bot has
 none, so it shows grey no matter how well it works, and Vercel/Supabase
 functions are request-scoped and cannot hold that connection open.
@@ -125,7 +125,7 @@ text), re-asserts it every 10 minutes (Discord drops presence on some
 reconnects), auto-reconnects, exits non-zero on an invalidated session so the
 host restarts it, and serves `/health` so free hosts keep it alive.
 `bot/fly.toml` (always-on) and `bot/render.yaml` (free tier + keep-alive
-pinger) are both included — see `bot/README.md`.
+pinger) are both included - see `bot/README.md`.
 
 ## Account linking
 
@@ -150,7 +150,7 @@ Connections, or `/unlink` for code links.
   (`discord_bot_config.role_sync`).
 - Supported keys: `__linked__`, `__staff__`, `__admin__`, `__moderator__`, any
   badge/achievement slug, `nameplate-<slug>`, `hub-level-<N>`,
-  `discord-level-<N>` — plus the milestone level roles, which the bot manages
+  `discord-level-<N>` - plus the milestone level roles, which the bot manages
   itself.
 - Sync happens: on admin role change and ban/unban, when a link is claimed, on
   `/sync`, on verification, on level-up, when a member joins, and nightly for
@@ -181,21 +181,21 @@ behind.
 
 **Admin → Discord bot** is not just a settings form. Every command that does
 something to the server can be run from there, through the *same functions* the
-slash commands call (`lib/discord/ops.ts`) — so a case opened on the website is
+slash commands call (`lib/discord/ops.ts`) - so a case opened on the website is
 numbered, DM'd and mod-logged identically to one opened in Discord. There is no
 second implementation to drift.
 
-- **Announce** — `/announce`, with the same role-scoped pings.
-- **Moderation** — warn, timeout, remove timeout, kick, ban, unban. Recorded
+- **Announce** - `/announce`, with the same role-scoped pings.
+- **Moderation** - warn, timeout, remove timeout, kick, ban, unban. Recorded
   against the staff member's *linked* Discord account; an unlinked admin is
   refused, because an unattributable case is worse than none.
-- **Channel tools** — purge, slowmode, lock, unlock.
-- **Push settings to Discord** — re-applies a section (or all of them) to the
+- **Channel tools** - purge, slowmode, lock, unlock.
+- **Push settings to Discord** - re-applies a section (or all of them) to the
   server: creates missing roles, re-posts panels, renames counters.
 
 Saving a section now **also pushes it**. It used to write to Postgres and stop,
 so the dashboard and the server disagreed until someone ran the matching
-`/setup`. The push is best-effort by design — the settings are saved either
+`/setup`. The push is best-effort by design - the settings are saved either
 way, so a Discord outage costs you a retry of the push, never your edit.
 
 Pushing is idempotent: existing roles and channels with the expected names are
@@ -203,12 +203,12 @@ reused rather than duplicated, so it is safe to press repeatedly.
 
 ## Environment variables
 
-On **Vercel** (the website — all server-only, none reach the browser):
+On **Vercel** (the website - all server-only, none reach the browser):
 
 | Variable | Where it comes from | Without it |
 | --- | --- | --- |
 | `DISCORD_CLIENT_ID` | Developer Portal → General Information → Application ID | Commands can't be registered |
-| `DISCORD_PUBLIC_KEY` | Developer Portal → General Information → Public Key | **Discord refuses to save the interactions endpoint URL** — the endpoint correctly rejects the unsigned test ping with a 401 |
+| `DISCORD_PUBLIC_KEY` | Developer Portal → General Information → Public Key | **Discord refuses to save the interactions endpoint URL** - the endpoint correctly rejects the unsigned test ping with a 401 |
 | `DISCORD_BOT_TOKEN` | Developer Portal → Bot → Token | Commands can't be registered; no REST calls |
 | `DISCORD_GUILD_ID` | Right-click your server → Copy Server ID (needs Developer Mode) | Commands register globally instead, taking up to an hour to appear |
 | `CRON_SECRET` | Any long random string you choose | The cron routes and `/api/discord/register` reject every call |
@@ -217,11 +217,11 @@ Admin → Discord bot shows which of these are present on the current
 deployment, so a missing one is visible before you press anything.
 
 On the **worker** (`bot/`, if you deploy it): `DISCORD_TOKEN` (or
-`DISCORD_BOT_TOKEN` — both are accepted, since the website uses the second
+`DISCORD_BOT_TOKEN` - both are accepted, since the website uses the second
 name), `DISCORD_GUILD_ID`, `SUPABASE_URL` and `SUPABASE_SECRET_KEY`. The secret
 key is service-role and belongs only here.
 
-Changing a variable on Vercel does **not** affect the running deployment —
+Changing a variable on Vercel does **not** affect the running deployment -
 redeploy afterwards, or the old build keeps its old (empty) values.
 
 ## Setup (one-time)
@@ -238,7 +238,7 @@ redeploy afterwards, or the old build keeps its old (empty) values.
      Moderate Members, Manage Messages, Send Messages, Embed Links, Read
      Message History. Invite the bot with the generated URL.
    - Drag the bot's role **above** every role it manages (Server Settings →
-     Roles) — Discord refuses to touch roles above its own.
+     Roles) - Discord refuses to touch roles above its own.
 2. **Vercel env vars** (server only): `DISCORD_CLIENT_ID`,
    `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN`, `DISCORD_GUILD_ID`,
    `CRON_SECRET`, `SUPABASE_SECRET_KEY`. Redeploy.
@@ -261,7 +261,7 @@ redeploy afterwards, or the old build keeps its old (empty) values.
    Verification has one manual step Discord can't automate: deny **View
    Channel** for @everyone (or the Unverified role) on the channels newcomers
    shouldn't see, and allow it for Verified.
-7. **Run the worker** (`bot/`) so chat XP, automod and the Online status work —
+7. **Run the worker** (`bot/`) so chat XP, automod and the Online status work -
    see `bot/README.md`.
 8. Fine-tune wording, limits and automod at **Admin → Discord bot**.
 
@@ -273,7 +273,7 @@ heartbeat. On connect, and every 60 seconds after, the worker calls
 `platform_status()` treats a heartbeat older than **3 minutes** as offline, so
 two beats can be lost to a network blip without the panel flipping.
 
-The heartbeat requires the worker to be running — it is not sent by the
+The heartbeat requires the worker to be running - it is not sent by the
 serverless endpoint. If you don't deploy `bot/`, `/status` will correctly
 report the worker as Offline while slash commands carry on working.
 

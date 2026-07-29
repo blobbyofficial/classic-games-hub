@@ -146,7 +146,7 @@ export function ShopItemDetail({
               <Button variant={isEquipped ? "secondary" : "outline"} onClick={apply} disabled={pending}>
                 {isEquipped ? (
                   <>
-                    <Check /> Applied — remove
+                    <Check /> Applied - remove
                   </>
                 ) : (
                   "Apply now"

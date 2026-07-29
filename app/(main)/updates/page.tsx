@@ -182,7 +182,7 @@ export default function UpdatesPage() {
         <p className="max-w-2xl text-sm text-muted-foreground">
           Every pull request merged into <code className="rounded bg-muted px-1 py-0.5 text-xs">main</code>. The five
           oldest predate the rebuild of the site as a Next.js app, so their commits are no longer reachable from the
-          current history — GitHub still remembers them.
+          current history - GitHub still remembers them.
         </p>
         <Card>
           <CardContent className="pt-6">
@@ -210,7 +210,7 @@ export default function UpdatesPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-bold tracking-tight">Everything that landed</h2>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Every change that reached production, newest first — whether it arrived through a pull request or as a direct
+          Every change that reached production, newest first - whether it arrived through a pull request or as a direct
           commit. {UPDATE_STATS.landed} in total, going back to the very first one.
         </p>
 

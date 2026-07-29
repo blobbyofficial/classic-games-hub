@@ -20,7 +20,7 @@ import {
  * Button + modal handlers for the two persistent panels: join verification
  * (the Appy replacement) and support tickets (the Sapphire replacement).
  * Both are pure HTTP interactions, so they run serverlessly alongside the
- * slash commands — no gateway process involved.
+ * slash commands - no gateway process involved.
  */
 
 import { BRAND_COLOR, brandEmbed } from "./embeds";
@@ -153,7 +153,7 @@ export async function handleVerifyClick() {
   };
 }
 
-/** The actual verification work — runs after the response is sent. */
+/** The actual verification work - runs after the response is sent. */
 export async function deferredVerify(interaction: Interaction, method: "button" | "captcha") {
   const me = invoker(interaction);
   const cfg = await getBotConfig("verification");
@@ -170,7 +170,7 @@ export async function deferredVerify(interaction: Interaction, method: "button" 
       ]);
       await log(
         cfg.log_channel_id,
-        fail(`Blocked verification for <@${me.id}> — account age below the minimum.`),
+        fail(`Blocked verification for <@${me.id}> - account age below the minimum.`),
       );
       return;
     }
@@ -179,7 +179,7 @@ export async function deferredVerify(interaction: Interaction, method: "button" 
   const res = await botDb.verifyMember(me.id, me.name, method);
   if (!res?.ok) {
     await editOriginal(interaction.token, [
-      fail(res?.error === "disabled" ? "Verification is currently disabled." : "Couldn't verify you — try again shortly."),
+      fail(res?.error === "disabled" ? "Verification is currently disabled." : "Couldn't verify you - try again shortly."),
     ]);
     return;
   }
@@ -197,7 +197,7 @@ export async function deferredVerify(interaction: Interaction, method: "button" 
   void syncMemberRoles(me.id).catch(() => undefined);
 
   const description = [
-    cfg.success_message || "You're verified — welcome in! 🎮",
+    cfg.success_message || "You're verified - welcome in! 🎮",
     problems.length ? `\n⚠️ Almost: ${problems.join(", ")}. Ping a staff member.` : "",
     res.linked ? "" : `\nTip: run \`/link\` to connect your **${siteUrl().replace(/^https?:\/\//, "")}** account.`,
   ]
@@ -306,7 +306,7 @@ export async function deferredTicketOpen(interaction: Interaction, subject: stri
       fail(
         created.status === 403
           ? "I need the **Manage Channels** permission to open tickets."
-          : "Couldn't open a ticket right now — please ping a staff member.",
+          : "Couldn't open a ticket right now - please ping a staff member.",
       ),
     ]);
     return;

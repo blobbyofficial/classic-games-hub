@@ -86,7 +86,7 @@ export function SeasonalEventEditor({ flag }: { flag: FeatureFlag }) {
             onChange={(e) => setMessage(e.target.value)}
             rows={2}
             maxLength={200}
-            placeholder="Earn 2× credits on every game — for a limited time!"
+            placeholder="Earn 2× credits on every game - for a limited time!"
           />
         </div>
         <p className="text-xs text-muted-foreground">

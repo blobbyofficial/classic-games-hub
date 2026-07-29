@@ -19,8 +19,8 @@ export function ChallengeCard({ challenge }: { challenge: ChallengeWithProgress 
   const target = challenge.requirement.target;
   const pct = Math.min(100, (challenge.progress / target) * 100);
 
-  // Booster-only challenges (0046) stay visible to everyone — they advertise
-  // the perk — but claim_challenge is what actually enforces eligibility.
+  // Booster-only challenges (0046) stay visible to everyone - they advertise
+  // the perk - but claim_challenge is what actually enforces eligibility.
   const boosterOnly = challenge.booster_only;
   const canClaimBooster =
     profile != null &&

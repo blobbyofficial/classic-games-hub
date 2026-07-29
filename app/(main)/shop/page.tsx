@@ -29,7 +29,7 @@ export default async function ShopPage() {
           </span>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Shop</h1>
-            <p className="text-sm text-muted-foreground">Cosmetics & boosts — never pay-to-win.</p>
+            <p className="text-sm text-muted-foreground">Cosmetics & boosts - never pay-to-win.</p>
           </div>
         </div>
         {profile && (

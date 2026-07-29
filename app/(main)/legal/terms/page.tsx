@@ -6,7 +6,7 @@ import { SITE } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "Terms of Service",
   description:
-    "The Terms of Service for Classic Games Hub — the rules for using the site, your account, the community, the credits economy and our Discord integration.",
+    "The Terms of Service for Classic Games Hub - the rules for using the site, your account, the community, the credits economy and our Discord integration.",
   alternates: { canonical: "/legal/terms" },
 };
 
@@ -18,7 +18,7 @@ export default function TermsPage() {
     <LegalPage
       title="Terms of Service"
       updated={UPDATED}
-      intro="These terms are the agreement between you and Classic Games Hub. They're written to be readable — but they are still the rules, so please actually read them. By creating an account or using the site you agree to everything below."
+      intro="These terms are the agreement between you and Classic Games Hub. They're written to be readable - but they are still the rules, so please actually read them. By creating an account or using the site you agree to everything below."
     >
       <section>
         <h2>1. Who we are</h2>
@@ -54,7 +54,7 @@ export default function TermsPage() {
         <ul>
           <li>
             You can sign up with an email address and password, or with Discord. Keep your
-            credentials secure — you are responsible for activity on your account.
+            credentials secure - you are responsible for activity on your account.
           </li>
           <li>One person, one account. Alternate accounts used to farm credits, evade blocks or
             manipulate leaderboards may be removed.</li>
@@ -98,7 +98,7 @@ export default function TermsPage() {
             submissions, or abusing the credits economy (including XP/credit farming with alternate
             accounts) may lead to score removal, economy resets, or account suspension.
           </li>
-          <li>Found a bug or exploit? Please report it to us instead of using it — we genuinely
+          <li>Found a bug or exploit? Please report it to us instead of using it - we genuinely
             appreciate it.</li>
           <li>Attempting to attack, overload or reverse-engineer the service is prohibited.</li>
         </ul>
@@ -194,7 +194,7 @@ export default function TermsPage() {
         <h2>11. Availability and changes to the service</h2>
         <p>
           The Hub is a free community project. We aim for it to be reliable, but it is provided
-          <strong> &ldquo;as is&rdquo;</strong> with no uptime guarantee — features may change, break, be paused
+          <strong> &ldquo;as is&rdquo;</strong> with no uptime guarantee - features may change, break, be paused
           or be removed at any time, and we may modify or discontinue the service (in whole or in
           part). Where reasonably possible we&rsquo;ll give notice of major changes via the site or
           Discord.

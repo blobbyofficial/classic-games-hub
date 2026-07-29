@@ -6,7 +6,7 @@ import { SITE } from "@/lib/constants";
 export const metadata: Metadata = {
   title: "Privacy Policy",
   description:
-    "How Classic Games Hub collects, uses and protects your data — accounts, gameplay, messages, Discord linking, cookies and your rights under UK GDPR.",
+    "How Classic Games Hub collects, uses and protects your data - accounts, gameplay, messages, Discord linking, cookies and your rights under UK GDPR.",
   alternates: { canonical: "/legal/privacy" },
 };
 
@@ -18,7 +18,7 @@ export default function PrivacyPage() {
     <LegalPage
       title="Privacy Policy"
       updated={UPDATED}
-      intro="This policy explains exactly what data Classic Games Hub collects, why, where it lives and what your rights are. It's written to match what the platform actually does — no more, no less."
+      intro="This policy explains exactly what data Classic Games Hub collects, why, where it lives and what your rights are. It's written to match what the platform actually does - no more, no less."
     >
       <section>
         <h2>1. Who is responsible for your data</h2>
@@ -37,7 +37,7 @@ export default function PrivacyPage() {
         <ul>
           <li>
             <strong>Email address and password</strong> (password stored only as a secure hash) if
-            you sign up by email — used to sign you in and for account emails such as password
+            you sign up by email - used to sign you in and for account emails such as password
             resets. We do not send marketing emails.
           </li>
           <li>
@@ -79,7 +79,7 @@ export default function PrivacyPage() {
           <li>
             Your Discord user ID and display name, a count of counted chat messages, Discord XP and
             level, and timestamps of your last counted message. The bot reads only message
-            <em> metadata</em> for XP — it does not store the content of your Discord messages.
+            <em> metadata</em> for XP - it does not store the content of your Discord messages.
           </li>
           <li>The Discord roles our bot assigns or removes for you, and moderation actions taken
             through the bot (warnings, timeouts, bans, and the reason given), which are recorded in
@@ -96,7 +96,7 @@ export default function PrivacyPage() {
           </li>
           <li>
             <strong>Anonymous usage analytics</strong> via Vercel Analytics and Speed Insights
-            (page views and performance). These are cookie-less and aggregate — visitors are not
+            (page views and performance). These are cookie-less and aggregate - visitors are not
             individually identified or tracked across sites.
           </li>
         </ul>
@@ -116,16 +116,16 @@ export default function PrivacyPage() {
         <h2>4. Why we process your data (legal bases)</h2>
         <ul>
           <li>
-            <strong>Performance of a contract</strong> — running your account, gameplay, economy and
+            <strong>Performance of a contract</strong> - running your account, gameplay, economy and
             social features you signed up for.
           </li>
           <li>
-            <strong>Legitimate interests</strong> — keeping the platform safe and fair (moderation,
+            <strong>Legitimate interests</strong> - keeping the platform safe and fair (moderation,
             anti-cheat, audit logs, rate-limiting), understanding aggregate usage, and securing our
             infrastructure.
           </li>
           <li>
-            <strong>Consent</strong> — optional features you actively turn on, such as linking your
+            <strong>Consent</strong> - optional features you actively turn on, such as linking your
             Discord account. You can withdraw consent by unlinking or turning the feature off.
           </li>
         </ul>
@@ -135,16 +135,16 @@ export default function PrivacyPage() {
         <h2>5. Where your data lives and who processes it</h2>
         <ul>
           <li>
-            <strong>Supabase</strong> — our database and authentication provider; data is stored in
+            <strong>Supabase</strong> - our database and authentication provider; data is stored in
             an EU region (Ireland). Row Level Security restricts every record to the people entitled
             to see it.
           </li>
           <li>
-            <strong>Vercel</strong> — hosts the website and processes requests (including IP
+            <strong>Vercel</strong> - hosts the website and processes requests (including IP
             addresses in transient logs) and anonymous analytics.
           </li>
           <li>
-            <strong>Discord</strong> — if you use Discord sign-in, linking, or our server, Discord
+            <strong>Discord</strong> - if you use Discord sign-in, linking, or our server, Discord
             processes your data under{" "}
             <a href="https://discord.com/privacy" target="_blank" rel="noopener noreferrer">
               its own privacy policy
@@ -152,7 +152,7 @@ export default function PrivacyPage() {
             .
           </li>
           <li>
-            <strong>Giphy</strong> — GIF searches in chat are proxied through our server, so Giphy
+            <strong>Giphy</strong> - GIF searches in chat are proxied through our server, so Giphy
             receives the search term but not your identity or IP address.
           </li>
         </ul>
