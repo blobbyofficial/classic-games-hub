@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import { AlertCircle, CheckCircle2, Hammer, Megaphone, RefreshCw, Trash2 } from "lucide-react";
+import { Hammer, Megaphone, RefreshCw, Trash2 } from "lucide-react";
 import {
   adminAnnounce,
   adminModerate,
@@ -18,6 +18,7 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { FeedbackLine as Line, type Feedback } from "./ui";
 
 /**
  * The bot's commands, as cards. Arranged into tabs by discord-tabs.tsx.
@@ -27,32 +28,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
  * Discord — there is no second implementation to drift.
  */
 
-type Feedback = { error?: string; message?: string } | null;
-
-function Line({ state }: { state: Feedback }) {
-  if (!state) return null;
-  if (state.error) {
-    return (
-      <p className="flex items-start gap-2 text-sm text-destructive">
-        <AlertCircle className="mt-0.5 size-4 shrink-0" /> {state.error}
-      </p>
-    );
-  }
-  return (
-    <p className="flex items-start gap-2 text-sm text-success">
-      <CheckCircle2 className="mt-0.5 size-4 shrink-0" /> {state.message}
-    </p>
-  );
-}
-
-/** Discord IDs are long numbers; this is the hint people always need. */
-function IdHint() {
-  return (
-    <p className="text-xs text-muted-foreground">
-      Right-click in Discord → Copy ID. Needs Settings → Advanced → Developer Mode.
-    </p>
-  );
-}
 
 const PUSH_SECTIONS = [
   { key: "level_roles" as const, label: "Milestone roles" },
@@ -147,7 +122,6 @@ export function AnnounceCard() {
           <div className="space-y-1.5">
             <Label htmlFor="an-channel">Channel ID</Label>
             <Input id="an-channel" value={channelId} onChange={(e) => setChannelId(e.target.value.trim())} placeholder="123456789012345678" />
-            <IdHint />
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="an-title">Title (optional)</Label>
@@ -253,7 +227,6 @@ export function ModerationCard() {
           <div className="space-y-1.5 sm:col-span-2">
             <Label htmlFor="mod-target">Member ID</Label>
             <Input id="mod-target" value={targetId} onChange={(e) => setTargetId(e.target.value.trim())} placeholder="123456789012345678" />
-            <IdHint />
           </div>
         </div>
 
@@ -307,7 +280,6 @@ export function ChannelCard() {
         <div className="space-y-1.5">
           <Label htmlFor="ch-id">Channel ID</Label>
           <Input id="ch-id" value={channelId} onChange={(e) => setChannelId(e.target.value.trim())} placeholder="123456789012345678" />
-          <IdHint />
         </div>
 
         <div className="grid gap-4 sm:grid-cols-2">
