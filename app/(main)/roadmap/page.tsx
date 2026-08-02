@@ -22,6 +22,7 @@ import {
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty-state";
 import { cn } from "@/lib/utils";
 import { SITE } from "@/lib/constants";
 import { ROADMAP, STATUS_META, DEFINITION_OF_DONE, type RoadmapRelease, type RoadmapStatus } from "@/lib/roadmap";
@@ -115,6 +116,27 @@ export default async function RoadmapPage() {
           ))}
         </div>
       </header>
+
+      {/* Between releases the roadmap is genuinely empty: everything announced
+          has shipped and moved to the update log. Saying so beats padding the
+          page with a release nobody has committed to. */}
+      {roadmap.length === 0 && (
+        <EmptyState
+          icon={MapIcon}
+          title="Nothing announced just yet"
+          description="Everything we'd planned has shipped and moved to the update log. The next release is still being decided - and suggestions genuinely shape it."
+          action={
+            <a
+              href={SITE.discord}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="focus-visible-ring inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              Suggest something on Discord
+            </a>
+          }
+        />
+      )}
 
       {/* Releases */}
       {roadmap.map((release) => (

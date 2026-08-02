@@ -49,6 +49,113 @@ export const REPO_URL = "https://github.com/blobbyofficial/classic-games-hub";
 
 export const RELEASES: UpdateRelease[] = [
   {
+    version: "v1.5.0",
+    codename: "Collector's Edition",
+    date: "2 Aug 2026",
+    summary:
+      "Things worth keeping. Seasons and collectable sets give the long game a shape, cosmetics now layer three deep and finally include the expressive extras that have been promised since v1.2.0, and the arcade gained two games - a playable Rubik's cube, and the first title rendered with the camera inside the scene.",
+    groups: [
+      {
+        heading: "The arcade",
+        icon: "Gamepad2",
+        blurb: "Two new games, and the renderer that makes a third one cheap.",
+        items: [
+          {
+            title: "Cube",
+            description:
+              "The classic 3x3 twisty puzzle. Drag a sticker in the direction you want it to travel and that layer turns, drag the background to look around, or use the standard letters on a keyboard. Scored on moves and time, so a tidy solve beats a lucky one.",
+          },
+          {
+            title: "Labyrinth",
+            description:
+              "A first-person maze in real 3D: corridors you cannot see round, walls that light properly as you turn, and a map that fills itself in only where you have actually been. Three mazes to a run, each bigger than the last.",
+          },
+          {
+            title: "A 3D renderer, not a 3D library",
+            description:
+              "Both games are drawn on the same plain 2D canvas as everything else in the arcade. Adding a 3D library would have put back more weight than every game engine here carries put together, and undone the work v1.4.1 did to make pages lighter. The renderer is shared, so the next 3D game starts from a camera rather than from trigonometry.",
+          },
+        ],
+      },
+      {
+        heading: "Cosmetics & profile",
+        icon: "Palette",
+        blurb: "Layered, optional, and never pay-to-win.",
+        items: [
+          {
+            title: "Decorations and profile frames",
+            description:
+              "Two new layers that sit alongside the ones you already wear rather than replacing them: a decoration over your avatar, and a frame around the whole profile card. An avatar frame, a decoration, a profile frame, a nameplate and an effect can all be on at once.",
+          },
+          {
+            title: "Entrances, cursor trails and profile music",
+            description:
+              "The last of the extras promised back in v1.2.0. Your profile can arrive with an animation, leave a trail behind a visitor's cursor, and play a track you already own from the music library. The music is click-to-play, never automatic - a profile that starts making noise on its own is nobody's favourite feature.",
+          },
+          {
+            title: "Now playing, and an optional view counter",
+            description:
+              "A chip under your name shows what you are playing, or last played, worked out from your sessions rather than anything new being recorded, and it follows the online-status setting you already had. The visitor counter is off by default, counts unique people per day rather than refreshes, and never counts you.",
+          },
+          {
+            title: "Loadout presets",
+            description:
+              "Save everything you are wearing as a set and switch between them. Unlocked at level 20.",
+          },
+        ],
+      },
+      {
+        heading: "Collecting",
+        icon: "Gift",
+        blurb: "The long game: sets to complete, seasons to climb, and perks for boosters.",
+        items: [
+          {
+            title: "Seasons",
+            description:
+              "A tier track that fills as you play, with a reward at each tier. Progress is worked out from what you have actually done rather than a stored counter, so it can never drift; the only thing recorded is whether you have taken a reward.",
+          },
+          {
+            title: "Collections",
+            description:
+              "Cosmetic sets with an exclusive badge for finishing one. Owning the set is derived from your inventory, so items arriving by any route count.",
+          },
+          {
+            title: "Booster perks",
+            description:
+              "A monthly exclusive cosmetic, a monthly token to gift any cosmetic to a friend for 30 days, and early access to new games before everyone else. Locked games stay visible with a countdown, because a perk nobody can see is a perk nobody wants.",
+          },
+        ],
+      },
+      {
+        heading: "Social",
+        icon: "Users",
+        items: [
+          {
+            title: "Friends activity feed",
+            description:
+              "Recent achievements, purchases and new friendships from the people you follow, in one place.",
+          },
+        ],
+      },
+      {
+        heading: "Under the hood",
+        icon: "Rocket",
+        items: [
+          {
+            title: "Loading states everywhere",
+            description:
+              "Ten more routes now show a skeleton of the page instead of a blank screen, and spinners wait 200ms before appearing so a fast load never flashes one.",
+          },
+          {
+            title: "One thumbnail system",
+            description:
+              "Every game card is generated from the same near-black base, grid and vignette, with a single accent hue giving each game its identity. Twenty-six cards now read as one product rather than twenty-six pieces of unrelated art.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.4.1",
     codename: "Refined",
     date: "28 Jul 2026",

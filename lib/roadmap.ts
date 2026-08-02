@@ -44,17 +44,13 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
   idea: { label: "Exploring", className: "bg-gold/10 text-gold border-gold/30" },
 };
 
-export const ROADMAP: RoadmapRelease[] = [
-  {
-    version: "v1.5.0",
-    codename: "Collector's Edition",
-    status: "in-progress",
-    timeframe: "In progress",
-    summary:
-      "Long-term collecting, and the loose ends from earlier releases. Seasons and collectable sets, cosmetics that layer three deep, a monthly booster drop, the last two level milestones, a friends activity feed, a faster hub and a redrawn icon set. The stretch-cosmetic backlog is finally clear - entrances, cursor trails and profile music have all landed - and the arcade gained two games: Cube, a playable Rubik's cube, and Labyrinth, the first title rendered with the camera inside the scene.",
-    groups: [],
-  },
-];
+/**
+ * Empty on purpose. v1.5.0 shipped in full and moved to the update log, and
+ * nothing has been committed to after it yet - so the honest thing for this
+ * page to say is "nothing announced", not a placeholder release nobody has
+ * decided on. The page renders an empty state when this is empty.
+ */
+export const ROADMAP: RoadmapRelease[] = [];
 
 /**
  * The standards every shipped feature is held to. Shown on the roadmap so the
