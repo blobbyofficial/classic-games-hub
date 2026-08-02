@@ -42,7 +42,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="flex min-h-dvh flex-col">
-      {/* First tab stop on every page — jumps a keyboard user past the navbar
+      {/* First tab stop on every page - jumps a keyboard user past the navbar
           and the whole sidebar straight into the page content. */}
       <a
         href="#main"

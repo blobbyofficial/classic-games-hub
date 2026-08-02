@@ -24,7 +24,7 @@ export default async function FriendsPage() {
       <PageHeader
         icon={Users}
         title="Friends"
-        description={`${friends.length} ${friends.length === 1 ? "friend" : "friends"} — add more by username.`}
+        description={`${friends.length} ${friends.length === 1 ? "friend" : "friends"} - add more by username.`}
         className="mb-0"
       />
 

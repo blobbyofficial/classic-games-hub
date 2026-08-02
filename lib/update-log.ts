@@ -53,7 +53,7 @@ export const RELEASES: UpdateRelease[] = [
     codename: "Refined",
     date: "28 Jul 2026",
     summary:
-      "A ground-up pass over how the site looks, feels and performs. One design system instead of many near-copies, motion that stays out of the way, and a lighter page on every device — the whole animation runtime and the query cache left the bundle entirely.",
+      "A ground-up pass over how the site looks, feels and performs. One design system instead of many near-copies, motion that stays out of the way, and a lighter page on every device - the whole animation runtime and the query cache left the bundle entirely.",
     groups: [
       {
         heading: "Design system",
@@ -69,7 +69,7 @@ export const RELEASES: UpdateRelease[] = [
           {
             title: "One page header, one empty state",
             description:
-              "Every top-level page opens with the same masthead, and every 'nothing here yet' surface — no friends, no messages, an empty inventory, no search results — uses the same component, with a real explanation and a way forward rather than a bare sentence.",
+              "Every top-level page opens with the same masthead, and every 'nothing here yet' surface - no friends, no messages, an empty inventory, no search results - uses the same component, with a real explanation and a way forward rather than a bare sentence.",
           },
           {
             title: "Rebuilt primitives",

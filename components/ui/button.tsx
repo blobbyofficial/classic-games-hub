@@ -53,7 +53,7 @@ export interface ButtonProps
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, loading, children, disabled, ...props }, ref) => {
     // `asChild` hands rendering to the child element, so there is nowhere to put
-    // a spinner — callers that need one should render a real button.
+    // a spinner - callers that need one should render a real button.
     if (asChild) {
       return (
         <Slot className={cn(buttonVariants({ variant, size, className }))} ref={ref} {...props}>

@@ -10,7 +10,7 @@ export default function NotFound() {
       <div className="relative text-center motion-safe:animate-rise">
         <Logo className="mb-10 justify-center" />
         <p className="text-[clamp(5rem,22vw,9rem)] font-black leading-none text-gradient">404</p>
-        <h1 className="mt-3 text-title font-bold">Game over — page not found</h1>
+        <h1 className="mt-3 text-title font-bold">Game over - page not found</h1>
         <p className="mx-auto mt-2 max-w-sm leading-relaxed text-muted-foreground">
           This screen doesn&apos;t exist. Let&apos;s get you back in the game.
         </p>

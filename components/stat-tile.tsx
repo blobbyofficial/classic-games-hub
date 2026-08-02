@@ -12,7 +12,7 @@ export function StatTile({
   icon: LucideIcon;
   label: string;
   value: string | number;
-  /** Optional secondary line — a delta, a rank, a unit. */
+  /** Optional secondary line - a delta, a rank, a unit. */
   hint?: string;
   accent?: string;
   className?: string;
@@ -25,7 +25,7 @@ export function StatTile({
         className,
       )}
     >
-      {/* A faint brand wash that warms up on hover — enough to make a row of
+      {/* A faint brand wash that warms up on hover - enough to make a row of
           tiles feel alive without turning them into buttons. */}
       <span
         aria-hidden

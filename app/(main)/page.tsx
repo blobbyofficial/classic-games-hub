@@ -118,7 +118,7 @@ function Hero({
 }) {
   return (
     /* The ambient glow is painted as a background gradient rather than two
-       blurred divs — same look, no filter for the compositor to maintain, which
+       blurred divs - same look, no filter for the compositor to maintain, which
        is what kept this section janky while scrolling on low-end phones. */
     <section className="relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid" />

@@ -27,7 +27,7 @@ export function PageHeader({
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           {/* The icon sits on the title's line, not centred against the whole
-              block — otherwise a two-line description drags it out of alignment. */}
+              block - otherwise a two-line description drags it out of alignment. */}
           <div className="flex items-center gap-3">
             {Icon && (
               <span className="hidden size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15 sm:grid">

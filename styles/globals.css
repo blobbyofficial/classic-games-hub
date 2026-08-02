@@ -18,7 +18,7 @@
   --secondary: oklch(0.95 0.01 285);
   --secondary-foreground: oklch(0.25 0.03 285);
   --muted: oklch(0.95 0.01 285);
-  /* 4.6:1 on --background — AA for body text, not just large text. */
+  /* 4.6:1 on --background - AA for body text, not just large text. */
   --muted-foreground: oklch(0.47 0.02 285);
   --accent: oklch(0.93 0.03 var(--brand-h));
   --accent-foreground: oklch(0.3 0.1 var(--brand-h));
@@ -186,7 +186,7 @@ html[data-site-theme="aurora"] {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
-  /* Elevation scale — `shadow-xs` … `shadow-xl` resolve to the tokens above,
+  /* Elevation scale - `shadow-xs` … `shadow-xl` resolve to the tokens above,
      so cards pick up the right depth in both themes without per-use overrides. */
   --shadow-xs: var(--shadow-xs);
   --shadow-sm: var(--shadow-sm);
@@ -200,7 +200,7 @@ html[data-site-theme="aurora"] {
   --ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
   --ease-spring: cubic-bezier(0.34, 1.4, 0.64, 1);
 
-  /* Fluid display sizes for hero/page headings — no breakpoint jumps. */
+  /* Fluid display sizes for hero/page headings - no breakpoint jumps. */
   --text-display: clamp(2.25rem, 1.4rem + 3.6vw, 4rem);
   --text-display--line-height: 1.04;
   --text-display--letter-spacing: -0.035em;
@@ -209,7 +209,7 @@ html[data-site-theme="aurora"] {
   --text-title--letter-spacing: -0.025em;
 
   --animate-shimmer: shimmer 2s linear infinite;
-  /* Skeleton sweep — a transform, so it composites instead of repainting. */
+  /* Skeleton sweep - a transform, so it composites instead of repainting. */
   --animate-skeleton: cgh-skeleton 1.6s ease-in-out infinite;
   --animate-rise: cgh-rise 0.42s var(--ease-standard) both;
   --animate-fade: cgh-fade 0.3s var(--ease-standard) both;
@@ -252,7 +252,7 @@ html[data-site-theme="aurora"] {
       transform: translateX(100%);
     }
   }
-  /* A value rolling up into place — used when a live counter changes. */
+  /* A value rolling up into place - used when a live counter changes. */
   @keyframes cgh-roll-in {
     from {
       opacity: 0;
@@ -554,8 +554,8 @@ html[data-site-theme="aurora"] {
   -webkit-backdrop-filter: blur(16px) saturate(1.4);
 }
 
-/* Blur is expensive to composite. On devices that can't do it — and on any
-   device the user has asked to keep still — fall back to an opaque surface
+/* Blur is expensive to composite. On devices that can't do it - and on any
+   device the user has asked to keep still - fall back to an opaque surface
    rather than shipping a janky translucent one. */
 @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
   .glass {
@@ -637,7 +637,7 @@ html[data-site-theme="aurora"] {
   }
 }
 
-/* Skip link — visually hidden until focused, then pinned to the top-left. */
+/* Skip link - visually hidden until focused, then pinned to the top-left. */
 @utility skip-link {
   position: fixed;
   top: 0.75rem;
@@ -696,7 +696,7 @@ html[data-site-theme="aurora"] {
 }
 
 /* Ambient brand glow behind hero and empty-state panels. Two soft radial
-   washes, painted as a background rather than blurred elements — no filter
+   washes, painted as a background rather than blurred elements - no filter
    cost, and nothing for the compositor to keep in memory. */
 @utility bg-aurora {
   background-image:

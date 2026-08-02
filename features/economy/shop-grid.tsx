@@ -55,7 +55,7 @@ export function ShopGrid({ items, owned }: { items: ShopItem[]; owned: string[] 
         <EmptyState
           icon={ShoppingBag}
           title={group === "all" ? "The shop is empty right now" : "Nothing in this category yet"}
-          description="New cosmetics and boosts are added regularly — check back soon."
+          description="New cosmetics and boosts are added regularly - check back soon."
         />
       ) : (
         <div className="stagger grid grid-cols-2 gap-3 sm:grid-cols-[repeat(auto-fill,minmax(14rem,1fr))] sm:gap-4">

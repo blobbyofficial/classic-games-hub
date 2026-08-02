@@ -26,7 +26,7 @@ const nextConfig: NextConfig = {
   },
   images: {
     formats: ["image/avif", "image/webp"],
-    minimumCacheTTL: 604800, // 7 days — game thumbnails/avatars rarely change
+    minimumCacheTTL: 604800, // 7 days - game thumbnails/avatars rarely change
     // Widths the layout actually asks for: game cards top out around 320px on a
     // 2x phone, avatars far below that. Trimming the default ladder means fewer
     // variants to generate and a better cache hit rate on the edge.

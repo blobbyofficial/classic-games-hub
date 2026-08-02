@@ -261,7 +261,7 @@ live roadmap at `/roadmap`.
   fading in, so quick loads show nothing at all instead of a flash.
 
 ## Unreleased - "New Dimensions" (parties & online multiplayer)
-## v1.4.1 — "Refined" (UI, UX and performance overhaul)
+## v1.4.1 - "Refined" (UI, UX and performance overhaul)
 
 A ground-up pass over how the site looks, feels and performs. No feature was
 removed or replaced with a placeholder; everything below is the same
@@ -288,7 +288,7 @@ functionality, rebuilt on a shared foundation.
 
 ### ✨ Motion
 
-- Micro-interactions throughout — cards lift, grids stagger in, the credit
+- Micro-interactions throughout - cards lift, grids stagger in, the credit
   balance rolls when it changes, menus scale from the trigger that opened them,
   a game card's play button springs up under the pointer. All transform and
   opacity only, so it composites instead of repainting.
@@ -302,7 +302,7 @@ functionality, rebuilt on a shared foundation.
   All six are now CSS and behave the same.
 - **`@tanstack/react-query` removed** along with `QueryProvider`. Its single
   call site was the command palette's game list, which now caches in module
-  scope — the list is identical for every visitor and changes about once a
+  scope - the list is identical for every visitor and changes about once a
   release.
 - Hero and auth backdrops swapped full-viewport `blur-3xl` elements for
   background gradients; skeleton shimmer became a transform rather than an
@@ -332,7 +332,7 @@ functionality, rebuilt on a shared foundation.
 - Toasts sit above the mobile tab bar; the footer and `<main>` clear it too, with
   `env(safe-area-inset-bottom)` respected throughout.
 
-## Unreleased — "New Dimensions" (parties & online multiplayer)
+## Unreleased - "New Dimensions" (parties & online multiplayer)
 
 Roadmap v1.4.0. Playing together stops being a plan and becomes a feature, and
 four migrations that were live in the database finally have code to reach them.

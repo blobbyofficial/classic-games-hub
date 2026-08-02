@@ -5,7 +5,7 @@ import { cn } from "@/lib/utils";
  *
  * The sweep is a pseudo-element transform rather than an animated gradient
  * position, so a screenful of skeletons stays on the compositor instead of
- * repainting every frame — which is what makes them cheap on low-end phones.
+ * repainting every frame - which is what makes them cheap on low-end phones.
  */
 function Skeleton({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   return (

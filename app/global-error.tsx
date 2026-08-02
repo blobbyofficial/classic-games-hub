@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 /**
  * The root layout has failed, so there is no stylesheet, no font and no theme
- * provider — everything here has to be inline. The media query is the only way
+ * provider - everything here has to be inline. The media query is the only way
  * left to respect the reader's colour scheme.
  */
 export default function GlobalError({

@@ -12,7 +12,7 @@ import { SITE_THEME_IDS } from "@/lib/themes";
 import "@/styles/globals.css";
 
 // `display: swap` shows the fallback immediately rather than blocking first
-// paint on a slow connection; `preload` on the body face only — the mono face
+// paint on a slow connection; `preload` on the body face only - the mono face
 // is used in a handful of small labels and isn't worth a render-blocking hint.
 const geistSans = Geist({
   variable: "--font-geist-sans",
