@@ -5,6 +5,40 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 🌀 Labyrinth - the first true-3D title
+
+- A first-person maze, and the last item on the v1.5.0 roadmap (`0060`). Three
+  mazes to a run, rising in size, with a map that fills in only where you have
+  actually been.
+- The interesting part is underneath it: **`lib/games/engine3d.ts`**, a shared
+  software renderer. Cube got away with hand-rolled maths because flat stickers
+  never cross the camera plane and never need lighting. A camera *inside* a
+  scene needs both, so this one has a real pipeline - free camera, perspective,
+  **near-plane clipping**, backface culling, depth sorting, Lambert shading and
+  distance fog.
+- Near-plane clipping is the whole game. Without it, a wall you are standing
+  next to divides by a depth at or behind the eye and flings its corners across
+  the screen; it is the single thing separating a first-person camera from a
+  diorama.
+- **Still no WebGL.** v1.4.1 spent a release taking an animation runtime and a
+  query cache out of the bundle, and a 3D library would put back more than every
+  engine here weighs combined. A few hundred polygons is nothing to transform in
+  JavaScript, and `fill()` on a convex polygon is hardware accelerated anyway.
+  Making the renderer shared rather than part of the game is what makes "titles"
+  plural affordable.
+- Lighting is computed from **world-space normals, before the view transform**,
+  so it stays fixed to the world as you turn. A light that swings with your head
+  is the classic tell of a fake 3D scene.
+- Two things came out of actually looking at it rather than trusting the maths:
+  the player spawned nose-first into a wall, which showed a flat rectangle and
+  told them nothing; and a flat-shaded wall up close is a screen of uniform
+  colour with no cue at all. Fixed by facing the open direction on spawn, and by
+  panelling walls into a 2x2 grid with per-panel shading and edge outlines.
+- Depth sorting is per-face painter's algorithm rather than a z-buffer. A
+  z-buffer in JavaScript means per-pixel work and giving up `fill()`, which is
+  where all the speed is; the tradeoff is that large interpenetrating faces can
+  sort wrongly, which axis-aligned level geometry never does.
+
 ### 🧊 Cube - a playable Rubik's cube
 
 - The roadmap's "more 3D titles" item, and the arcade's 25th game (`0058`).

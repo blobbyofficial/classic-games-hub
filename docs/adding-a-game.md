@@ -36,6 +36,22 @@ the bundle work in v1.4.1 removed a whole animation runtime, and a 3D library
 would put more back than every engine here weighs put together. Cube renders a
 solid object with about forty lines of hand-rolled vector maths.
 
+### 3D games
+
+If the camera sits *inside* the scene, use `lib/games/engine3d.ts` rather than
+starting from trigonometry. It gives you a free camera, perspective,
+near-plane clipping, backface culling, depth sorting, Lambert lighting, fog and
+edge outlines - hand it world-space `Face`s and a `Camera` and it does the rest.
+Labyrinth is the worked example.
+
+Two things it will not do for you, both learned by looking at the screen rather
+than at the maths:
+
+- **Do not spawn the camera facing a wall.** A flat-shaded surface filling the
+  frame tells the player nothing about where they are.
+- **Flat shading needs help up close.** Subdivide large surfaces and turn on
+  `edge`, or a wall at arm's length is a rectangle of uniform colour.
+
 ## 2. The registry
 
 Add a lazy entry to `ENGINE_LOADERS` in `lib/games/registry.ts` so the engine

@@ -57,7 +57,25 @@ const GAMES = {
   lightsout: { accent: VIOLET, glyph: lights() },
   racer: { accent: PINK, glyph: racecar() },
   rubiks: { accent: EMERALD, glyph: cube() },
+  labyrinth: { accent: SKY, glyph: corridor() },
 };
+
+function corridor() {
+  // One-point perspective: left wall, right wall, floor and the far end, with
+  // the exit post standing in it. Reads as depth at card size, which is the
+  // whole point of the game.
+  const O = 92;
+  const I = 24;
+  const oy = O * 0.62;
+  const iy = I * 0.62;
+  return `<g>
+    <path d="M${-O} ${-oy} L${-I} ${-iy} L${-I} ${iy} L${-O} ${oy} Z" opacity="0.8"/>
+    <path d="M${O} ${-oy} L${I} ${-iy} L${I} ${iy} L${O} ${oy} Z" opacity="0.55"/>
+    <path d="M${-O} ${oy} L${-I} ${iy} L${I} ${iy} L${O} ${oy} Z" opacity="0.28"/>
+    <rect x="${-I}" y="${-iy}" width="${I * 2}" height="${iy * 2}" opacity="0.16"/>
+    <rect x="-4.5" y="-13" width="9" height="26" rx="3" fill="#34d399"/>
+  </g>`;
+}
 
 function cube() {
   // An isometric 3x3 cube: three visible faces, each a tiled 3x3 grid. The
