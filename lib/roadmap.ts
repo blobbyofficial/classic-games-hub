@@ -51,30 +51,17 @@ export const ROADMAP: RoadmapRelease[] = [
     status: "in-progress",
     timeframe: "In progress",
     summary:
-      "Long-term collecting, and the loose ends from earlier releases. Most of it is built: seasons and collectable sets, cosmetics that layer three deep, a monthly booster drop, the last two level milestones, a friends activity feed, a faster hub and a redrawn icon set. What's still listed below is what hasn't been built yet.",
+      "Long-term collecting, and the loose ends from earlier releases. Nearly all of it is built: seasons and collectable sets, cosmetics that layer three deep, a monthly booster drop, the last two level milestones, a friends activity feed, a faster hub and a redrawn icon set. The stretch-cosmetic backlog is finally clear - entrances, cursor trails and profile music have all landed - and Cube, a playable Rubik's cube, is in. What's still listed below is what hasn't been built yet.",
     groups: [
-      {
-        heading: "Cosmetics & profile",
-        icon: "Palette",
-        blurb: "The expressive extras that didn't make the v1.2.0 cut - layered, optional, never pay-to-win.",
-        items: [
-          {
-            title: "More expressive extras",
-            description:
-              "The rest of the stretch-cosmetic backlog: profile entrance animations, custom cursor trails, and short looping profile music drawn from the v1.3 track library. The profile-view counter and the 'now playing' widget have shipped; the three left all add motion or audio, so they wait on the animation work.",
-            status: "idea",
-          },
-        ],
-      },
       {
         heading: "More dimensions",
         icon: "Box",
         blurb: "Turbo Horizon proved the browser can carry it. These are the follow-ups.",
         items: [
           {
-            title: "More 3D titles",
+            title: "True 3D titles",
             description:
-              "Beyond the pseudo-3D racer: a playable Rubik's cube, and true-3D titles running smoothly on desktop and mobile.",
+              "Cube proved a solid object can be rendered and driven on a plain 2D canvas, and Turbo Horizon proved the browser can carry a sense of depth. What neither has yet is real 3D: free camera, lighting, and geometry heavier than 54 flat stickers, running smoothly on a mid-range phone as well as a desktop. That is a bigger decision than a single game, because it is the point where a renderer stops being a few hundred lines of hand-rolled maths.",
             status: "later",
           },
         ],

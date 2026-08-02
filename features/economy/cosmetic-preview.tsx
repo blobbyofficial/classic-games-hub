@@ -5,6 +5,9 @@ import { UserAvatar } from "@/components/ui/avatar";
 import { ProfileEffects } from "@/components/profile/profile-effects";
 import { ProfileBackdrop } from "@/components/profile/profile-backdrop";
 import { ProfileFrame } from "@/components/profile/profile-frame";
+import { ProfileEntrance } from "@/components/profile/profile-entrance";
+import { CursorTrail } from "@/components/profile/cursor-trail";
+import { ProfileMusic } from "@/components/profile/profile-music";
 import { bannerBackground } from "@/components/profile/profile-theme";
 import type { ShopItem } from "@/types";
 
@@ -24,6 +27,9 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
   const isEffect = item.kind === "effect";
   const isProfileFrame = item.kind === "profile_frame";
   const isDecoration = item.kind === "decoration";
+  const isEntrance = item.kind === "entrance";
+  const isTrail = item.kind === "cursor_trail";
+  const isTrack = item.kind === "track";
 
   // For banner/theme items, drive the real backdrop off a synthetic equipped map.
   const equipped: Record<string, string> | undefined = isBanner
@@ -32,6 +38,11 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
   const bannerBg = isBanner ? bannerBackground(equipped) : undefined;
 
   return (
+    <>
+    {/* A trail is only itself when it is following a real pointer, so the
+        preview arms the actual cosmetic for as long as this page is open. */}
+    {isTrail && <CursorTrail slug={item.slug} />}
+    <ProfileEntrance slug={isEntrance ? item.slug : undefined}>
     <ProfileFrame slug={isProfileFrame ? item.slug : undefined}>
     <div className="mx-auto w-full max-w-sm overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
       {/* Banner */}
@@ -94,9 +105,13 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
           </span>
         )}
 
+        {isTrack && <ProfileMusic slug={item.slug} />}
+
         <p className="text-sm text-muted-foreground">Level 12 · 3,400 credits</p>
       </div>
     </div>
     </ProfileFrame>
+    </ProfileEntrance>
+    </>
   );
 }

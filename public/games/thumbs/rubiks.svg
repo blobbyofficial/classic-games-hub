@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">
+  <defs>
+    <linearGradient id="b24" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1a1430"/><stop offset="1" stop-color="#0b0a14"/>
+    </linearGradient>
+    <radialGradient id="w24" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#34d399" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#34d399" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="v24" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+    </radialGradient>
+    <pattern id="g24" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#34d399" stroke-opacity="0.10"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="url(#b24)"/>
+  <rect width="480" height="300" fill="url(#g24)"/>
+  <ellipse cx="240" cy="150" rx="195" ry="145" fill="url(#w24)"/>
+  <rect width="480" height="300" fill="url(#v24)"/>
+  <g transform="translate(240 150) scale(1.35)" fill="#ffffff"><g transform="translate(0 -30)"><path d="M0 -30 l17.4 10 l-17.4 10 l-17.4 -10 Z" opacity="0.88" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-52.199999999999996 0 l17.4 10 l0 20 l-17.4 -10 Z" opacity="0.24" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M0 30 l17.4 -10 l0 20 l-17.4 10 Z" opacity="0.5" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-17.4 -20 l17.4 10 l-17.4 10 l-17.4 -10 Z" opacity="1" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-52.199999999999996 20 l17.4 10 l0 20 l-17.4 -10 Z" opacity="0.33999999999999997" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M0 50 l17.4 -10 l0 20 l-17.4 10 Z" opacity="0.62" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-34.8 -10 l17.4 10 l-17.4 10 l-17.4 -10 Z" opacity="0.88" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-52.199999999999996 40 l17.4 10 l0 20 l-17.4 -10 Z" opacity="0.24" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M0 70 l17.4 -10 l0 20 l-17.4 10 Z" opacity="0.5" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M17.4 -20 l17.4 10 l-17.4 10 l-17.4 -10 Z" opacity="1" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-34.8 10 l17.4 10 l0 20 l-17.4 -10 Z" opacity="0.33999999999999997" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M17.4 20 l17.4 -10 l0 20 l-17.4 10 Z" opacity="0.62" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M0 -10 l17.4 10 l-17.4 10 l-17.4 -10 Z" opacity="0.88" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-34.8 30 l17.4 10 l0 20 l-17.4 -10 Z" opacity="0.24" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M17.4 40 l17.4 -10 l0 20 l-17.4 10 Z" opacity="0.5" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-17.4 0 l17.4 10 l-17.4 10 l-17.4 -10 Z" opacity="1" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-34.8 50 l17.4 10 l0 20 l-17.4 -10 Z" opacity="0.33999999999999997" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M17.4 60 l17.4 -10 l0 20 l-17.4 10 Z" opacity="0.62" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M34.8 -10 l17.4 10 l-17.4 10 l-17.4 -10 Z" opacity="0.88" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-17.4 20 l17.4 10 l0 20 l-17.4 -10 Z" opacity="0.24" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M34.8 10 l17.4 -10 l0 20 l-17.4 10 Z" opacity="0.5" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M17.4 0 l17.4 10 l-17.4 10 l-17.4 -10 Z" opacity="1" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-17.4 40 l17.4 10 l0 20 l-17.4 -10 Z" opacity="0.33999999999999997" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M34.8 30 l17.4 -10 l0 20 l-17.4 10 Z" opacity="0.62" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M0 10 l17.4 10 l-17.4 10 l-17.4 -10 Z" opacity="0.88" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M-17.4 60 l17.4 10 l0 20 l-17.4 -10 Z" opacity="0.24" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/><path d="M34.8 50 l17.4 -10 l0 20 l-17.4 10 Z" opacity="0.5" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/></g></g>
+  <rect x="0.5" y="0.5" width="479" height="299" fill="none" stroke="#34d399" stroke-opacity="0.22"/>
+</svg>

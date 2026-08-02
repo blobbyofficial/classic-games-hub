@@ -272,6 +272,14 @@ html[data-site-theme="aurora"] {
   --animate-spin-slow: cgh-spin 6s linear infinite;
   --animate-hue: cgh-hue 8s linear infinite;
   --animate-aura-pulse: cgh-aura-pulse 2.8s ease-in-out infinite;
+  /* Profile entrances. One-shot, `both` so the card holds its opening frame
+     until the animation starts rather than flashing in at full opacity. */
+  --animate-entrance-rise: cgh-entrance-rise 0.6s var(--ease-standard) both;
+  --animate-entrance-unfold: cgh-entrance-unfold 0.7s var(--ease-standard) both;
+  --animate-entrance-sweep: cgh-entrance-sweep 1.1s var(--ease-standard) both;
+  --animate-entrance-sweep-band: cgh-entrance-sweep-band 1.1s var(--ease-standard) both;
+  --animate-entrance-glitch: cgh-entrance-glitch 0.62s steps(1, end) both;
+  --animate-entrance-warp: cgh-entrance-warp 0.8s var(--ease-spring) both;
 
   @keyframes shimmer {
     from {
@@ -353,6 +361,44 @@ html[data-site-theme="aurora"] {
       transform: scale(1.06);
     }
   }
+}
+
+/* Profile entrance keyframes. Each plays once when the profile card mounts;
+   `motion-safe:` on the element means reduced motion gets the card outright,
+   already in place, rather than a cosmetic that never resolves. */
+@keyframes cgh-entrance-rise {
+  from { opacity: 0; transform: translateY(26px) scale(0.985); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes cgh-entrance-unfold {
+  from { opacity: 0; transform: perspective(1200px) rotateX(-16deg) translateY(18px); transform-origin: top center; }
+  to { opacity: 1; transform: perspective(1200px) rotateX(0deg) translateY(0); }
+}
+@keyframes cgh-entrance-sweep {
+  from { opacity: 0; transform: translateY(10px); }
+  35% { opacity: 1; transform: none; }
+  to { opacity: 1; transform: none; }
+}
+/* The band rides across the card on background-position, so nothing needs
+   clipping and the frame's outer glow stays intact. */
+@keyframes cgh-entrance-sweep-band {
+  from { background-position: 180% 0; opacity: 0; }
+  25% { opacity: 1; }
+  85% { opacity: 0; }
+  to { background-position: -80% 0; opacity: 0; }
+}
+@keyframes cgh-entrance-glitch {
+  0% { opacity: 0; transform: translate3d(-9px, 2px, 0); filter: hue-rotate(70deg); }
+  20% { opacity: 1; transform: translate3d(7px, -3px, 0); filter: hue-rotate(-50deg); }
+  40% { transform: translate3d(-4px, 1px, 0); filter: none; }
+  60% { transform: translate3d(5px, 2px, 0); filter: hue-rotate(30deg); }
+  80% { transform: translate3d(-2px, 0, 0); filter: none; }
+  100% { opacity: 1; transform: none; filter: none; }
+}
+@keyframes cgh-entrance-warp {
+  from { opacity: 0; transform: scale(1.5) translateY(-14px); filter: blur(10px); }
+  60% { opacity: 1; filter: blur(2px); }
+  to { opacity: 1; transform: none; filter: none; }
 }
 
 /* Profile cosmetic effect keyframes (referenced via inline animation styles). */

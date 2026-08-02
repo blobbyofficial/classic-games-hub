@@ -75,6 +75,15 @@ Registration is a full replace, so it is safe to repeat.
 
 See `docs/discord-bot.md`, and `docs/parties.md` for the multiplayer design.
 
+## Extending the platform
+
+Two things touch more files than they look like they should, and both have a
+checklist:
+
+- `docs/adding-a-game.md` - engine, registry, `games` row, thumbnail, verify.
+- `docs/cosmetics.md` - the kinds, where each one is drawn, and the five places
+  a new kind has to be registered.
+
 ## Conventions
 
 - Comments explain **why**, not what. Match the density of surrounding code.

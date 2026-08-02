@@ -24,7 +24,9 @@ export type ShopKind =
   | "credit_boost"
   | "track"
   | "decoration"
-  | "profile_frame";
+  | "profile_frame"
+  | "entrance"
+  | "cursor_trail";
 export type FriendStatus = "pending" | "accepted" | "declined";
 export type AllowDms = "everyone" | "friends" | "none";
 export type PresenceStatus = "auto" | "online" | "away" | "dnd" | "sleep" | "invisible";

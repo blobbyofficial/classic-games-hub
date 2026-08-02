@@ -56,7 +56,49 @@ const GAMES = {
   whack: { accent: AMBER, glyph: mole() },
   lightsout: { accent: VIOLET, glyph: lights() },
   racer: { accent: PINK, glyph: racecar() },
+  rubiks: { accent: EMERALD, glyph: cube() },
 };
+
+function cube() {
+  // An isometric 3x3 cube: three visible faces, each a tiled 3x3 grid. The
+  // cells tile exactly, so a stroke in the base colour is what draws the gaps
+  // between stickers - cheaper than insetting nine quads per face.
+  const S = 20; // cell edge
+  const W = S * 0.87; // horizontal run of one isometric step
+  const H = S * 0.5; // vertical rise of one isometric step
+  const cell = (d, shade) =>
+    `<path d="${d}" opacity="${shade}" stroke="#0b0a14" stroke-width="2.5" stroke-linejoin="round"/>`;
+
+  const parts = [];
+  for (let a = 0; a < 3; a++) {
+    for (let b = 0; b < 3; b++) {
+      const chequer = (a + b) % 2;
+      // Top face: brightest, both axes running up and out from the centre.
+      parts.push(
+        cell(
+          `M${(a - b) * W} ${(a + b) * H - S * 1.5} l${W} ${H} l${-W} ${H} l${-W} ${-H} Z`,
+          0.88 + chequer * 0.12,
+        ),
+      );
+      // Left face: in shadow, dropping from the top face's left edge.
+      parts.push(
+        cell(
+          `M${-W * 3 + a * W} ${a * H + b * S} l${W} ${H} l0 ${S} l${-W} ${-H} Z`,
+          0.24 + chequer * 0.1,
+        ),
+      );
+      // Right face: mid-tone, dropping from the top face's right edge.
+      parts.push(
+        cell(
+          `M${a * W} ${S * 1.5 - a * H + b * S} l${W} ${-H} l0 ${S} l${-W} ${H} Z`,
+          0.5 + chequer * 0.12,
+        ),
+      );
+    }
+  }
+  // The cube runs from -1.5S to 4.5S vertically; lift it so it sits centred.
+  return `<g transform="translate(0 ${-S * 1.5})">${parts.join("")}</g>`;
+}
 
 function racecar() {
   // Perspective road + car silhouette.

@@ -33,6 +33,9 @@ import { NameStyle } from "@/components/profile/name-style";
 import { ProfileEffects } from "@/components/profile/profile-effects";
 import { ProfileBackdrop } from "@/components/profile/profile-backdrop";
 import { ProfileFrame } from "@/components/profile/profile-frame";
+import { ProfileEntrance } from "@/components/profile/profile-entrance";
+import { CursorTrail } from "@/components/profile/cursor-trail";
+import { ProfileMusic } from "@/components/profile/profile-music";
 import { NowPlayingChip } from "@/features/social/now-playing";
 import { RARITY_META, formatNumber, timeAgo, cn } from "@/lib/utils";
 import type { FriendshipRelation } from "@/types";
@@ -131,7 +134,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      {/* Banner, wrapped in the equipped profile frame (outermost layer). */}
+      <CursorTrail slug={profile.equipped?.cursor_trail} reduced={reducedMotion} />
+
+      {/* Banner, wrapped in the equipped profile frame (outermost layer), with
+          the entrance outside that again so the frame arrives with the card. */}
+      <ProfileEntrance slug={profile.equipped?.entrance}>
       <ProfileFrame slug={profile.equipped?.profile_frame}>
         <div className="overflow-hidden rounded-3xl border border-border">
         <div className="relative h-40 sm:h-56" style={{ background: bannerBackground(profile.equipped) }}>
@@ -191,9 +198,10 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                 {profile.status_text && (
                   <p className="mt-0.5 text-sm text-foreground/80">{profile.status_text}</p>
                 )}
-                {nowPlaying && (
-                  <div className="mt-2">
-                    <NowPlayingChip playing={nowPlaying} />
+                {(nowPlaying || profile.equipped?.track) && (
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {nowPlaying && <NowPlayingChip playing={nowPlaying} />}
+                    <ProfileMusic slug={profile.equipped?.track} />
                   </div>
                 )}
               </div>
@@ -304,6 +312,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
         </div>
         </div>
       </ProfileFrame>
+      </ProfileEntrance>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

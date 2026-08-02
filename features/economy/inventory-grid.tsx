@@ -15,7 +15,7 @@ import { cn, RARITY_META } from "@/lib/utils";
 import type { OwnedItem } from "@/services/shop";
 import { EmptyState } from "@/components/empty-state";
 
-const EQUIPPABLE = new Set(["avatar_frame", "profile_theme", "badge", "effect", "banner", "nameplate", "decoration", "profile_frame"]);
+const EQUIPPABLE = new Set(["avatar_frame", "profile_theme", "badge", "effect", "banner", "nameplate", "decoration", "profile_frame", "entrance", "cursor_trail", "track"]);
 
 const TYPE_FILTERS: { key: string; label: string; kinds: string[] }[] = [
   { key: "all", label: "All", kinds: [] },
@@ -27,6 +27,8 @@ const TYPE_FILTERS: { key: string; label: string; kinds: string[] }[] = [
   { key: "nameplates", label: "Nameplates", kinds: ["nameplate"] },
   { key: "badges", label: "Badges", kinds: ["badge"] },
   { key: "effects", label: "Effects", kinds: ["effect"] },
+  { key: "entrances", label: "Entrances", kinds: ["entrance"] },
+  { key: "trails", label: "Cursor trails", kinds: ["cursor_trail"] },
   { key: "collectibles", label: "Collectibles", kinds: ["collectible"] },
   { key: "tracks", label: "Tracks", kinds: ["track"] },
 ];

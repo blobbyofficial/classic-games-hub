@@ -5,6 +5,62 @@ live roadmap at `/roadmap`.
 
 ## Unreleased - "Collector's Edition" (v1.5.0, in progress)
 
+### 🧊 Cube - a playable Rubik's cube
+
+- The roadmap's "more 3D titles" item, and the arcade's 25th game (`0058`).
+  Drag a sticker in the direction you want it to go and that layer turns; drag
+  the background to orbit. Keyboard players get the standard notation - U, D,
+  L, R, F, B, with Shift for anticlockwise.
+- **Canvas 2D with hand-rolled 3D maths, not three.js.** Every other engine
+  here is canvas 2D, and 54 stickers is a trivial amount of geometry to
+  transform by hand. Adding a WebGL runtime would have cost more bytes than the
+  entire rest of the games bundle, and undone the work v1.4.1 did to shed the
+  animation runtime and the query cache.
+- **No permutation tables.** Each sticker carries a cubie coordinate, a face
+  normal and a colour; a face turn rotates those two integer vectors 90 degrees
+  and the colour travels with the sticker. That means there is no lookup table
+  to get subtly wrong, and no floating-point drift accumulating over a long
+  solve - the model is still exact on the thousandth move. "Solved" falls out of
+  it for free: every sticker sharing a normal shares a colour.
+- Turn direction is derived from the gesture rather than hard-coded per face:
+  the layer that moves is perpendicular to both the face normal and the
+  direction you dragged, so a drag does what it looks like it should from any
+  orientation.
+- Scored on **moves and time**, like Lights Out, so a tidy solve beats a lucky
+  one. The scramble avoids undoing its own previous move, which would otherwise
+  leave a cube far easier than its move count suggests.
+
+### ✨ The last three expressive extras
+
+- Profile **entrances**, **cursor trails** and **profile music** (`0059`) - the
+  remainder of the stretch-cosmetic backlog that has been carried since v1.2.0.
+  All three were previously blocked on "the animation work", which v1.4.1
+  shipped, so the blocker is gone.
+- **Entrances** are how a profile card arrives: Rise, Unfold, Sweep, Glitch, and
+  Warp at level 25 - which fills the gap between the L20 loadout presets and the
+  L30 vanity URL. Pure CSS keyframes, so there is no JavaScript on the page for
+  them at all, and every variant is gated behind `motion-safe:` - reduced motion
+  gets the card already in place rather than one that opens at zero opacity and
+  never resolves.
+- **Cursor trails** (Sparkle, Comet, Bubbles, Ribbon) follow the pointer while
+  someone is looking at your profile. Drawn on **one canvas** rather than a
+  swarm of DOM nodes: a trail spawns particles on every pointer move, and
+  creating and destroying absolutely-positioned spans at that rate is exactly
+  what the v1.4.1 performance pass was undoing. The loop stops itself when the
+  last particle dies and restarts on the next move, so an idle profile costs
+  nothing.
+- **Profile music** needed **no new shop rows and no new audio**. The v1.3 track
+  library already existed, was already bought and owned, and is already rendered
+  procedurally in the browser; it was simply only playable from the shell
+  player. Equipping a track gives it a second place to be heard.
+- It is deliberately **click-to-play**. Browsers block autoplay with sound
+  outright, so an auto-starting version would mostly be silent and occasionally
+  ambush someone - and a profile that starts making noise on its own is the
+  reason people remember profile music badly. The chip names the track before
+  anything plays.
+- Shop item cards were also missing kind labels for decorations and profile
+  frames, which have been there since `0049`; both now show one.
+
 ### 👀 Profile views and "now playing"
 
 - Two of the expressive extras from the roadmap (`0057`).
