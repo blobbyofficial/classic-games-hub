@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState, useTransition } from "react";
-import { Check, Search, Zap, Coins } from "lucide-react";
+import Link from "next/link";
+import { Check, Search, Zap, Coins, Package } from "lucide-react";
 import { toast } from "sonner";
 import { equipItem, unequipItem } from "@/actions/economy";
 import { useSessionStore } from "@/lib/stores/session-store";
@@ -12,6 +13,7 @@ import { Input } from "@/components/ui/input";
 import { BoostTimer } from "./boost-timer";
 import { cn, RARITY_META } from "@/lib/utils";
 import type { OwnedItem } from "@/services/shop";
+import { EmptyState } from "@/components/empty-state";
 
 const EQUIPPABLE = new Set(["avatar_frame", "profile_theme", "badge", "effect", "banner", "nameplate", "decoration", "profile_frame"]);
 
@@ -109,12 +111,16 @@ export function InventoryGrid({ items, boostState = [] }: { items: OwnedItem[]; 
 
   if (items.length === 0) {
     return (
-      <div className="grid place-items-center rounded-2xl border border-dashed border-border py-16 text-center">
-        <p className="text-sm text-muted-foreground">Your inventory is empty.</p>
-        <a href="/shop" className="mt-1 text-sm font-medium text-primary hover:underline">
-          Visit the shop →
-        </a>
-      </div>
+      <EmptyState
+        icon={Package}
+        title="Your inventory is empty"
+        description="Play games to earn credits, then spend them on frames, themes and effects."
+        action={
+          <Button asChild>
+            <Link href="/shop">Visit the shop</Link>
+          </Button>
+        }
+      />
     );
   }
 
@@ -233,9 +239,7 @@ export function InventoryGrid({ items, boostState = [] }: { items: OwnedItem[]; 
         </div>
 
         {cosmetics.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-border py-10 text-center text-sm text-muted-foreground">
-            No cosmetics match those filters.
-          </p>
+          <EmptyState title="No cosmetics match those filters" compact />
         ) : (
           <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
             {cosmetics.map((item) => {

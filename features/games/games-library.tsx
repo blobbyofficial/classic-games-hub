@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Search, X, SlidersHorizontal } from "lucide-react";
-import { motion } from "framer-motion";
+import { Search, X, SlidersHorizontal, Heart, Gamepad2 } from "lucide-react";
 import { GameGrid } from "@/components/games/game-grid";
+import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -82,14 +82,14 @@ export function GamesLibrary({
         <div className="flex items-center gap-2">
           <Button
             variant={favOnly ? "default" : "outline"}
-            size="sm"
             onClick={() => setFavOnly((f) => !f)}
+            aria-pressed={favOnly}
             className="shrink-0"
           >
-            ♥ Favorites
+            <Heart className={favOnly ? "fill-current" : undefined} /> Favourites
           </Button>
           <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
-            <SelectTrigger className="w-36">
+            <SelectTrigger className="w-40">
               <SlidersHorizontal className="size-4" />
               <SelectValue />
             </SelectTrigger>
@@ -103,43 +103,56 @@ export function GamesLibrary({
         </div>
       </div>
 
-      <div className="flex flex-wrap gap-2">
-        {["All", ...CATEGORIES].map((cat) => (
-          <button
-            key={cat}
-            onClick={() => setCategory(cat)}
-            className={cn(
-              "relative rounded-full px-4 py-1.5 text-sm font-medium transition-colors",
-              category === cat ? "text-primary-foreground" : "text-muted-foreground hover:text-foreground",
-            )}
-          >
-            {category === cat && (
-              <motion.span layoutId="cat-pill" className="absolute inset-0 rounded-full bg-primary" transition={{ type: "spring", stiffness: 400, damping: 30 }} />
-            )}
-            <span className="relative z-10">{cat}</span>
-          </button>
-        ))}
+      {/* Scrolls rather than wraps on narrow screens, so the filter row stays
+          one line tall on a phone instead of pushing the grid down. */}
+      <div
+        role="tablist"
+        aria-label="Filter by category"
+        className="rail -mx-4 gap-2 px-4 sm:mx-0 sm:flex-wrap sm:px-0"
+      >
+        {["All", ...CATEGORIES].map((cat) => {
+          const selected = category === cat;
+          return (
+            <button
+              key={cat}
+              role="tab"
+              aria-selected={selected}
+              onClick={() => setCategory(cat)}
+              className={cn(
+                "rounded-full border px-4 py-2 text-sm font-medium",
+                "transition-[background-color,color,border-color,transform] duration-200 ease-[var(--ease-standard)] motion-safe:active:scale-95",
+                selected
+                  ? "border-transparent bg-primary text-primary-foreground shadow-sm shadow-primary/25"
+                  : "border-border text-muted-foreground hover:border-primary/30 hover:bg-accent/50 hover:text-foreground",
+              )}
+            >
+              {cat}
+            </button>
+          );
+        })}
       </div>
 
       {filtered.length === 0 ? (
-        <div className="grid place-items-center rounded-2xl border border-dashed border-border py-16 text-center">
-          <p className="text-sm text-muted-foreground">No games match your filters.</p>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="mt-2"
-            onClick={() => {
-              setQuery("");
-              setCategory("All");
-              setFavOnly(false);
-            }}
-          >
-            Clear filters
-          </Button>
-        </div>
+        <EmptyState
+          icon={Gamepad2}
+          title="No games match your filters"
+          description="Try a different category, or clear everything and start again."
+          action={
+            <Button
+              variant="outline"
+              onClick={() => {
+                setQuery("");
+                setCategory("All");
+                setFavOnly(false);
+              }}
+            >
+              Clear filters
+            </Button>
+          }
+        />
       ) : (
         <>
-          <p className="text-sm text-muted-foreground">
+          <p aria-live="polite" className="text-sm text-muted-foreground">
             {filtered.length} {filtered.length === 1 ? "game" : "games"}
           </p>
           <GameGrid games={filtered} favorites={favSet} />

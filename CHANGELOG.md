@@ -261,6 +261,78 @@ live roadmap at `/roadmap`.
   fading in, so quick loads show nothing at all instead of a flash.
 
 ## Unreleased - "New Dimensions" (parties & online multiplayer)
+## v1.4.1 — "Refined" (UI, UX and performance overhaul)
+
+A ground-up pass over how the site looks, feels and performs. No feature was
+removed or replaced with a placeholder; everything below is the same
+functionality, rebuilt on a shared foundation.
+
+### 🎨 Design system
+
+- **Elevation, motion and type tokens** in `styles/globals.css`: brand-tinted
+  shadow scale that deepens correctly in dark mode, two shared easing curves
+  (`--ease-standard`, `--ease-spring`) that every transition now uses, and
+  fluid `text-display` / `text-title` sizes that scale continuously instead of
+  jumping at breakpoints. `--muted-foreground` was darkened in light mode so
+  body copy clears AA contrast rather than only large text.
+- **New shared components**: `PageHeader` (one masthead for every top-level
+  page), `EmptyState` (one "nothing here yet" surface for the whole app),
+  `Spinner`, and `SkeletonRegion` for announcing loading regions.
+- **Rebuilt primitives**: `Button` gained a `loading` state that keeps its width
+  while working; `Card` gained `default` / `flat` / `glass` / `dashed` variants
+  and an `interactive` lift; `Input`, `Textarea` and `SelectTrigger` finally
+  share one appearance; `Dialog` insets itself from the viewport and scrolls, so
+  a tall dialog stays usable on a short phone.
+- New utilities: `hover-lift`, `bg-aurora`, `rail`, `stagger`, `defer-paint`,
+  `no-scrollbar`, `tnum`, `skip-link`.
+
+### ✨ Motion
+
+- Micro-interactions throughout — cards lift, grids stagger in, the credit
+  balance rolls when it changes, menus scale from the trigger that opened them,
+  a game card's play button springs up under the pointer. All transform and
+  opacity only, so it composites instead of repainting.
+- Every animation is gated behind `motion-safe`, so "reduce motion" yields a
+  genuinely still interface rather than a fast one.
+
+### ⚡ Performance
+
+- **`framer-motion` removed.** It was powering six small effects (two active-nav
+  pills, a counter transition, a tap scale, an overlay entrance, a filter pill).
+  All six are now CSS and behave the same.
+- **`@tanstack/react-query` removed** along with `QueryProvider`. Its single
+  call site was the command palette's game list, which now caches in module
+  scope — the list is identical for every visitor and changes about once a
+  release.
+- Hero and auth backdrops swapped full-viewport `blur-3xl` elements for
+  background gradients; skeleton shimmer became a transform rather than an
+  animated `background-position`; below-the-fold sections use
+  `content-visibility: auto`.
+- Fonts use `display: swap`, the mono face no longer preloads, and
+  `deviceSizes` / `imageSizes` were trimmed to the widths the layout requests.
+
+### ♿ Accessibility & usability
+
+- A skip link is the first tab stop on every page, `<main>` is a real focus
+  target, focus rings are defined once globally and never fire on pointer
+  interaction, and navigation marks the current page with `aria-current`.
+- Loading skeletons are announced via `SkeletonRegion`; progress bars report
+  their value; the run-complete overlay is a labelled dialog that focuses its
+  primary action.
+- Error pages surface the Next.js digest for support, and `global-error`
+  respects the reader's colour scheme without a stylesheet.
+
+### 📱 Responsiveness
+
+- The favourite button no longer hides behind hover on touch devices; tab bars
+  and category filters scroll instead of wrapping; every tap target clears 44px;
+  text inputs are 16px on touch so iOS won't zoom the viewport on focus.
+- Game grids use `auto-fill` rather than fixed column counts, fixing the
+  900–1100px range where four columns were too many and three left a gap.
+- Toasts sit above the mobile tab bar; the footer and `<main>` clear it too, with
+  `env(safe-area-inset-bottom)` respected throughout.
+
+## Unreleased — "New Dimensions" (parties & online multiplayer)
 
 Roadmap v1.4.0. Playing together stops being a plan and becomes a feature, and
 four migrations that were live in the database finally have code to reach them.

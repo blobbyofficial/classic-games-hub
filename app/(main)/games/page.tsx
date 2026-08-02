@@ -3,6 +3,7 @@ import { Gamepad2 } from "lucide-react";
 import { getPublishedGames, getFavoriteGameIds } from "@/services/games";
 import { getSessionUser } from "@/lib/supabase/queries";
 import { GamesLibrary } from "@/features/games/games-library";
+import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = {
   title: "Games",
@@ -20,15 +21,12 @@ export default async function GamesPage({
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center gap-3">
-        <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
-          <Gamepad2 className="size-6" />
-        </span>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Game library</h1>
-          <p className="text-sm text-muted-foreground">Every classic, one click away.</p>
-        </div>
-      </div>
+      <PageHeader
+        icon={Gamepad2}
+        title="Game library"
+        description="Every classic, one click away."
+        className="mb-0"
+      />
 
       <GamesLibrary games={games} favorites={favorites} initialCategory={category} />
     </div>

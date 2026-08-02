@@ -35,31 +35,36 @@ const LINKS = {
 
 export function Footer() {
   return (
-    <footer className="mt-16 border-t border-border/60 bg-muted/20">
-      <div className="mx-auto grid max-w-[1600px] gap-8 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_repeat(4,1fr)]">
+    /* mb clears the fixed mobile tab bar so the last row of links stays tappable. */
+    <footer className="mt-16 border-t border-border/60 bg-muted/20 pb-20 defer-paint lg:pb-0">
+      <div className="mx-auto grid max-w-[1600px] gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_repeat(4,1fr)]">
         <div className="space-y-4">
           <Logo />
-          <p className="max-w-xs text-sm text-muted-foreground">{SITE.description}</p>
+          <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
+            {SITE.description}
+          </p>
           <a
             href={SITE.discord}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 text-sm font-medium text-[#5865F2] hover:underline"
+            className="inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-[#5865F2] hover:underline"
           >
             <DiscordIcon className="size-4" /> Join our Discord
           </a>
         </div>
         {Object.entries(LINKS).map(([heading, links]) => (
-          <div key={heading}>
-            <h3 className="mb-3 text-sm font-semibold">{heading}</h3>
-            <ul className="space-y-2 text-sm">
+          <nav key={heading} aria-label={heading}>
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">
+              {heading}
+            </h3>
+            <ul className="space-y-2.5 text-sm">
               {links.map((l) => (
                 <li key={l.label}>
                   <Link
                     href={l.href}
                     target={"external" in l && l.external ? "_blank" : undefined}
                     rel={"external" in l && l.external ? "noopener noreferrer" : undefined}
-                    className="inline-flex items-center gap-1 text-muted-foreground transition-colors hover:text-foreground"
+                    className="inline-flex items-center gap-1 rounded text-muted-foreground transition-colors hover:text-foreground"
                   >
                     {l.label}
                     {"external" in l && l.external && <ExternalLink className="size-3" />}
@@ -67,12 +72,17 @@ export function Footer() {
                 </li>
               ))}
             </ul>
-          </div>
+          </nav>
         ))}
       </div>
-      <div className="border-t border-border/60 py-5 text-center text-xs text-muted-foreground">
+      <div className="border-t border-border/60 px-4 py-5 text-center text-xs leading-relaxed text-muted-foreground">
         © {new Date().getFullYear()} {SITE.name}. Built by{" "}
-        <a href={SITE.founder} target="_blank" rel="noopener noreferrer" className="font-medium hover:text-foreground">
+        <a
+          href={SITE.founder}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="font-medium hover:text-foreground"
+        >
           BlobbyOfficial
         </a>
         . A community arcade - no pay-to-win, ever.{" "}

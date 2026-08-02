@@ -42,6 +42,14 @@ export default async function MainLayout({ children }: { children: React.ReactNo
 
   return (
     <div className="flex min-h-dvh flex-col">
+      {/* First tab stop on every page — jumps a keyboard user past the navbar
+          and the whole sidebar straight into the page content. */}
+      <a
+        href="#main"
+        className="skip-link rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-lg"
+      >
+        Skip to content
+      </a>
       <SessionSync
         userId={user?.id ?? null}
         profile={profile}
@@ -55,7 +63,15 @@ export default async function MainLayout({ children }: { children: React.ReactNo
       {banners.site && <SiteBanner config={banners.site} />}
       <div className="mx-auto flex w-full max-w-[1600px] flex-1 px-0 sm:px-6">
         <Sidebar />
-        <main className="w-full min-w-0 flex-1 px-4 pb-24 pt-6 sm:px-2 lg:px-8 lg:pb-10">{children}</main>
+        {/* pb-24 clears the fixed mobile tab bar; the safe-area inset keeps the
+            last row of content off a gesture bar on iOS. */}
+        <main
+          id="main"
+          tabIndex={-1}
+          className="w-full min-w-0 flex-1 px-4 pb-[calc(6rem+env(safe-area-inset-bottom))] pt-6 sm:px-2 sm:pt-8 lg:px-8 lg:pb-12"
+        >
+          {children}
+        </main>
       </div>
       <Footer />
       <MobileNav />

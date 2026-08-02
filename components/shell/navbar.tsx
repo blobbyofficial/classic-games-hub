@@ -19,25 +19,26 @@ export function Navbar() {
   const userId = useSessionStore((s) => s.userId);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/70 backdrop-blur-xl">
+    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl backdrop-saturate-150">
       <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-3 sm:gap-3 sm:px-6">
         <MobileMenu />
-        <Logo className="lg:w-52" />
+        <Logo className="shrink-0 lg:w-52" />
 
         <button
           onClick={() => setCommandOpen(true)}
-          className="focus-visible-ring group ml-auto flex h-10 max-w-md flex-1 items-center gap-2 rounded-xl border border-border bg-muted/40 px-3 text-sm text-muted-foreground transition-colors hover:bg-muted/70 lg:ml-0"
-          aria-label="Open search"
+          className="group ml-auto flex h-10 max-w-md flex-1 items-center gap-2.5 rounded-xl border border-border bg-muted/40 px-3 text-sm text-muted-foreground transition-[background-color,border-color] duration-200 hover:border-primary/30 hover:bg-muted/70 lg:ml-0"
+          aria-label="Search games and players"
+          aria-keyshortcuts="Meta+K Control+K"
         >
-          <Search className="size-4" />
-          <span className="hidden sm:inline">Search games, players…</span>
-          <span className="sm:hidden">Search…</span>
-          <kbd className="ml-auto hidden items-center gap-0.5 rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[10px] font-medium text-muted-foreground sm:flex">
+          <Search className="size-4 shrink-0 transition-transform duration-200 motion-safe:group-hover:scale-110" />
+          <span className="hidden truncate sm:inline">Search games, players…</span>
+          <span className="truncate sm:hidden">Search…</span>
+          <kbd className="ml-auto hidden shrink-0 items-center rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[10px] font-medium sm:flex">
             ⌘K
           </kbd>
         </button>
 
-        <div className="ml-auto flex items-center gap-1 sm:gap-2 lg:ml-4">
+        <div className="ml-auto flex items-center gap-1 sm:gap-1.5 lg:ml-4">
           <div className="hidden sm:block">
             <ThemeToggle />
           </div>
@@ -48,7 +49,7 @@ export function Navbar() {
               </div>
               <MusicPlayerLazy />
               <NotificationsBell />
-              <div className="hidden sm:block">
+              <div className="hidden lg:block">
                 <LevelPill />
               </div>
               <UserMenu />

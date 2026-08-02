@@ -13,7 +13,8 @@ const TabsList = React.forwardRef<
   <TabsPrimitive.List
     ref={ref}
     className={cn(
-      "inline-flex h-10 items-center justify-center gap-1 rounded-xl bg-muted/60 p-1 text-muted-foreground",
+      // Scrolls instead of wrapping when the labels outgrow a phone screen.
+      "inline-flex h-11 max-w-full items-center gap-1 overflow-x-auto rounded-xl bg-muted/60 p-1 text-muted-foreground no-scrollbar",
       className,
     )}
     {...props}
@@ -28,7 +29,9 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-sm font-medium transition-all focus-visible-ring disabled:pointer-events-none disabled:opacity-50",
+      "inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium",
+      "transition-[background-color,color,box-shadow] duration-200 ease-[var(--ease-standard)]",
+      "hover:text-foreground disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4",
       "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
       className,
     )}
@@ -41,7 +44,11 @@ const TabsContent = React.forwardRef<
   React.ElementRef<typeof TabsPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof TabsPrimitive.Content>
 >(({ className, ...props }, ref) => (
-  <TabsPrimitive.Content ref={ref} className={cn("mt-4 focus-visible-ring", className)} {...props} />
+  <TabsPrimitive.Content
+    ref={ref}
+    className={cn("mt-5 motion-safe:data-[state=active]:animate-fade", className)}
+    {...props}
+  />
 ));
 TabsContent.displayName = TabsPrimitive.Content.displayName;
 

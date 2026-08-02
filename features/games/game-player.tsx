@@ -234,12 +234,16 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       <div className={`flex items-center justify-between gap-3 ${isFullscreen ? "w-full max-w-3xl" : ""}`}>
         <div className="flex items-center gap-4">
           <div>
-            <p className="text-xs text-muted-foreground">Score</p>
-            <p className="text-2xl font-bold tabular-nums">{formatNumber(score)}</p>
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Score
+            </p>
+            <p className="text-2xl font-bold tnum leading-tight">{formatNumber(score)}</p>
           </div>
           <div className="border-l border-border pl-4">
-            <p className="text-xs text-muted-foreground">Best</p>
-            <p className="flex items-center gap-1 text-2xl font-bold tabular-nums text-gold">
+            <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
+              Best
+            </p>
+            <p className="flex items-center gap-1 text-2xl font-bold tnum leading-tight text-gold">
               <Trophy className="size-4" /> {formatNumber(best)}
             </p>
           </div>

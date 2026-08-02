@@ -8,6 +8,7 @@ import { PresenceDot } from "@/components/profile/presence-dot";
 import { cn, timeAgo } from "@/lib/utils";
 import { useSessionStore } from "@/lib/stores/session-store";
 import type { ConversationRow } from "@/types";
+import { EmptyState } from "@/components/empty-state";
 
 export function ConversationList({ conversations }: { conversations: ConversationRow[] }) {
   const pathname = usePathname();
@@ -15,11 +16,11 @@ export function ConversationList({ conversations }: { conversations: Conversatio
 
   if (conversations.length === 0) {
     return (
-      <div className="grid place-items-center rounded-2xl border border-dashed border-border py-16 text-center">
-        <MessageSquare className="size-8 text-muted-foreground/50" />
-        <p className="mt-2 text-sm text-muted-foreground">No conversations yet.</p>
-        <p className="text-xs text-muted-foreground">Start one from a friend&apos;s profile.</p>
-      </div>
+      <EmptyState
+        icon={MessageSquare}
+        title="No conversations yet"
+        description="Open a friend's profile and hit Message to start one."
+      />
     );
   }
 
