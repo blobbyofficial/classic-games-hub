@@ -3,7 +3,7 @@ import { discordEnv } from "@/lib/discord/env";
 import { refreshStatChannels } from "@/lib/discord/setup";
 
 /**
- * Live counter refresh — renames the configured voice channels to the current
+ * Live counter refresh - renames the configured voice channels to the current
  * numbers (online players on the website, total players, plays today, Discord
  * members). This is the ServerStats replacement, and it needs no hosted
  * process: point *any* scheduler at it every ~10 minutes.

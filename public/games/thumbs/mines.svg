@@ -1,13 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">
   <defs>
-    <linearGradient id="bg12" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#475569"/><stop offset="1" stop-color="#1e293b"/>
+    <linearGradient id="b12" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1a1430"/><stop offset="1" stop-color="#0b0a14"/>
     </linearGradient>
-    <pattern id="grid12" width="24" height="24" patternUnits="userSpaceOnUse">
-      <path d="M24 0H0V24" fill="none" stroke="#ffffff" stroke-opacity="0.06"/>
+    <radialGradient id="w12" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#fbbf24" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#fbbf24" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="v12" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+    </radialGradient>
+    <pattern id="g12" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#fbbf24" stroke-opacity="0.10"/>
     </pattern>
   </defs>
-  <rect width="480" height="300" fill="url(#bg12)"/>
-  <rect width="480" height="300" fill="url(#grid12)"/>
-  <g transform="translate(240 150)" fill="#fff"><circle r="30"/><g stroke="#fff" stroke-width="7"><line x1="30" y1="0" x2="46" y2="0"/><line x1="21.213203435596427" y1="21.213203435596423" x2="32.526911934581186" y2="32.526911934581186"/><line x1="1.83697019872103e-15" y1="30" x2="2.8166876380389124e-15" y2="46"/><line x1="-21.213203435596423" y1="21.213203435596427" x2="-32.526911934581186" y2="32.526911934581186"/><line x1="-30" y1="3.67394039744206e-15" x2="-46" y2="5.633375276077825e-15"/><line x1="-21.21320343559643" y1="-21.213203435596423" x2="-32.52691193458119" y2="-32.526911934581186"/><line x1="-5.510910596163089e-15" y1="-30" x2="-8.450062914116736e-15" y2="-46"/><line x1="21.21320343559642" y1="-21.21320343559643" x2="32.52691193458118" y2="-32.52691193458119"/></g></g>
+  <rect width="480" height="300" fill="url(#b12)"/>
+  <rect width="480" height="300" fill="url(#g12)"/>
+  <ellipse cx="240" cy="150" rx="195" ry="145" fill="url(#w12)"/>
+  <rect width="480" height="300" fill="url(#v12)"/>
+  <g transform="translate(240 150) scale(1.35)" fill="#ffffff"><circle r="30"/><g stroke="#fff" stroke-width="7"><line x1="30" y1="0" x2="46" y2="0"/><line x1="21.213203435596427" y1="21.213203435596423" x2="32.526911934581186" y2="32.526911934581186"/><line x1="1.83697019872103e-15" y1="30" x2="2.8166876380389124e-15" y2="46"/><line x1="-21.213203435596423" y1="21.213203435596427" x2="-32.526911934581186" y2="32.526911934581186"/><line x1="-30" y1="3.67394039744206e-15" x2="-46" y2="5.633375276077825e-15"/><line x1="-21.21320343559643" y1="-21.213203435596423" x2="-32.52691193458119" y2="-32.526911934581186"/><line x1="-5.510910596163089e-15" y1="-30" x2="-8.450062914116736e-15" y2="-46"/><line x1="21.21320343559642" y1="-21.21320343559643" x2="32.52691193458118" y2="-32.52691193458119"/></g></g>
+  <rect x="0.5" y="0.5" width="479" height="299" fill="none" stroke="#fbbf24" stroke-opacity="0.22"/>
 </svg>

@@ -10,14 +10,14 @@ import { handleMemberJoin, maybeWelcome } from "./features/verification.js";
 
 /**
  * Companion gateway worker. Slash commands, buttons and modals are handled
- * serverlessly by the website (app/api/discord/interactions) — this process
+ * serverlessly by the website (app/api/discord/interactions) - this process
  * covers what a webhook can't:
  *
  *   * reading chat messages for XP + automod
  *   * granting milestone level roles the moment someone levels up
  *   * putting new joiners behind the verification gate
  *   * the live score feed and the stat-counter channels
- *   * **showing the bot as Online** — a Discord bot only appears online while
+ *   * **showing the bot as Online** - a Discord bot only appears online while
  *     something holds a gateway connection, which is exactly what this is.
  *
  * Everything else works without it.
@@ -57,7 +57,7 @@ function presenceStatus(): PresenceStatusData {
 }
 
 client.once(Events.ClientReady, (c) => {
-  console.log(`✅ Logged in as ${c.user.tag} — showing as ${config.presence.status}`);
+  console.log(`✅ Logged in as ${c.user.tag} - showing as ${config.presence.status}`);
   // Re-assert presence periodically: Discord drops it on some reconnects, and
   // a dropped presence is what makes a running bot look offline.
   const setPresence = () =>
@@ -75,7 +75,7 @@ client.once(Events.ClientReady, (c) => {
 
 /**
  * Tell the site we're alive. `platform_status()` treats a heartbeat older than
- * three minutes as offline, so beat every minute — two can be lost to a blip
+ * three minutes as offline, so beat every minute - two can be lost to a blip
  * without /status flipping the bot to "Offline".
  */
 function startHeartbeat(): void {
@@ -106,20 +106,20 @@ client.on(Events.GuildMemberAdd, (member) => {
 // the host restarts the process instead of leaving a zombie showing offline.
 
 client.on(Events.ShardDisconnect, (event, id) =>
-  console.warn(`⚠️  Shard ${id} disconnected (code ${event.code}) — reconnecting…`),
+  console.warn(`⚠️  Shard ${id} disconnected (code ${event.code}) - reconnecting…`),
 );
 client.on(Events.ShardReconnecting, (id) => console.log(`🔄 Shard ${id} reconnecting…`));
 client.on(Events.ShardResume, (id) => console.log(`✅ Shard ${id} resumed`));
 client.on(Events.ShardError, (error, id) => console.error(`Shard ${id} error:`, error.message));
 client.on(Events.Invalidated, () => {
-  console.error("❌ Session invalidated — exiting so the host can restart me.");
+  console.error("❌ Session invalidated - exiting so the host can restart me.");
   process.exit(1);
 });
 
 process.on("unhandledRejection", (err) => console.error("Unhandled rejection:", err));
 process.on("uncaughtException", (err) => console.error("Uncaught exception:", err));
 process.on("SIGTERM", () => {
-  console.log("SIGTERM — shutting down cleanly.");
+  console.log("SIGTERM - shutting down cleanly.");
   client.destroy().finally(() => process.exit(0));
 });
 

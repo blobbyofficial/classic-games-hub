@@ -1,7 +1,7 @@
 import { AlertTriangle } from "lucide-react";
 
 const DEFAULT_MESSAGE =
-  "Scheduled maintenance in progress — some features may be temporarily unavailable.";
+  "Scheduled maintenance in progress - some features may be temporarily unavailable.";
 
 export function MaintenanceBanner({ message }: { message?: string }) {
   return (

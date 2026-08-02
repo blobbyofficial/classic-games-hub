@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Play, Star, Users } from "lucide-react";
+import { Play, Star, Users, Lock } from "lucide-react";
 import { cn, compactNumber } from "@/lib/utils";
 import { CATEGORY_META } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,11 @@ export function GameCard({
 }) {
   const meta = CATEGORY_META[game.category];
   const comingSoon = game.status === "coming_soon";
+  // Early access is shown to everyone, locked. A perk nobody can see is a perk
+  // nobody wants, and half the point is that other people know it is running.
+  const earlyAccess = Boolean(
+    game.early_access_until && new Date(game.early_access_until) > new Date(),
+  );
 
   return (
     <div className="group relative isolate">
@@ -55,9 +60,14 @@ export function GameCard({
                 Coming soon
               </Badge>
             )}
+            {earlyAccess && !comingSoon && (
+              <Badge className="border-none bg-[#f47fff]/85 text-white backdrop-blur-md">
+                <Lock className="size-3" /> Early access
+              </Badge>
+            )}
           </div>
 
-          {!comingSoon && (
+          {!comingSoon && !earlyAccess && (
             <div
               aria-hidden
               className="absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"

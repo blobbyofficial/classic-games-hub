@@ -14,7 +14,7 @@ function eventEmbed(ev: FeedEvent): EmbedBuilder {
     const score = Number(ev.data.score ?? 0).toLocaleString();
     return new EmbedBuilder()
       .setColor(BRAND_COLOR)
-      .setDescription(`🏆 **${name}** set a new high score in **${title}** — ${score}! [profile](${url})`);
+      .setDescription(`🏆 **${name}** set a new high score in **${title}** - ${score}! [profile](${url})`);
   }
   const achievement = (ev.data.name as string) ?? "an achievement";
   return new EmbedBuilder()
@@ -26,8 +26,8 @@ async function poll(client: Client): Promise<void> {
   const rows = await db.recentFeed(lastId);
 
   // Prime on the first poll whatever it returns. Returning early on an empty
-  // first poll left `primed` false, so on a quiet server the *next* poll — the
-  // one carrying the first real event — was treated as the backlog and thrown
+  // first poll left `primed` false, so on a quiet server the *next* poll - the
+  // one carrying the first real event - was treated as the backlog and thrown
   // away. The first score of the day simply never appeared.
   const wasPriming = !primed;
   primed = true;

@@ -10,7 +10,7 @@ import type { OpResult, PushSection } from "@/lib/discord/ops";
  * Running Discord commands from the dashboard.
  *
  * Every one of these calls the same function the matching slash command calls,
- * so a case raised here is indistinguishable from one raised in Discord —
+ * so a case raised here is indistinguishable from one raised in Discord -
  * numbered the same way, DM'd the same way, logged to the same channel and the
  * same website audit trail.
  *
@@ -58,7 +58,7 @@ export async function adminPushAllBotSections(): Promise<OpResult> {
   }
   revalidatePath("/admin/discord");
   return {
-    // Partial success is still success — report what didn't take rather than
+    // Partial success is still success - report what didn't take rather than
     // failing the whole push because one section isn't configured yet.
     ok: done.length > 0,
     detail: done.join(" · "),

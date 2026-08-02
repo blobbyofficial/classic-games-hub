@@ -241,7 +241,7 @@ function NoteDialog({
     start(async () => {
       const res = await setUserNote(targetId, nickname, note);
       if (!res.ok) return void toast.error(res.error ?? "Could not save");
-      toast.success("Note saved — only you can see it");
+      toast.success("Note saved - only you can see it");
       onOpenChange(false);
     });
 

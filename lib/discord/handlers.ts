@@ -38,14 +38,14 @@ export function reply(embeds: Embed[], ephemeral = false) {
 
 const RPC_ERRORS: Record<string, string> = {
   not_linked: "You haven't linked a Hub account yet. Run `/link` to get started.",
-  sender_not_linked: "You need a linked Hub account first — run `/link`.",
+  sender_not_linked: "You need a linked Hub account first - run `/link`.",
   recipient_not_linked: "That player hasn't linked a Hub account yet.",
   already_claimed: "You've already claimed your daily reward today. Come back tomorrow!",
   insufficient: "You don't have enough credits for that.",
   bad_amount: "Enter a positive amount.",
   self: "You can't pay yourself.",
   suspended: "Your account is suspended.",
-  no_xp: "No chat XP yet — say something in the server first!",
+  no_xp: "No chat XP yet - say something in the server first!",
   already_linked: "That Discord account is already linked to a Hub account.",
   discord_already_linked: "That Discord account is already linked to a Hub account.",
   account_already_linked: "Your Hub account already has a Discord account linked.",
@@ -89,7 +89,7 @@ export async function handleLink(discordId: string, discordUsername: string) {
           `2. Open **Settings → Connections**`,
           `3. Enter the code (it expires in ${res.expires_in_minutes ?? 10} minutes)`,
           "",
-          "Signed up with Discord already? Then you're linked automatically — this is only for email accounts.",
+          "Signed up with Discord already? Then you're linked automatically - this is only for email accounts.",
         ].join("\n"),
         url: `${siteUrl()}/settings`,
       }),
@@ -194,18 +194,18 @@ export async function handleRank(targetId: string, targetName: string) {
   const bar = "█".repeat(Math.round(pct * 12)).padEnd(12, "░");
   return reply([
     brandEmbed({
-      title: `📊 ${targetName} — server rank #${r.rank}`,
+      title: `📊 ${targetName} - server rank #${r.rank}`,
       description: [
         `**Level ${r.level}** · ${fmt(r.xp)} XP · ${fmt(r.messages)} messages`,
         `\`${bar}\` ${fmt(intoLevel)} / ${fmt(needed)} XP to level ${(r.level ?? 0) + 1}`,
-        r.hub_username ? `Linked to Hub account **${r.hub_username}**` : "Not linked — run `/link` to connect your Hub account.",
+        r.hub_username ? `Linked to Hub account **${r.hub_username}**` : "Not linked - run `/link` to connect your Hub account.",
       ].join("\n"),
     }),
   ]);
 }
 
 /**
- * `/level` — the friendly, Arcane-style card: level, progress bar, and what
+ * `/level` - the friendly, Arcane-style card: level, progress bar, and what
  * the next milestone role is. (`/rank` stays as the terse power-user view.)
  */
 export async function handleLevel(targetId: string, targetName: string, isSelf: boolean) {
@@ -216,7 +216,7 @@ export async function handleLevel(targetId: string, targetName: string, isSelf: 
         errorEmbed(
           r?.error === "no_xp"
             ? isSelf
-              ? "You haven't earned any XP yet — send a message in the server and check back!"
+              ? "You haven't earned any XP yet - send a message in the server and check back!"
               : "That member hasn't earned any XP yet."
             : friendlyError(r?.error),
         ),
@@ -260,7 +260,7 @@ export async function handleLevel(targetId: string, targetName: string, isSelf: 
         `\`${bar}\` ${Math.round(pct * 100)}%`,
         `${fmt(intoLevel)} / ${fmt(needed)} XP to level **${level + 1}** · ${fmt(r.messages)} messages`,
         r.hub_username
-          ? `Linked to **${r.hub_username}** — [Hub profile](${profileUrl(r.hub_username)})`
+          ? `Linked to **${r.hub_username}** - [Hub profile](${profileUrl(r.hub_username)})`
           : "Run `/link` to connect your Hub account and earn website XP too.",
       ].join("\n"),
       fields,
@@ -268,7 +268,7 @@ export async function handleLevel(targetId: string, targetName: string, isSelf: 
   ]);
 }
 
-/** `/rewards` — the milestone ladder, so members know what they're chasing. */
+/** `/rewards` - the milestone ladder, so members know what they're chasing. */
 export async function handleRewards() {
   const cfg = await getBotConfig("level_roles");
   const milestones = [...(cfg.milestones ?? [])].sort((a, b) => a - b);
@@ -277,7 +277,7 @@ export async function handleRewards() {
   }
   const lines = milestones.map((m) => {
     const roleId = cfg.roles[String(m)];
-    return `**Level ${m}** — ${roleId ? `<@&${roleId}>` : "_role not created yet_"}`;
+    return `**Level ${m}** - ${roleId ? `<@&${roleId}>` : "_role not created yet_"}`;
   });
   return reply([
     brandEmbed({
@@ -287,7 +287,7 @@ export async function handleRewards() {
         "",
         cfg.remove_previous
           ? "_Only your highest milestone role is kept._"
-          : "_Milestone roles stack — you keep every one you earn._",
+          : "_Milestone roles stack - you keep every one you earn._",
         "Check your progress with `/level`.",
       ].join("\n"),
     }),
@@ -297,12 +297,12 @@ export async function handleRewards() {
 export async function handleLevels() {
   const rows = await botDb.discordLeaderboard(10);
   if (!rows || rows.length === 0) {
-    return reply([errorEmbed("No chat XP recorded yet — start talking!")], true);
+    return reply([errorEmbed("No chat XP recorded yet - start talking!")], true);
   }
   const medals = ["🥇", "🥈", "🥉"];
   const lines = rows.map(
     (r) =>
-      `${medals[r.rank - 1] ?? `**${r.rank}.**`} <@${r.discord_id}> — Lvl ${r.level} · ${fmt(r.xp)} XP`,
+      `${medals[r.rank - 1] ?? `**${r.rank}.**`} <@${r.discord_id}> - Lvl ${r.level} · ${fmt(r.xp)} XP`,
   );
   return reply([
     brandEmbed({ title: "💬 Discord chat leaderboard", description: lines.join("\n") }),
@@ -317,7 +317,7 @@ export async function handleLeaderboard() {
   const medals = ["🥇", "🥈", "🥉"];
   const lines = rows.map(
     (r) =>
-      `${medals[r.rank - 1] ?? `**${r.rank}.**`} ${r.display_name ?? r.username} — Lvl ${r.level} · ${fmt(r.xp)} XP`,
+      `${medals[r.rank - 1] ?? `**${r.rank}.**`} ${r.display_name ?? r.username} - Lvl ${r.level} · ${fmt(r.xp)} XP`,
   );
   return reply([
     brandEmbed({
@@ -335,26 +335,26 @@ export function handleHelp() {
         title: `🎮 ${BOT_NAME}`,
         description: [
           "**Account**",
-          "`/link` — connect your Discord to your Hub account",
-          "`/unlink` — disconnect it",
-          "`/sync` — sync your Discord roles with your Hub account",
+          "`/link` - connect your Discord to your Hub account",
+          "`/unlink` - disconnect it",
+          "`/sync` - sync your Discord roles with your Hub account",
           "",
           "**Economy**",
-          "`/balance` — your credits & level",
-          "`/daily` — claim your daily reward",
-          "`/pay @user amount` — send credits",
+          "`/balance` - your credits & level",
+          "`/daily` - claim your daily reward",
+          "`/pay @user amount` - send credits",
           "",
           "**Levels & leaderboards**",
-          "`/level [@user]` — your level, progress and next reward role",
-          "`/rewards` — every milestone level and its role",
-          "`/rank [@user]` — the terse rank card",
-          "`/levels` — Discord chat leaderboard",
-          "`/profile [@user]` — a Hub profile",
-          "`/leaderboard` — top Hub players",
+          "`/level [@user]` - your level, progress and next reward role",
+          "`/rewards` - every milestone level and its role",
+          "`/rank [@user]` - the terse rank card",
+          "`/levels` - Discord chat leaderboard",
+          "`/profile [@user]` - a Hub profile",
+          "`/leaderboard` - top Hub players",
           "",
           "**Server**",
-          "`/verify` — verify yourself and unlock the server",
-          "`/ticket [subject]` — open a private support ticket",
+          "`/verify` - verify yourself and unlock the server",
+          "`/ticket [subject]` - open a private support ticket",
           "",
           "**Staff only**",
           "`/warn` `/timeout` `/untimeout` `/kick` `/ban` `/unban` `/warnings`",
@@ -387,7 +387,7 @@ export async function deferredSync(discordId: string, token: string) {
     const parts = [
       res.added.length ? `Added: ${res.added.map((r) => `<@&${r}>`).join(", ")}` : "",
       res.removed.length ? `Removed: ${res.removed.map((r) => `<@&${r}>`).join(", ")}` : "",
-      res.failed.length ? `⚠️ Couldn't touch ${res.failed.length} role(s) — check the bot's role position.` : "",
+      res.failed.length ? `⚠️ Couldn't touch ${res.failed.length} role(s) - check the bot's role position.` : "",
     ].filter(Boolean);
     embed = brandEmbed({
       title: "🎖️ Roles synced",
@@ -414,7 +414,7 @@ const ACTION_EMOJI: Record<string, string> = {
 function restError(status: number, what: string): Embed {
   return errorEmbed(
     status === 403
-      ? `I can't ${what} — check my permissions and that my role sits above theirs.`
+      ? `I can't ${what} - check my permissions and that my role sits above theirs.`
       : `Couldn't ${what}.`,
   );
 }
@@ -446,8 +446,8 @@ export async function deferredWarn(
   await finish(
     token,
     brandEmbed({
-      title: `⚠️ Warned${number ? ` — case #${number}` : ""}`,
-      description: `<@${targetId}> — ${reason}`,
+      title: `⚠️ Warned${number ? ` - case #${number}` : ""}`,
+      description: `<@${targetId}> - ${reason}`,
     }),
   );
 }
@@ -477,8 +477,8 @@ export async function deferredTimeout(
   await finish(
     token,
     brandEmbed({
-      title: `🔇 Timed out${number ? ` — case #${number}` : ""}`,
-      description: `<@${targetId}> for ${minutes}m — ${reason}`,
+      title: `🔇 Timed out${number ? ` - case #${number}` : ""}`,
+      description: `<@${targetId}> for ${minutes}m - ${reason}`,
     }),
   );
 }
@@ -510,7 +510,7 @@ export async function deferredBan(
   reason: string,
   token: string,
 ) {
-  // DM before the ban lands — you can't DM someone you no longer share a
+  // DM before the ban lands - you can't DM someone you no longer share a
   // server with.
   const cfg = await getBotConfig("moderation");
   if (cfg.dm_on_action) {
@@ -529,7 +529,7 @@ export async function deferredBan(
   });
   await finish(
     token,
-    brandEmbed({ title: `🔨 Banned${number ? ` — case #${number}` : ""}`, description: `<@${targetId}> — ${reason}` }),
+    brandEmbed({ title: `🔨 Banned${number ? ` - case #${number}` : ""}`, description: `<@${targetId}> - ${reason}` }),
   );
 }
 
@@ -557,7 +557,7 @@ export async function deferredKick(
   });
   await finish(
     token,
-    brandEmbed({ title: `👢 Kicked${number ? ` — case #${number}` : ""}`, description: `<@${targetId}> — ${reason}` }),
+    brandEmbed({ title: `👢 Kicked${number ? ` - case #${number}` : ""}`, description: `<@${targetId}> - ${reason}` }),
   );
 }
 
@@ -586,7 +586,7 @@ export async function deferredUnban(
     action: "unban",
     reason,
   });
-  await finish(token, brandEmbed({ title: "♻️ Unbanned", description: `<@${targetId}> — ${reason}` }));
+  await finish(token, brandEmbed({ title: "♻️ Unbanned", description: `<@${targetId}> - ${reason}` }));
 }
 
 export async function deferredPurge(
@@ -655,7 +655,7 @@ export async function deferredLock(
 ) {
   // Same care as the dashboard path: an overwrite edit replaces the whole
   // overwrite, so read it first rather than flattening every other rule on the
-  // channel — and clear an explicit allow, which would otherwise beat the deny.
+  // channel - and clear an explicit allow, which would otherwise beat the deny.
   const SEND_MESSAGES = 1n << 11n;
   const channel = await discordRest.getChannel(channelId);
   const existing = channel.data?.permission_overwrites?.find((o) => o.id === guildId);
@@ -680,7 +680,7 @@ export async function deferredLock(
       embeds: [
         brandEmbed({
           title: lock ? "🔒 Channel locked" : "🔓 Channel unlocked",
-          description: `<#${channelId}> by <@${actor.id}>${reason ? ` — ${reason}` : ""}`,
+          description: `<#${channelId}> by <@${actor.id}>${reason ? ` - ${reason}` : ""}`,
           timestamp: new Date().toISOString(),
         }),
       ],
@@ -701,17 +701,17 @@ export async function deferredLock(
 export async function handleWarnings(targetId: string, targetName: string) {
   const cases = await botDb.listCases(targetId, 15);
   if (!cases || cases.length === 0) {
-    return reply([brandEmbed({ title: `🕊️ ${targetName}`, description: "No moderation history — clean record." })], true);
+    return reply([brandEmbed({ title: `🕊️ ${targetName}`, description: "No moderation history - clean record." })], true);
   }
   const lines = cases.map((c) => {
     const when = new Date(c.at).toISOString().slice(0, 10);
     const dur = c.minutes ? ` (${c.minutes}m)` : "";
-    return `\`#${c.case}\` ${ACTION_EMOJI[c.action] ?? "•"} **${c.action}**${dur} — ${c.reason ?? "no reason"} · ${when}`;
+    return `\`#${c.case}\` ${ACTION_EMOJI[c.action] ?? "•"} **${c.action}**${dur} - ${c.reason ?? "no reason"} · ${when}`;
   });
   return reply(
     [
       brandEmbed({
-        title: `📋 ${targetName} — ${cases.length} case(s)`,
+        title: `📋 ${targetName} - ${cases.length} case(s)`,
         description: lines.join("\n").slice(0, 4000),
       }),
     ],
@@ -755,30 +755,30 @@ function setupSummary(
     res.updated?.length ? `✏️ Updated: ${res.updated.join(", ")}` : "",
     res.reused.length ? `♻️ Already correct: ${res.reused.join(", ")}` : "",
     // A configured ID that no longer resolves is called out rather than
-    // quietly replaced — a surprise duplicate is worse than a clear warning.
+    // quietly replaced - a surprise duplicate is worse than a clear warning.
     res.missing?.length
-      ? `🔗 Not found: ${res.missing.join(", ")} — I left these alone rather than making replacements. Clear the ID to have me create a fresh one.`
+      ? `🔗 Not found: ${res.missing.join(", ")} - I left these alone rather than making replacements. Clear the ID to have me create a fresh one.`
       : "",
     res.failed.length ? `⚠️ Failed: ${res.failed.join(", ")}` : "",
     // Discord's own words beat a guess. "Missing Permissions" and "Maximum
     // number of guild roles reached" need completely different fixes, and the
-    // old catch-all sent people to check role hierarchy for both — which is
+    // old catch-all sent people to check role hierarchy for both - which is
     // never the cause of a failed *creation*, since a new role starts at the
     // bottom regardless of who made it.
     res.failed.length && res.detail ? `Discord said: **${res.detail}**` : "",
     res.failed.length ? hintFor(res.detail) : "",
   ].filter(Boolean);
-  return brandEmbed({ title, description: parts.join("\n") || "Nothing to do — already set up." });
+  return brandEmbed({ title, description: parts.join("\n") || "Nothing to do - already set up." });
 }
 
 /** Turns Discord's error text into the thing to actually go and change. */
 function hintFor(detail: string | undefined): string {
   const d = (detail ?? "").toLowerCase();
   if (d.includes("missing permissions") || d.includes("50013")) {
-    return "→ Give my role **Manage Roles** (and **Manage Channels** for channel setup). If I already have Administrator, check you granted it to *my* role — the one with my name — and not a role I don't hold.";
+    return "→ Give my role **Manage Roles** (and **Manage Channels** for channel setup). If I already have Administrator, check you granted it to *my* role - the one with my name - and not a role I don't hold.";
   }
   if (d.includes("missing access") || d.includes("50001")) {
-    return "→ I'm not properly in this server. Re-invite me using an OAuth2 URL that ticks **both** the `bot` and `applications.commands` scopes — commands can appear without the `bot` scope, but I can't act.";
+    return "→ I'm not properly in this server. Re-invite me using an OAuth2 URL that ticks **both** the `bot` and `applications.commands` scopes - commands can appear without the `bot` scope, but I can't act.";
   }
   if (d.includes("maximum number of guild roles")) {
     return "→ This server has hit Discord's 250-role limit. Delete some unused roles and run this again.";
@@ -825,7 +825,7 @@ export async function deferredSetupVerification(
   const summary = setupSummary("🛡️ Verification ready", roles);
   summary.description = [
     summary.description,
-    posted.ok ? `✅ Panel posted in <#${channelId}>` : "⚠️ Couldn't post the panel — do I have Send Messages there?",
+    posted.ok ? `✅ Panel posted in <#${channelId}>` : "⚠️ Couldn't post the panel - do I have Send Messages there?",
     roles.unverified
       ? `\n**One manual step:** in Server Settings → Roles, deny **View Channel** for <@&${roles.unverified}> (or @everyone) on the channels newcomers shouldn't see, and allow it for <@&${roles.verified ?? ""}>.`
       : "",
@@ -857,13 +857,13 @@ export async function deferredSetupTickets(
           description: [
             `Panel posted in <#${channelId}>.`,
             categoryId ? `Tickets open under <#${categoryId}>.` : "Tickets open at the top of the channel list (no category set).",
-            staffRoleId ? `<@&${staffRoleId}> can see every ticket.` : "⚠️ No staff role set — only admins will see tickets.",
+            staffRoleId ? `<@&${staffRoleId}> can see every ticket.` : "⚠️ No staff role set - only admins will see tickets.",
             logChannelId ? `Transcripts go to <#${logChannelId}>.` : "",
           ]
             .filter(Boolean)
             .join("\n"),
         })
-      : errorEmbed("Couldn't post the ticket panel — check my permissions in that channel."),
+      : errorEmbed("Couldn't post the ticket panel - check my permissions in that channel."),
   );
 }
 
@@ -904,7 +904,7 @@ export async function deferredRefreshStats(token: string) {
           title: "📊 Counters refreshed",
           description: `Updated: ${res.updated.join(", ") || "none"}\nUnchanged: ${res.skipped.join(", ") || "none"}`,
         })
-      : errorEmbed("No counter channels configured yet — run `/setup stats` first."),
+      : errorEmbed("No counter channels configured yet - run `/setup stats` first."),
   );
 }
 

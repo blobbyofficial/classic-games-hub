@@ -42,7 +42,7 @@ export type ControlScheme =
 
 /**
  * Games that need the shared swipe handler (dispatched as arrow keys). Only
- * games WITHOUT their own touch input belong here — snake, 2048 and slide
+ * games WITHOUT their own touch input belong here - snake, 2048 and slide
  * already handle touch natively, so adding swipe there would double-fire.
  */
 export const SWIPE_GAMES = new Set(["frogger", "tetris"]);

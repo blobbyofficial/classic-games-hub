@@ -1,11 +1,11 @@
 /**
- * Discord integration environment. All values are server-only — none are ever
+ * Discord integration environment. All values are server-only - none are ever
  * shipped to the browser. Every accessor degrades gracefully so the site
  * builds and runs without the bot configured.
  */
 
 export const discordEnv = {
-  /** Bot token — used for REST calls (role sync, moderation). */
+  /** Bot token - used for REST calls (role sync, moderation). */
   get botToken() {
     return process.env.DISCORD_BOT_TOKEN ?? "";
   },

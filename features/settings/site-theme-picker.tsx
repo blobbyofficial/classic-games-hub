@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 
 /**
  * Global site colour theme picker. Free presets for everyone; the premium and
- * animated ones are for Discord boosters and staff (locked otherwise — the
+ * animated ones are for Discord boosters and staff (locked otherwise - the
  * database enforces the same gate server-side).
  */
 export function SiteThemePicker({

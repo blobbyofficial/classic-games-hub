@@ -1,7 +1,7 @@
 /**
  * Global site colour themes (settings → Appearance). The looks live in
  * styles/globals.css (`html[data-site-theme=…]`); the premium gate is enforced
- * by the database (migration 0038) — this catalogue only drives the UI.
+ * by the database (migration 0038) - this catalogue only drives the UI.
  */
 
 export interface SiteTheme {

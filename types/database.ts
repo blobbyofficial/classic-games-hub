@@ -22,7 +22,11 @@ export type ShopKind =
   | "collectible"
   | "xp_boost"
   | "credit_boost"
-  | "track";
+  | "track"
+  | "decoration"
+  | "profile_frame"
+  | "entrance"
+  | "cursor_trail";
 export type FriendStatus = "pending" | "accepted" | "declined";
 export type AllowDms = "everyone" | "friends" | "none";
 export type PresenceStatus = "auto" | "online" | "away" | "dnd" | "sleep" | "invisible";
@@ -80,6 +84,8 @@ export interface Database {
           presence_visibility: PresenceVisibility;
           friends_visibility: FriendsVisibility;
           site_theme: string;
+          /** Opt-in profile view counter (0057). Off by default. */
+          show_profile_views: boolean;
           updated_at: string;
         };
         Insert: { user_id: string } & Partial<Database["public"]["Tables"]["user_settings"]["Row"]>;
@@ -141,6 +147,8 @@ export interface Database {
           max_score: number | null;
           credit_divisor: number;
           max_credits_per_session: number;
+          /** While in the future, boosters and staff only. See 0056. */
+          early_access_until: string | null;
           created_at: string;
           updated_at: string;
         };
@@ -337,6 +345,86 @@ export interface Database {
       };
       inventory_items: {
         Row: { id: number; user_id: string; item_id: string; acquired_at: string; expires_at: string | null };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      collections: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          description: string | null;
+          icon: string;
+          season: string | null;
+          reward_credits: number;
+          reward_item_id: string | null;
+          sort_weight: number;
+          active: boolean;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      collection_items: {
+        Row: { collection_id: string; item_id: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      collection_claims: {
+        Row: { user_id: string; collection_id: string; claimed_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      seasons: {
+        Row: {
+          id: string; slug: string; name: string; description: string | null;
+          icon: string; starts_at: string; ends_at: string; active: boolean; created_at: string;
+        };
+        Insert: never; Update: never; Relationships: [];
+      };
+      season_tiers: {
+        Row: {
+          season_id: string; tier: number; xp_required: number;
+          reward_credits: number; reward_item_id: string | null;
+        };
+        Insert: never; Update: never; Relationships: [];
+      };
+      season_claims: {
+        Row: { user_id: string; season_id: string; tier: number; claimed_at: string };
+        Insert: never; Update: never; Relationships: [];
+      };
+      profile_views: {
+        Row: { profile_id: string; viewer_id: string; day: string };
+        Insert: never; Update: never; Relationships: [];
+      };
+      gift_tokens: {
+        Row: {
+          user_id: string; month: string; granted_at: string;
+          used_at: string | null; gifted_to: string | null; item_id: string | null;
+        };
+        Insert: never; Update: never; Relationships: [];
+      };
+      booster_drops: {
+        Row: { month: string; item_id: string; note: string | null; created_at: string };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      loadout_presets: {
+        // Writes go through the RPCs, which is what enforces the slot limit;
+        // RLS grants select only, so Insert/Update are deliberately never.
+        Row: {
+          id: string;
+          user_id: string;
+          name: string;
+          equipped: Record<string, string>;
+          created_at: string;
+          updated_at: string;
+        };
         Insert: never;
         Update: never;
         Relationships: [];
@@ -611,6 +699,27 @@ export interface Database {
       purchase_shop_item: { Args: { p_slug: string }; Returns: Json };
       equip_item: { Args: { p_slug: string }; Returns: Json };
       unequip_item: { Args: { p_kind: string }; Returns: undefined };
+      preset_slot_limit: { Args: { p_user: string }; Returns: number };
+      save_loadout_preset: { Args: { p_name: string; p_id?: string | null }; Returns: Json };
+      apply_loadout_preset: { Args: { p_id: string }; Returns: Json };
+      delete_loadout_preset: { Args: { p_id: string }; Returns: Json };
+      my_loadout_presets: { Args: Record<string, never>; Returns: Json };
+      my_collections: { Args: Record<string, never>; Returns: Json };
+      claim_collection: { Args: { p_slug: string }; Returns: Json };
+      my_booster_drop: { Args: Record<string, never>; Returns: Json };
+      my_gift_token: { Args: Record<string, never>; Returns: Json };
+      record_profile_view: { Args: { p_profile: string }; Returns: Json };
+      now_playing: { Args: { p_user: string }; Returns: Json };
+      grant_gift_tokens: { Args: Record<string, never>; Returns: Json };
+      gift_with_token: { Args: { p_slug: string; p_to: string }; Returns: Json };
+      my_season: { Args: Record<string, never>; Returns: Json };
+      season_xp: { Args: { p_user: string; p_season: string }; Returns: number };
+      claim_season_tier: { Args: { p_tier: number }; Returns: Json };
+      friends_activity: {
+        Args: { p_limit?: number; p_before?: string | null; p_before_id?: number | null };
+        Returns: Json;
+      };
+      grant_booster_drops: { Args: Record<string, never>; Returns: Json };
       change_username: { Args: { p_new: string }; Returns: Json };
       set_username: { Args: { p_new: string }; Returns: Json };
       admin_set_username: { Args: { p_user: string; p_new: string }; Returns: Json };

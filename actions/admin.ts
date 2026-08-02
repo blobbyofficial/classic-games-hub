@@ -360,7 +360,7 @@ export type BotSection = keyof typeof BOT_SECTIONS;
 
 /** Saves one of the newer bot config sections (migration 0037). */
 /**
- * Saves a settings section — and applies it to Discord.
+ * Saves a settings section - and applies it to Discord.
  *
  * Saving used to write to Postgres and stop there, so the dashboard and the
  * server disagreed until someone ran the matching `/setup` command. Now the
@@ -400,7 +400,7 @@ export async function adminSetBotSection(
   const applied = await pushSection(section as PushSection);
   return {
     ok: true,
-    detail: applied.ok ? `Saved and pushed to Discord — ${applied.detail}` : "Saved.",
+    detail: applied.ok ? `Saved and pushed to Discord - ${applied.detail}` : "Saved.",
     warning: applied.ok ? applied.error : `Saved, but couldn't push to Discord: ${applied.error}`,
   };
 }
@@ -419,7 +419,7 @@ export async function adminCreateLevelRoles(): Promise<RpcResult & { detail?: st
       error:
         res.error === "missing_permissions"
           ? "The bot needs the Manage Roles permission (and its role must sit above the roles it creates)."
-          : "Couldn't reach Discord — check DISCORD_BOT_TOKEN and DISCORD_GUILD_ID.",
+          : "Couldn't reach Discord - check DISCORD_BOT_TOKEN and DISCORD_GUILD_ID.",
     };
   }
   revalidatePath("/admin/discord");
@@ -430,7 +430,7 @@ export async function adminCreateLevelRoles(): Promise<RpcResult & { detail?: st
     `failed ${res.failed.length}`,
   ].join(", ") + ".";
   const missing = res.missing.length
-    ? ` Linked roles not found in the server: ${res.missing.join(", ")} — left alone rather than replaced. Clear the ID to have a new one created.`
+    ? ` Linked roles not found in the server: ${res.missing.join(", ")} - left alone rather than replaced. Clear the ID to have a new one created.`
     : "";
   // Same reasoning as the Discord embed: report what Discord said rather than
   // a guess, so a permissions problem and a role-limit problem look different.
@@ -451,7 +451,7 @@ export interface DiscordEnvStatus {
 /**
  * Which Discord environment variables are present on this deployment.
  *
- * Booleans only — never the values. Without this, an unset variable surfaces
+ * Booleans only - never the values. Without this, an unset variable surfaces
  * as "could not be verified" from Discord or a generic failure here, and the
  * only way to tell which one is missing is to guess.
  */
@@ -471,11 +471,11 @@ export async function adminDiscordEnvStatus(): Promise<DiscordEnvStatus> {
  * Registers the slash commands with Discord.
  *
  * The same job as POST /api/discord/register, but reachable from the admin UI
- * instead of a terminal — the cron route needs a bearer token, which is fine
+ * instead of a terminal - the cron route needs a bearer token, which is fine
  * for a scheduler and awkward for a person. Both call the same Discord
  * endpoint with the same command set, so either route is safe to use.
  *
- * Registration is a full replace (PUT), so running it twice is harmless — it
+ * Registration is a full replace (PUT), so running it twice is harmless - it
  * is how you push a changed command set, not something that accumulates.
  */
 export async function adminRegisterSlashCommands(): Promise<RpcResult & { detail?: string }> {
@@ -505,7 +505,7 @@ export async function adminRegisterSlashCommands(): Promise<RpcResult & { detail
       ok: false,
       error:
         res.status === 401
-          ? "Discord rejected the bot token — check DISCORD_BOT_TOKEN."
+          ? "Discord rejected the bot token - check DISCORD_BOT_TOKEN."
           : `Discord returned ${res.status}. ${detail.slice(0, 200)}`,
     };
   }
@@ -513,8 +513,8 @@ export async function adminRegisterSlashCommands(): Promise<RpcResult & { detail
   return {
     ok: true,
     detail: discordEnv.guildId
-      ? `Registered ${SLASH_COMMANDS.length} commands to your server — they appear immediately.`
-      : `Registered ${SLASH_COMMANDS.length} commands globally — Discord can take up to an hour to show them.`,
+      ? `Registered ${SLASH_COMMANDS.length} commands to your server - they appear immediately.`
+      : `Registered ${SLASH_COMMANDS.length} commands globally - Discord can take up to an hour to show them.`,
   };
 }
 
@@ -674,4 +674,41 @@ export async function adminSetFlagConfig(
   revalidatePath("/", "layout");
   revalidatePath("/roadmap");
   return { ok: true };
+}
+
+/**
+ * One-click full Discord setup: registers commands, creates the roles and
+ * counter channels, and posts the panels, reporting on each step.
+ *
+ * Safe to run repeatedly - every underlying step reuses what already exists
+ * rather than duplicating it, so this doubles as a "fix whatever is missing"
+ * button after a permission change.
+ */
+export async function adminRunFullDiscordSetup() {
+  await requireStaff();
+  const { runFullSetup } = await import("@/lib/discord/setup");
+  const res = await runFullSetup();
+  revalidatePath("/admin/discord");
+  return res;
+}
+
+/**
+ * Puts a game into booster early access for a number of days, or opens it now
+ * when `days` is 0.
+ *
+ * Days rather than a date picker: "out early for a week" is how the decision is
+ * actually made, and it removes any chance of typing a date in the past and
+ * silently shipping a game that is already open.
+ */
+export async function adminSetEarlyAccess(id: string, days: number): Promise<RpcResult> {
+  await requireStaff();
+  const supabase = await createClient();
+  const until =
+    days > 0 ? new Date(Date.now() + days * 86_400_000).toISOString() : null;
+  const { error } = await supabase.from("games").update({ early_access_until: until }).eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/admin/games");
+  revalidatePath("/games");
+  revalidatePath("/", "layout");
+  return { ok: true, until };
 }

@@ -14,7 +14,7 @@ export async function HomeLeaderboardPreview() {
   if (rows.length === 0) {
     return (
       <Card className="grid h-72 place-items-center p-6 text-center text-sm text-muted-foreground">
-        Be the first to top the charts — start playing!
+        Be the first to top the charts - start playing!
       </Card>
     );
   }
@@ -36,6 +36,7 @@ export async function HomeLeaderboardPreview() {
             src={r.avatar_url}
             name={r.display_name ?? r.username}
             frame={r.equipped?.avatar_frame}
+            decoration={r.equipped?.decoration}
             className="size-8"
           />
           <div className="min-w-0 flex-1">

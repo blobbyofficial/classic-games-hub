@@ -10,7 +10,7 @@ import { config } from "./config.js";
  * exposes `GET /` and `GET /health` with the gateway status, so:
  *
  *   * the host's health check passes and the container stays up, and
- *   * an uptime pinger (UptimeRobot, cron-job.org, BetterStack — all free) can
+ *   * an uptime pinger (UptimeRobot, cron-job.org, BetterStack - all free) can
  *     poke it every few minutes to stop the free instance sleeping, which is
  *     what keeps the bot showing **Online** in Discord.
  *

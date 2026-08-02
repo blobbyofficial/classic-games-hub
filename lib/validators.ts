@@ -40,6 +40,7 @@ export const reportSchema = z.object({
 export const settingsSchema = z.object({
   theme: z.enum(["system", "light", "dark"]).optional(),
   reduced_motion: z.boolean().optional(),
+  show_profile_views: z.boolean().optional(),
   show_online_status: z.boolean().optional(),
   allow_friend_requests: z.boolean().optional(),
   allow_dms: z.enum(["everyone", "friends", "none"]).optional(),

@@ -3,7 +3,6 @@
 import { useEffect, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
 import { useSessionStore } from "@/lib/stores/session-store";
 import type { NotificationRow, Profile, UserSettings } from "@/types";
 
@@ -36,41 +35,58 @@ export function SessionSync({ userId, profile, settings, unread, pendingRequests
 
   useEffect(() => {
     if (!userId) return;
-    const supabase = createClient();
 
-    // Presence heartbeat.
-    const beat = () => {
-      if (settings?.show_online_status !== false) void supabase.rpc("heartbeat");
-    };
-    beat();
-    const interval = setInterval(beat, 60_000);
-    const onVisible = () => document.visibilityState === "visible" && beat();
-    document.addEventListener("visibilitychange", onVisible);
+    // This component mounts on every route but does nothing until someone is
+    // signed in, and the Supabase client (auth + realtime) is the single
+    // largest dependency in the bundle. Importing it here rather than at module
+    // scope keeps it out of the initial payload for every visitor, and off the
+    // critical path entirely for signed-out ones.
+    let disposed = false;
+    let cleanup: (() => void) | undefined;
 
-    // Realtime notifications.
-    const channel = supabase
-      .channel(`notifications:${userId}`)
-      .on(
-        "postgres_changes",
-        { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
-        (payload) => {
-          const n = payload.new as NotificationRow;
-          setUnread(useSessionStore.getState().unreadNotifications + 1);
-          if (n.type === "friend_request") setPending(useSessionStore.getState().pendingFriendRequests + 1);
-          // Debounce so a burst (e.g. announcement) doesn't spam toasts.
-          if (Date.now() - lastToast.current > 800) {
-            lastToast.current = Date.now();
-            toast(n.title, { description: n.body ?? undefined });
-          }
-          router.refresh();
-        },
-      )
-      .subscribe();
+    void import("@/lib/supabase/client").then(({ createClient }) => {
+      if (disposed) return;
+      const supabase = createClient();
+
+      // Presence heartbeat.
+      const beat = () => {
+        if (settings?.show_online_status !== false) void supabase.rpc("heartbeat");
+      };
+      beat();
+      const interval = setInterval(beat, 60_000);
+      const onVisible = () => document.visibilityState === "visible" && beat();
+      document.addEventListener("visibilitychange", onVisible);
+
+      // Realtime notifications.
+      const channel = supabase
+        .channel(`notifications:${userId}`)
+        .on(
+          "postgres_changes",
+          { event: "INSERT", schema: "public", table: "notifications", filter: `user_id=eq.${userId}` },
+          (payload) => {
+            const n = payload.new as NotificationRow;
+            setUnread(useSessionStore.getState().unreadNotifications + 1);
+            if (n.type === "friend_request") setPending(useSessionStore.getState().pendingFriendRequests + 1);
+            // Debounce so a burst (e.g. announcement) doesn't spam toasts.
+            if (Date.now() - lastToast.current > 800) {
+              lastToast.current = Date.now();
+              toast(n.title, { description: n.body ?? undefined });
+            }
+            router.refresh();
+          },
+        )
+        .subscribe();
+
+      cleanup = () => {
+        clearInterval(interval);
+        document.removeEventListener("visibilitychange", onVisible);
+        void supabase.removeChannel(channel);
+      };
+    });
 
     return () => {
-      clearInterval(interval);
-      document.removeEventListener("visibilitychange", onVisible);
-      void supabase.removeChannel(channel);
+      disposed = true;
+      cleanup?.();
     };
   }, [userId, settings?.show_online_status, router, setUnread, setPending]);
 

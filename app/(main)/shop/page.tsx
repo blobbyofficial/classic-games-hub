@@ -27,7 +27,7 @@ export default async function ShopPage() {
       <PageHeader
         icon={Store}
         title="Shop"
-        description="Cosmetics and boosts — never pay-to-win."
+        description="Cosmetics and boosts - never pay-to-win."
         className="mb-0"
         actions={
           profile && (

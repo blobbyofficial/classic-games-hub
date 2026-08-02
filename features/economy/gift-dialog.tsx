@@ -1,10 +1,9 @@
 "use client";
 
 import { useEffect, useState, useTransition } from "react";
-import { Gift, Loader2, Search } from "lucide-react";
+import { Gift, Loader2, Search, Ticket } from "lucide-react";
 import { toast } from "sonner";
-import { createClient } from "@/lib/supabase/client";
-import { giftItem } from "@/actions/economy";
+import { giftItem, giftWithToken } from "@/actions/economy";
 import {
   Dialog,
   DialogContent,
@@ -32,13 +31,25 @@ export function GiftDialog({ item, children }: { item: ShopItem; children: React
   const [query, setQuery] = useState("");
   const [selected, setSelected] = useState<Friend | null>(null);
   const [pending, start] = useTransition();
+  // null while unknown; false once we know there is no usable token.
+  const [hasToken, setHasToken] = useState<boolean | null>(null);
   const giftPrice = Math.ceil(item.price * 0.75);
 
   useEffect(() => {
     if (!open || friends) return;
     (async () => {
+      // Only needed once the dialog is actually opened, so the Supabase client
+      // loads on demand rather than sitting in the shop page's first load.
+      const { createClient } = await import("@/lib/supabase/client");
       const supabase = createClient();
-      const { data } = await supabase.rpc("list_friends");
+      // Friends and the token status are both only needed once the dialog is
+      // open, so they load together rather than as two waits.
+      const [{ data }, { data: tokenData }] = await Promise.all([
+        supabase.rpc("list_friends"),
+        supabase.rpc("my_gift_token"),
+      ]);
+      const t = tokenData as { token?: { used?: boolean } | null } | null;
+      setHasToken(Boolean(t?.token && !t.token.used));
       setFriends(
         (data ?? []).map((f) => ({
           user_id: f.user_id,
@@ -61,6 +72,23 @@ export function GiftDialog({ item, children }: { item: ShopItem; children: React
     });
   };
 
+  /**
+   * Spend the monthly booster token instead of credits. The gift is temporary,
+   * so the button says so - a free permanent gift and a free 30-day one look
+   * identical at the moment of sending, and only one of them is what happened.
+   */
+  const sendWithToken = () => {
+    if (!selected) return;
+    start(async () => {
+      const res = await giftWithToken(item.slug, selected.user_id);
+      if (!res.ok) return void toast.error(res.error ?? "Could not use your gift token");
+      setHasToken(false);
+      toast.success(`Sent ${item.name} to ${selected.display_name ?? selected.username} for 30 days!`);
+      setOpen(false);
+      setSelected(null);
+    });
+  };
+
   const filtered = (friends ?? []).filter((f) =>
     `${f.display_name ?? ""} ${f.username}`.toLowerCase().includes(query.trim().toLowerCase()),
   );
@@ -74,7 +102,7 @@ export function GiftDialog({ item, children }: { item: ShopItem; children: React
             <Gift className="size-5 text-primary" /> Gift {item.name}
           </DialogTitle>
           <DialogDescription>
-            Gifting costs <b>{formatNumber(giftPrice)}</b> credits — 25% off the list price. Pick a friend to surprise.
+            Gifting costs <b>{formatNumber(giftPrice)}</b> credits - 25% off the list price. Pick a friend to surprise.
           </DialogDescription>
         </DialogHeader>
 
@@ -112,10 +140,18 @@ export function GiftDialog({ item, children }: { item: ShopItem; children: React
           )}
         </div>
 
-        <Button variant="gradient" disabled={!selected || pending} onClick={send}>
-          {pending ? <Loader2 className="animate-spin" /> : <Gift />}
-          {selected ? `Gift to ${selected.display_name ?? selected.username}` : "Pick a friend"}
-        </Button>
+        <div className="space-y-2">
+          <Button variant="gradient" className="w-full" disabled={!selected || pending} onClick={send}>
+            {pending ? <Loader2 className="animate-spin" /> : <Gift />}
+            {selected ? `Gift to ${selected.display_name ?? selected.username}` : "Pick a friend"}
+          </Button>
+          {hasToken && (
+            <Button variant="secondary" className="w-full" disabled={!selected || pending} onClick={sendWithToken}>
+              <Ticket className="size-4" />
+              Use my booster token - free, 30 days
+            </Button>
+          )}
+        </div>
       </DialogContent>
     </Dialog>
   );

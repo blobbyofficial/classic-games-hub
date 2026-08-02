@@ -3,7 +3,7 @@
 /**
  * Giphy-backed GIF search for the messaging composer. The API key stays
  * server-side (GIPHY_API_KEY); the client only ever receives a small list of
- * ready-to-send GIF URLs + preview thumbnails. Users pick from these results —
+ * ready-to-send GIF URLs + preview thumbnails. Users pick from these results -
  * they never upload or paste their own image URLs.
  */
 

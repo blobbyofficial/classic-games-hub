@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/queries";
 import { CommunityEventManager } from "@/features/admin/community-event-manager";
 
-export const metadata: Metadata = { title: "Community events — Admin" };
+export const metadata: Metadata = { title: "Community events - Admin" };
 
 export default async function AdminEventsPage() {
   const profile = await getCurrentProfile();

@@ -1,12 +1,12 @@
 /**
- * Public roadmap data — what is *coming*, and nothing else.
+ * Public roadmap data - what is *coming*, and nothing else.
  *
  * Shipped releases live in lib/update-log.ts and render at /updates. Keeping
  * the two apart means the roadmap stays a short, readable statement of intent
  * instead of an ever-growing archive, and a release only has to be moved once:
  * out of here, into the log.
  *
- * This is a living plan — items are intentions, not promises, and can change,
+ * This is a living plan - items are intentions, not promises, and can change,
  * ship early, or be dropped. Rendered by app/(main)/roadmap/page.tsx.
  */
 
@@ -44,114 +44,13 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
   idea: { label: "Exploring", className: "bg-gold/10 text-gold border-gold/30" },
 };
 
-export const ROADMAP: RoadmapRelease[] = [
-  {
-    version: "v1.5.0",
-    codename: "Collector's Edition",
-    status: "next",
-    timeframe: "Next up",
-    summary:
-      "Everything from earlier releases that hasn't been built yet, gathered in one place rather than left scattered as loose ends. The theme that emerged: long-term collecting. Seasons to chase, cosmetics that layer and evolve, booster perks that accumulate month after month, the last two level milestones, and more 3D on the way.",
-    groups: [
-      {
-        heading: "Collections & seasons",
-        icon: "Gift",
-        blurb:
-          "The longest loop we've attempted: something to chip away at over months, and a reason to come back after a break.",
-        items: [
-          {
-            title: "Collections & seasons",
-            description:
-              "Collectable cosmetic sets and seasonal passes with a fresh theme each season, so there's always a longer-term goal to work towards and a reason to return after time away.",
-            status: "next",
-          },
-          {
-            title: "The last two level milestones",
-            description:
-              "Finishing what v1.3.0 started: L20 unlocks extra loadout preset slots, and L50 unlocks an exclusive mythic cosmetic. The earlier milestones (L5 music, L10 groups, L15 stories, L30 vanity URL) are already live.",
-            status: "next",
-          },
-        ],
-      },
-      {
-        heading: "Cosmetics & profile",
-        icon: "Palette",
-        blurb: "The expressive extras that didn't make the v1.2.0 cut — layered, optional, never pay-to-win.",
-        items: [
-          {
-            title: "Layered avatar decorations",
-            description:
-              "Decorations that sit on top of your profile picture rather than around it, bought from the store and shown wherever your avatar appears — including party lobbies and multiplayer matches. Avatar frames are already live; this is the layer above them.",
-            status: "next",
-          },
-          {
-            title: "Profile frames",
-            description:
-              "Optional Discord-like decorative frames around your entire profile card — seasonal, achievement-gated and cosmetic-shop variants.",
-            status: "later",
-          },
-          {
-            title: "More expressive extras",
-            description:
-              "A backlog of stretch cosmetics inspired by the platforms we love: profile entrance animations, custom cursor trails on your page, an optional profile-view counter, a mini 'now playing' game widget, and short looping profile music drawn from the v1.3 track library.",
-            status: "idea",
-          },
-        ],
-      },
-      {
-        heading: "Booster rewards",
-        icon: "Heart",
-        blurb:
-          "Perks that accumulate the longer you boost — the tenure badge and bigger daily bonuses already do; these three are the rest of the plan.",
-        items: [
-          {
-            title: "Monthly cosmetic drop",
-            description:
-              "An exclusive cosmetic every month you're boosting — a nameplate, decoration or effect that only boosters of that month receive, so the collection tells a story over time.",
-            status: "next",
-          },
-          {
-            title: "Early access",
-            description:
-              "A head start on new games and features — try them a week before everyone else and help shape them before launch.",
-            status: "later",
-          },
-          {
-            title: "Monthly gift token",
-            description:
-              "A free token each month to gift a temporary cosmetic to a friend — spread the perks and pull friends in.",
-            status: "idea",
-          },
-        ],
-      },
-      {
-        heading: "Social",
-        icon: "Users",
-        items: [
-          {
-            title: "Friends activity feed",
-            description:
-              "A quiet feed of what your friends have been up to — new high scores, achievements unlocked, games they've picked up — so the hub feels inhabited even when nobody's talking.",
-            status: "later",
-          },
-        ],
-      },
-      {
-        heading: "More dimensions",
-        icon: "Box",
-        blurb: "Turbo Horizon proved the browser can carry it. These are the follow-ups.",
-        items: [
-          {
-            title: "More 3D titles",
-            description:
-              "Beyond the pseudo-3D racer: a playable Rubik's cube, and true-3D titles running smoothly on desktop and mobile.",
-            status: "later",
-          },
-        ],
-      },
-    ],
-  },
-];
+/**
+ * Empty on purpose. v1.5.0 shipped in full and moved to the update log, and
+ * nothing has been committed to after it yet - so the honest thing for this
+ * page to say is "nothing announced", not a placeholder release nobody has
+ * decided on. The page renders an empty state when this is empty.
+ */
+export const ROADMAP: RoadmapRelease[] = [];
 
 /**
  * The standards every shipped feature is held to. Shown on the roadmap so the

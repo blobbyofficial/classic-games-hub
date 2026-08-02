@@ -10,7 +10,7 @@ import { GROUPS, OVERVIEW, type NavItem } from "./nav-items";
  *
  * Eleven equal-weight links read as one long list to scan every time; three
  * short labelled groups are read once and then navigated by position. The
- * groups are the questions an admin actually arrives with — who's here, what
+ * groups are the questions an admin actually arrives with - who's here, what
  * they play, and how the place is configured.
  */
 export function AdminNav({ role }: { role: string }) {

@@ -1,15 +1,25 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">
   <defs>
-    <linearGradient id="bg23" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#6d28d9"/><stop offset="1" stop-color="#1e1b4b"/>
+    <linearGradient id="b23" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1a1430"/><stop offset="1" stop-color="#0b0a14"/>
     </linearGradient>
-    <pattern id="grid23" width="24" height="24" patternUnits="userSpaceOnUse">
-      <path d="M24 0H0V24" fill="none" stroke="#ffffff" stroke-opacity="0.06"/>
+    <radialGradient id="w23" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f472b6" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#f472b6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="v23" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+    </radialGradient>
+    <pattern id="g23" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#f472b6" stroke-opacity="0.10"/>
     </pattern>
   </defs>
-  <rect width="480" height="300" fill="url(#bg23)"/>
-  <rect width="480" height="300" fill="url(#grid23)"/>
-  <g transform="translate(240 150)" fill="#fff"><g>
+  <rect width="480" height="300" fill="url(#b23)"/>
+  <rect width="480" height="300" fill="url(#g23)"/>
+  <ellipse cx="240" cy="150" rx="195" ry="145" fill="url(#w23)"/>
+  <rect width="480" height="300" fill="url(#v23)"/>
+  <g transform="translate(240 150) scale(1.35)" fill="#ffffff"><g>
     <path d="M-16 -80 L16 -80 L120 100 L-120 100 Z" fill="#1f2333"/>
     <path d="M-2 -80 L2 -80 L10 100 L-10 100 Z" fill="#fff" opacity="0.5"/>
     <circle cx="0" cy="-92" r="18" fill="#fbbf24" opacity="0.9"/>
@@ -20,4 +30,5 @@
       <rect x="28" y="6" width="12" height="14" rx="3" fill="#0b0a12"/>
     </g>
   </g></g>
+  <rect x="0.5" y="0.5" width="479" height="299" fill="none" stroke="#f472b6" stroke-opacity="0.22"/>
 </svg>

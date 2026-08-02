@@ -14,6 +14,7 @@ import {
   Package,
   Target,
   PartyPopper,
+  Gift,
   type LucideIcon,
 } from "lucide-react";
 
@@ -21,7 +22,7 @@ export const SITE = {
   name: "Classic Games Hub",
   shortName: "CG Hub",
   description:
-    "A modern arcade platform — play 23 classic games, earn credits and XP, unlock achievements, climb leaderboards and hang out with friends.",
+    "A modern arcade platform - play 23 classic games, earn credits and XP, unlock achievements, climb leaderboards and hang out with friends.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://classic-games-hub.blobbyofficial.com",
   discord: "https://discord.gg/A8PThHqedD",
   founder: "https://www.blobbyofficial.com",
@@ -52,6 +53,7 @@ export const SOCIAL_NAV: NavItem[] = [
 
 export const LIBRARY_NAV: NavItem[] = [
   { href: "/inventory", label: "Inventory", icon: Package, auth: true },
+  { href: "/collections", label: "Collections", icon: Gift, auth: true },
   { href: "/challenges", label: "Challenges", icon: Target, auth: true },
 ];
 

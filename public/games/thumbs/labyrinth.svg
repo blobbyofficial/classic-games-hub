@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">
+  <defs>
+    <linearGradient id="b25" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1a1430"/><stop offset="1" stop-color="#0b0a14"/>
+    </linearGradient>
+    <radialGradient id="w25" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#38bdf8" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="v25" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+    </radialGradient>
+    <pattern id="g25" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#38bdf8" stroke-opacity="0.10"/>
+    </pattern>
+  </defs>
+  <rect width="480" height="300" fill="url(#b25)"/>
+  <rect width="480" height="300" fill="url(#g25)"/>
+  <ellipse cx="240" cy="150" rx="195" ry="145" fill="url(#w25)"/>
+  <rect width="480" height="300" fill="url(#v25)"/>
+  <g transform="translate(240 150) scale(1.35)" fill="#ffffff"><g>
+    <path d="M-92 -57.04 L-24 -14.879999999999999 L-24 14.879999999999999 L-92 57.04 Z" opacity="0.8"/>
+    <path d="M92 -57.04 L24 -14.879999999999999 L24 14.879999999999999 L92 57.04 Z" opacity="0.55"/>
+    <path d="M-92 57.04 L-24 14.879999999999999 L24 14.879999999999999 L92 57.04 Z" opacity="0.28"/>
+    <rect x="-24" y="-14.879999999999999" width="48" height="29.759999999999998" opacity="0.16"/>
+    <rect x="-4.5" y="-13" width="9" height="26" rx="3" fill="#34d399"/>
+  </g></g>
+  <rect x="0.5" y="0.5" width="479" height="299" fill="none" stroke="#38bdf8" stroke-opacity="0.22"/>
+</svg>

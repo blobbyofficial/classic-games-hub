@@ -17,10 +17,10 @@ export interface RestResult<T = unknown> {
 
 /**
  * HTTP header values must be Latin-1, and our audit reasons contain an em dash
- * ("Classic Games Bot — …"). Passing one straight through makes `fetch` throw
+ * ("Classic Games Bot - …"). Passing one straight through makes `fetch` throw
  * *before the request is sent*, which surfaced as a network error and had
  * admins hunting for a permissions problem that did not exist. Discord
- * documents this header as URL-encoded, so encode it — Discord decodes it back
+ * documents this header as URL-encoded, so encode it - Discord decodes it back
  * for the audit log. 512 characters is Discord's limit; encoding first means
  * the truncation can't split a percent-escape.
  */
@@ -267,7 +267,7 @@ export const discordRest = {
       `/guilds/${guildId}?with_counts=true`,
     ),
 
-  /** DM a user (best-effort — users can have DMs closed). */
+  /** DM a user (best-effort - users can have DMs closed). */
   async dmUser(userId: string, content: string): Promise<RestResult> {
     const channel = await discordFetch<{ id: string }>(`/users/@me/channels`, {
       method: "POST",

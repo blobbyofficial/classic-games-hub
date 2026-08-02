@@ -21,7 +21,7 @@ export function PartyStart({ onJoined }: { onJoined: () => void }) {
         toast.error(res.error ?? "Couldn't create the party");
         return;
       }
-      toast.success(`Party created — code ${res.invite_code as string}`);
+      toast.success(`Party created - code ${res.invite_code as string}`);
       onJoined();
     });
 
@@ -95,7 +95,7 @@ export function PartyStart({ onJoined }: { onJoined: () => void }) {
           Tic-Tac-Toe, Connect 4 and Reversi become real online matches on one shared board.
         </Feature>
         <Feature icon={<Sparkles className="size-4" />} title="Score races">
-          Every other game turns into a race — same game, same moment, live scoreboard.
+          Every other game turns into a race - same game, same moment, live scoreboard.
         </Feature>
       </div>
     </div>

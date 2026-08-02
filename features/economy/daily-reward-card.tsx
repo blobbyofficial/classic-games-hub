@@ -57,7 +57,7 @@ export function DailyRewardCard({
           </div>
           <p className="text-sm text-muted-foreground">
             {claimed
-              ? "Claimed — come back tomorrow to keep your streak alive."
+              ? "Claimed - come back tomorrow to keep your streak alive."
               : "Claim free credits every day. Streaks pay more."}
           </p>
         </div>

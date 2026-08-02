@@ -30,7 +30,7 @@ jobs:
       - name: Build
         run: npm run build
         env:
-          # Publishable values — safe in CI. RLS governs all access.
+          # Publishable values - safe in CI. RLS governs all access.
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://isgqukmmhuzhpalbruwt.supabase.co' }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_K6DD29odFaDeNTYozEsifQ_rD1ThsG5' }}
           NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://classic-games-hub.blobbyofficial.com' }}

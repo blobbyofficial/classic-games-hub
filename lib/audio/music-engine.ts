@@ -1,7 +1,7 @@
 /**
  * Procedural background-music engine (roadmap v1.3 "Background music tracks").
  *
- * Every track is composed in code and rendered live with the Web Audio API —
+ * Every track is composed in code and rendered live with the Web Audio API -
  * fully original, nothing to download or license, and a few hundred bytes per
  * track. Each track is a small pattern spec (tempo, chords, bass, lead,
  * percussion flags) played by a lookahead scheduler.

@@ -51,7 +51,7 @@ async function update(client: Client): Promise<void> {
 }
 
 /**
- * Keeps voice-channel counters in sync with live Hub stats — the ServerStats
+ * Keeps voice-channel counters in sync with live Hub stats - the ServerStats
  * replacement. The website can do this too (/api/cron/discord-stats); whichever
  * runs, the rename is idempotent.
  */

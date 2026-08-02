@@ -5,9 +5,10 @@ import type { Metadata } from "next";
 import { Gamepad2, Trophy, Users, Keyboard, Info, MessageSquare, ChevronLeft } from "lucide-react";
 import { getGameBySlug, getPublishedGames } from "@/services/games";
 import { ControlsList } from "@/features/games/controls-list";
-import { getSessionUser, getFeatureFlags } from "@/lib/supabase/queries";
+import { getSessionUser, getFeatureFlags, getCurrentProfile } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { GamePlayer } from "@/features/games/game-player";
+import { EarlyAccessLock } from "@/features/games/early-access-lock";
 import { GameLeaderboard } from "@/features/leaderboards/game-leaderboard";
 import { RateGame } from "@/features/games/rate-game";
 import { GameCard } from "@/components/games/game-card";
@@ -36,34 +37,52 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
   const game = await getGameBySlug(slug);
   if (!game || (game.status !== "published" && game.status !== "coming_soon")) notFound();
 
-  const [user, allGames, flags] = await Promise.all([getSessionUser(), getPublishedGames(), getFeatureFlags()]);
+  // getCurrentProfile shares the cached session with getSessionUser, so adding
+  // it to the batch for the early-access check costs no extra round trip.
+  const [user, allGames, flags, profile] = await Promise.all([
+    getSessionUser(),
+    getPublishedGames(),
+    getFeatureFlags(),
+    getCurrentProfile(),
+  ]);
   const supabase = await createClient();
 
-  let isFavorite = false;
-  let bestScore = 0;
-  let myRating: { rating: number; review: string | null } | null = null;
-  if (user) {
-    const [{ data: fav }, { data: best }, { data: rating }] = await Promise.all([
-      supabase.from("game_favorites").select("game_id").eq("user_id", user.id).eq("game_id", game.id).maybeSingle(),
-      supabase.from("leaderboard_scores").select("best_score").eq("user_id", user.id).eq("game_id", game.id).maybeSingle(),
-      supabase.from("game_ratings").select("rating, review").eq("user_id", user.id).eq("game_id", game.id).maybeSingle(),
-    ]);
-    isFavorite = Boolean(fav);
-    bestScore = best?.best_score ?? 0;
-    myRating = rating;
-  }
+  // The public review list doesn't depend on the viewer, so it rides along with
+  // the signed-in lookups instead of waiting for them.
+  const [favRes, bestRes, ratingRes, { data: reviews }] = await Promise.all([
+    user
+      ? supabase.from("game_favorites").select("game_id").eq("user_id", user.id).eq("game_id", game.id).maybeSingle()
+      : null,
+    user
+      ? supabase.from("leaderboard_scores").select("best_score").eq("user_id", user.id).eq("game_id", game.id).maybeSingle()
+      : null,
+    user
+      ? supabase.from("game_ratings").select("rating, review").eq("user_id", user.id).eq("game_id", game.id).maybeSingle()
+      : null,
+    supabase
+      .from("game_ratings")
+      .select("rating, review, created_at, profiles(username, display_name, avatar_url)")
+      .eq("game_id", game.id)
+      .not("review", "is", null)
+      .order("created_at", { ascending: false })
+      .limit(10),
+  ]);
 
-  const { data: reviews } = await supabase
-    .from("game_ratings")
-    .select("rating, review, created_at, profiles(username, display_name, avatar_url)")
-    .eq("game_id", game.id)
-    .not("review", "is", null)
-    .order("created_at", { ascending: false })
-    .limit(10);
+  const isFavorite = Boolean(favRes?.data);
+  const bestScore = bestRes?.data?.best_score ?? 0;
+  const myRating: { rating: number; review: string | null } | null = ratingRes?.data ?? null;
 
   const meta = CATEGORY_META[game.category];
   const related = allGames.filter((g) => g.category === game.category && g.id !== game.id).slice(0, 5);
   const comingSoon = game.status === "coming_soon";
+
+  // Booster early access. The database refuses to record a play for anyone who
+  // is not eligible (0056), so this only decides what to render.
+  const earlyUntil = game.early_access_until;
+  const inEarlyAccess = Boolean(earlyUntil && new Date(earlyUntil) > new Date());
+  const mayPlayEarly =
+    profile?.booster_since != null || profile?.role === "admin" || profile?.role === "moderator";
+  const earlyLocked = inEarlyAccess && !mayPlayEarly;
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -113,6 +132,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 <p className="text-muted-foreground">This game is on its way. Check back shortly!</p>
               </div>
             </Card>
+          ) : earlyLocked ? (
+            <EarlyAccessLock until={earlyUntil!} title={game.title} />
           ) : (
             <GamePlayer
               slug={game.slug}

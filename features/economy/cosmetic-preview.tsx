@@ -4,6 +4,10 @@ import { Nameplate } from "@/components/profile/nameplate";
 import { UserAvatar } from "@/components/ui/avatar";
 import { ProfileEffects } from "@/components/profile/profile-effects";
 import { ProfileBackdrop } from "@/components/profile/profile-backdrop";
+import { ProfileFrame } from "@/components/profile/profile-frame";
+import { ProfileEntrance } from "@/components/profile/profile-entrance";
+import { CursorTrail } from "@/components/profile/cursor-trail";
+import { ProfileMusic } from "@/components/profile/profile-music";
 import { bannerBackground } from "@/components/profile/profile-theme";
 import type { ShopItem } from "@/types";
 
@@ -21,6 +25,11 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
   const isFrame = item.kind === "avatar_frame";
   const isNameplate = item.kind === "nameplate";
   const isEffect = item.kind === "effect";
+  const isProfileFrame = item.kind === "profile_frame";
+  const isDecoration = item.kind === "decoration";
+  const isEntrance = item.kind === "entrance";
+  const isTrail = item.kind === "cursor_trail";
+  const isTrack = item.kind === "track";
 
   // For banner/theme items, drive the real backdrop off a synthetic equipped map.
   const equipped: Record<string, string> | undefined = isBanner
@@ -29,6 +38,12 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
   const bannerBg = isBanner ? bannerBackground(equipped) : undefined;
 
   return (
+    <>
+    {/* A trail is only itself when it is following a real pointer, so the
+        preview arms the actual cosmetic for as long as this page is open. */}
+    {isTrail && <CursorTrail slug={item.slug} />}
+    <ProfileEntrance slug={isEntrance ? item.slug : undefined}>
+    <ProfileFrame slug={isProfileFrame ? item.slug : undefined}>
     <div className="mx-auto w-full max-w-sm overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
       {/* Banner */}
       <div
@@ -42,8 +57,13 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
 
       {/* Avatar */}
       <div className="-mt-10 px-5">
-        {isFrame ? (
-          <UserAvatar name="SamplePlayer" frame={item.slug} className="size-20 border-4 border-card" />
+        {isFrame || isDecoration ? (
+          <UserAvatar
+            name="SamplePlayer"
+            frame={isFrame ? item.slug : undefined}
+            decoration={isDecoration ? item.slug : undefined}
+            className="size-20 border-4 border-card"
+          />
         ) : (
           <div className="inline-grid size-20 place-items-center rounded-full bg-card p-1">
             <div className="grid size-full place-items-center rounded-full border-4 border-card bg-gradient-to-br from-primary/30 to-accent/30">
@@ -85,8 +105,13 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
           </span>
         )}
 
+        {isTrack && <ProfileMusic slug={item.slug} />}
+
         <p className="text-sm text-muted-foreground">Level 12 · 3,400 credits</p>
       </div>
     </div>
+    </ProfileFrame>
+    </ProfileEntrance>
+    </>
   );
 }

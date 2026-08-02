@@ -12,7 +12,7 @@ import { SITE_THEME_IDS } from "@/lib/themes";
 import "@/styles/globals.css";
 
 // `display: swap` shows the fallback immediately rather than blocking first
-// paint on a slow connection; `preload` on the body face only — the mono face
+// paint on a slow connection; `preload` on the body face only - the mono face
 // is used in a handful of small labels and isn't worth a render-blocking hint.
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -32,7 +32,7 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE.url),
-  title: { default: `${SITE.name} — Play the Classics`, template: `%s · ${SITE.name}` },
+  title: { default: `${SITE.name} - Play the Classics`, template: `%s · ${SITE.name}` },
   description: SITE.description,
   applicationName: SITE.name,
   manifest: "/manifest.webmanifest",
@@ -61,7 +61,7 @@ export const viewport: Viewport = {
 export default async function RootLayout({ children }: { children: React.ReactNode }) {
   // Apply the player's global colour theme before first paint (no flash).
   // Signed-out visitors always get the default theme, so skip the auth
-  // round-trip entirely unless a Supabase session cookie is actually present —
+  // round-trip entirely unless a Supabase session cookie is actually present -
   // that keeps anonymous traffic (and 404s) off the auth endpoint.
   const cookieStore = await cookies();
   const hasSession = cookieStore.getAll().some((c) => /^sb-.*auth-token/.test(c.name));
@@ -69,10 +69,20 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const rawTheme = (settings as { site_theme?: string } | null)?.site_theme ?? "default";
   const siteTheme = SITE_THEME_IDS.has(rawTheme) ? rawTheme : "default";
 
+  // Reduced motion has to land on the server-rendered html tag: applying it
+  // after hydration would mean the animations play once before being switched
+  // off, which is the opposite of what the setting is for.
+  const reducedMotion = Boolean((settings as { reduced_motion?: boolean } | null)?.reduced_motion);
+
   const supabaseOrigin = (process.env.NEXT_PUBLIC_SUPABASE_URL ?? "").replace(/\/$/, "");
 
   return (
-    <html lang="en" suppressHydrationWarning data-site-theme={siteTheme}>
+    <html
+      lang="en"
+      suppressHydrationWarning
+      data-site-theme={siteTheme}
+      data-reduced-motion={reducedMotion ? "true" : undefined}
+    >
       <head>
         {supabaseOrigin && (
           <>

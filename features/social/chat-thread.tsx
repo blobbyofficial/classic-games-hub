@@ -186,8 +186,8 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
 
   // Fallback poll: pull only the *new* messages (not a full-page refresh) every
   // few seconds so the thread stays live even if Realtime drops or isn't
-  // enabled. It's cheap — an indexed `id > last` query that usually returns
-  // nothing — and dedupes against whatever Realtime/optimistic already added.
+  // enabled. It's cheap - an indexed `id > last` query that usually returns
+  // nothing - and dedupes against whatever Realtime/optimistic already added.
   useEffect(() => {
     const supabase = createClient();
     let cancelled = false;
@@ -287,7 +287,7 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
         if (!res.ok) toast.error(res.error ?? "Message failed to send");
         return;
       }
-      // Resolve the optimistic bubble with the real row right away — don't wait
+      // Resolve the optimistic bubble with the real row right away - don't wait
       // on the Realtime echo (which may be delayed or unavailable). If the echo
       // already delivered it, just drop the optimistic duplicate.
       const real = res.message as Msg;
@@ -306,7 +306,7 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
     setText("");
   };
 
-  // The most recent message I sent — the only one that carries a read receipt.
+  // The most recent message I sent - the only one that carries a read receipt.
   let lastMineId: Msg["id"] | undefined;
   for (const m of messages) if (m.sender_id === me) lastMineId = m.id;
 
@@ -386,7 +386,7 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
           const next = messages[i + 1];
           const showDate = !prev || !sameDay(prev.created_at, m.created_at);
           // End a bubble group when the next message is from someone else, after
-          // a lull, or when the day changes — the timestamp shows on the last one.
+          // a lull, or when the day changes - the timestamp shows on the last one.
           const endGroup =
             !next ||
             next.sender_id !== m.sender_id ||

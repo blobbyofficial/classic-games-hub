@@ -7,7 +7,7 @@ import { ThemeToggle } from "./theme-toggle";
 import { CreditsPill } from "./credits-pill";
 import { LevelPill } from "./level-pill";
 import { NotificationsBell } from "./notifications-bell";
-import { MusicPlayer } from "./music-player";
+import { MusicPlayerLazy } from "./music-player-lazy";
 import { UserMenu } from "./user-menu";
 import { MobileMenu } from "./mobile-menu";
 import { Button } from "@/components/ui/button";
@@ -47,7 +47,7 @@ export function Navbar() {
               <div className="hidden sm:block">
                 <CreditsPill />
               </div>
-              <MusicPlayer />
+              <MusicPlayerLazy />
               <NotificationsBell />
               <div className="hidden lg:block">
                 <LevelPill />

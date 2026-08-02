@@ -4,7 +4,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getCurrentProfile } from "@/lib/supabase/queries";
 import { SiteSurfaces } from "@/features/admin/site-surfaces";
 
-export const metadata: Metadata = { title: "Site — Admin" };
+export const metadata: Metadata = { title: "Site - Admin" };
 
 export default async function AdminSitePage() {
   const profile = await getCurrentProfile();

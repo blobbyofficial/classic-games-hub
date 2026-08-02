@@ -22,14 +22,16 @@ const DEFAULT_ORDER = ["event", "daily", "recent", "featured", "categories", "al
 type SectionKey = (typeof DEFAULT_ORDER)[number];
 
 export default async function HomePage() {
-  const [profile, featured, allGames, layoutFlag] = await Promise.all([
+  // getFavoriteGameIds resolves to an empty set when signed out, so it joins the
+  // batch rather than costing a second round trip after the profile lands.
+  const [profile, featured, allGames, layoutFlag, favorites] = await Promise.all([
     getCurrentProfile(),
     getFeaturedGames(),
     getPublishedGames(),
     getFlagPayload("home_layout"),
+    getFavoriteGameIds(),
   ]);
   const user = profile;
-  const favorites = user ? await getFavoriteGameIds() : new Set<string>();
   const totalPlays = allGames.reduce((sum, g) => sum + g.play_count, 0);
   const displayName = profile ? profile.display_name ?? profile.username : null;
 
@@ -116,7 +118,7 @@ function Hero({
 }) {
   return (
     /* The ambient glow is painted as a background gradient rather than two
-       blurred divs — same look, no filter for the compositor to maintain, which
+       blurred divs - same look, no filter for the compositor to maintain, which
        is what kept this section janky while scrolling on low-end phones. */
     <section className="relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid" />
@@ -141,7 +143,7 @@ function Hero({
         </h1>
         <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
           Play {gameCount} timeless games, earn credits and XP, unlock achievements, climb the
-          leaderboards and hang out with friends. No pay-to-win — just the classics, done right.
+          leaderboards and hang out with friends. No pay-to-win - just the classics, done right.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Button size="lg" variant="gradient" asChild>

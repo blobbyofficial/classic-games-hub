@@ -3,7 +3,7 @@
  *
  * Membership lives in Postgres (0044_parties); everything that happens *during*
  * a match is ephemeral and rides on a Supabase Realtime broadcast channel named
- * after the party id. Nothing about a match in progress is persisted — only the
+ * after the party id. Nothing about a match in progress is persisted - only the
  * final score, and only through the ordinary `submit_score` path every
  * single-player run already uses.
  *
@@ -23,7 +23,7 @@ export const partyChannel = (partyId: string) => `party:${partyId}`;
  * implement `applyRemoteMove`.
  *
  * Everything else in the library is single-player by nature, so a party plays
- * those as a *race* instead — same game, same moment, live scoreboard.
+ * those as a *race* instead - same game, same moment, live scoreboard.
  */
 export const HEAD_TO_HEAD = new Set(["tictactoe", "connect4", "reversi"]);
 
@@ -46,7 +46,7 @@ export interface MatchConfig {
   players: string[];
   /** userId → seat. Versus matches only; seat 1 moves first. */
   seats: Record<string, Seat>;
-  /** Epoch ms when play starts — the countdown ends at the same instant for all. */
+  /** Epoch ms when play starts - the countdown ends at the same instant for all. */
   startAt: number;
 }
 

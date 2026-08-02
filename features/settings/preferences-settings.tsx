@@ -77,7 +77,11 @@ export function PreferencesSettings({ settings }: { settings: UserSettings }) {
               </SelectContent>
             </Select>
           </Row>
-          <Row icon={Zap} title="Reduced motion" description="Minimize animations and transitions.">
+          <Row
+            icon={Zap}
+            title="Reduced motion"
+            description="Turns off animations, blur and profile effects. Also makes the Hub lighter to run on a slower device."
+          >
             <Switch checked={local.reduced_motion} onCheckedChange={(v) => update("reduced_motion", v)} />
           </Row>
         </CardContent>
@@ -89,8 +93,18 @@ export function PreferencesSettings({ settings }: { settings: UserSettings }) {
           <CardDescription>Control who can reach you and what they see.</CardDescription>
         </CardHeader>
         <CardContent className="divide-y divide-border/60">
-          <Row icon={Eye} title="Show online status" description="Master switch — hide your presence entirely.">
+          <Row icon={Eye} title="Show online status" description="Master switch - hide your presence entirely.">
             <Switch checked={local.show_online_status} onCheckedChange={(v) => update("show_online_status", v)} />
+          </Row>
+          <Row
+            icon={Eye}
+            title="Show profile views"
+            description="Display how many people have visited your profile. Counts unique visitors, never you."
+          >
+            <Switch
+              checked={local.show_profile_views}
+              onCheckedChange={(v) => update("show_profile_views", v)}
+            />
           </Row>
           <Row icon={Circle} title="Status" description="Set how you appear to others.">
             <Select value={local.presence_status} onValueChange={(v) => update("presence_status", v)}>

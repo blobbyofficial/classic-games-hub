@@ -1,13 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">
   <defs>
-    <linearGradient id="bg11" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#2563eb"/><stop offset="1" stop-color="#1e3a8a"/>
+    <linearGradient id="b11" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1a1430"/><stop offset="1" stop-color="#0b0a14"/>
     </linearGradient>
-    <pattern id="grid11" width="24" height="24" patternUnits="userSpaceOnUse">
-      <path d="M24 0H0V24" fill="none" stroke="#ffffff" stroke-opacity="0.06"/>
+    <radialGradient id="w11" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#38bdf8" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#38bdf8" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="v11" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+    </radialGradient>
+    <pattern id="g11" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#38bdf8" stroke-opacity="0.10"/>
     </pattern>
   </defs>
-  <rect width="480" height="300" fill="url(#bg11)"/>
-  <rect width="480" height="300" fill="url(#grid11)"/>
-  <g transform="translate(240 150)" fill="#fff"><circle cx="-30" cy="-18" r="22"/><circle cx="20" cy="-24" r="18" opacity="0.8"/><circle cx="-4" cy="24" r="20" opacity="0.65"/></g>
+  <rect width="480" height="300" fill="url(#b11)"/>
+  <rect width="480" height="300" fill="url(#g11)"/>
+  <ellipse cx="240" cy="150" rx="195" ry="145" fill="url(#w11)"/>
+  <rect width="480" height="300" fill="url(#v11)"/>
+  <g transform="translate(240 150) scale(1.35)" fill="#ffffff"><circle cx="-30" cy="-18" r="22"/><circle cx="20" cy="-24" r="18" opacity="0.8"/><circle cx="-4" cy="24" r="20" opacity="0.65"/></g>
+  <rect x="0.5" y="0.5" width="479" height="299" fill="none" stroke="#38bdf8" stroke-opacity="0.22"/>
 </svg>

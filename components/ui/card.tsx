@@ -7,11 +7,11 @@ const cardVariants = cva("rounded-2xl text-card-foreground", {
     variant: {
       /** The default surface: a real card, one step above the page. */
       default: "border border-border bg-card shadow-sm",
-      /** Sits flat on the page — for grouping, not for elevation. */
+      /** Sits flat on the page - for grouping, not for elevation. */
       flat: "border border-border/60 bg-muted/25",
       /** Translucent; for anything overlaying imagery or a gradient. */
       glass: "glass shadow-md",
-      /** Unfilled — used for empty states and drop targets. */
+      /** Unfilled - used for empty states and drop targets. */
       dashed: "border border-dashed border-border bg-transparent",
     },
     /** Adds the lift-on-hover treatment for cards that are themselves links. */

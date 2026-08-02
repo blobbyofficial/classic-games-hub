@@ -46,7 +46,7 @@ export function MatchStage({ config, me, members, present, send, subscribe, onEx
   );
 
   // The leader's clock decides when play begins, but clocks differ between
-  // machines — clamping means a skewed one costs a moment, never the match.
+  // machines - clamping means a skewed one costs a moment, never the match.
   const [startAt] = useState(() => {
     const t = Date.now();
     return Math.min(Math.max(config.startAt, t), t + COUNTDOWN_MS);
@@ -81,7 +81,7 @@ export function MatchStage({ config, me, members, present, send, subscribe, onEx
       setStandings((prev) => ({ ...prev, [me]: { userId: me, score: finalScore, finished: true } }));
       send({ type: "match:finish", matchId: config.matchId, userId: me, score: finalScore });
 
-      // Party play earns exactly what a solo run of the same game earns —
+      // Party play earns exactly what a solo run of the same game earns -
       // same RPC, same anti-farming rules.
       const res = await submitScore(config.gameSlug, finalScore, duration);
       setResult(res);
@@ -132,7 +132,7 @@ export function MatchStage({ config, me, members, present, send, subscribe, onEx
           void finishRun(s, d || Math.round((Date.now() - startedAtRef.current) / 1000));
         },
         // Head-to-head wiring. Its presence is what puts the engine into
-        // online mode — no AI, no local pass-and-play.
+        // online mode - no AI, no local pass-and-play.
         net: isVersus
           ? {
               seat: config.seats[me] ?? 1,

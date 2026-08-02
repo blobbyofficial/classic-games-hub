@@ -16,7 +16,7 @@ import { PRIMARY_NAV, SOCIAL_NAV, LIBRARY_NAV, SITE, type NavItem } from "@/lib/
 import { useSessionStore } from "@/lib/stores/session-store";
 import { cn, formatNumber } from "@/lib/utils";
 
-/** Slide-in navigation drawer for phones — opened from the navbar hamburger. */
+/** Slide-in navigation drawer for phones - opened from the navbar hamburger. */
 export function MobileMenu() {
   const [open, setOpen] = useState(false);
   const userId = useSessionStore((s) => s.userId);

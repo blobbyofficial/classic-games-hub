@@ -15,7 +15,7 @@ import type {
 } from "@/features/admin/discord-server-settings";
 import { mergeConfig } from "@/lib/discord/config";
 
-export const metadata: Metadata = { title: "Discord bot — Admin" };
+export const metadata: Metadata = { title: "Discord bot - Admin" };
 
 const LEVELING_DEFAULTS: LevelingConfig = {
   enabled: true,

@@ -24,7 +24,7 @@ export default function Error({
         </span>
         <h1 className="text-title font-bold">Something went wrong</h1>
         <p className="mt-2 leading-relaxed text-muted-foreground">
-          This page hit an unexpected error. Trying again usually sorts it — if it doesn&apos;t,
+          This page hit an unexpected error. Trying again usually sorts it - if it doesn&apos;t,
           head home and carry on from there.
         </p>
         <div className="mt-6 flex flex-col justify-center gap-2.5 sm:flex-row">
@@ -38,7 +38,7 @@ export default function Error({
           </Button>
         </div>
         {error.digest && (
-          /* The digest is the only handle support has on a specific failure —
+          /* The digest is the only handle support has on a specific failure -
              worth showing, quietly. */
           <p className="mt-6 font-mono text-[11px] text-muted-foreground/70">
             Reference: {error.digest}

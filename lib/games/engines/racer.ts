@@ -2,7 +2,7 @@ import type { GameEngineFactory } from "@/types";
 import { beep, clamp, createLoop, palette, roundRect } from "../helpers";
 
 /**
- * Turbo Horizon — an OutRun-style pseudo-3D racer (roadmap v1.4 "3D games").
+ * Turbo Horizon - an OutRun-style pseudo-3D racer (roadmap v1.4 "3D games").
  * A segmented road with curves and hills is perspective-projected onto the
  * canvas; steer through traffic, stay on the tarmac, and rack up distance and
  * overtakes. First of the "new dimensions" titles.

@@ -1,6 +1,6 @@
 # Classic Games Hub
 
-A modern, production-ready arcade platform — 23 playable classics wrapped in a
+A modern, production-ready arcade platform - 23 playable classics wrapped in a
 full community layer: accounts, friends, real-time chat, a virtual credits
 economy, achievements, leaderboards, daily challenges, cosmetics, and an admin
 dashboard. Rebuilt from the ground up for 2026.
@@ -17,7 +17,7 @@ dashboard. Rebuilt from the ground up for 2026.
 | Styling       | **Tailwind CSS v4** + a shadcn/ui-style component library         |
 | Animation     | **Framer Motion**                                                 |
 | Data / async  | **TanStack React Query**, **Zustand** for lightweight client state |
-| Backend       | **Supabase** — Postgres, Auth, Realtime, Storage, RLS             |
+| Backend       | **Supabase** - Postgres, Auth, Realtime, Storage, RLS             |
 | Analytics     | **Vercel Analytics** + **Speed Insights**                         |
 | Hosting       | **Vercel** (app) + **Supabase** (data)                            |
 | PWA           | Web manifest, installable, offline-friendly shell                 |
@@ -27,7 +27,7 @@ dashboard. Rebuilt from the ground up for 2026.
 ```
 app/                 Next.js routes (route groups: (auth), (main))
   (auth)/            login, register, forgot-password
-  (main)/            the app shell — home, games, social, economy, admin
+  (main)/            the app shell - home, games, social, economy, admin
   auth/callback/     OAuth / magic-link handler
 components/
   ui/                design-system primitives (button, dialog, select, …)
@@ -53,7 +53,7 @@ styles/              Tailwind theme + global CSS
 
 - **Server-authoritative economy.** All credit/XP mutations happen inside
   `SECURITY DEFINER` Postgres functions (`submit_score`, `claim_daily_reward`,
-  `purchase_shop_item`, …). The client can never mint currency — `EXECUTE` on
+  `purchase_shop_item`, …). The client can never mint currency - `EXECUTE` on
   the internal reward helpers is revoked from `anon`/`authenticated`
   (migration `0006`). Scores are clamped and rate-limited server-side.
 - **Row Level Security everywhere.** Every table has RLS enabled; players only
@@ -68,17 +68,17 @@ styles/              Tailwind theme + global CSS
 Numbered migrations under `database/migrations/` are the source of truth and
 run in order. The foundation:
 
-1. `0001_core_identity` — profiles, settings, credits ledger, XP/levels,
+1. `0001_core_identity` - profiles, settings, credits ledger, XP/levels,
    notifications, storage buckets, new-user bootstrap trigger.
-2. `0002_games_platform` — games catalog, ratings, favorites, play sessions,
+2. `0002_games_platform` - games catalog, ratings, favorites, play sessions,
    leaderboards, activity feed.
-3. `0003_social` — friendships, blocks, conversations, messages, realtime.
-4. `0004_economy_admin` — shop, inventory, achievements, daily rewards,
+3. `0003_social` - friendships, blocks, conversations, messages, realtime.
+4. `0004_economy_admin` - shop, inventory, achievements, daily rewards,
    challenges, events, reports, announcements, audit log, feature flags, and
    the `submit_score` game loop.
-5. `0005_seed` — games, achievements, shop items, feature flags.
-6. `0006_harden_functions` — locks down `EXECUTE` on privileged functions.
-7. `0007_read_helpers` — ranked leaderboards, the bidirectional friends graph,
+5. `0005_seed` - games, achievements, shop items, feature flags.
+6. `0006_harden_functions` - locks down `EXECUTE` on privileged functions.
+7. `0007_read_helpers` - ranked leaderboards, the bidirectional friends graph,
    profile stat rollups.
 
 Later migrations layer on features: `0008`–`0019` add username onboarding,
@@ -104,7 +104,7 @@ npm install
 cp .env.example .env.local
 # Fill in your Supabase URL + publishable key (values for the live project
 # are already in .env.example). Add SUPABASE_SECRET_KEY only if you need
-# service-role scripts — the app itself does not require it.
+# service-role scripts - the app itself does not require it.
 
 # 3. Run
 npm run dev        # http://localhost:3000
@@ -136,42 +136,42 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
 
 ## Features
 
-- **24 playable games** — Snake, Tetris, 2048, Breakout, Pong, Asteroids, Space
+- **24 playable games** - Snake, Tetris, 2048, Breakout, Pong, Asteroids, Space
   Invaders, Frogger, Neon Runner, Target Rush, Gem Cascade, Bubble Pop,
   Minesweeper, Memory, 15 Puzzle, Mastermind, Hangman, Simon, Tic-Tac-Toe,
-  Connect Four, Reversi, Whack-a-Mole, Lights Out — plus **Turbo Horizon**, an
+  Connect Four, Reversi, Whack-a-Mole, Lights Out - plus **Turbo Horizon**, an
   OutRun-style pseudo-3D racer. Each is a self-contained, code-split canvas
   engine with keyboard + touch controls; Tic-Tac-Toe includes local
   pass-and-play.
-- **Accounts** — email/username + password and OAuth (Discord/Google/GitHub/
+- **Accounts** - email/username + password and OAuth (Discord/Google/GitHub/
   Microsoft); profiles with avatars, tiered banners, bios, pronouns, a status
   line, levels, XP, credits, badges, achievements and inventory.
-- **Profiles 2.0** — nameplates and display-name styles that render everywhere,
+- **Profiles 2.0** - nameplates and display-name styles that render everywhere,
   a featured achievement, a trophy case of favourite games, a Discord-linked
   badge, and profile effects/themes.
-- **Social** — friend requests, one-way follows (with notifications), mutual
+- **Social** - friend requests, one-way follows (with notifications), mutual
   friends, friends-list visibility, private notes/nicknames, rich presence
   (online/away/DND/sleep/invisible) with audience controls, block/report.
-- **Messaging** — real-time DMs with timestamps, delivered/seen receipts, emoji
+- **Messaging** - real-time DMs with timestamps, delivered/seen receipts, emoji
   reactions and an emoji picker; **group chats** with shareable invite links;
   24-hour **stories**.
-- **Credits economy** — earn from playing, daily rewards, achievements and
+- **Credits economy** - earn from playing, daily rewards, achievements and
   challenges; spend on cosmetics, boosts and username changes; a wishlist and
   **gifting** at 75% of list price. No pay-to-win.
-- **Store & inventory** — live cosmetic previews, apply-from-shop, and an
+- **Store & inventory** - live cosmetic previews, apply-from-shop, and an
   inventory with search, filters and live boost timers.
-- **Optional rewarded ads** — an opt-in "2× credits" setting, fully removable
+- **Optional rewarded ads** - an opt-in "2× credits" setting, fully removable
   via an admin flag; never intrusive.
-- **Discord bot** — serverless slash commands (economy, profiles, `/rank`
+- **Discord bot** - serverless slash commands (economy, profiles, `/rank`
   levels, role sync, moderation) served by the site itself, secure account
   linking from Settings → Connections, an Arcane-replacing level system and
   automatic role sync. See `docs/discord-bot.md`.
-- **Admin dashboard** — manage users, games, reports, announcements, credits,
+- **Admin dashboard** - manage users, games, reports, announcements, credits,
   seasonal events, feature flags, the Discord bot (leveling + role map),
   analytics, and read the audit log.
-- **Legal** — Terms of Service and a UK-GDPR-aware Privacy Policy at
+- **Legal** - Terms of Service and a UK-GDPR-aware Privacy Policy at
   `/legal/terms` and `/legal/privacy`.
-- **Polish** — dark mode, glassmorphism, command palette (⌘K), loading
+- **Polish** - dark mode, glassmorphism, command palette (⌘K), loading
   skeletons, optimistic UI, keyboard shortcuts, mobile-first responsive design,
   accessibility, and PWA installability.
 
@@ -191,17 +191,17 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
 A live, always-current roadmap lives in the app at **`/roadmap`** (data in
 `lib/roadmap.ts`). Current shape:
 
-- **v1.1.x** — shipped: mobile-first games, admin control centre, profile
+- **v1.1.x** - shipped: mobile-first games, admin control centre, profile
   customisation, living economy & events, plus v1.1.1 fixes.
-- **v1.2.0 "Identity & Connection"** — shipped: flexible sign-in, deep profile
+- **v1.2.0 "Identity & Connection"** - shipped: flexible sign-in, deep profile
   customisation, the social graph (follows, mutual friends, notes), a modern
   messenger with reactions, group chats and stories, rich presence, wishlist &
   gifting, a store/inventory overhaul, and a redesigned navigation. See
   `CHANGELOG.md`.
-- **v1.3.0 "Living Arcade"** — planned: long-term engagement loops, booster
+- **v1.3.0 "Living Arcade"** - planned: long-term engagement loops, booster
   rewards, background music tracks, stacking boosts, and an analytics + ads
   control centre (ads via NitroPay).
-- **v1.4.0 "New Dimensions"** — planned: 3D games, real multiplayer with
+- **v1.4.0 "New Dimensions"** - planned: 3D games, real multiplayer with
   parties, store-decorated avatars, and an admin-customisable home screen.
 
 A free-tier Discord bot (HTTP interactions on Supabase/Vercel) that bridges

@@ -83,3 +83,58 @@ export async function giftItem(slug: string, toUserId: string): Promise<RpcResul
   revalidatePath("/", "layout");
   return data as RpcResult;
 }
+
+export async function saveLoadoutPreset(name: string, id?: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("save_loadout_preset", {
+    p_name: name,
+    p_id: id ?? null,
+  });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/inventory");
+  return data as RpcResult;
+}
+
+export async function applyLoadoutPreset(id: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("apply_loadout_preset", { p_id: id });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/inventory");
+  revalidatePath("/", "layout");
+  return data as RpcResult;
+}
+
+export async function deleteLoadoutPreset(id: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("delete_loadout_preset", { p_id: id });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/inventory");
+  return data as RpcResult;
+}
+
+export async function claimCollection(slug: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("claim_collection", { p_slug: slug });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/collections");
+  revalidatePath("/", "layout");
+  return data as RpcResult;
+}
+
+export async function claimSeasonTier(tier: number): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("claim_season_tier", { p_tier: tier });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/collections");
+  revalidatePath("/", "layout");
+  return data as RpcResult;
+}
+
+export async function giftWithToken(slug: string, toUserId: string): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { data, error } = await supabase.rpc("gift_with_token", { p_slug: slug, p_to: toUserId });
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/shop");
+  revalidatePath("/", "layout");
+  return data as RpcResult;
+}

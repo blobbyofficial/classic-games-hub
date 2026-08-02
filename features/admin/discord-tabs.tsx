@@ -3,6 +3,7 @@
 import { Bot, Hammer, RefreshCw, Star } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DiscordCommandsCard } from "./discord-commands-card";
+import { DiscordSetupCard } from "./discord-setup-card";
 import { AnnounceCard, ChannelCard, ModerationCard, PushCard } from "./discord-console";
 
 /**
@@ -45,6 +46,7 @@ export function DiscordTabs({
       </TabsContent>
 
       <TabsContent value="sync" className="space-y-6">
+        <DiscordSetupCard />
         <DiscordCommandsCard />
         <PushCard />
       </TabsContent>

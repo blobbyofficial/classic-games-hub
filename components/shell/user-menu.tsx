@@ -29,6 +29,7 @@ export function UserMenu() {
           src={profile.avatar_url}
           name={profile.display_name ?? profile.username}
           frame={profile.equipped?.avatar_frame}
+          decoration={profile.equipped?.decoration}
           className="size-9"
         />
       </DropdownMenuTrigger>
@@ -38,6 +39,7 @@ export function UserMenu() {
             src={profile.avatar_url}
             name={profile.display_name ?? profile.username}
             frame={profile.equipped?.avatar_frame}
+          decoration={profile.equipped?.decoration}
             className="size-10"
           />
           <div className="min-w-0">

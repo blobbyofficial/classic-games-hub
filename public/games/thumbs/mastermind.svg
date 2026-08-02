@@ -1,13 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">
   <defs>
-    <linearGradient id="bg15" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#9333ea"/><stop offset="1" stop-color="#581c87"/>
+    <linearGradient id="b15" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1a1430"/><stop offset="1" stop-color="#0b0a14"/>
     </linearGradient>
-    <pattern id="grid15" width="24" height="24" patternUnits="userSpaceOnUse">
-      <path d="M24 0H0V24" fill="none" stroke="#ffffff" stroke-opacity="0.06"/>
+    <radialGradient id="w15" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#a78bfa" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#a78bfa" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="v15" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+    </radialGradient>
+    <pattern id="g15" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#a78bfa" stroke-opacity="0.10"/>
     </pattern>
   </defs>
-  <rect width="480" height="300" fill="url(#bg15)"/>
-  <rect width="480" height="300" fill="url(#grid15)"/>
-  <g transform="translate(240 150)" fill="#fff"><circle cx="-54" cy="0" r="15" fill="#ef4444"/><circle cx="-18" cy="0" r="15" fill="#22d3ee"/><circle cx="18" cy="0" r="15" fill="#fbbf24"/><circle cx="54" cy="0" r="15" fill="#34d399"/></g>
+  <rect width="480" height="300" fill="url(#b15)"/>
+  <rect width="480" height="300" fill="url(#g15)"/>
+  <ellipse cx="240" cy="150" rx="195" ry="145" fill="url(#w15)"/>
+  <rect width="480" height="300" fill="url(#v15)"/>
+  <g transform="translate(240 150) scale(1.35)" fill="#ffffff"><circle cx="-54" cy="0" r="15" fill="#ef4444"/><circle cx="-18" cy="0" r="15" fill="#22d3ee"/><circle cx="18" cy="0" r="15" fill="#fbbf24"/><circle cx="54" cy="0" r="15" fill="#34d399"/></g>
+  <rect x="0.5" y="0.5" width="479" height="299" fill="none" stroke="#a78bfa" stroke-opacity="0.22"/>
 </svg>

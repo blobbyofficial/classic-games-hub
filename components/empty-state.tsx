@@ -2,8 +2,8 @@ import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 /**
- * The one empty state for the whole app. Every "nothing here yet" surface —
- * no friends, no messages, no search results, an empty inventory — uses this,
+ * The one empty state for the whole app. Every "nothing here yet" surface -
+ * no friends, no messages, no search results, an empty inventory - uses this,
  * so an empty screen always looks intentional rather than broken.
  */
 export function EmptyState({

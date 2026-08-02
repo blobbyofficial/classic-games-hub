@@ -85,7 +85,7 @@ export function Footer() {
         >
           BlobbyOfficial
         </a>
-        . A community arcade — no pay-to-win, ever.{" "}
+        . A community arcade - no pay-to-win, ever.{" "}
         <span className="whitespace-nowrap">
           <Link href="/legal/terms" className="hover:text-foreground">
             Terms

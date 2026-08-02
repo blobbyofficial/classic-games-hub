@@ -49,6 +49,16 @@ export const getCurrentSettings = cache(async (): Promise<UserSettings | null> =
   return data;
 });
 
+/**
+ * Whether the viewer has asked for reduced motion. Server components use this
+ * to skip building decorative DOM that the setting would only hide anyway;
+ * it rides the cached settings read, so it costs no extra round trip.
+ */
+export const getReducedMotion = cache(async (): Promise<boolean> => {
+  const settings = await getCurrentSettings();
+  return Boolean((settings as { reduced_motion?: boolean } | null)?.reduced_motion);
+});
+
 export const getFeatureFlags = cache(async (): Promise<Record<string, boolean>> => {
   const supabase = await createClient();
   const { data } = await supabase.from("feature_flags").select("key, enabled");
@@ -86,7 +96,7 @@ export const getBanners = cache(
     const site = rows.site_banner;
 
     const maintenance = maint?.enabled
-      ? coerceBanner(maint.payload, "Scheduled maintenance in progress — some features may be temporarily unavailable.")
+      ? coerceBanner(maint.payload, "Scheduled maintenance in progress - some features may be temporarily unavailable.")
       : null;
 
     let siteConfig: BannerConfig | null = null;

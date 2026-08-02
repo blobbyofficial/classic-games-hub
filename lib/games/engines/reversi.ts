@@ -3,7 +3,7 @@ import { beep, palette } from "../helpers";
 
 const N = 8;
 const DIRS = [[-1, -1], [-1, 0], [-1, 1], [0, -1], [0, 1], [1, -1], [1, 0], [1, 1]];
-// positional weights — corners are gold, the squares next to them are traps.
+// positional weights - corners are gold, the squares next to them are traps.
 const WEIGHTS = [
   [120, -20, 20, 5, 5, 20, -20, 120],
   [-20, -40, -5, -5, -5, -5, -40, -20],
@@ -18,7 +18,7 @@ const WEIGHTS = [
 type Owner = 0 | 1 | 2; // 1 = player (dark), 2 = ai (light)
 
 /** Reversi / Othello with animated disc flips, a positional alpha-beta AI, live
- *  score bars, valid-move hints and a hover ghost — or online head-to-head
+ *  score bars, valid-move hints and a hover ghost - or online head-to-head
  *  inside a party (v1.5). Mobile-first, tap to place. */
 const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus, net }) => {
   const ctx = canvas.getContext("2d")!;
@@ -59,11 +59,11 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
     updateScore();
     if (isNet) {
       onStatus?.(
-        `You are ${me === 1 ? "dark" : "light"} — ${turn === me ? "tap a highlighted square" : `${net!.opponentName} starts`}`,
+        `You are ${me === 1 ? "dark" : "light"} - ${turn === me ? "tap a highlighted square" : `${net!.opponentName} starts`}`,
       );
       return;
     }
-    onStatus?.("You are dark — tap a highlighted square");
+    onStatus?.("You are dark - tap a highlighted square");
   }
 
   function flips(b: Owner[][], r: number, c: number, p: 1 | 2): [number, number][] {
@@ -187,7 +187,7 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
       const mine = me === 1 ? dark : light;
       const theirs = me === 1 ? light : dark;
       const msg = mine > theirs ? "You win! 🎉" : mine < theirs ? `${net!.opponentName} wins` : "Draw";
-      onStatus?.(`${msg} — ${mine}:${theirs}`);
+      onStatus?.(`${msg} - ${mine}:${theirs}`);
       net!.onResult(mine > theirs ? "win" : mine < theirs ? "loss" : "draw");
       onGameOver(mine > theirs ? 500 + mine * 10 : mine * 10, 0);
       if (mine > theirs) {
@@ -198,7 +198,7 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
     }
 
     const msg = dark > light ? "You win! 🎉" : dark < light ? "AI wins" : "Draw";
-    onStatus?.(`${msg} — ${dark}:${light} · tap to replay`);
+    onStatus?.(`${msg} - ${dark}:${light} · tap to replay`);
     onGameOver(dark > light ? 500 + dark * 10 : dark * 10, 0);
     if (dark > light) {
       beep(660, 0.08, "sine", 0.05);
@@ -219,7 +219,7 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
       } else if (validMoves(board, justMoved).length) {
         turn = justMoved;
         onStatus?.(
-          turn === me ? `${net!.opponentName} passes — your move again` : `You pass — ${net!.opponentName} moves again`,
+          turn === me ? `${net!.opponentName} passes - your move again` : `You pass - ${net!.opponentName} moves again`,
         );
       } else {
         endGame();
@@ -232,7 +232,7 @@ const reversi: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
       else onStatus?.("Your move");
     } else if (validMoves(board, justMoved).length) {
       if (justMoved === 2) aiTurn();
-      else onStatus?.("AI passes — your move again");
+      else onStatus?.("AI passes - your move again");
     } else {
       endGame();
     }

@@ -18,30 +18,31 @@ import {
 import { createClient } from "@/lib/supabase/server";
 
 export default async function MainLayout({ children }: { children: React.ReactNode }) {
-  const [user, profile, settings, unread, banners, seasonalEvent] = await Promise.all([
-    getSessionUser(),
+  // This layout gates every route, so a serial read here delays the whole site.
+  // The friend-request badge used to wait for the batch above just to learn the
+  // user id; resolving the session first lets the count join the same batch.
+  const user = await getSessionUser();
+  const supabase = await createClient();
+
+  const [profile, settings, unread, banners, seasonalEvent, pendingCount] = await Promise.all([
     getCurrentProfile(),
     getCurrentSettings(),
     getUnreadNotificationCount(),
     getBanners(),
     getSeasonalEvent(),
+    user
+      ? supabase
+          .from("friendships")
+          .select("*", { count: "exact", head: true })
+          .eq("addressee_id", user.id)
+          .eq("status", "pending")
+      : null,
   ]);
-
-  // One extra round-trip for the friend-request badge (cheap, indexed count).
-  let pendingRequests = 0;
-  if (user) {
-    const supabase = await createClient();
-    const { count } = await supabase
-      .from("friendships")
-      .select("*", { count: "exact", head: true })
-      .eq("addressee_id", user.id)
-      .eq("status", "pending");
-    pendingRequests = count ?? 0;
-  }
+  const pendingRequests = pendingCount?.count ?? 0;
 
   return (
     <div className="flex min-h-dvh flex-col">
-      {/* First tab stop on every page — jumps a keyboard user past the navbar
+      {/* First tab stop on every page - jumps a keyboard user past the navbar
           and the whole sidebar straight into the page content. */}
       <a
         href="#main"

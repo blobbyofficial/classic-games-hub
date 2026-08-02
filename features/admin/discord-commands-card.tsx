@@ -25,7 +25,7 @@ function EnvRow({ ok, name, need }: { ok: boolean; name: string; need: string })
       )}
       <span className="min-w-0">
         <code className="font-mono">{name}</code>
-        {!ok && <span className="text-muted-foreground"> — missing; needed for {need}</span>}
+        {!ok && <span className="text-muted-foreground"> - missing; needed for {need}</span>}
       </span>
     </li>
   );
@@ -56,7 +56,7 @@ export function DiscordCommandsCard() {
           <CardTitle>Slash commands</CardTitle>
           <CardDescription>
             Discord only shows commands it has been told about. Press this after your first deploy,
-            and again whenever the command set changes — it replaces the whole set, so pressing it
+            and again whenever the command set changes - it replaces the whole set, so pressing it
             twice is harmless.
           </CardDescription>
         </CardHeader>
@@ -76,7 +76,7 @@ export function DiscordCommandsCard() {
               {!env.publicKey && (
                 <p className="mt-2 text-xs text-muted-foreground">
                   Without the public key, Discord can&apos;t verify the interactions endpoint and will
-                  refuse to save the URL — the endpoint is right to reject an unsigned request.
+                  refuse to save the URL - the endpoint is right to reject an unsigned request.
                 </p>
               )}
             </div>

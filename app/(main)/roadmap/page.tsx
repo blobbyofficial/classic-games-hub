@@ -18,9 +18,11 @@ import {
   LayoutDashboard,
   Megaphone,
   Bot,
+  Gauge,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmptyState } from "@/components/empty-state";
 import { cn } from "@/lib/utils";
 import { SITE } from "@/lib/constants";
 import { ROADMAP, STATUS_META, DEFINITION_OF_DONE, type RoadmapRelease, type RoadmapStatus } from "@/lib/roadmap";
@@ -47,6 +49,7 @@ const ICONS: Record<string, LucideIcon> = {
   LayoutDashboard,
   Megaphone,
   Bot,
+  Gauge,
 };
 
 function StatusPill({ status, className }: { status: RoadmapStatus; className?: string }) {
@@ -88,7 +91,7 @@ export default async function RoadmapPage() {
           </div>
         </div>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          A living plan of what we&apos;re building next. Everything here is an idea or an intention — not a promise.
+          A living plan of what we&apos;re building next. Everything here is an idea or an intention - not a promise.
           Plans shift, features ship early or get dropped, and your feedback genuinely changes what comes next. For
           everything already shipped, see the{" "}
           <Link href="/updates" className="font-medium text-primary hover:underline">
@@ -113,6 +116,27 @@ export default async function RoadmapPage() {
           ))}
         </div>
       </header>
+
+      {/* Between releases the roadmap is genuinely empty: everything announced
+          has shipped and moved to the update log. Saying so beats padding the
+          page with a release nobody has committed to. */}
+      {roadmap.length === 0 && (
+        <EmptyState
+          icon={MapIcon}
+          title="Nothing announced just yet"
+          description="Everything we'd planned has shipped and moved to the update log. The next release is still being decided - and suggestions genuinely shape it."
+          action={
+            <a
+              href={SITE.discord}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="focus-visible-ring inline-flex h-10 items-center gap-2 rounded-lg bg-primary px-4 text-sm font-medium text-primary-foreground hover:opacity-90"
+            >
+              Suggest something on Discord
+            </a>
+          }
+        />
+      )}
 
       {/* Releases */}
       {roadmap.map((release) => (

@@ -29,6 +29,8 @@ export const ENGINE_LOADERS: Record<string, () => Promise<{ default: GameEngineF
   whack: () => import("./engines/whack"),
   lightsout: () => import("./engines/lightsout"),
   racer: () => import("./engines/racer"),
+  rubiks: () => import("./engines/rubiks"),
+  maze3d: () => import("./engines/maze3d"),
 };
 
 export function hasEngine(id: string): boolean {

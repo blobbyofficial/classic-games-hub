@@ -8,7 +8,7 @@ import { syncMemberRoles } from "./roleSync.js";
 const lastSeen = new Map<string, number>();
 
 /**
- * Discord chat XP — the Arcane replacement. Config lives in Supabase
+ * Discord chat XP - the Arcane replacement. Config lives in Supabase
  * (discord_bot_config, editable from the admin dashboard): XP range, cooldown,
  * level curve, no-XP channels, announcements, the Hub-XP trickle for linked
  * accounts, and the milestone roles handed out on level-up.
@@ -58,7 +58,7 @@ async function onLevelUp(message: Message, level: number): Promise<void> {
 
   const lines = [`🎉 ${message.author} reached **level ${level}**!`];
   if (earnedRoleId && cfg.level_roles.announce !== false) {
-    lines.push(`🎖️ Milestone unlocked — you've earned <@&${earnedRoleId}>.`);
+    lines.push(`🎖️ Milestone unlocked - you've earned <@&${earnedRoleId}>.`);
   }
   lines.push("Check your progress with `/level`.");
 

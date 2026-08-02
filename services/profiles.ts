@@ -6,7 +6,7 @@ export const getProfileByUsername = cache(async (username: string): Promise<Prof
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select("*").eq("username", username).maybeSingle();
   if (!data) {
-    // Not a username — it may be somebody's vanity slug (0045). One RPC maps
+    // Not a username - it may be somebody's vanity slug (0045). One RPC maps
     // either form to the canonical username, preferring real usernames.
     const { data: canonical } = await supabase.rpc("resolve_profile_slug", { p_slug: username });
     if (!canonical) return null;
@@ -97,4 +97,22 @@ export const getEquippedBadges = cache(async (userId: string) => {
   return (data ?? [])
     .map((r) => r.shop_items as unknown as { slug: string; name: string; kind: string; rarity: string; preview: { icon?: string; colors?: string[] } })
     .filter((i) => i.kind === "badge");
+});
+
+export interface NowPlayingRow {
+  slug: string;
+  title: string;
+  thumbnail_url: string | null;
+  at: string;
+  live: boolean;
+}
+
+/**
+ * What a player is playing, or last played. Derived from play_sessions, and
+ * null when they have hidden their online status.
+ */
+export const getNowPlaying = cache(async (userId: string): Promise<NowPlayingRow | null> => {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("now_playing", { p_user: userId });
+  return (data ?? null) as unknown as NowPlayingRow | null;
 });

@@ -19,7 +19,7 @@ import { formatNumber, timeAgo } from "@/lib/utils";
 
 export const metadata: Metadata = {
   title: "Status",
-  description: "Live platform status for Classic Games Hub — players online, games, and services.",
+  description: "Live platform status for Classic Games Hub - players online, games, and services.",
 };
 
 // Counts are only interesting when they're current.
@@ -34,7 +34,7 @@ export default async function StatusPage() {
       <div className="mx-auto max-w-3xl">
         <h1 className="text-2xl font-bold tracking-tight">Status</h1>
         <p className="mt-4 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          Status is unavailable right now. That usually means the database is unreachable — try again
+          Status is unavailable right now. That usually means the database is unreachable - try again
           in a moment.
         </p>
       </div>

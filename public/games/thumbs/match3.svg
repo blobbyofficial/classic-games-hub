@@ -1,13 +1,24 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 480 300" width="480" height="300">
   <defs>
-    <linearGradient id="bg10" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#db2777"/><stop offset="1" stop-color="#831843"/>
+    <linearGradient id="b10" x1="0" y1="0" x2="0.35" y2="1">
+      <stop offset="0" stop-color="#1a1430"/><stop offset="1" stop-color="#0b0a14"/>
     </linearGradient>
-    <pattern id="grid10" width="24" height="24" patternUnits="userSpaceOnUse">
-      <path d="M24 0H0V24" fill="none" stroke="#ffffff" stroke-opacity="0.06"/>
+    <radialGradient id="w10" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#f472b6" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#f472b6" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="v10" cx="0.5" cy="0.5" r="0.75">
+      <stop offset="0.55" stop-color="#000000" stop-opacity="0"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0.45"/>
+    </radialGradient>
+    <pattern id="g10" width="24" height="24" patternUnits="userSpaceOnUse">
+      <path d="M24 0H0V24" fill="none" stroke="#f472b6" stroke-opacity="0.10"/>
     </pattern>
   </defs>
-  <rect width="480" height="300" fill="url(#bg10)"/>
-  <rect width="480" height="300" fill="url(#grid10)"/>
-  <g transform="translate(240 150)" fill="#fff"><path d="M-40 -20 L-20 -40 L0 -20 L-20 0 Z"/><path d="M8 -10 L28 -30 L48 -10 L28 10 Z" opacity="0.8"/><path d="M-16 20 L4 0 L24 20 L4 40 Z" opacity="0.6"/></g>
+  <rect width="480" height="300" fill="url(#b10)"/>
+  <rect width="480" height="300" fill="url(#g10)"/>
+  <ellipse cx="240" cy="150" rx="195" ry="145" fill="url(#w10)"/>
+  <rect width="480" height="300" fill="url(#v10)"/>
+  <g transform="translate(240 150) scale(1.35)" fill="#ffffff"><path d="M-40 -20 L-20 -40 L0 -20 L-20 0 Z"/><path d="M8 -10 L28 -30 L48 -10 L28 10 Z" opacity="0.8"/><path d="M-16 20 L4 0 L24 20 L4 40 Z" opacity="0.6"/></g>
+  <rect x="0.5" y="0.5" width="479" height="299" fill="none" stroke="#f472b6" stroke-opacity="0.22"/>
 </svg>

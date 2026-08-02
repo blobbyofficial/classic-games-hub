@@ -76,7 +76,7 @@ export interface Embed {
   timestamp?: string;
 }
 
-/** Message component shapes (buttons only — that's all the bot needs). */
+/** Message component shapes (buttons only - that's all the bot needs). */
 export const ButtonStyle = {
   Primary: 1,
   Secondary: 2,

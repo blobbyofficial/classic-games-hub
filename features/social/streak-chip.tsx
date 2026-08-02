@@ -51,7 +51,7 @@ export function StreakChip({ conversationId }: { conversationId: string }) {
       </TooltipTrigger>
       <TooltipContent>
         {info.at_risk
-          ? `${info.streak}-day streak — you both need to message today to keep it alive!`
+          ? `${info.streak}-day streak - you both need to message today to keep it alive!`
           : `${info.streak}-day chat streak (best: ${info.best}). Message each other every day to grow it.`}
       </TooltipContent>
     </Tooltip>

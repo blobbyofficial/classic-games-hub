@@ -4,7 +4,7 @@ import { beep, palette } from "../helpers";
 type Pad = { base: string; lit: string; freq: number };
 
 /** Simon: a glowing four-pad memory game. Animated flashes with bloom, a press
- *  ripple, a pulsing centre core, and a shake on a wrong tap. Mobile-first —
+ *  ripple, a pulsing centre core, and a shake on a wrong tap. Mobile-first -
  *  tap a quadrant (or press 1–4). */
 const simon: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus }) => {
   const ctx = canvas.getContext("2d")!;
@@ -66,7 +66,7 @@ const simon: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, 
     if (round - 1 > best) best = round - 1;
     sequence.push(Math.floor(Math.random() * 4));
     userIdx = 0;
-    onStatus?.(`Round ${round} — watch`);
+    onStatus?.(`Round ${round} - watch`);
     replay();
   }
 
@@ -86,7 +86,7 @@ const simon: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, 
     const step = () => {
       if (i >= sequence.length) {
         showing = false;
-        onStatus?.("Your turn — repeat it");
+        onStatus?.("Your turn - repeat it");
         return;
       }
       light(sequence[i], speed * 0.6);
@@ -118,7 +118,7 @@ const simon: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, 
       alive = false;
       shakeT = 1;
       beep(150, 0.35, "sawtooth", 0.06);
-      onStatus?.(`Wrong! Reached round ${round} — tap to retry`);
+      onStatus?.(`Wrong! Reached round ${round} - tap to retry`);
       onGameOver((round - 1) * 100, round);
     }
   }

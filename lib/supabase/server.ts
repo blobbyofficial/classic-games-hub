@@ -23,7 +23,7 @@ export async function createClient() {
               cookieStore.set(name, value, options),
             );
           } catch {
-            // Called from a Server Component render — cookies are read-only here.
+            // Called from a Server Component render - cookies are read-only here.
             // The middleware refresh path handles writing the rotated session.
           }
         },
@@ -33,7 +33,7 @@ export async function createClient() {
 }
 
 /**
- * Privileged client using the service-role/secret key. Bypasses RLS — use only
+ * Privileged client using the service-role/secret key. Bypasses RLS - use only
  * in trusted server code (never expose the key to the browser). Returns null if
  * no secret key is configured so callers can degrade gracefully.
  */

@@ -1,7 +1,7 @@
 /**
  * An animated motion layer for equipped `profile_theme` / `banner` cosmetics.
  * The flat gradient comes from `bannerBackground` on the container; this overlay
- * adds the Discord-tier movement on top — a travelling sheen and drifting colour
+ * adds the Discord-tier movement on top - a travelling sheen and drifting colour
  * wash for "flow" themes, or drifting nebulae + a twinkling starfield for
  * "space" themes. pointer-events-none and hidden under prefers-reduced-motion.
  */
@@ -46,13 +46,19 @@ const STARS = Array.from({ length: 18 }, (_, i) => ({
   delay: `${(i % 6) * 0.4}s`,
 }));
 
-export function ProfileBackdrop({ equipped }: { equipped?: Record<string, string> | null }) {
+export function ProfileBackdrop({
+  equipped,
+  reduced,
+}: {
+  equipped?: Record<string, string> | null;
+  reduced?: boolean;
+}) {
   const variant = variantFor(equipped);
-  if (!variant) return null;
+  if (!variant || reduced) return null;
 
   if (variant === "space") {
     return (
-      <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+      <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden data-decorative>
         <span
           className="absolute -left-10 -top-10 size-48 rounded-full opacity-50 blur-3xl motion-safe:animate-aura-pulse"
           style={{ background: "#7c3aed" }}
@@ -81,7 +87,7 @@ export function ProfileBackdrop({ equipped }: { equipped?: Record<string, string
 
   // "flow": a soft drifting colour wash plus a slow diagonal sheen sweep.
   return (
-    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden>
+    <div className="pointer-events-none absolute inset-0 overflow-hidden motion-reduce:hidden" aria-hidden data-decorative>
       <div
         className="absolute inset-0 opacity-60 mix-blend-soft-light motion-safe:animate-gradient-flow"
         style={{

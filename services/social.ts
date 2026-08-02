@@ -81,7 +81,7 @@ export interface ConversationDetail {
   other: ConversationMember | null;
   /** All other members (groups: everyone but me; used for sender lookup). */
   members: ConversationMember[];
-  /** When the other member last read this conversation — powers "Seen" receipts (DMs only). */
+  /** When the other member last read this conversation - powers "Seen" receipts (DMs only). */
   otherLastReadAt: string | null;
   messages: {
     id: number;
@@ -151,4 +151,28 @@ export const getConversation = cache(async (conversationId: string): Promise<Con
         .map((r) => ({ emoji: r.emoji, user_id: r.user_id })),
     })),
   };
+});
+
+export interface ActivityEvent {
+  id: number;
+  type: string;
+  data: Record<string, unknown>;
+  created_at: string;
+  actor: {
+    username: string;
+    display_name: string | null;
+    avatar_url: string | null;
+    equipped: Record<string, string> | null;
+  };
+}
+
+/**
+ * Recent activity from the viewer's friends. Blocks are enforced in the RPC in
+ * both directions; the events themselves were already public (see 0002), so
+ * this narrows what is readable rather than widening it.
+ */
+export const getFriendsActivity = cache(async (limit = 30): Promise<ActivityEvent[]> => {
+  const supabase = await createClient();
+  const { data } = await supabase.rpc("friends_activity", { p_limit: limit });
+  return (data ?? []) as unknown as ActivityEvent[];
 });

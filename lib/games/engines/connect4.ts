@@ -13,7 +13,7 @@ const DIRS = [
 type Cell = 0 | 1 | 2; // 0 empty, 1 player(red), 2 ai(yellow)
 
 /** Connect Four with gravity-drop animation, an animated win highlight, a hover
- *  ghost disc and an alpha-beta minimax AI — or, in a party, online head-to-head
+ *  ghost disc and an alpha-beta minimax AI - or, in a party, online head-to-head
  *  against another member (v1.5). Mobile-first (tap a column). */
 const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus, net }) => {
   const ctx = canvas.getContext("2d")!;
@@ -47,7 +47,7 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
   let turn: 1 | 2 = 1;
 
   function turnStatus() {
-    onStatus?.(turn === me ? "Your turn — tap a column" : `${net!.opponentName} is thinking…`);
+    onStatus?.(turn === me ? "Your turn - tap a column" : `${net!.opponentName} is thinking…`);
   }
 
   function reset() {
@@ -60,10 +60,10 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
     turn = 1;
     onScore(wins * 100);
     if (isNet) {
-      onStatus?.(`You are ${me === 1 ? "red" : "yellow"} — ${turn === me ? "your move" : `${net!.opponentName} starts`}`);
+      onStatus?.(`You are ${me === 1 ? "red" : "yellow"} - ${turn === me ? "your move" : `${net!.opponentName} starts`}`);
       return;
     }
-    onStatus?.("You are red — tap a column");
+    onStatus?.("You are red - tap a column");
   }
 
   function landingRow(b: Cell[][], col: number): number {
@@ -178,7 +178,7 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
       over = true;
       if (isNet) {
         const won = player === me;
-        onStatus?.(won ? "Four in a row — you win! 🎉" : `${net!.opponentName} got four`);
+        onStatus?.(won ? "Four in a row - you win! 🎉" : `${net!.opponentName} got four`);
         net!.onResult(won ? "win" : "loss");
         onGameOver(won ? 100 : 0, 0);
         if (won) {
@@ -198,7 +198,7 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
         setTimeout(() => beep(880, 0.12), 90);
       } else {
         wins = 0;
-        onStatus?.("AI got four — tap to retry");
+        onStatus?.("AI got four - tap to retry");
         onGameOver(0, 0);
         beep(150, 0.25, "sawtooth");
       }
@@ -207,12 +207,12 @@ const connect4: GameEngineFactory = ({ canvas, width, height, onScore, onGameOve
     if (isFull(board)) {
       over = true;
       if (isNet) {
-        onStatus?.("Board full — draw");
+        onStatus?.("Board full - draw");
         net!.onResult("draw");
         onGameOver(40, 0);
         return;
       }
-      onStatus?.("Board full — draw. Tap to retry");
+      onStatus?.("Board full - draw. Tap to retry");
       onGameOver(20, 0);
       return;
     }

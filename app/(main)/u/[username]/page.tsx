@@ -11,11 +11,12 @@ import {
   Coins,
   Calendar,
   ShieldCheck,
+  Eye,
 } from "lucide-react";
-import { getProfileByUsername, getProfileStats, getUserAchievements, getUserBestScores, getEquippedBadges } from "@/services/profiles";
+import { getProfileByUsername, getProfileStats, getUserAchievements, getUserBestScores, getEquippedBadges, getNowPlaying } from "@/services/profiles";
 import { getUserWishlist } from "@/services/shop";
 import { ProfileWishlist } from "@/features/social/profile-wishlist";
-import { getSessionUser } from "@/lib/supabase/queries";
+import { getSessionUser, getReducedMotion } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
@@ -31,6 +32,11 @@ import { Nameplate } from "@/components/profile/nameplate";
 import { NameStyle } from "@/components/profile/name-style";
 import { ProfileEffects } from "@/components/profile/profile-effects";
 import { ProfileBackdrop } from "@/components/profile/profile-backdrop";
+import { ProfileFrame } from "@/components/profile/profile-frame";
+import { ProfileEntrance } from "@/components/profile/profile-entrance";
+import { CursorTrail } from "@/components/profile/cursor-trail";
+import { ProfileMusic } from "@/components/profile/profile-music";
+import { NowPlayingChip } from "@/features/social/now-playing";
 import { RARITY_META, formatNumber, timeAgo, cn } from "@/lib/utils";
 import type { FriendshipRelation } from "@/types";
 
@@ -44,7 +50,7 @@ export async function generateMetadata({
   if (!profile) return { title: "Player not found" };
   return {
     title: `${profile.display_name ?? profile.username} (@${profile.username})`,
-    description: profile.bio ?? `${profile.username}'s Classic Games Hub profile — level ${profile.level}.`,
+    description: profile.bio ?? `${profile.username}'s Classic Games Hub profile - level ${profile.level}.`,
   };
 }
 
@@ -53,40 +59,65 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
   const profile = await getProfileByUsername(username);
   if (!profile) notFound();
 
-  const [user, stats, achievements, bestScores, badges, wishlist] = await Promise.all([
+  const [user, stats, achievements, bestScores, badges, wishlist, reducedMotion, nowPlaying] = await Promise.all([
     getSessionUser(),
     getProfileStats(profile.id),
     getUserAchievements(profile.id),
     getUserBestScores(profile.id, 6),
     getEquippedBadges(profile.id),
     getUserWishlist(profile.id),
+    getReducedMotion(),
+    getNowPlaying(profile.id),
   ]);
 
-  // Relationship for the action bar.
+  // Friendship, social stats, the viewer's private note and the showcase all
+  // key off profile.id alone, so they go out together rather than as four more
+  // sequential round trips. Only the pending-request lookup genuinely depends
+  // on an earlier result (relation === "incoming"), so it stays behind.
+  const supabaseSocial = await createClient();
+  const isOther = Boolean(user && user.id !== profile.id);
+
+  // Records the visit and returns the count in one call. Deliberately not
+  // cache()-wrapped: it writes, and it is idempotent per viewer per day.
+  const { data: viewData } = await supabaseSocial.rpc("record_profile_view", {
+    p_profile: profile.id,
+  });
+  const views = viewData as { shown: boolean; views?: number } | null;
+  const showcaseSlugs = Array.isArray(profile.showcase) ? (profile.showcase as string[]) : [];
+
+  const [friendshipRes, socialRes, noteRes, showcaseRes] = await Promise.all([
+    isOther ? supabaseSocial.rpc("friendship_status", { p_user: profile.id }) : null,
+    supabaseSocial.rpc("profile_social", { p_target: profile.id }),
+    isOther
+      ? supabaseSocial
+          .from("user_notes")
+          .select("nickname, note")
+          .eq("author_id", user!.id)
+          .eq("target_id", profile.id)
+          .maybeSingle()
+      : null,
+    showcaseSlugs.length
+      ? supabaseSocial.from("games").select("slug, title, thumbnail_url").in("slug", showcaseSlugs)
+      : null,
+  ]);
+
   let relation: FriendshipRelation = "none";
+  if (isOther) relation = (friendshipRes?.data as FriendshipRelation) ?? "none";
+  else if (user?.id === profile.id) relation = "self";
+
   let requestId: number | undefined;
-  if (user && user.id !== profile.id) {
-    const supabase = await createClient();
-    const { data } = await supabase.rpc("friendship_status", { p_user: profile.id });
-    relation = (data as FriendshipRelation) ?? "none";
-    if (relation === "incoming") {
-      const { data: req } = await supabase
-        .from("friendships")
-        .select("id")
-        .eq("requester_id", profile.id)
-        .eq("addressee_id", user.id)
-        .eq("status", "pending")
-        .maybeSingle();
-      requestId = req?.id;
-    }
-  } else if (user?.id === profile.id) {
-    relation = "self";
+  if (relation === "incoming" && user) {
+    const { data: req } = await supabaseSocial
+      .from("friendships")
+      .select("id")
+      .eq("requester_id", profile.id)
+      .eq("addressee_id", user.id)
+      .eq("status", "pending")
+      .maybeSingle();
+    requestId = req?.id;
   }
 
-  // Social stats (followers/following/mutual) + the viewer's private note.
-  const supabaseSocial = await createClient();
-  const { data: socialData } = await supabaseSocial.rpc("profile_social", { p_target: profile.id });
-  const social = socialData as {
+  const social = socialRes.data as {
     followers: number;
     following: number;
     is_following: boolean;
@@ -94,41 +125,29 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
     friends_visible: boolean;
     mutual: number;
   } | null;
-  let myNote: { nickname: string | null; note: string | null } | null = null;
-  if (user && user.id !== profile.id) {
-    const { data } = await supabaseSocial
-      .from("user_notes")
-      .select("nickname, note")
-      .eq("author_id", user.id)
-      .eq("target_id", profile.id)
-      .maybeSingle();
-    myNote = data;
-  }
+  const myNote: { nickname: string | null; note: string | null } | null = noteRes?.data ?? null;
 
-  const showcaseSlugs = Array.isArray(profile.showcase) ? (profile.showcase as string[]) : [];
-  let showcaseGames: { slug: string; title: string; thumbnail_url: string | null }[] = [];
-  if (showcaseSlugs.length) {
-    const { data } = await supabaseSocial
-      .from("games")
-      .select("slug, title, thumbnail_url")
-      .in("slug", showcaseSlugs);
-    // preserve the user's chosen order
-    showcaseGames = showcaseSlugs
-      .map((s) => (data ?? []).find((g) => g.slug === s))
-      .filter((g): g is { slug: string; title: string; thumbnail_url: string | null } => Boolean(g));
-  }
+  // preserve the user's chosen order
+  const showcaseGames = showcaseSlugs
+    .map((s) => (showcaseRes?.data ?? []).find((g) => g.slug === s))
+    .filter((g): g is { slug: string; title: string; thumbnail_url: string | null } => Boolean(g));
 
   return (
     <div className="mx-auto max-w-5xl space-y-6">
-      {/* Banner */}
-      <div className="overflow-hidden rounded-3xl border border-border">
+      <CursorTrail slug={profile.equipped?.cursor_trail} reduced={reducedMotion} />
+
+      {/* Banner, wrapped in the equipped profile frame (outermost layer), with
+          the entrance outside that again so the frame arrives with the card. */}
+      <ProfileEntrance slug={profile.equipped?.entrance}>
+      <ProfileFrame slug={profile.equipped?.profile_frame}>
+        <div className="overflow-hidden rounded-3xl border border-border">
         <div className="relative h-40 sm:h-56" style={{ background: bannerBackground(profile.equipped) }}>
-          {!profile.banner_url && <ProfileBackdrop equipped={profile.equipped} />}
+          {!profile.banner_url && <ProfileBackdrop equipped={profile.equipped} reduced={reducedMotion} />}
           {profile.banner_url && (
             <Image src={profile.banner_url} alt="" fill className="object-cover" sizes="1024px" />
           )}
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-          <ProfileEffects slug={profile.equipped?.effect} />
+          <ProfileEffects slug={profile.equipped?.effect} reduced={reducedMotion} />
         </div>
 
         <div className="relative px-5 pb-5 sm:px-8">
@@ -139,6 +158,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                   src={profile.avatar_url}
                   name={profile.display_name ?? profile.username}
                   frame={profile.equipped?.avatar_frame}
+                  decoration={profile.equipped?.decoration}
                   className="size-24 border-4 border-card sm:size-28"
                 />
                 <div className="absolute bottom-1 right-1">
@@ -177,6 +197,12 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                 </p>
                 {profile.status_text && (
                   <p className="mt-0.5 text-sm text-foreground/80">{profile.status_text}</p>
+                )}
+                {(nowPlaying || profile.equipped?.track) && (
+                  <div className="mt-2 flex flex-wrap items-center gap-2">
+                    {nowPlaying && <NowPlayingChip playing={nowPlaying} />}
+                    <ProfileMusic slug={profile.equipped?.track} />
+                  </div>
                 )}
               </div>
             </div>
@@ -272,11 +298,21 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
             </div>
           )}
 
-          <p className="mt-3 flex items-center gap-1.5 text-xs text-muted-foreground">
-            <Calendar className="size-3.5" /> Joined {timeAgo(profile.created_at)}
+          <p className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <Calendar className="size-3.5" /> Joined {timeAgo(profile.created_at)}
+            </span>
+            {views?.shown && (
+              <span className="flex items-center gap-1.5">
+                <Eye className="size-3.5" /> {formatNumber(views.views ?? 0)}{" "}
+                {views.views === 1 ? "visitor" : "visitors"}
+              </span>
+            )}
           </p>
         </div>
-      </div>
+        </div>
+      </ProfileFrame>
+      </ProfileEntrance>
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

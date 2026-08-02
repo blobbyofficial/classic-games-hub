@@ -6,13 +6,13 @@ Discord bot.
 
 ## Where the plan lives
 
-- **`lib/roadmap.ts`** — what is *coming*, and nothing else. Currently
+- **`lib/roadmap.ts`** - what is *coming*, and nothing else. Currently
   **v1.5.0 "Collector's Edition"**. Renders at `/roadmap`.
-- **`lib/update-log.ts`** — everything already shipped: past releases, merged
+- **`lib/update-log.ts`** - everything already shipped: past releases, merged
   pull requests, and every change that has landed on `main`. Renders at
   `/updates`.
 
-When something ships it **moves** from the roadmap into the update log — it is
+When something ships it **moves** from the roadmap into the update log - it is
 never marked shipped and left in place, or the roadmap grows into an archive
 again. `LANDED` in the update log is generated from
 `git log --first-parent main`; regenerate it rather than appending by hand.
@@ -37,7 +37,7 @@ and granted to `authenticated`. Server actions translate `{ok, error}`
 envelopes into readable sentences; they do not enforce rules themselves.
 
 Migrations are append-only and numbered sequentially. They are applied to
-Supabase separately — a migration file in the repo may already be live.
+Supabase separately - a migration file in the repo may already be live.
 
 ## Verifying
 
@@ -68,12 +68,21 @@ Two halves, and it matters which is which:
   handling, the live feed, counter channels, the bot's Online presence, and the
   `bot_heartbeat()` call that drives the Discord panel on `/status`.
 
-Commands must be **registered** with Discord before they appear — either
+Commands must be **registered** with Discord before they appear - either
 Admin → Discord bot → "Register slash commands", or
 `POST /api/discord/register` with `Authorization: Bearer $CRON_SECRET`.
 Registration is a full replace, so it is safe to repeat.
 
 See `docs/discord-bot.md`, and `docs/parties.md` for the multiplayer design.
+
+## Extending the platform
+
+Two things touch more files than they look like they should, and both have a
+checklist:
+
+- `docs/adding-a-game.md` - engine, registry, `games` row, thumbnail, verify.
+- `docs/cosmetics.md` - the kinds, where each one is drawn, and the five places
+  a new kind has to be registered.
 
 ## Conventions
 
