@@ -116,6 +116,13 @@ export const botDb = {
   roleState: (discordId: string) => rpc<RoleState>("bot_role_state", { p_discord: discordId }),
   allLinked: () => rpc<string[]>("bot_all_linked", {}),
   getConfig: (key: BotConfigKey) => rpc<Record<string, Json>>("bot_get_config", { p_key: key }),
+  /**
+   * The gateway worker's heartbeat (0043). Not a `BotConfigKey`: the worker
+   * writes it, nothing edits it, and it must never appear in the admin
+   * settings UI alongside things a person is meant to change.
+   */
+  workerStatus: () =>
+    rpc<{ last_seen?: string; version?: string } | null>("bot_get_config", { p_key: "worker" }),
   allConfig: () => rpc<Record<string, Record<string, Json>>>("bot_all_config", {}),
   patchConfig: (key: BotConfigKey, patch: Record<string, unknown>) =>
     rpc<{ ok: boolean; error?: string }>("bot_patch_config", { p_key: key, p_patch: patch }),

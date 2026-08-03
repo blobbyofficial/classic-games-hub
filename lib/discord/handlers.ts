@@ -795,6 +795,46 @@ const SETUP_ERRORS: Record<string, string> = {
   api: "Discord rejected the request. Try again in a moment.",
 };
 
+/**
+ * `/export` - the whole server as a JSON attachment.
+ *
+ * An attachment rather than a message because the answer does not fit in one:
+ * a modest server exports past Discord's 2000-character message limit and a
+ * busy one past the 6000 an embed allows, and a truncated server map is worse
+ * than none - it looks complete.
+ *
+ * The reply itself carries the problem list, so the useful part is readable
+ * without downloading anything.
+ */
+export async function deferredExport(token: string) {
+  const { exportServer } = await import("./export");
+  const res = await exportServer();
+  if (!res.ok) return finish(token, errorEmbed(res.error));
+
+  const json = JSON.stringify(res.data, null, 2);
+  const { problems } = res.data;
+  const summary = brandEmbed({
+    title: "📋 Server export",
+    description: [
+      `Attached as JSON (${(json.length / 1024).toFixed(1)} KB).`,
+      "",
+      problems.length
+        ? `**${problems.length} thing${problems.length === 1 ? "" : "s"} worth fixing**\n${problems.map((p) => `• ${p}`).join("\n")}`.slice(0, 3800)
+        : "✅ Nothing obviously wrong: permissions look right and every saved ID resolves.",
+    ].join("\n"),
+  });
+
+  const sent = await discordRest.editOriginalWithFile(
+    discordEnv.appId,
+    token,
+    { embeds: [summary], allowed_mentions: { parse: [] } },
+    { name: `discord-server-${new Date().toISOString().slice(0, 10)}.json`, content: json },
+  );
+  // The attachment is the bulky half, not the useful half - if Discord refuses
+  // it, the problem list is still worth delivering on its own.
+  if (!sent.ok) await finish(token, summary);
+}
+
 export async function deferredSetupLevels(token: string) {
   const res = await setupLevelRoles();
   if (!res.ok) return finish(token, errorEmbed(SETUP_ERRORS[res.error ?? ""] ?? "Setup failed."));

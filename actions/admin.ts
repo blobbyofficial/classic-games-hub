@@ -437,6 +437,24 @@ export async function adminResetBotConfig(): Promise<RpcResult & { detail?: stri
   };
 }
 
+/**
+ * A full snapshot of the Discord server, as JSON, for pasting somewhere it can
+ * be read - a support thread, an issue, an assistant.
+ *
+ * Returned as a formatted string rather than an object because the point is to
+ * be copied verbatim. Reformatting it at the boundary would risk the copy and
+ * the truth diverging.
+ */
+export async function adminExportDiscordServer(): Promise<
+  RpcResult & { json?: string; problems?: string[] }
+> {
+  await requireStaff();
+  const { exportServer } = await import("@/lib/discord/export");
+  const res = await exportServer();
+  if (!res.ok) return { ok: false, error: res.error };
+  return { ok: true, json: JSON.stringify(res.data, null, 2), problems: res.data.problems };
+}
+
 /** Sections with something to apply in Discord; the rest are read on use. */
 const PUSHABLE = new Set<string>(["verification", "level_roles", "tickets", "stats"]);
 

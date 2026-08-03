@@ -34,6 +34,7 @@ import {
   deferredSlowmode,
   deferredLock,
   deferredAnnounce,
+  deferredExport,
   deferredSetupLevels,
   deferredSetupVerification,
   deferredSetupTickets,
@@ -357,6 +358,11 @@ async function handleCommand(interaction: Interaction) {
           token,
         ),
       );
+      return deferEphemeral();
+    }
+    case "export": {
+      if (!hasPermission(interaction, MANAGE_GUILD)) return denied("Manage Server");
+      after(() => deferredExport(token));
       return deferEphemeral();
     }
     case "setup": {

@@ -236,6 +236,12 @@ export const SLASH_COMMANDS = [
     dm_permission: false,
   },
   {
+    name: "export",
+    description: "Export every channel, role and permission as a JSON file.",
+    default_member_permissions: MANAGE_GUILD,
+    dm_permission: false,
+  },
+  {
     name: "setup",
     description: "One-command server setup for the Hub bot.",
     default_member_permissions: MANAGE_GUILD,

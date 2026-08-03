@@ -80,6 +80,8 @@ export interface GuildRole {
   position: number;
   color?: number;
   managed?: boolean;
+  /** Permission bitfield, as the decimal string Discord sends. */
+  permissions?: string;
 }
 
 export interface GuildChannel {
@@ -293,4 +295,44 @@ export const discordRest = {
       method: "PATCH",
       body: JSON.stringify(payload),
     }),
+
+  /**
+   * Edit the deferred response, attaching a file.
+   *
+   * Kept apart from `discordFetch` because attachments are the one place
+   * Discord will not take JSON: the body has to be multipart, with the usual
+   * payload under `payload_json` and the file alongside it. Content-Type is
+   * deliberately unset - `fetch` writes it itself, including the boundary,
+   * which cannot be known in advance.
+   */
+  async editOriginalWithFile(
+    appId: string,
+    token: string,
+    payload: Record<string, unknown>,
+    file: { name: string; content: string; type?: string },
+  ): Promise<RestResult> {
+    if (!discordEnv.botToken) return { ok: false, status: 0, error: "bot_token_missing" };
+    const form = new FormData();
+    form.append(
+      "payload_json",
+      JSON.stringify({ ...payload, attachments: [{ id: 0, filename: file.name }] }),
+    );
+    form.append(
+      "files[0]",
+      new Blob([file.content], { type: file.type ?? "application/json" }),
+      file.name,
+    );
+    try {
+      const res = await fetch(`${API}/webhooks/${appId}/${token}/messages/@original`, {
+        method: "PATCH",
+        headers: { Authorization: `Bot ${discordEnv.botToken}` },
+        body: form,
+      });
+      if (res.ok) return { ok: true, status: res.status };
+      const body = (await res.json().catch(() => undefined)) as { message?: string } | undefined;
+      return { ok: false, status: res.status, error: body?.message ?? `http_${res.status}` };
+    } catch (err) {
+      return { ok: false, status: 0, error: err instanceof Error ? err.message : "network" };
+    }
+  },
 };
