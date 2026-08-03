@@ -49,12 +49,27 @@ export function SessionSync({ userId, profile, settings, unread, pendingRequests
       const supabase = createClient();
 
       // Presence heartbeat.
-      const beat = () => {
-        if (settings?.show_online_status !== false) void supabase.rpc("heartbeat");
+      //
+      // Awaited, and this is not a style preference. A Postgrest builder is a
+      // *lazy* thenable - it constructs the request and only sends it inside
+      // `then()`. The previous `void supabase.rpc("heartbeat")` therefore built
+      // the call and threw it away without ever hitting the network, so
+      // last_seen_at was never written for anybody: every profile in the
+      // database still had it exactly equal to created_at, which is why "last
+      // seen" read as the day the account was made.
+      //
+      // The warning matters as much as the await. This failed silently for the
+      // entire life of the site because nothing was ever looking at the result.
+      const beat = async () => {
+        if (settings?.show_online_status === false) return;
+        const { error } = await supabase.rpc("heartbeat");
+        if (error) console.warn("[presence] heartbeat failed:", error.message);
       };
-      beat();
+      void beat();
       const interval = setInterval(beat, 60_000);
-      const onVisible = () => document.visibilityState === "visible" && beat();
+      const onVisible = () => {
+        if (document.visibilityState === "visible") void beat();
+      };
       document.addEventListener("visibilitychange", onVisible);
 
       // Realtime notifications.

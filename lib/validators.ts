@@ -51,6 +51,14 @@ export const settingsSchema = z.object({
   site_theme: z
     .enum(["default", "midnight", "ocean", "emerald", "crimson", "gold", "rose", "synthwave", "aurora"])
     .optional(),
+  // Gameplay (0064). The bounds mirror the column checks so a bad value is
+  // rejected with a readable message here rather than as a constraint violation.
+  sound_volume: z.number().int().min(0).max(100).optional(),
+  music_volume: z.number().int().min(0).max(100).optional(),
+  default_difficulty: z.enum(["easy", "regular", "hard"]).optional(),
+  high_contrast: z.boolean().optional(),
+  timezone: z.string().max(64).optional(),
+  date_format: z.enum(["auto", "dmy", "mdy", "iso"]).optional(),
 });
 
 export const gameUpsertSchema = z.object({

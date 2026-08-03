@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users, Zap } from "lucide-react";
+import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users } from "lucide-react";
 import { getFeaturedGames, getPublishedGames, getFavoriteGameIds, getRecentlyPlayed } from "@/services/games";
 import { getDailyRewardStatus } from "@/services/economy";
 import { getCurrentProfile, getFlagPayload } from "@/lib/supabase/queries";
@@ -13,7 +13,6 @@ import { CommunityEventCard } from "@/features/economy/community-event-card";
 import { CategoryRail } from "@/components/games/category-rail";
 import { HomeLeaderboardPreview } from "@/features/leaderboards/home-preview";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { compactNumber } from "@/lib/utils";
 
@@ -123,9 +122,6 @@ function Hero({
     <section className="relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
       <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid" />
       <div className="relative max-w-2xl motion-safe:animate-rise">
-        <Badge variant="neon" className="mb-5">
-          <Zap /> Rebuilt for 2026
-        </Badge>
         <h1 className="text-display font-black">
           {displayName ? (
             <>
