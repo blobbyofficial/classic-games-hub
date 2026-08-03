@@ -405,11 +405,21 @@ Discord".
 ### Starting again
 
 Sync → **Reset all settings** clears every section back to its defaults
-(`admin_reset_bot_config`, migration `0061`). It deletes the `discord_bot_config`
-rows rather than writing defaults into them: `bot_get_config` returns null for an
-absent key and every caller merges over its own defaults, so no row *is* the
-default, and writing them out would put the defaults in a second place and let
-the two drift.
+(`admin_reset_bot_config`, migrations `0061` + `0062`). It deletes the
+`discord_bot_config` rows rather than writing defaults into them:
+`bot_get_config` returns null for an absent key and every caller merges over its
+own defaults, so no row *is* the default, and writing them out would put the
+defaults in a second place and let the two drift.
+
+The delete is qualified by the same key allowlist `bot_patch_config` and
+`admin_set_bot_config` enforce, and it has to be. **An unqualified `DELETE` or
+`UPDATE` cannot run through the dashboard at all**: PostgREST connects as
+`authenticator`, which carries
+`session_preload_libraries = supautils, safeupdate`, and `safeupdate` rejects
+either without a `WHERE` - inside a `SECURITY DEFINER` function too, since that
+changes the privileges but not the session. Worth knowing before writing the
+next one, because a migration applies as `postgres`, which has no such preload:
+the DDL succeeds and the failure only appears the first time a user calls it.
 
 The point of it is the ids, not the toggles. A dashboard pointed at one server
 accumulates role, channel, category and panel-message ids, and those are the

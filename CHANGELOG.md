@@ -8,7 +8,16 @@ live roadmap at `/roadmap`.
 ### ♻️ Reset all settings
 
 - New control in Admin → Discord bot → Sync, on `admin_reset_bot_config`
-  (migration `0061`): clears every section back to its defaults.
+  (migrations `0061` + `0062`): clears every section back to its defaults.
+- **Fixed in `0062`:** the first cut failed at runtime with "DELETE requires a
+  WHERE clause". PostgREST connects as `authenticator`, which carries
+  `session_preload_libraries = supautils, safeupdate`, and `safeupdate` rejects
+  an unqualified `DELETE` - inside a `SECURITY DEFINER` function too, since that
+  changes the privileges but not the session. A migration applies as `postgres`,
+  which has no such preload, so the DDL succeeded and only the first real press
+  of the button found it. The delete is now qualified by the same key allowlist
+  `bot_patch_config` and `admin_set_bot_config` already enforce, rather than a
+  `where true` written only to get past the check.
 - The point is the **ids**, not the toggles. A dashboard pointed at one server
   accumulates role, channel, category and panel-message ids, and those are what
   you cannot fix by editing one field - a stale id is worse than an empty one,
