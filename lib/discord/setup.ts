@@ -63,6 +63,16 @@ export interface SetupResult {
   detail?: string;
 }
 
+/**
+ * A setup step that resolves the channel a panel is posted into.
+ *
+ * Carrying the id back rather than making the caller re-read the config is what
+ * makes the panel post reliable: the id *is* written back, but a panel that
+ * depends on that write having landed silently posts nowhere if the write
+ * fails. The name comes with it purely so the report can say where it went.
+ */
+export type ChannelSetupResult = SetupResult & { channel?: string; channelName?: string };
+
 const empty = (): Omit<SetupResult, "ok" | "error"> => ({
   created: [],
   reused: [],
@@ -105,11 +115,15 @@ async function ensureChannel(
   spec: ChannelSpec,
   reason: string,
   result: SetupResult,
-): Promise<string | null> {
+): Promise<{ id: string; name: string } | null> {
   if (configured) {
-    if (existing.some((c) => c.id === configured)) {
-      result.reused.push(spec.name);
-      return configured;
+    // Reported with the channel's *actual* name, not the name setup would have
+    // given it - an admin who pointed this at #welcome needs the report to say
+    // #welcome, or the panel looks like it went somewhere it did not.
+    const linked = existing.find((c) => c.id === configured);
+    if (linked) {
+      result.reused.push(linked.name);
+      return { id: linked.id, name: linked.name };
     }
     result.missing.push(`${spec.name} (${configured})`);
     return null;
@@ -119,15 +133,15 @@ async function ensureChannel(
     (c) => c.type === spec.type && c.name.toLowerCase() === spec.name.toLowerCase(),
   );
   if (found) {
-    result.reused.push(spec.name);
-    return found.id;
+    result.reused.push(found.name);
+    return { id: found.id, name: found.name };
   }
 
   const created = await discordRest.createChannel(guildId, spec, reason);
   await new Promise((r) => setTimeout(r, 150)); // stay well inside rate limits
   if (created.ok && created.data) {
     result.created.push(spec.name);
-    return created.data.id;
+    return { id: created.data.id, name: created.data.name || spec.name };
   }
   result.failed.push(spec.name);
   result.detail ??= describe(created);
@@ -302,7 +316,7 @@ export async function setupVerificationRoles(): Promise<SetupResult & { verified
  * one obvious answer, and making the button stop half-done to ask for it left
  * fresh servers with roles and no gate.
  */
-export async function setupVerificationChannel(): Promise<SetupResult & { channel?: string }> {
+export async function setupVerificationChannel(): Promise<ChannelSetupResult> {
   const guildId = discordEnv.guildId;
   if (!guildId || !discordEnv.botToken) return { ok: false, error: "not_configured", ...empty() };
 
@@ -312,8 +326,8 @@ export async function setupVerificationChannel(): Promise<SetupResult & { channe
     return { ok: false, error: channels.status === 403 ? "missing_permissions" : "api", ...empty() };
   }
 
-  const result: SetupResult & { channel?: string } = { ok: true, ...empty() };
-  const channelId = await ensureChannel(
+  const result: ChannelSetupResult = { ok: true, ...empty() };
+  const channel = await ensureChannel(
     guildId,
     channels.data,
     cfg.panel_channel_id,
@@ -327,9 +341,10 @@ export async function setupVerificationChannel(): Promise<SetupResult & { channe
     result,
   );
 
-  if (channelId) {
-    await botDb.patchConfig("verification", { panel_channel_id: channelId });
-    result.channel = channelId;
+  if (channel) {
+    await botDb.patchConfig("verification", { panel_channel_id: channel.id });
+    result.channel = channel.id;
+    result.channelName = channel.name;
   }
   return result;
 }
@@ -342,7 +357,7 @@ export async function setupVerificationChannel(): Promise<SetupResult & { channe
  * the role second would file every ticket under a category staff cannot read
  * until the next run.
  */
-export async function setupTicketSpace(): Promise<SetupResult & { channel?: string }> {
+export async function setupTicketSpace(): Promise<ChannelSetupResult> {
   const guildId = discordEnv.guildId;
   if (!guildId || !discordEnv.botToken) return { ok: false, error: "not_configured", ...empty() };
 
@@ -356,7 +371,7 @@ export async function setupTicketSpace(): Promise<SetupResult & { channel?: stri
     return { ok: false, error: failed.status === 403 ? "missing_permissions" : "api", ...empty() };
   }
 
-  const result: SetupResult & { channel?: string } = { ok: true, ...empty() };
+  const result: ChannelSetupResult = { ok: true, ...empty() };
 
   // Held separately from what gets written back: a configured-but-deleted role
   // is reported and left alone, but it must not end up in an overwrite, which
@@ -395,7 +410,7 @@ export async function setupTicketSpace(): Promise<SetupResult & { channel?: stri
 
   // Hidden from @everyone at the category so a ticket is private for the moment
   // between being created and its own overwrites landing.
-  const categoryId = await ensureChannel(
+  const category = await ensureChannel(
     guildId,
     channels.data,
     cfg.category_id,
@@ -423,7 +438,7 @@ export async function setupTicketSpace(): Promise<SetupResult & { channel?: stri
   // Deliberately not filed under that category - it is the one public part of
   // the ticket system, and inheriting the category's deny would hide the panel
   // from the members meant to press it.
-  const channelId = await ensureChannel(
+  const channel = await ensureChannel(
     guildId,
     channels.data,
     cfg.panel_channel_id,
@@ -439,10 +454,11 @@ export async function setupTicketSpace(): Promise<SetupResult & { channel?: stri
 
   const patch: Record<string, string> = {};
   if (staffRoleId) patch.staff_role_id = staffRoleId;
-  if (categoryId) patch.category_id = categoryId;
-  if (channelId) {
-    patch.panel_channel_id = channelId;
-    result.channel = channelId;
+  if (category) patch.category_id = category.id;
+  if (channel) {
+    patch.panel_channel_id = channel.id;
+    result.channel = channel.id;
+    result.channelName = channel.name;
   }
   if (Object.keys(patch).length) await botDb.patchConfig("tickets", patch);
 
@@ -687,7 +703,11 @@ export async function runFullSetup(): Promise<FullSetupResult> {
       `failed ${res.failed.length}`,
     ].join(", ") + (res.detail ? `. Discord said: ${res.detail}` : ".");
 
-  const record = async (key: string, label: string, run: () => Promise<SetupResult>) => {
+  const record = async <T extends SetupResult>(
+    key: string,
+    label: string,
+    run: () => Promise<T>,
+  ): Promise<T | null> => {
     try {
       const res = await run();
       steps.push({
@@ -700,6 +720,7 @@ export async function runFullSetup(): Promise<FullSetupResult> {
             ? "The bot needs Manage Roles and Manage Channels, and its own role must sit above any it manages."
             : (res.detail ?? res.error ?? "Could not reach Discord."),
       });
+      return res;
     } catch (err) {
       steps.push({
         key,
@@ -707,6 +728,7 @@ export async function runFullSetup(): Promise<FullSetupResult> {
         status: "failed",
         detail: err instanceof Error ? err.message : "Unexpected error.",
       });
+      return null;
     }
   };
 
@@ -762,18 +784,28 @@ export async function runFullSetup(): Promise<FullSetupResult> {
   //    Both panels need somewhere to be posted, and leaving that to the admin
   //    meant a fresh server finished setup with verification roles but no gate
   //    handing them out - the one step that makes the rest do anything.
-  await record("verification_channel", "Verification channel", setupVerificationChannel);
+  const verify = await record(
+    "verification_channel",
+    "Verification channel",
+    setupVerificationChannel,
+  );
 
-  const verifyCfg = await getBotConfig("verification");
-  if (verifyCfg.panel_channel_id) {
-    const res = await postVerificationPanel(verifyCfg.panel_channel_id);
+  // The channel this run just resolved, not a re-read of the config. The id has
+  // already been written back, but making the panel depend on that write having
+  // landed turns one failed round trip into a panel that silently never posts -
+  // which is the exact failure this step exists to remove.
+  const verifyChannel =
+    verify?.channel ?? (await getBotConfig("verification")).panel_channel_id;
+  if (verifyChannel) {
+    const res = await postVerificationPanel(verifyChannel);
+    const where = verify?.channelName ? `#${verify.channelName}` : "the configured channel";
     steps.push({
       key: "verification_panel",
       label: "Verification panel",
       status: res.ok ? "ok" : "failed",
       detail: res.ok
-        ? "Posted (or updated in place)."
-        : `Could not post: ${describe(res)}. Check the bot can see and send in that channel.`,
+        ? `Posted in ${where} (or updated in place).`
+        : `Could not post in ${where}: ${describe(res)}. Check the bot can see and send there.`,
     });
   } else {
     steps.push({
@@ -786,18 +818,19 @@ export async function runFullSetup(): Promise<FullSetupResult> {
   }
 
   // 6. Ticket staff role, category and panel channel, then the panel.
-  await record("ticket_space", "Ticket roles and channels", setupTicketSpace);
+  const tickets = await record("ticket_space", "Ticket roles and channels", setupTicketSpace);
 
-  const ticketCfg = await getBotConfig("tickets");
-  if (ticketCfg.panel_channel_id) {
-    const res = await postTicketPanel(ticketCfg.panel_channel_id);
+  const ticketChannel = tickets?.channel ?? (await getBotConfig("tickets")).panel_channel_id;
+  if (ticketChannel) {
+    const res = await postTicketPanel(ticketChannel);
+    const where = tickets?.channelName ? `#${tickets.channelName}` : "the configured channel";
     steps.push({
       key: "ticket_panel",
       label: "Ticket panel",
       status: res.ok ? "ok" : "failed",
       detail: res.ok
-        ? "Posted (or updated in place)."
-        : `Could not post: ${describe(res)}. Check the bot can see and send in that channel.`,
+        ? `Posted in ${where} (or updated in place).`
+        : `Could not post in ${where}: ${describe(res)}. Check the bot can see and send there.`,
     });
   } else {
     steps.push({

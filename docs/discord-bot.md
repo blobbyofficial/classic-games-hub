@@ -392,9 +392,38 @@ public part of the system.
 A panel step only reports as **skipped** now if the step before it could not
 create or find a channel at all - normally a missing **Manage Channels**.
 
+Each panel is posted into the channel the step before it *just resolved*, not
+into a re-read of the config. The id is written back either way, but making the
+post depend on that write having landed turns one failed round trip into a panel
+that silently never appears. The report names the channel it went to, so
+"posted" can be checked rather than taken on trust.
+
 `DISCORD_BOT_TOKEN` and `DISCORD_GUILD_ID` are checked up front, so a missing
 credential produces one clear message instead of six copies of "could not reach
 Discord".
+
+### Starting again
+
+Sync → **Reset all settings** clears every section back to its defaults
+(`admin_reset_bot_config`, migration `0061`). It deletes the `discord_bot_config`
+rows rather than writing defaults into them: `bot_get_config` returns null for an
+absent key and every caller merges over its own defaults, so no row *is* the
+default, and writing them out would put the defaults in a second place and let
+the two drift.
+
+The point of it is the ids, not the toggles. A dashboard pointed at one server
+accumulates role, channel, category and panel-message ids, and those are the
+part you cannot fix by editing one field - a stale id is worse than an empty
+one, because setup reads it as "use that exact channel" and reports it missing
+rather than creating a replacement. Reach for this when moving the bot to a
+different server, or when a half-finished setup left ids pointing at channels
+that have since been deleted; then press **Run full setup** to rebuild.
+
+Nothing is deleted inside Discord. Roles and channels the bot created stay, and
+so does any panel it posted - but the link to that panel is cleared, so the next
+setup posts a fresh one instead of editing the old one. Delete the old panel by
+hand if you do not want two. The reset is audit-logged as `bot_config_reset`,
+because it throws away ids that cannot be recovered from the dashboard.
 
 ## Monthly gift token
 

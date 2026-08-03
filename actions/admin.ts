@@ -405,6 +405,38 @@ export async function adminSetBotSection(
   };
 }
 
+/**
+ * Clears every bot setting back to its default.
+ *
+ * The point is the ids, not the toggles. A dashboard that has been pointed at
+ * one server accumulates role, channel, category and panel-message ids, and
+ * they are exactly what you cannot fix by editing one field: a stale id is
+ * worse than an empty one, because setup reads it as "use that exact channel"
+ * and reports it missing rather than creating a replacement. Clearing the lot
+ * is the honest way to start again on a new server, or after one was rebuilt.
+ *
+ * Nothing is touched inside Discord. Roles and channels the bot created stay,
+ * and a panel it posted stays where it is - the next setup posts a fresh one
+ * rather than editing it, because the message id it would have edited is gone.
+ */
+export async function adminResetBotConfig(): Promise<RpcResult & { detail?: string }> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_reset_bot_config");
+  if (error) return { ok: false, error: error.message };
+  const res = data as { ok?: boolean; error?: string; cleared?: string[] } | null;
+  if (!res?.ok) return { ok: false, error: res?.error ?? "Failed to reset" };
+  revalidatePath("/admin/discord");
+
+  const cleared = res.cleared ?? [];
+  return {
+    ok: true,
+    detail: cleared.length
+      ? `Cleared ${cleared.length} section(s): ${cleared.join(", ")}. Every setting is back to its default.`
+      : "Nothing to clear - every setting was already at its default.",
+  };
+}
+
 /** Sections with something to apply in Discord; the rest are read on use. */
 const PUSHABLE = new Set<string>(["verification", "level_roles", "tickets", "stats"]);
 

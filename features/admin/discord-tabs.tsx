@@ -3,6 +3,7 @@
 import { Bot, Hammer, RefreshCw, Star } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { DiscordCommandsCard } from "./discord-commands-card";
+import { DiscordResetCard } from "./discord-reset-card";
 import { DiscordSetupCard } from "./discord-setup-card";
 import { AnnounceCard, ChannelCard, ModerationCard, PushCard } from "./discord-console";
 
@@ -49,6 +50,7 @@ export function DiscordTabs({
         <DiscordSetupCard />
         <DiscordCommandsCard />
         <PushCard />
+        <DiscordResetCard />
       </TabsContent>
 
       <TabsContent value="levelling" className="space-y-6">

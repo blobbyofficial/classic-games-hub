@@ -5,6 +5,28 @@ live roadmap at `/roadmap`.
 
 ## Unreleased
 
+### ♻️ Reset all settings
+
+- New control in Admin → Discord bot → Sync, on `admin_reset_bot_config`
+  (migration `0061`): clears every section back to its defaults.
+- The point is the **ids**, not the toggles. A dashboard pointed at one server
+  accumulates role, channel, category and panel-message ids, and those are what
+  you cannot fix by editing one field - a stale id is worse than an empty one,
+  because setup reads it as "use that exact channel" and reports it missing
+  rather than creating a replacement. This is the way to start again on a new
+  server, or after one was rebuilt.
+- It **deletes** the config rows rather than writing defaults into them.
+  `bot_get_config` returns null for an absent key and every caller already
+  merges over its own defaults, so no row *is* the default; writing them out
+  would duplicate the defaults in a second place and let the two drift.
+- Nothing is deleted inside Discord. Roles and channels the bot created stay,
+  and so does any panel it posted - but the link to that panel is cleared, so
+  the next setup posts a fresh one rather than editing it. The card says so
+  plainly rather than leaving admins to discover a second panel.
+- Confirmation is a second press, not a dialog - the page has no dialog pattern
+  and the destructive wording only appears once you have reached for the button.
+  Audit-logged as `bot_config_reset`.
+
 ### 🪄 Full setup now finishes the job
 
 - **Run full setup** used to stop two steps short. It created the verification
@@ -30,6 +52,12 @@ live roadmap at `/roadmap`.
   freshly created ticket was visible server-wide until its own overwrites
   landed. The staff role is resolved before the category that grants it access,
   so tickets are never filed somewhere staff cannot read.
+- Each panel posts into the channel the step before it **just resolved**, rather
+  than into a re-read of the config. The id is written back either way, but
+  depending on that write having landed turns one failed round trip into a panel
+  that silently never appears - the exact failure the step exists to remove. The
+  report now names the channel it posted into, so "posted" can be checked rather
+  than taken on trust.
 
 ## "Collector's Edition" (v1.5.0)
 

@@ -844,6 +844,7 @@ export interface Database {
       my_discord_connection: { Args: Record<string, never>; Returns: Json };
       admin_get_bot_config: { Args: Record<string, never>; Returns: Json };
       admin_set_bot_config: { Args: { p_key: string; p_value: Json }; Returns: Json };
+      admin_reset_bot_config: { Args: Record<string, never>; Returns: Json };
       // service_role-only bot RPCs (called with the admin client)
       bot_profile: { Args: { p_discord: string }; Returns: Json };
       bot_claim_daily: { Args: { p_discord: string }; Returns: Json };
