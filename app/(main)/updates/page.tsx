@@ -17,15 +17,27 @@ import {
   LayoutDashboard,
   Megaphone,
   Bot,
+  ChevronDown,
   GitMerge,
   GitCommitHorizontal,
+  Layers,
   Package,
   Rocket,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SITE } from "@/lib/constants";
-import { RELEASES, LANDED, PULL_REQUESTS, UPDATE_STATS, REPO_URL } from "@/lib/update-log";
+import {
+  SERIES,
+  LANDED,
+  PULL_REQUESTS,
+  RELEASE_OF_COMMIT,
+  UNASSIGNED,
+  UPDATE_STATS,
+  REPO_URL,
+  commitsOf,
+  type UpdateRelease,
+} from "@/lib/update-log";
 
 export const metadata: Metadata = {
   title: "Update log",
@@ -48,6 +60,7 @@ const ICONS: Record<string, LucideIcon> = {
   LayoutDashboard,
   Megaphone,
   Bot,
+  History,
   Rocket,
 };
 
@@ -78,6 +91,162 @@ function byMonth<T extends { date: string }>(rows: T[]): [string, T[]][] {
   return [...out.entries()];
 }
 
+/**
+ * The chevron every dropdown carries, rotated by its own panel's open state.
+ *
+ * Native `<details>`, so the whole tree works with JavaScript disabled and
+ * costs the page nothing - the alternative was a client component holding
+ * open/closed state for twenty-four panels that only ever answer to a click.
+ *
+ * The groups are *named* because they nest. A plain `group-open:` matches any
+ * open ancestor carrying `group`, so opening a line turned every collapsed
+ * release chevron inside it upside down - each one claiming to be open.
+ */
+const CHEVRON_SCOPE = {
+  series: "size-5 group-open/series:rotate-180",
+  release: "group-open/release:rotate-180",
+} as const;
+
+function Chevron({ scope }: { scope: keyof typeof CHEVRON_SCOPE }) {
+  return (
+    <ChevronDown
+      className={`size-4 shrink-0 text-muted-foreground transition-transform duration-200 ${CHEVRON_SCOPE[scope]}`}
+      aria-hidden
+    />
+  );
+}
+
+/** The commits and pull requests a release is made of. */
+function ReleaseContents({ release }: { release: UpdateRelease }) {
+  const commits = commitsOf(release);
+  if (commits.length === 0 && !release.prs?.length) return null;
+
+  return (
+    <Card variant="flat">
+      <CardHeader className="pb-3">
+        <CardTitle className="flex items-center gap-2.5 text-base">
+          <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary">
+            <GitCommitHorizontal className="size-4" />
+          </span>
+          What&apos;s in it
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        {commits.length > 0 && (
+          <ul className="divide-y divide-border/60">
+            {commits.map((change) => (
+              <li key={change.sha} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-2 first:pt-0 last:pb-0">
+                <a
+                  href={`${REPO_URL}/commit/${change.sha}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="shrink-0 font-mono text-xs text-muted-foreground hover:text-primary hover:underline"
+                >
+                  {change.sha}
+                </a>
+                <span className="min-w-0 flex-1 text-sm">{change.subject}</span>
+                <span className="shrink-0 text-xs text-muted-foreground">{change.date}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+        {release.prs && release.prs.length > 0 && (
+          <p className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+            <span>Pull request{release.prs.length === 1 ? "" : "s"}:</span>
+            {release.prs.map((number) => (
+              <a
+                key={number}
+                href={`${REPO_URL}/pull/${number}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-mono font-semibold text-primary hover:underline"
+              >
+                #{number}
+              </a>
+            ))}
+          </p>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
+
+function ReleasePanel({ release, open }: { release: UpdateRelease; open: boolean }) {
+  return (
+    <details open={open} className="group/release rounded-2xl border border-border bg-card">
+      <summary className="flex cursor-pointer list-none items-center gap-3 p-4 [&::-webkit-details-marker]:hidden">
+        <Chevron scope="release" />
+        <span className="flex min-w-0 flex-wrap items-center gap-x-2.5 gap-y-1">
+          <span className="font-bold tracking-tight">{release.version}</span>
+          <span className="text-muted-foreground">·</span>
+          <span className="text-gradient font-semibold">{release.codename}</span>
+          {release.formerly && (
+            <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-0.5 text-[11px] font-medium text-muted-foreground">
+              was {release.formerly}
+            </span>
+          )}
+        </span>
+        <span className="ml-auto shrink-0 text-xs text-muted-foreground">{release.date}</span>
+      </summary>
+
+      <div className="space-y-4 border-t border-border/60 p-4">
+        <div className="rounded-xl border border-border bg-gradient-to-br from-success/5 to-transparent p-4">
+          <p className="max-w-2xl text-sm text-muted-foreground">{release.summary}</p>
+          {release.dateNote && (
+            <p className="mt-2 text-xs text-muted-foreground">{release.date} · {release.dateNote}</p>
+          )}
+          <p className="mt-3 max-w-2xl border-l-2 border-primary/40 pl-3 text-xs text-muted-foreground">
+            <span className="font-medium text-foreground">Why this is one release: </span>
+            {release.scope}
+          </p>
+        </div>
+
+        {release.groups.map((group) => {
+          const Icon = ICONS[group.icon] ?? Sparkles;
+          return (
+            <Card key={group.heading}>
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center gap-2.5 text-base">
+                  <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary">
+                    <Icon className="size-4" />
+                  </span>
+                  {group.heading}
+                </CardTitle>
+                {group.blurb && <p className="pt-1 text-sm text-muted-foreground">{group.blurb}</p>}
+              </CardHeader>
+              <CardContent>
+                <ul className="divide-y divide-border/60">
+                  {group.items.map((item) => (
+                    <li key={item.title} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span
+                          className={
+                            item.dropped ? "text-sm font-semibold line-through opacity-70" : "text-sm font-semibold"
+                          }
+                        >
+                          {item.title}
+                        </span>
+                        {item.dropped && (
+                          <span className="inline-flex items-center rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
+                            Dropped
+                          </span>
+                        )}
+                      </div>
+                      <p className="text-sm text-muted-foreground">{item.description}</p>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+            </Card>
+          );
+        })}
+
+        <ReleaseContents release={release} />
+      </div>
+    </details>
+  );
+}
+
 export default function UpdatesPage() {
   return (
     <div className="mx-auto max-w-4xl space-y-10">
@@ -93,8 +262,8 @@ export default function UpdatesPage() {
           </div>
         </div>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          The complete history: every release and the features it brought, plus every individual change that has landed
-          in production. For what&apos;s coming next, see the{" "}
+          The complete history, newest first: every release line, every release inside it, and every individual change
+          that has landed in production. For what&apos;s coming next, see the{" "}
           <Link href="/roadmap" className="font-medium text-primary hover:underline">
             roadmap
           </Link>
@@ -102,79 +271,61 @@ export default function UpdatesPage() {
         </p>
 
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-          <Stat icon={Rocket} value={UPDATE_STATS.releases} label="Releases shipped" />
+          <Stat icon={Layers} value={UPDATE_STATS.releases} label="Releases shipped" />
           <Stat icon={Package} value={UPDATE_STATS.features} label="Features delivered" />
           <Stat icon={GitCommitHorizontal} value={UPDATE_STATS.landed} label="Changes in production" />
           <Stat icon={GitMerge} value={UPDATE_STATS.pullRequests} label="Pull requests merged" />
         </div>
       </header>
 
-      {/* Releases */}
-      <section className="space-y-10">
-        <h2 className="text-lg font-bold tracking-tight">Releases</h2>
+      {/* Releases, nested by line */}
+      <section className="space-y-4">
+        <div className="space-y-1">
+          <h2 className="text-lg font-bold tracking-tight">Releases</h2>
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            {UPDATE_STATS.releases} releases across {UPDATE_STATS.series} lines. Open a line to see its releases; open a
+            release to see what it brought and which changes it was made of. A release is a unit of work rather than a
+            unit of time - each one says why it was drawn where it was.
+          </p>
+        </div>
 
-        {RELEASES.map((release) => (
-          <div key={release.version} className="space-y-5">
-            <div className="rounded-2xl border border-border bg-gradient-to-br from-success/5 to-transparent p-5">
-              <div className="flex flex-wrap items-center gap-3">
-                <h3 className="text-xl font-bold tracking-tight">
-                  {release.version} <span className="text-muted-foreground">·</span>{" "}
-                  <span className="text-gradient">{release.codename}</span>
-                </h3>
-                <span className="inline-flex items-center rounded-full border border-success/30 bg-success/15 px-2.5 py-0.5 text-xs font-medium text-success">
-                  Shipped
+        {SERIES.map((series, seriesIndex) => {
+          const newest = series.releases[0];
+          const oldest = series.releases[series.releases.length - 1];
+          const span =
+            series.releases.length === 1 ? newest.version : `${oldest.version} – ${newest.version}`;
+
+          return (
+            <details
+              key={series.version}
+              open={seriesIndex === 0}
+              className="group/series rounded-2xl border border-border bg-gradient-to-br from-primary/5 to-transparent"
+            >
+              <summary className="flex cursor-pointer list-none items-center gap-3 p-5 [&::-webkit-details-marker]:hidden">
+                <Chevron scope="series" />
+                <span className="flex min-w-0 flex-wrap items-baseline gap-x-3 gap-y-1">
+                  <span className="text-xl font-bold tracking-tight">{series.version}</span>
+                  <span className="text-gradient text-lg font-semibold">{series.codename}</span>
+                  <span className="text-xs text-muted-foreground">
+                    {series.releases.length} release{series.releases.length === 1 ? "" : "s"} · {span}
+                  </span>
                 </span>
-                <span className="ml-auto text-xs text-muted-foreground">
-                  {release.date}
-                  {release.dateNote && ` · ${release.dateNote}`}
-                </span>
+                <span className="ml-auto shrink-0 text-xs text-muted-foreground">{series.dates}</span>
+              </summary>
+
+              <div className="space-y-3 border-t border-border/60 p-4">
+                <p className="max-w-2xl px-1 text-sm text-muted-foreground">{series.summary}</p>
+                {series.releases.map((release, releaseIndex) => (
+                  <ReleasePanel
+                    key={release.version}
+                    release={release}
+                    open={seriesIndex === 0 && releaseIndex === 0}
+                  />
+                ))}
               </div>
-              <p className="mt-2 max-w-2xl text-sm text-muted-foreground">{release.summary}</p>
-            </div>
-
-            <div className="space-y-4">
-              {release.groups.map((group) => {
-                const Icon = ICONS[group.icon] ?? Sparkles;
-                return (
-                  <Card key={group.heading}>
-                    <CardHeader className="pb-3">
-                      <CardTitle className="flex items-center gap-2.5 text-base">
-                        <span className="grid size-8 place-items-center rounded-lg bg-primary/10 text-primary">
-                          <Icon className="size-4" />
-                        </span>
-                        {group.heading}
-                      </CardTitle>
-                      {group.blurb && <p className="pt-1 text-sm text-muted-foreground">{group.blurb}</p>}
-                    </CardHeader>
-                    <CardContent>
-                      <ul className="divide-y divide-border/60">
-                        {group.items.map((item) => (
-                          <li key={item.title} className="flex flex-col gap-1 py-3 first:pt-0 last:pb-0">
-                            <div className="flex flex-wrap items-center gap-2">
-                              <span
-                                className={
-                                  item.dropped ? "text-sm font-semibold line-through opacity-70" : "text-sm font-semibold"
-                                }
-                              >
-                                {item.title}
-                              </span>
-                              {item.dropped && (
-                                <span className="inline-flex items-center rounded-full border border-destructive/30 bg-destructive/10 px-2 py-0.5 text-[11px] font-medium text-destructive">
-                                  Dropped
-                                </span>
-                              )}
-                            </div>
-                            <p className="text-sm text-muted-foreground">{item.description}</p>
-                          </li>
-                        ))}
-                      </ul>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        ))}
+            </details>
+          );
+        })}
       </section>
 
       {/* Merged pull requests */}
@@ -212,7 +363,10 @@ export default function UpdatesPage() {
         <h2 className="text-lg font-bold tracking-tight">Everything that landed</h2>
         <p className="max-w-2xl text-sm text-muted-foreground">
           Every change that reached production, newest first - whether it arrived through a pull request or as a direct
-          commit. {UPDATE_STATS.landed} in total, going back to the very first one.
+          commit, and which release it shipped in. {UPDATE_STATS.landed} in total, going back to the very first one.
+          {UNASSIGNED.length > 0
+            ? ` ${UNASSIGNED.length} of them have not been assigned to a release yet.`
+            : " All of them belong to a release."}
         </p>
 
         <div className="space-y-4">
@@ -239,6 +393,11 @@ export default function UpdatesPage() {
                         {change.sha}
                       </a>
                       <span className="min-w-0 flex-1 text-sm">{change.subject}</span>
+                      {RELEASE_OF_COMMIT[change.sha] && (
+                        <span className="shrink-0 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 font-mono text-[11px] text-primary">
+                          {RELEASE_OF_COMMIT[change.sha]}
+                        </span>
+                      )}
                       {change.pr && (
                         <a
                           href={`${REPO_URL}/pull/${change.pr}`}

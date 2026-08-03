@@ -6,6 +6,8 @@ import { DiscordBotSettings } from "@/features/admin/discord-bot-settings";
 import type { LevelingConfig, RoleSyncConfig } from "@/features/admin/discord-bot-settings";
 import { DiscordTabs } from "@/features/admin/discord-tabs";
 import { DiscordServerSettings } from "@/features/admin/discord-server-settings";
+import { DiscordPublishingCard } from "@/features/admin/discord-publishing";
+import type { PublishingConfig } from "@/features/admin/discord-publishing";
 import type {
   LevelRolesConfig,
   ModerationConfig,
@@ -50,6 +52,9 @@ export default async function AdminDiscordPage() {
   return (
     <DiscordTabs
       levelling={<DiscordBotSettings leveling={leveling} roleSync={roleSync} />}
+      publishing={
+        <DiscordPublishingCard publishing={mergeConfig("publishing", config.publishing) as PublishingConfig} />
+      }
       server={
         <DiscordServerSettings
           verification={mergeConfig("verification", config.verification) as VerificationConfig}

@@ -34,6 +34,7 @@ const PUSH_SECTIONS = [
   { key: "verification" as const, label: "Verification" },
   { key: "tickets" as const, label: "Ticket panel" },
   { key: "stats" as const, label: "Counters" },
+  { key: "publishing" as const, label: "Update log & announcements" },
 ];
 
 export function PushCard() {

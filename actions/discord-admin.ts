@@ -47,7 +47,7 @@ export async function adminPushBotSection(section: PushSection): Promise<OpResul
 export async function adminPushAllBotSections(): Promise<OpResult> {
   await requireStaff();
   const { pushSection } = await import("@/lib/discord/ops");
-  const sections: PushSection[] = ["level_roles", "verification", "tickets", "stats"];
+  const sections: PushSection[] = ["level_roles", "verification", "tickets", "stats", "publishing"];
 
   const done: string[] = [];
   const problems: string[] = [];
@@ -64,6 +64,42 @@ export async function adminPushAllBotSections(): Promise<OpResult> {
     detail: done.join(" · "),
     error: problems.length ? problems.join(" · ") : undefined,
   };
+}
+
+/**
+ * Mirrors the update log or the announcements into Discord, on demand.
+ *
+ * Both are idempotent and fingerprinted, so pressing the button twice is free -
+ * which is what makes it the right answer to "did that actually work?" as well
+ * as to "someone deleted the channel".
+ */
+export async function adminSyncPublishing(
+  what: "releases" | "announcements" | "both",
+): Promise<OpResult> {
+  await requireStaff();
+  const { syncAnnouncements, syncUpdateLog, summariseSync } = await import("@/lib/discord/publish");
+
+  const parts: string[] = [];
+  const problems: string[] = [];
+  let anyOk = false;
+
+  if (what === "releases" || what === "both") {
+    const res = await syncUpdateLog();
+    anyOk ||= res.ok;
+    if (res.ok) parts.push(`Update log: ${summariseSync(res)}`);
+    else problems.push(`Update log: ${res.error ?? res.detail ?? "failed"}`);
+  }
+  if (what === "announcements" || what === "both") {
+    const res = await syncAnnouncements();
+    anyOk ||= res.ok;
+    if (res.ok) parts.push(`Announcements: ${summariseSync(res)}`);
+    else problems.push(`Announcements: ${res.error ?? res.detail ?? "failed"}`);
+  }
+
+  revalidatePath("/admin/discord");
+  return anyOk
+    ? { ok: true, detail: parts.join(" "), error: problems.length ? problems.join(" · ") : undefined }
+    : { ok: false, error: problems.join(" · ") };
 }
 
 const announceSchema = z.object({

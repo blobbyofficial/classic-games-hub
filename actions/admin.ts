@@ -92,6 +92,10 @@ export async function adminUpdateAnnouncement(id: string, input: unknown): Promi
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/announcements");
   revalidatePath("/");
+  // An edit here is an edit in Discord, and un-ticking "published" takes the
+  // Discord message down - which is the half of "sync" that a post-on-publish
+  // hook alone would never do.
+  mirrorAnnouncements();
   return { ok: true };
 }
 
@@ -102,6 +106,7 @@ export async function adminDeleteAnnouncement(id: string): Promise<RpcResult> {
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/announcements");
   revalidatePath("/");
+  mirrorAnnouncements();
   return { ok: true };
 }
 
@@ -183,7 +188,28 @@ export async function adminPublishAnnouncement(input: unknown): Promise<RpcResul
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/announcements");
   revalidatePath("/", "layout");
+  mirrorAnnouncements();
   return data as RpcResult;
+}
+
+/**
+ * Brings the Discord announcements channel in step, after the response.
+ *
+ * Post-response because publishing must not wait on Discord: the announcement
+ * is already in the database and notified to every player, and a Discord
+ * outage turning that into an error the admin retries - sending a second
+ * notification to everyone - is a far worse failure than a mirror that is
+ * fifteen minutes late. The cron job picks up anything this misses.
+ */
+function mirrorAnnouncements(): void {
+  after(async () => {
+    const { getBotConfig } = await import("@/lib/discord/config");
+    const cfg = await getBotConfig("publishing");
+    if (!cfg.enabled || !cfg.announce_on_publish || !cfg.announce_channel_id) return;
+    const { syncAnnouncements } = await import("@/lib/discord/publish");
+    const res = await syncAnnouncements();
+    if (!res.ok) console.error(`[discord] announcement mirror failed: ${res.error ?? res.detail}`);
+  });
 }
 
 export async function adminResolveReport(
@@ -348,12 +374,23 @@ const levelRolesConfigSchema = z.object({
   roles: z.record(z.string(), z.string().regex(/^\d{5,25}$/)),
 });
 
+const publishingConfigSchema = z.object({
+  enabled: z.boolean(),
+  update_channel_id: snowflake,
+  announce_channel_id: snowflake,
+  update_ping_role_id: snowflake,
+  announce_ping_role_id: snowflake,
+  announce_on_publish: z.boolean(),
+  announce_limit: z.number().int().min(1).max(100),
+});
+
 const BOT_SECTIONS = {
   verification: verificationConfigSchema,
   moderation: moderationConfigSchema,
   tickets: ticketsConfigSchema,
   stats: statsConfigSchema,
   level_roles: levelRolesConfigSchema,
+  publishing: publishingConfigSchema,
 } as const;
 
 export type BotSection = keyof typeof BOT_SECTIONS;
@@ -456,7 +493,7 @@ export async function adminExportDiscordServer(): Promise<
 }
 
 /** Sections with something to apply in Discord; the rest are read on use. */
-const PUSHABLE = new Set<string>(["verification", "level_roles", "tickets", "stats"]);
+const PUSHABLE = new Set<string>(["verification", "level_roles", "tickets", "stats", "publishing"]);
 
 /** Creates any missing milestone level roles in Discord and stores their IDs. */
 export async function adminCreateLevelRoles(): Promise<RpcResult & { detail?: string }> {

@@ -480,3 +480,63 @@ result.
 The game stays listed for everyone throughout, shown with a lock badge and a
 countdown to the open date. A perk nobody can see is a perk nobody wants, and
 half the point of early access is that other people know it is happening.
+
+## Publishing: the update log and announcements in Discord
+
+The website's update log (`/updates`) and its announcements are mirrored into
+two Discord channels, configured under **Admin → Discord bot → Sync →
+Publishing** or provisioned by **Run full setup**.
+
+It is a **mirror**, not a series of posts. Every mirrored thing records the
+message that holds it and a fingerprint of what was in it
+(`public.discord_posts`, migration `0063`), which is what makes the difference:
+
+| On the website | In Discord |
+| --- | --- |
+| A release is added to `lib/update-log.ts` and deployed | A new message, at the bottom of the update-log channel |
+| A release's notes are edited | That release's message is edited in place |
+| An announcement is published | A new message, and a role ping if one is set |
+| An announcement is edited | That announcement's message is edited |
+| An announcement is unpublished or deleted | Its message is deleted |
+| Nothing changed | **No Discord calls at all** - the fingerprints match |
+
+Releases are posted oldest first, so the channel reads in the order things
+happened. Discord orders by post time and nothing can reorder it afterwards, so
+this is the one part a later sync cannot repair.
+
+### One direction, on purpose
+
+Discord never writes back. The update log is a file in the repository and
+announcements are rows an admin publishes, so the website owns both and Discord
+is a view of them - the same rule role sync follows. Reading messages back out
+of Discord and turning them into announcements would give one fact two owners,
+and the first time they disagreed there would be no answer to which was right.
+
+### When it runs
+
+- **On publish.** Publishing, editing or deleting an announcement syncs
+  immediately, *after* the response - so a Discord outage can never turn a
+  successful publish into an error the admin retries, sending a second
+  notification to every player.
+- **On save or push.** Saving the Publishing section applies it, and
+  **Push everything** includes it.
+- **Every 15 minutes.** `/api/cron/discord-publish` re-checks both. This is not
+  how the mirror stays timely - it is how it recovers: a deploy adds releases
+  with nobody pressing anything, an outage drops a post, and someone eventually
+  deletes a message by hand. A run with nothing to do costs two database reads.
+
+A message deleted by hand answers `404` to the edit that follows; the record is
+forgotten and the message re-posted, rather than the sync failing forever
+against an id that will never exist again.
+
+### Limits
+
+- Only the newest `announce_limit` announcements (25 by default) are kept in
+  step. Older ones are left where they are rather than deleted - an
+  announcement scrolling out of the window is not the same as one being
+  withdrawn, and deleting on that basis would quietly clear the channel.
+- A release embed lists **item titles**, not their full text: a release with
+  five groups runs past what Discord will render, and a truncated changelog is
+  worse than a summarised one with a link to the page.
+- Both channels are created readable by everyone and writable by nobody. A
+  conversation running through a changelog makes it unreadable as one.

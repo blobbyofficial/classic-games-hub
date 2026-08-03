@@ -36,6 +36,8 @@ const PROVISIONED = {
   ticketChannel: "🎫-support",
   ticketCategory: "🎫 Tickets",
   staffRole: "Staff",
+  updateChannel: "📝-update-log",
+  announceChannel: "📢-announcements",
 } as const;
 
 export interface SetupResult {
@@ -465,6 +467,67 @@ export async function setupTicketSpace(): Promise<ChannelSetupResult> {
   return result;
 }
 
+/**
+ * The two channels the website mirrors itself into.
+ *
+ * Both take the panel treatment - readable by everyone, writable by nobody -
+ * for the same reason the panels do: these are a feed the site writes, and a
+ * conversation running through a changelog makes it unreadable as one. Replies
+ * belong in whichever channel the server already talks in.
+ *
+ * Returns both ids rather than one, so `ChannelSetupResult.channel` is left
+ * meaning "the one channel this step resolved" everywhere else it is used.
+ */
+export async function setupPublishingChannels(): Promise<
+  SetupResult & { updateChannel?: string; announceChannel?: string }
+> {
+  const guildId = discordEnv.guildId;
+  if (!guildId || !discordEnv.botToken) return { ok: false, error: "not_configured", ...empty() };
+
+  const cfg = await getBotConfig("publishing");
+  const channels = await discordRest.listGuildChannels(guildId);
+  if (!channels.ok || !channels.data) {
+    return { ok: false, error: channels.status === 403 ? "missing_permissions" : "api", ...empty() };
+  }
+
+  const result: SetupResult = { ok: true, ...empty() };
+
+  const updates = await ensureChannel(
+    guildId,
+    channels.data,
+    cfg.update_channel_id,
+    {
+      name: PROVISIONED.updateChannel,
+      type: ChannelType.GuildText,
+      topic: "Every release, mirrored from the website - the full log lives at /updates.",
+      permission_overwrites: panelOverwrites(guildId),
+    },
+    `${BOT_NAME} - update log`,
+    result,
+  );
+
+  const announcements = await ensureChannel(
+    guildId,
+    channels.data,
+    cfg.announce_channel_id,
+    {
+      name: PROVISIONED.announceChannel,
+      type: ChannelType.GuildText,
+      topic: "Announcements published on the website appear here.",
+      permission_overwrites: panelOverwrites(guildId),
+    },
+    `${BOT_NAME} - announcements`,
+    result,
+  );
+
+  const patch: Record<string, string> = {};
+  if (updates) patch.update_channel_id = updates.id;
+  if (announcements) patch.announce_channel_id = announcements.id;
+  if (Object.keys(patch).length) await botDb.patchConfig("publishing", patch);
+
+  return { ...result, updateChannel: updates?.id, announceChannel: announcements?.id };
+}
+
 /** Posts (or re-posts) the verification panel into a channel. */
 export async function postVerificationPanel(channelId: string) {
   const cfg = await getBotConfig("verification");
@@ -839,6 +902,36 @@ export async function runFullSetup(): Promise<FullSetupResult> {
       status: "skipped",
       detail:
         "No channel to post into - the previous step could not create or find one. Fix that, or pick a channel below and save.",
+    });
+  }
+
+  // 7. The two channels the website mirrors itself into, then the first sync.
+  //    Provisioned here for the same reason the panel channels are: a mirror
+  //    with nowhere to write is a feature nobody discovers.
+  const publishing = await record(
+    "publishing_channels",
+    "Update log and announcement channels",
+    setupPublishingChannels,
+  );
+
+  if (publishing?.updateChannel || publishing?.announceChannel) {
+    const { syncAnnouncements, syncUpdateLog, summariseSync } = await import("./publish");
+    const [log, announcements] = await Promise.all([syncUpdateLog(), syncAnnouncements()]);
+    steps.push({
+      key: "publishing_sync",
+      label: "First sync",
+      status: log.ok || announcements.ok ? "ok" : "failed",
+      detail: `Update log: ${log.ok ? summariseSync(log) : log.error} Announcements: ${
+        announcements.ok ? summariseSync(announcements) : announcements.error
+      }`,
+    });
+  } else {
+    steps.push({
+      key: "publishing_sync",
+      label: "First sync",
+      status: "skipped",
+      detail:
+        "No channel to mirror into - the previous step could not create or find one. Fix that, or pick channels under Publishing and save.",
     });
   }
 

@@ -48,16 +48,21 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
  * Split across three entries rather than one, because the requests behind them
  * are three different sizes and versioning them the same way would mislead.
  *
- * v1.5.1 is the patch it says it is: renames, a wrong date, a stray banner,
+ * v1.5.4 is the patch it says it is: renames, a wrong date, a stray banner,
  * settings that needed filling out. v1.6.0 is not - rewriting the engines,
  * adding real multiplayer and building tournaments is a release in its own
  * right, and calling that a point-one would set the wrong expectation for how
  * long it takes. The last entry is unscheduled on purpose: ideas worth writing
  * down are not the same as work anyone has committed to.
+ *
+ * It was planned as v1.5.1, but v1.5.1 through v1.5.3 shipped first - the
+ * Discord setup work, the server export, and the versioned update log. A
+ * planned number is not a reservation; the next free one is what a release
+ * gets.
  */
 export const ROADMAP: RoadmapRelease[] = [
   {
-    version: "v1.5.1",
+    version: "v1.5.4",
     codename: "Sanded Down",
     status: "next",
     timeframe: "Next up",
@@ -158,7 +163,7 @@ export const ROADMAP: RoadmapRelease[] = [
     version: "v1.6.0",
     codename: "Head to Head",
     status: "later",
-    timeframe: "After v1.5.1",
+    timeframe: "After v1.5.4",
     summary:
       "The arcade has twenty-six games and no good way to play one against another person, and several of the best-known titles are the weakest to actually play. This release is about both: bring the flagship games up to the standard of the newest ones, then give people something to do with them together.",
     groups: [
