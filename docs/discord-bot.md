@@ -343,8 +343,9 @@ needs, in dependency order:
 2. Create the verification roles
 3. Create the level-milestone roles
 4. Create the live counter channels
-5. Post the verification panel
-6. Post the ticket panel
+5. Create the verification channel, then post the verification panel
+6. Create the ticket staff role, category and support channel, then post the
+   ticket panel
 
 It reports on each step separately rather than returning one success or
 failure. Discord setup fails in partial, unrelated ways - the bot can often
@@ -358,10 +359,38 @@ are reused, and panels are edited in place rather than re-posted. That makes
 the button safe to press repeatedly, and it doubles as a "fix whatever is
 missing" control after granting the bot a permission it was lacking.
 
-Two steps report as **skipped** rather than failed when no channel is
-configured for the verification or ticket panel. Which channel members should
-see is a human decision, so the button will not invent one; pick the channel in
-the settings below and saving posts the panel itself.
+### What it creates, and what it will not duplicate
+
+| Name | What it is | Configured as |
+| --- | --- | --- |
+| `✅-verify` | Text channel holding the verification panel | `verification.panel_channel_id` |
+| `🎫-support` | Text channel holding the ticket panel | `tickets.panel_channel_id` |
+| `🎫 Tickets` | Category new tickets open under | `tickets.category_id` |
+| `Staff` | Role that can see every ticket | `tickets.staff_role_id` |
+
+Resolution order is the same for all four, and for the verification and
+milestone roles: **a configured id wins**, then **a matching name**, then - only
+if neither exists - it is created. So a server that already runs a `#verify` or
+a `Staff` role keeps using it instead of gaining a near-identical empty one
+beside it, and renaming one afterwards is safe because the id is what gets
+stored.
+
+A configured id pointing at something since deleted is reported as **missing**
+rather than replaced. An id in the dashboard is an instruction to use *that*
+role or channel; handing back a fresh default-named duplicate would leave the
+admin to notice and clean it up.
+
+Both panel channels are readable by everyone and writable by nobody - a panel is
+one button, and letting members chat there buries the thing they came to press.
+The verify channel allows View Channel explicitly rather than inheriting it,
+because the gate works by denying `@everyone` elsewhere, and a gate members
+cannot see is just a locked server. The ticket category denies `@everyone` so a
+new ticket is never briefly visible server-wide before its own overwrites land;
+the support channel deliberately sits outside that category, being the one
+public part of the system.
+
+A panel step only reports as **skipped** now if the step before it could not
+create or find a channel at all - normally a missing **Manage Channels**.
 
 `DISCORD_BOT_TOKEN` and `DISCORD_GUILD_ID` are checked up front, so a missing
 credential produces one clear message instead of six copies of "could not reach

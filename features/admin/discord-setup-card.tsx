@@ -49,10 +49,11 @@ export function DiscordSetupCard() {
       <CardHeader>
         <CardTitle>Set the server up</CardTitle>
         <CardDescription>
-          Registers the slash commands, creates the verification and level roles and the live
-          counter channels, and posts the panels - in one go. Everything it does is idempotent, so
-          you can press it again after fixing a permission and it will only do what is still
-          outstanding.
+          Registers the slash commands, creates the roles and channels the bot needs - verification
+          and level roles, live counters, a staff role, and the verify, support and ticket channels
+          - and posts both panels, in one go. Anything already in the server with a matching name is
+          reused rather than duplicated, so you can press it again after fixing a permission and it
+          will only do what is still outstanding.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">

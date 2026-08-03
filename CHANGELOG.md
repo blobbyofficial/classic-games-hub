@@ -3,7 +3,35 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
-## Unreleased - "Collector's Edition" (v1.5.0, in progress)
+## Unreleased
+
+### 🪄 Full setup now finishes the job
+
+- **Run full setup** used to stop two steps short. It created the verification
+  and level roles and the counter channels, then reported the verification and
+  ticket panels as *skipped* with "pick a channel below, then save" - so a fresh
+  server came out of setup holding roles with nothing handing them out.
+- It now provisions what those panels need and posts them: a `✅-verify`
+  channel, a `🎫-support` channel, a `🎫 Tickets` category and a `Staff` role.
+  Which channel members should see is a human decision, but "somewhere
+  newcomers can press verify" has one obvious answer, and asking for it was
+  costing every fresh server the one step that makes the rest do anything.
+- **Nothing is duplicated.** Every role and channel is matched by name first, so
+  a server that already runs a `#verify` or a `Staff` role keeps using it. A
+  configured id still wins over a name, and a configured id that has since been
+  deleted is reported as missing rather than silently replaced with a new
+  default-named one the admin then has to hunt down.
+- Both panel channels are readable by everyone and writable by nobody - a panel
+  is one button, and letting members chat there buries it. The verify channel
+  allows View Channel explicitly rather than inheriting it, because the gate
+  works by denying `@everyone` elsewhere and a gate members cannot see is just a
+  locked server.
+- The ticket category hides itself from `@everyone`, closing the window where a
+  freshly created ticket was visible server-wide until its own overwrites
+  landed. The staff role is resolved before the category that grants it access,
+  so tickets are never filed somewhere staff cannot read.
+
+## "Collector's Edition" (v1.5.0)
 
 ### 🌀 Labyrinth - the first true-3D title
 

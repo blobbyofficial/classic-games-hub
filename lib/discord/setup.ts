@@ -5,6 +5,7 @@ import { verificationPanel, ticketPanel } from "./components";
 import { SLASH_COMMANDS } from "./commands";
 import { BOT_NAME } from "./embeds";
 import { discordEnv } from "./env";
+import type { GuildChannel, PermissionOverwrite } from "./rest";
 import { ChannelType, Permissions, discordRest } from "./rest";
 
 /**
@@ -21,6 +22,21 @@ import { ChannelType, Permissions, discordRest } from "./rest";
 const MILESTONE_COLORS = [
   0x95a5a6, 0x3498db, 0x1abc9c, 0x2ecc71, 0xf1c40f, 0xe67e22, 0xe74c3c, 0x9b59b6, 0x7a3dff,
 ];
+
+/**
+ * What setup creates when the server has nothing suitable yet.
+ *
+ * These are matched by name before anything is created, so a server that
+ * already runs a #verify or a Staff role keeps using it rather than gaining a
+ * near-duplicate beside it. Renaming one afterwards is safe: the id is written
+ * into `discord_bot_config`, and a configured id always wins over the name.
+ */
+const PROVISIONED = {
+  verifyChannel: "✅-verify",
+  ticketChannel: "🎫-support",
+  ticketCategory: "🎫 Tickets",
+  staffRole: "Staff",
+} as const;
 
 export interface SetupResult {
   ok: boolean;
@@ -60,6 +76,81 @@ function describe(res: { status?: number; error?: string }): string {
   const code = res.status ? ` (HTTP ${res.status})` : "";
   return `${res.error ?? "unknown error"}${code}`;
 }
+
+type ChannelSpec = {
+  name: string;
+  type: number;
+  parent_id?: string | null;
+  topic?: string;
+  permission_overwrites?: PermissionOverwrite[];
+};
+
+/**
+ * Finds, adopts or creates one channel, recording which of the three happened.
+ *
+ * Matching is by name because a name is what an admin actually sees. Plenty of
+ * servers already have a #verify or a ticket category from a previous bot, and
+ * quietly creating a second one beside it - identical but empty - is the kind
+ * of mess a setup button is supposed to avoid.
+ *
+ * A configured id is treated the way the role helpers treat one: as an
+ * instruction to use *that* channel. If it has since been deleted the honest
+ * answer is to report it missing, not to hand back a fresh default-named
+ * channel the admin then has to notice and clean up.
+ */
+async function ensureChannel(
+  guildId: string,
+  existing: GuildChannel[],
+  configured: string | null,
+  spec: ChannelSpec,
+  reason: string,
+  result: SetupResult,
+): Promise<string | null> {
+  if (configured) {
+    if (existing.some((c) => c.id === configured)) {
+      result.reused.push(spec.name);
+      return configured;
+    }
+    result.missing.push(`${spec.name} (${configured})`);
+    return null;
+  }
+
+  const found = existing.find(
+    (c) => c.type === spec.type && c.name.toLowerCase() === spec.name.toLowerCase(),
+  );
+  if (found) {
+    result.reused.push(spec.name);
+    return found.id;
+  }
+
+  const created = await discordRest.createChannel(guildId, spec, reason);
+  await new Promise((r) => setTimeout(r, 150)); // stay well inside rate limits
+  if (created.ok && created.data) {
+    result.created.push(spec.name);
+    return created.data.id;
+  }
+  result.failed.push(spec.name);
+  result.detail ??= describe(created);
+  return null;
+}
+
+/**
+ * A panel channel everyone can read and nobody can talk in. Both panels are one
+ * button in an otherwise empty channel; letting members chat there buries the
+ * thing they came to press.
+ *
+ * ViewChannel is allowed explicitly rather than left to inherit, because the
+ * verification gate works by denying @everyone elsewhere - and a gate members
+ * cannot see is a locked server.
+ */
+const panelOverwrites = (guildId: string): PermissionOverwrite[] => [
+  {
+    id: guildId,
+    type: 0,
+    allow: String(Permissions.ViewChannel | Permissions.ReadMessageHistory),
+    deny: String(Permissions.SendMessages),
+  },
+];
 
 /** Milestone level roles - the Arcane level-reward replacement. */
 export async function setupLevelRoles(): Promise<SetupResult> {
@@ -201,6 +292,161 @@ export async function setupVerificationRoles(): Promise<SetupResult & { verified
     unverified_role_id: unverified,
   });
   return { ...result, verified: verified ?? undefined, unverified: unverified ?? undefined };
+}
+
+/**
+ * The channel the verification panel lives in, created if the server has none.
+ *
+ * Which channel members see used to be left to the admin on the grounds that it
+ * is a human decision. It is - but "somewhere newcomers can press verify" has
+ * one obvious answer, and making the button stop half-done to ask for it left
+ * fresh servers with roles and no gate.
+ */
+export async function setupVerificationChannel(): Promise<SetupResult & { channel?: string }> {
+  const guildId = discordEnv.guildId;
+  if (!guildId || !discordEnv.botToken) return { ok: false, error: "not_configured", ...empty() };
+
+  const cfg = await getBotConfig("verification");
+  const channels = await discordRest.listGuildChannels(guildId);
+  if (!channels.ok || !channels.data) {
+    return { ok: false, error: channels.status === 403 ? "missing_permissions" : "api", ...empty() };
+  }
+
+  const result: SetupResult & { channel?: string } = { ok: true, ...empty() };
+  const channelId = await ensureChannel(
+    guildId,
+    channels.data,
+    cfg.panel_channel_id,
+    {
+      name: PROVISIONED.verifyChannel,
+      type: ChannelType.GuildText,
+      topic: "Press the button to get access to the server.",
+      permission_overwrites: panelOverwrites(guildId),
+    },
+    `${BOT_NAME} - verification panel`,
+    result,
+  );
+
+  if (channelId) {
+    await botDb.patchConfig("verification", { panel_channel_id: channelId });
+    result.channel = channelId;
+  }
+  return result;
+}
+
+/**
+ * Everything a ticket needs before one can be opened: a staff role to see it,
+ * a category to open under, and a channel to hold the panel.
+ *
+ * Order matters. The category's overwrites name the staff role, so resolving
+ * the role second would file every ticket under a category staff cannot read
+ * until the next run.
+ */
+export async function setupTicketSpace(): Promise<SetupResult & { channel?: string }> {
+  const guildId = discordEnv.guildId;
+  if (!guildId || !discordEnv.botToken) return { ok: false, error: "not_configured", ...empty() };
+
+  const cfg = await getBotConfig("tickets");
+  const [channels, roles] = await Promise.all([
+    discordRest.listGuildChannels(guildId),
+    discordRest.listGuildRoles(guildId),
+  ]);
+  if (!channels.ok || !channels.data || !roles.ok || !roles.data) {
+    const failed = channels.ok ? roles : channels;
+    return { ok: false, error: failed.status === 403 ? "missing_permissions" : "api", ...empty() };
+  }
+
+  const result: SetupResult & { channel?: string } = { ok: true, ...empty() };
+
+  // Held separately from what gets written back: a configured-but-deleted role
+  // is reported and left alone, but it must not end up in an overwrite, which
+  // Discord rejects for an id that no longer resolves.
+  let staffRoleId: string | null = null;
+  if (cfg.staff_role_id) {
+    if (roles.data.some((r) => r.id === cfg.staff_role_id)) {
+      staffRoleId = cfg.staff_role_id;
+      result.reused.push(PROVISIONED.staffRole);
+    } else {
+      result.missing.push(`${PROVISIONED.staffRole} (${cfg.staff_role_id})`);
+    }
+  } else {
+    const found = roles.data.find(
+      (r) => r.name.toLowerCase() === PROVISIONED.staffRole.toLowerCase(),
+    );
+    if (found) {
+      staffRoleId = found.id;
+      result.reused.push(PROVISIONED.staffRole);
+    } else {
+      const created = await discordRest.createRole(
+        guildId,
+        { name: PROVISIONED.staffRole, color: 0x5865f2, hoist: true, mentionable: false },
+        `${BOT_NAME} - ticket staff`,
+      );
+      await new Promise((r) => setTimeout(r, 120));
+      if (created.ok && created.data) {
+        staffRoleId = created.data.id;
+        result.created.push(PROVISIONED.staffRole);
+      } else {
+        result.failed.push(PROVISIONED.staffRole);
+        result.detail ??= describe(created);
+      }
+    }
+  }
+
+  // Hidden from @everyone at the category so a ticket is private for the moment
+  // between being created and its own overwrites landing.
+  const categoryId = await ensureChannel(
+    guildId,
+    channels.data,
+    cfg.category_id,
+    {
+      name: PROVISIONED.ticketCategory,
+      type: ChannelType.GuildCategory,
+      permission_overwrites: [
+        { id: guildId, type: 0, allow: "0", deny: String(Permissions.ViewChannel) },
+        ...(staffRoleId
+          ? [
+              {
+                id: staffRoleId,
+                type: 0 as const,
+                allow: String(Permissions.ViewChannel | Permissions.ReadMessageHistory),
+                deny: "0",
+              },
+            ]
+          : []),
+      ],
+    },
+    `${BOT_NAME} - ticket category`,
+    result,
+  );
+
+  // Deliberately not filed under that category - it is the one public part of
+  // the ticket system, and inheriting the category's deny would hide the panel
+  // from the members meant to press it.
+  const channelId = await ensureChannel(
+    guildId,
+    channels.data,
+    cfg.panel_channel_id,
+    {
+      name: PROVISIONED.ticketChannel,
+      type: ChannelType.GuildText,
+      topic: "Open a private ticket and a staff member will be with you.",
+      permission_overwrites: panelOverwrites(guildId),
+    },
+    `${BOT_NAME} - ticket panel`,
+    result,
+  );
+
+  const patch: Record<string, string> = {};
+  if (staffRoleId) patch.staff_role_id = staffRoleId;
+  if (categoryId) patch.category_id = categoryId;
+  if (channelId) {
+    patch.panel_channel_id = channelId;
+    result.channel = channelId;
+  }
+  if (Object.keys(patch).length) await botDb.patchConfig("tickets", patch);
+
+  return result;
 }
 
 /** Posts (or re-posts) the verification panel into a channel. */
@@ -512,10 +758,12 @@ export async function runFullSetup(): Promise<FullSetupResult> {
   // 4. Counter channels.
   await record("stats_channels", "Counter channels", setupStatsChannels);
 
-  // 5 & 6. Panels, which need a channel to be posted into. That channel is a
-  //        human decision - which one members should see - so a missing one is
-  //        reported as outstanding rather than guessed at by creating a
-  //        channel nobody asked for.
+  // 5. The channel the verification panel lives in, then the panel itself.
+  //    Both panels need somewhere to be posted, and leaving that to the admin
+  //    meant a fresh server finished setup with verification roles but no gate
+  //    handing them out - the one step that makes the rest do anything.
+  await record("verification_channel", "Verification channel", setupVerificationChannel);
+
   const verifyCfg = await getBotConfig("verification");
   if (verifyCfg.panel_channel_id) {
     const res = await postVerificationPanel(verifyCfg.panel_channel_id);
@@ -532,9 +780,13 @@ export async function runFullSetup(): Promise<FullSetupResult> {
       key: "verification_panel",
       label: "Verification panel",
       status: "skipped",
-      detail: "Pick a verification channel below, then save - the panel posts itself.",
+      detail:
+        "No channel to post into - the previous step could not create or find one. Fix that, or pick a channel below and save.",
     });
   }
+
+  // 6. Ticket staff role, category and panel channel, then the panel.
+  await record("ticket_space", "Ticket roles and channels", setupTicketSpace);
 
   const ticketCfg = await getBotConfig("tickets");
   if (ticketCfg.panel_channel_id) {
@@ -552,7 +804,8 @@ export async function runFullSetup(): Promise<FullSetupResult> {
       key: "ticket_panel",
       label: "Ticket panel",
       status: "skipped",
-      detail: "Pick a ticket channel below, then save - the panel posts itself.",
+      detail:
+        "No channel to post into - the previous step could not create or find one. Fix that, or pick a channel below and save.",
     });
   }
 
