@@ -754,6 +754,11 @@ export interface Database {
       get_or_create_dm: { Args: { p_user: string }; Returns: string };
       mark_conversation_read: { Args: { p_conversation: string }; Returns: undefined };
       heartbeat: { Args: Record<string, never>; Returns: undefined };
+      /** Cookie consent record (0065). Callable by anon - signed-out people consent too. */
+      record_consent: {
+        Args: { p_analytics: boolean; p_anonymous_id?: string | null; p_policy_version?: number };
+        Returns: Json;
+      };
       friendship_status: { Args: { p_user: string }; Returns: string };
       search_players: {
         Args: { p_query: string };

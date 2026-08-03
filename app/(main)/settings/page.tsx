@@ -14,6 +14,7 @@ import { PreferencesSettings } from "@/features/settings/preferences-settings";
 import { GameplaySettings } from "@/features/settings/gameplay-settings";
 import { SecuritySettings } from "@/features/settings/security-settings";
 import { BlockedUsers } from "@/features/settings/blocked-users";
+import { ConsentSettings } from "@/features/settings/consent-settings";
 import { ConnectionsSettings, type DiscordConnection } from "@/features/settings/connections-settings";
 import { SiteThemePicker } from "@/features/settings/site-theme-picker";
 
@@ -101,10 +102,15 @@ export default async function SettingsPage({
 
         <TabsContent value="privacy" className="space-y-4">
           <BlockedUsers initial={blocked} />
+          <ConsentSettings />
           <p className="text-sm text-muted-foreground">
             How we handle your data:{" "}
             <Link href="/legal/privacy" className="font-medium text-primary hover:underline">
               Privacy Policy
+            </Link>{" "}
+            ·{" "}
+            <Link href="/legal/cookies" className="font-medium text-primary hover:underline">
+              Cookie Policy
             </Link>{" "}
             ·{" "}
             <Link href="/legal/terms" className="font-medium text-primary hover:underline">

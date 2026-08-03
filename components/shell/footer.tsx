@@ -30,6 +30,7 @@ const LINKS = {
   Legal: [
     { label: "Terms of Service", href: "/legal/terms" },
     { label: "Privacy Policy", href: "/legal/privacy" },
+    { label: "Cookie Policy", href: "/legal/cookies" },
   ],
 };
 
