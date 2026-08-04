@@ -9,7 +9,7 @@ import { getSessionUser, getFeatureFlags, getCurrentProfile } from "@/lib/supaba
 import { createClient } from "@/lib/supabase/server";
 import { GamePlayer } from "@/features/games/game-player";
 import { EarlyAccessLock } from "@/features/games/early-access-lock";
-import { GameLeaderboard } from "@/features/leaderboards/game-leaderboard";
+import { LeaderboardTabs } from "@/features/leaderboards/leaderboard-tabs";
 import { RateGame } from "@/features/games/rate-game";
 import { GameCard } from "@/components/games/game-card";
 import { FavoriteButton } from "@/components/games/favorite-button";
@@ -227,9 +227,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <Suspense fallback={<Skeleton className="h-64 w-full" />}>
-                <GameLeaderboard slug={game.slug} currentUserId={user?.id} />
-              </Suspense>
+              <LeaderboardTabs slug={game.slug} currentUserId={user?.id} />
             </CardContent>
           </Card>
 

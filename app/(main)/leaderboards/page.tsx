@@ -4,7 +4,7 @@ import { Trophy, Crown } from "lucide-react";
 import { getPublishedGames } from "@/services/games";
 import { getSessionUser } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
-import { GameLeaderboard } from "@/features/leaderboards/game-leaderboard";
+import { LeaderboardTabs } from "@/features/leaderboards/leaderboard-tabs";
 import { GamePicker } from "@/features/leaderboards/game-picker";
 import { PlayerName } from "@/components/profile/player-name";
 import { UserAvatar } from "@/components/ui/avatar";
@@ -159,7 +159,7 @@ export default async function LeaderboardsPage({
               </div>
             </CardHeader>
             <CardContent>
-              {selected && <GameLeaderboard slug={selected} currentUserId={user?.id} />}
+              {selected && <LeaderboardTabs slug={selected} currentUserId={user?.id} />}
             </CardContent>
           </Card>
         </TabsContent>

@@ -242,7 +242,12 @@ export const SERIES: ReleaseSeries[] = [
               {
                 title: "Choose your difficulty",
                 description:
-                  "On Frogger, Snake, Minesweeper and Hangman, starting from your saved default. Each is tuned on its own terms rather than by one global scalar - doubling speed makes Snake harder and Whack-a-Mole easier, so only the engine knows which way \"harder\" points. Rewards scale with the choice, so easy is a comfort setting rather than the best way to farm credits. Every run records its difficulty; ranking each difficulty separately is still to come.",
+                  "On Frogger, Snake, Minesweeper and Hangman, starting from your saved default. Each is tuned on its own terms rather than by one global scalar - doubling speed makes Snake harder and Whack-a-Mole easier, so only the engine knows which way \"harder\" points. Rewards scale with the choice, so easy is a comfort setting rather than the best way to farm credits.",
+              },
+              {
+                title: "A leaderboard per difficulty",
+                description:
+                  "Each difficulty ranks on its own board, with tabs on the game page and the leaderboards page. Separate boards rather than one mixed list, because a ranking only means something between runs that faced the same game - sorted together, every easy run outranks every hard one and it stops being a leaderboard. Achievements, the podium badge, the friends feed and your \"best game\" all still read the regular board only: an easy run should not quietly unlock something written for a real one.",
               },
             ],
           },

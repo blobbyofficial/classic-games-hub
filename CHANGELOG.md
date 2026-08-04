@@ -82,12 +82,27 @@ live roadmap at `/roadmap`.
   actually read it, because a control that changes nothing is worse than none.
 - Rewards scale with difficulty (easy 0.75x, hard 1.25x). Without it easy is
   strictly the best way to earn and the picker becomes a farming setting.
-- **Only regular runs are ranked**, and that is a deliberate half-step. Widening
-  the leaderboard key to include difficulty means re-emitting the three separate
-  functions that upsert into `leaderboard_scores` plus every read that assumes
-  one row per player; getting one wrong silently corrupts the only competitive
-  data on the site. Every run records its difficulty from today, so the history
-  needed to build the split boards is already accumulating.
+- **A leaderboard per difficulty** (`0069`). Separate boards rather than one
+  mixed list: a ranking only means something between runs that faced the same
+  game, and sorting them together would put every easy run above every hard one.
+  Tabs on the game page and the leaderboards page.
+- Deciding this needed the live catalogue, not the migration files. Grepping the
+  files suggested three separate upserts into `leaderboard_scores`; asking
+  Postgres showed the `0013` and `0036` ones were superseded years of migrations
+  ago and no longer exist. The real surface is two writers, three readers and one
+  direct table query.
+- Every reader needed a decision rather than a filter, because "best score" stops
+  being unambiguous once a player holds three rows for one game. Achievements,
+  the podium badge, the friends feed and profile "best game" all read the
+  **regular** board only - an easy run must not quietly unlock something written
+  for a real one.
+- **Fixed a live bug from `0067`:** giving the new four-argument `submit_score` a
+  default on `p_difficulty` while the three-argument overload still existed made
+  a three-argument call ambiguous - `function public.submit_score(unknown,
+  bigint, integer) is not unique`. The deployed app calls it with exactly three
+  arguments, so that sat between every finished game and its score. Dropping the
+  default is what disambiguates. Both old signatures are now thin wrappers that
+  delegate, so there is one body rather than a sixth divergent copy.
 - **Report a message** (`0066`), extending the existing reports table rather
   than adding a second system - `target_type = 'message'` has been accepted
   since `0004` and was never used. The admin queue loads the surrounding

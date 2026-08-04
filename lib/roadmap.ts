@@ -46,14 +46,11 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
 
 /**
  * Two entries, because the work behind them is two different sizes and
- * versioning it the same way would mislead.
- *
- * v1.6.0 is not a patch - rewriting the engines,
- * adding real multiplayer and building tournaments is a release in its own
- * right, and calling that a point-one would set the wrong expectation for how
- * long it takes. The last entry is unscheduled on purpose: ideas worth writing
- * down are not the same as work anyone has committed to.
-
+ * versioning it the same way would mislead. Rewriting the engines, adding real
+ * multiplayer and building tournaments is a release in its own right, so it is
+ * v1.6.0 rather than another point release. The second entry is unscheduled on
+ * purpose: ideas worth writing down are not the same as work anyone has
+ * committed to.
  */
 export const ROADMAP: RoadmapRelease[] = [
   {
@@ -194,12 +191,6 @@ export const ROADMAP: RoadmapRelease[] = [
         heading: "Keeping scores honest",
         icon: "Gauge",
         items: [
-          {
-            title: "A board per difficulty",
-            description:
-              "Easy and hard runs are already recorded in full, so the history is accumulating - what is missing is the leaderboard key. Widening it to (game, player, difficulty) means re-emitting the three functions that upsert scores and every read that assumes one row per player, correctly, in one migration. Worth doing carefully rather than quickly.",
-            status: "later",
-          },
           {
             title: "Replays, ghosts and validation",
             description:

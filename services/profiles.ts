@@ -67,6 +67,10 @@ export const getUserBestScores = cache(async (userId: string, limit = 6) => {
     .from("leaderboard_scores")
     .select("best_score, plays, achieved_at, games(slug, title, thumbnail_url, category)")
     .eq("user_id", userId)
+    // Since 0068 a player holds one row per difficulty per game, so without
+    // this the same game appears up to three times in "best scores" - and an
+    // easy run could outrank the regular one it sits next to.
+    .eq("difficulty", "regular")
     .order("best_score", { ascending: false })
     .limit(limit);
   return (data ?? []).map((r) => ({

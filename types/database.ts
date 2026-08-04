@@ -219,6 +219,8 @@ export interface Database {
         Row: {
           game_id: string;
           user_id: string;
+          /** Part of the primary key since 0068 - one board per difficulty. */
+          difficulty: PlayDifficulty;
           best_score: number;
           plays: number;
           achieved_at: string;
