@@ -20,9 +20,11 @@ import { AnnounceCard, ChannelCard, ModerationCard, PushCard } from "./discord-c
 export function DiscordTabs({
   levelling,
   server,
+  publishing,
 }: {
   levelling: React.ReactNode;
   server: React.ReactNode;
+  publishing: React.ReactNode;
 }) {
   return (
     <Tabs defaultValue="actions" className="space-y-4">
@@ -50,6 +52,7 @@ export function DiscordTabs({
       <TabsContent value="sync" className="space-y-6">
         <DiscordSetupCard />
         <DiscordCommandsCard />
+        {publishing}
         <PushCard />
         <DiscordExportCard />
         <DiscordResetCard />

@@ -3,7 +3,74 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
-## v1.5.1 - "Sanded Down"
+## v1.5.4 - "Broadcast" (versioned update log, and Discord mirroring)
+
+### 🗂️ Every change has a version
+
+- **`lib/update-log.ts` is now a tree**: releases grouped into series, and every
+  one of the 60 changes in production assigned to exactly one release. Before
+  this, eight releases covered part of the history and the rest - the March
+  prototype, the July rebuild, the whole run of Discord work between 26 July
+  and 3 August - sat in a flat list with no version at all.
+- **Grouped by size, not by count.** Three small fixes in one afternoon are one
+  patch (v1.4.6, v1.4.8); a single pull request that redesigns the interface is
+  a patch on its own (v1.4.10). Each release carries a `scope` line saying why
+  it was drawn where it was, so the grouping can be argued with rather than
+  taken on trust - and its `commits` and `prs`, so the claim is checkable.
+- **`UNASSIGNED` is derived, not asserted.** A landed change nobody versioned
+  shows up on `/updates` as a question instead of quietly falling out of the
+  history the way the 26 July - 3 August run did.
+- **Two renumberings, both labelled.** The interface redesign shipped as v1.4.1 while the games
+  and themes overhaul - eight days earlier, and labelled v1.4.1 in its own
+  commit message and changelog heading - held the same number. Chronology wins,
+  so the earlier one keeps v1.4.1 and the redesign is v1.4.10, carrying
+  `formerly` so its old number still finds it. "Sanded Down" moved the same
+  way and for the same reason: it shipped as v1.5.1, but two runs of Discord
+  work landed earlier the same day carrying no version at all, so it becomes
+  v1.5.3 and they take v1.5.1 and v1.5.2.
+- `/updates` renders it as nested dropdowns - a line, then its releases, then
+  their notes and the commits behind them. Native `<details>`, so the whole tree
+  works with JavaScript off and costs the page nothing.
+
+### 📡 The update log and announcements, in Discord
+
+- **Two channels, mirrored from the website** (`lib/discord/publish.ts`,
+  migration `0063`): one message per release in an update-log channel, and one
+  per published announcement in an announcements channel. Configured under
+  Admin → Discord bot → Sync → Publishing, or created by **Run full setup**.
+- **A mirror, not a series of posts.** Every mirrored thing records its message
+  id and a fingerprint of what was in it, so a second sync *edits* rather than
+  duplicating, an edit on the website reaches Discord, unpublishing an
+  announcement deletes its message, and a sync with nothing to say makes no
+  Discord calls at all.
+- **One direction, on purpose.** The update log is a file in the repository and
+  announcements are rows an admin publishes, so the website owns both and
+  Discord is a view of them - the same rule role sync follows. Reading messages
+  back would give one fact two owners, with no answer when they disagreed.
+- **Releases post oldest first**, so the channel reads in the order things
+  happened. Discord orders by post time and nothing reorders it afterwards, so
+  it is the one part a later sync could not repair.
+- **Publishing an announcement mirrors it after the response**, never before: a
+  Discord outage must not turn a successful publish into an error the admin
+  retries, which would notify every player a second time.
+- **`/api/cron/discord-publish` every 15 minutes** is recovery, not timeliness -
+  a deploy adds releases with nobody pressing anything, an outage drops a post,
+  someone deletes a message by hand. Idempotent by fingerprint, so the usual run
+  costs two database reads.
+- A message deleted by hand answers `404` to the edit that follows; the record
+  is forgotten and the message re-posted, rather than the sync failing forever
+  against an id that will never exist again.
+- Only the newest 25 announcements are kept in step, and older ones are left
+  alone rather than deleted - scrolling out of the window is not the same as
+  being withdrawn, and deleting on that basis would quietly clear the channel.
+
+---
+
+## v1.5.3 - "Sanded Down"
+
+> Published as v1.5.1. Two runs of Discord work landed earlier the same day and
+> had no version at all; numbers that run backwards in time are not worth
+> reading, so this took the next free one. See `/updates`.
 
 ### 🎮 Difficulty, and reports with context
 
@@ -29,7 +96,29 @@ live roadmap at `/roadmap`.
   report row rather than taking a conversation id, so it cannot be pointed at an
   inbox, and it is staff-gated in place of the participant RLS it steps around.
 
-## Unreleased
+---
+
+## v1.5.2 - "Server Export"
+
+### 🗺️ Seeing the whole server
+
+- **`/export`, and Sync → Export the server.** Both produce the same JSON: every
+  channel nested under its category in draw order, every role, every permission
+  overwrite - ids resolved to names and bitfields decoded, because `"deny":
+  "1024"` on a raw id says nothing and `deny: ["ViewChannel"]` on @everyone says
+  all of it. In Discord it arrives as a file attachment, since a modest server
+  exports past the 2,000-character message limit and a truncated server map is
+  worse than none.
+- **Problems, above the data**: the bot's own highest role and which roles sit
+  above it, its effective permissions, every configured id that no longer
+  resolves, and whether the gateway worker has ever checked in.
+- **Role sync every two minutes**, not nightly - nightly cannot hold up a
+  promise of the same roles and level as the website. Costs one database round
+  trip when nobody is linked.
+
+---
+
+## v1.5.1 - "Setup, Finished"
 
 ### ♻️ Reset all settings
 
@@ -94,7 +183,7 @@ live roadmap at `/roadmap`.
   report now names the channel it posted into, so "posted" can be checked rather
   than taken on trust.
 
-## "Collector's Edition" (v1.5.0)
+## v1.5.0 - "Collector's Edition"
 
 ### 🌀 Labyrinth - the first true-3D title
 
@@ -441,8 +530,10 @@ live roadmap at `/roadmap`.
   `Deferred` and `DeferredSpinner` primitives stay invisible for 300 ms before
   fading in, so quick loads show nothing at all instead of a flash.
 
-## Unreleased - "New Dimensions" (parties & online multiplayer)
-## v1.4.1 - "Refined" (UI, UX and performance overhaul)
+## v1.4.10 - "Refined" (UI, UX and performance overhaul)
+
+> Published as v1.4.1, which "Every Pixel" below already held. Renumbered to
+> the end of the line it actually shipped at; see `/updates`.
 
 A ground-up pass over how the site looks, feels and performs. No feature was
 removed or replaced with a placeholder; everything below is the same
@@ -513,12 +604,14 @@ functionality, rebuilt on a shared foundation.
 - Toasts sit above the mobile tab bar; the footer and `<main>` clear it too, with
   `env(safe-area-inset-bottom)` respected throughout.
 
-## Unreleased - "New Dimensions" (parties & online multiplayer)
+## v1.4.4 - v1.4.9 - parties, the bot, and the dashboard
 
-Roadmap v1.4.0. Playing together stops being a plan and becomes a feature, and
-four migrations that were live in the database finally have code to reach them.
+Playing together stops being a plan and becomes a feature, and four migrations
+that were live in the database finally have code to reach them - then six days
+of Discord and dashboard work on top. Six releases; each section below says
+which one it belongs to.
 
-### 🎉 Parties
+### 🎉 Parties (v1.4.4)
 
 - `/party` creates or joins a party by six-character code, with a live roster,
   presence, leader controls and one-tap invites from your friends list.
@@ -529,7 +622,7 @@ four migrations that were live in the database finally have code to reach them.
 - Party invites arrive as notifications carrying the code, so the recipient
   still chooses whether to join.
 
-### 🎮 Online multiplayer
+### 🎮 Online multiplayer (v1.4.4)
 
 - **Head-to-head**: Tic-Tac-Toe, Connect 4 and Reversi become real online
   matches on one shared board with alternating turns and a fixed seat order.
@@ -541,7 +634,7 @@ four migrations that were live in the database finally have code to reach them.
   id and is never persisted; scores still go through the ordinary
   `submit_score` path, so party play earns exactly what solo play earns.
 
-### 📊 Status page
+### 📊 Status page (v1.4.4)
 
 - A public `/status` renders `platform_status()` in one round trip: players
   online, plays today, community and economy counts, and Discord worker
@@ -551,7 +644,7 @@ four migrations that were live in the database finally have code to reach them.
   permanently offline no matter how healthy it was (`0043` shipped the RPC, but
   nothing ever called it).
 
-### 🔗 Vanity URLs & booster dailies
+### 🔗 Vanity URLs & booster dailies (v1.4.4)
 
 - `/u/<slug>` resolves either a username or a vanity slug, so every profile
   link, share card and metadata route works with both. Claim or clear yours in
@@ -560,7 +653,7 @@ four migrations that were live in the database finally have code to reach them.
 - The fourth daily challenge is a boosters' perk: visible to everyone, but only
   boosters can claim it (`0046`).
 
-### 🧹 Rewarded ads removed
+### 🧹 Rewarded ads removed (v1.4.4)
 
 - The simulated rewarded-ad programme is gone root and branch: the opt-in
   setting, the "watch to double your credits" overlay, the admin ads centre and
@@ -570,7 +663,7 @@ four migrations that were live in the database finally have code to reach them.
 - The roadmap now records this as **Dropped** rather than quietly deleting it,
   and gained a status of that name to say so honestly.
 
-### 🧹 Admin dashboard tidy-up
+### 🧹 Admin dashboard tidy-up (v1.4.9)
 
 - **Sidebar layout.** The nav sat above the content, so every page opened by
   pushing what you came for below the fold. It now sits beside the content on
@@ -602,7 +695,7 @@ four migrations that were live in the database finally have code to reach them.
   Eleven items get re-scanned every visit; three groups are learned once.
 - Removed the now-unused `DiscordConsole` wrapper.
 
-### 🏷️ The bot is "Classic Games Bot"
+### 🏷️ The bot is "Classic Games Bot" (v1.4.8)
 
 - The site and community are the Hub; the bot that serves them is now named
   separately, on every surface it signs - embed footers, audit-log entries and
@@ -613,7 +706,7 @@ four migrations that were live in the database finally have code to reach them.
   links your Classic Games Hub account, and a ban DM still says you were banned
   from Classic Games Hub, because that is the server.
 
-### 🐞 Bugs found in a sweep of the bot
+### 🐞 Bugs found in a sweep of the bot (v1.4.8)
 
 - **The live feed silently swallowed the first real event.** The worker primes
   itself on its first poll to skip the backlog, but returned early when that
@@ -632,7 +725,7 @@ four migrations that were live in the database finally have code to reach them.
 - **Long name templates were rejected outright.** Discord caps role and channel
   names at 100 characters. The refresh pass clamped; creation didn't.
 
-### 🩹 Three dashboard settings that couldn't take effect
+### 🩹 Three dashboard settings that couldn't take effect (v1.4.8)
 
 - **Tickets: the panel channel was dropped on every save.** `panel_channel_id`
   was missing from the tickets validation schema, and zod strips unknown keys -
@@ -657,7 +750,7 @@ four migrations that were live in the database finally have code to reach them.
   channel" messages name the field to fill in rather than telling you to run a
   slash command.
 
-### 🔗 Linked roles and channels are used, not duplicated
+### 🔗 Linked roles and channels are used, not duplicated (v1.4.8)
 
 - Pasting a role or channel ID into **Admin → Discord bot** now means *use this
   one*. The bot adopts it and updates it to match your settings - a milestone
@@ -674,7 +767,7 @@ four migrations that were live in the database finally have code to reach them.
 - Summaries now separate **created**, **updated**, **already correct** and
   **not found**, in Discord and in the dashboard alike.
 
-### 🎛️ Run the bot from the dashboard
+### 🎛️ Run the bot from the dashboard (v1.4.7)
 
 - **Admin → Discord bot** gains a console: **Announce**, **Moderation** (warn,
   timeout, remove timeout, kick, ban, unban), and **Channel tools** (purge,
@@ -695,7 +788,7 @@ four migrations that were live in the database finally have code to reach them.
   re-posted from the dashboard - previously that was only possible by running
   `/setup tickets` again.
 
-### 🐛 Audit-log reasons broke every write to Discord
+### 🐛 Audit-log reasons broke every write to Discord (v1.4.6)
 
 - **`/setup levels`, `/setup verification` and `/setup stats` could never create
   anything**, and moderation commands failed on any reason containing an emoji
@@ -710,7 +803,7 @@ four migrations that were live in the database finally have code to reach them.
   one word hid a `TypeError` thrown by `fetch` itself and turned a five-minute
   fix into a hunt for a permissions problem that never existed.
 
-### 🔎 Discord setup diagnostics
+### 🔎 Discord setup diagnostics (v1.4.6)
 
 - `/setup` now quotes **Discord's own error** for a failed create, plus the
   thing to actually change. The old summary guessed - "check my permissions and
@@ -731,7 +824,7 @@ four migrations that were live in the database finally have code to reach them.
   what breaks without it - including the one that makes Discord reject the
   interactions endpoint URL.
 
-### 🤖 Register commands without a terminal
+### 🤖 Register commands without a terminal (v1.4.5)
 
 - **Admin → Discord bot → "Register slash commands"** does what
   `POST /api/discord/register` does, but from the dashboard - the cron route
@@ -739,13 +832,13 @@ four migrations that were live in the database finally have code to reach them.
   same Discord endpoint with the same command set, and registration is a full
   replace, so repeating it is harmless.
 
-### 📗 CLAUDE.md
+### 📗 CLAUDE.md (v1.4.5)
 
 - Added, so a session starting cold finds the plan (`lib/roadmap.ts`), the
   history (`lib/update-log.ts`), the rule that shipped work *moves* between
   them, where invariants belong, and that `bot/` typechecks separately.
 
-### 📜 Update log
+### 📜 Update log (v1.4.5)
 
 - New public **`/updates`** page: every release and the features it brought,
   every merged pull request, and every individual change that has reached
@@ -759,7 +852,7 @@ four migrations that were live in the database finally have code to reach them.
 - Added `/updates` and `/status` to the sitemap; `/status` had been missing
   since it shipped.
 
-### 🗺️ Roadmap restructure
+### 🗺️ Roadmap restructure (v1.4.5)
 
 - Everything still unbuilt across v1.2.0–v1.4.0 - eleven items that had been
   left scattered as loose ends - is gathered into a new **v1.5.0 "Collector's
@@ -770,13 +863,13 @@ four migrations that were live in the database finally have code to reach them.
   with only L20 and L50 carried forward, and Turbo Horizon stays in v1.4.0 with
   only the remaining 3D titles carried forward.
 
-### 🗃️ Migrations
+### 🗃️ Migrations (v1.4.5)
 
 - `0042`–`0046` were applied to the database but never reached the repository,
   leaving git two migrations behind the deployed schema. The SQL is recovered
   verbatim from the migration ledger; only the file header comments are new.
 
-## Unreleased - "One Bot" (Discord consolidation)
+## v1.4.3 - "One Bot" (Discord consolidation)
 
 The Hub's own Discord bot now covers everything Appy, Sapphire, Arcane and
 ServerStats did, so the server can run on one bot instead of five.
@@ -1107,16 +1200,35 @@ you win by playing.
 
 ---
 
-## v1.1.1
+## v1.1.2 - "Open Plans"
+
+The roadmap became a page on the site rather than a document nobody outside
+the project could read: `/roadmap`, with a status on every item and the
+definition of done stated in public - then restructured from a flat list of
+wants into v1.2.0, v1.3.0 and v1.4.0, which is what made the next fortnight
+of work legible.
+
+## v1.1.1 - "Sharp Edges"
 
 Bug-fix release: fixed gradient text rendering as a solid block, added
 long-press flagging to Minesweeper on mobile, fixed fullscreen stretching /
 resolution on games, made the admin "rewarded ads" flag remove all ads
 site-wide, and added `sitemap.xml` + `robots.txt`.
 
-## v1.1.0 - feature complete
+## v1.1.0 - "Feature Complete"
 
 Discord-only login and usernames, mobile-first games (touch controls,
 responsive canvases, per-game tuning, safe-area/overscroll), an admin control
 centre, profile customisation (nameplates, staff flair, effects), a living
 economy & events system, and a performance pass.
+
+---
+
+## v1.0.0 - "First Cabinet"
+
+The original site, four months before the rebuild: a static arcade of
+hand-written pages with Snake and Tetris, game pages generated from one
+metadata manifest, shared CSS and scripts instead of a copy per page, and a
+stats dashboard kept in `localStorage` because there was nowhere else to put
+it. Its commits are no longer reachable from `main` - pull requests #1-#5 are
+all that is left of it.

@@ -194,6 +194,39 @@ export const botDb = {
       p_action: action,
       p_reason: reason,
     }),
+  /** ref → the Discord message mirroring it (migration 0068). */
+  posts: (kind: "release" | "announcement") =>
+    rpc<Record<string, { channel_id: string; message_id: string; digest: string }>>("bot_posts", {
+      p_kind: kind,
+    }),
+  recordPost: (
+    kind: "release" | "announcement",
+    ref: string,
+    channelId: string,
+    messageId: string,
+    digest: string,
+  ) =>
+    rpc<{ ok: boolean; error?: string }>("bot_record_post", {
+      p_kind: kind,
+      p_ref: ref,
+      p_channel: channelId,
+      p_message: messageId,
+      p_digest: digest,
+    }),
+  forgetPost: (kind: "release" | "announcement", ref: string) =>
+    rpc<{ ok: boolean }>("bot_forget_post", { p_kind: kind, p_ref: ref }),
+  publishedAnnouncements: (limit: number) =>
+    rpc<
+      {
+        id: string;
+        title: string;
+        body: string;
+        level: string;
+        link_label: string | null;
+        link_href: string | null;
+        published_at: string;
+      }[]
+    >("bot_published_announcements", { p_limit: limit }),
   discordIdFor: (userId: string) => rpc<string | null>("bot_discord_id", { p_user: userId }),
   setBooster: (discordId: string, since: string | null) =>
     rpc<{ ok: boolean }>("bot_set_booster", { p_discord: discordId, p_since: since }),

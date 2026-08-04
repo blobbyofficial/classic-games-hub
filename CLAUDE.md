@@ -7,15 +7,29 @@ Discord bot.
 ## Where the plan lives
 
 - **`lib/roadmap.ts`** - what is *coming*, and nothing else. Currently
-  **v1.5.0 "Collector's Edition"**. Renders at `/roadmap`.
-- **`lib/update-log.ts`** - everything already shipped: past releases, merged
-  pull requests, and every change that has landed on `main`. Renders at
-  `/updates`.
+  **v1.6.0 "Head to Head"**. Renders at `/roadmap`.
+- **`lib/update-log.ts`** - everything already shipped: releases grouped into
+  series, merged pull requests, and every change that has landed on `main`.
+  Renders at `/updates`.
 
 When something ships it **moves** from the roadmap into the update log - it is
 never marked shipped and left in place, or the roadmap grows into an archive
 again. `LANDED` in the update log is generated from
 `git log --first-parent main`; regenerate it rather than appending by hand.
+
+**Every landed change belongs to exactly one release.** A release is a unit of
+work, not of time or commit count - three small fixes in an afternoon are one
+patch, a single pull request that redesigns the site is a patch on its own -
+and each one records its `commits`, its `prs`, and a `scope` line saying why it
+was drawn there. `UNASSIGNED` is derived, so a change nobody versioned shows up
+on `/updates` as a question rather than falling out of the history. Version
+numbers run forwards in time inside a series; a release that has to be
+renumbered carries `formerly` so its old number still finds it. A planned
+number in the roadmap is not a reservation - shipped work takes the next free
+one and the plan moves up.
+
+Releases and published announcements are mirrored into Discord
+(`lib/discord/publish.ts`); see `docs/discord-bot.md` → *Publishing*.
 
 To pick up new work: read `lib/roadmap.ts`. Each item's description says what
 it is; none of them are specs, so expect to make product decisions or ask.

@@ -2,13 +2,38 @@
  * The update log - everything that has actually shipped.
  *
  * The roadmap (lib/roadmap.ts) is for what is *coming*; the moment something
- * ships it moves here, so neither page has to carry both jobs. Release entries
- * were moved verbatim out of the roadmap when v1.5.0 was formed, minus the
- * per-item statuses that only mattered while the work was pending.
+ * ships it moves here, so neither page has to carry both jobs.
  *
- * `LANDED` is generated from `git log --first-parent main` - every change that
- * reached production, whether it arrived through a pull request or as a direct
- * commit. Regenerate it after a release rather than editing by hand.
+ * ## How versions are assigned
+ *
+ * Releases are grouped into **series** - the `v1.4` line, the `v1.5` line -
+ * and every change that has ever reached production belongs to exactly one
+ * release inside one series. A release is a *unit of work*, not a unit of
+ * time and not a unit of commit count: three small fixes landed in one
+ * afternoon are one patch release, and a single pull request that rewrites
+ * the interface is a patch release on its own. Each release says why it was
+ * drawn where it was in `scope`, so the grouping can be argued with rather
+ * than guessed at.
+ *
+ * Numbers run forwards in time within a series, which is the one property
+ * that makes a version number worth reading. Assigning them retrospectively
+ * cost two renumberings, and both say so on their card:
+ *
+ *   - The interface redesign was published as v1.4.1 while a *different*
+ *     release - the games and themes overhaul, eight days earlier - carried
+ *     the same number in its commit message and its changelog heading. The
+ *     earlier one keeps v1.4.1; the redesign became v1.4.10.
+ *   - "Sanded Down" was published as v1.5.1, but two runs of Discord work
+ *     landed earlier the same day carrying no version at all. They take
+ *     v1.5.1 and v1.5.2; it became v1.5.3.
+ *
+ * Both carry `formerly`, so the old number still finds them.
+ *
+ * `LANDED` is generated from `git log --first-parent main` - every change
+ * that reached production, whether it arrived through a pull request or as a
+ * direct commit. Regenerate it after a release rather than editing by hand.
+ * `UNASSIGNED` is derived from it, so a sha that reached production without
+ * being versioned surfaces on the page as a question rather than as nothing.
  */
 
 export interface UpdateItem {
@@ -32,8 +57,28 @@ export interface UpdateRelease {
   date: string;
   /** Set when a release was added to after its first ship date. */
   dateNote?: string;
+  /** A version number this release was published under before renumbering. */
+  formerly?: string;
+  /** Why these changes are one release - the reasoning behind the grouping. */
+  scope: string;
   summary: string;
   groups: UpdateGroup[];
+  /** `LANDED` shas that make up this release, newest first. */
+  commits: string[];
+  /** Merged pull requests that make up this release, newest first. */
+  prs?: number[];
+}
+
+/** One major/minor line, holding its `.0` and every patch after it. */
+export interface ReleaseSeries {
+  /** The `.0` of the line - the label the outer dropdown carries. */
+  version: string;
+  codename: string;
+  /** Span of the whole line, e.g. "22 - 29 Jul 2026". */
+  dates: string;
+  summary: string;
+  /** Newest first, so the dropdown opens on the most recent patch. */
+  releases: UpdateRelease[];
 }
 
 /** One entry per change that landed on `main`, newest first. */
@@ -47,790 +92,1538 @@ export interface LandedChange {
 
 export const REPO_URL = "https://github.com/blobbyofficial/classic-games-hub";
 
-export const RELEASES: UpdateRelease[] = [
-  {
-    version: "v1.5.1",
-    codename: "Sanded Down",
-    date: "3 Aug 2026",
-    summary:
-      "The rough edges. No new headline features - the naming that was wrong, the date that was never right, the settings page that never grew past a list of switches, and the consent story a site collecting anything at all is expected to have.",
-    groups: [
-      {
-        heading: "Corrections",
-        icon: "Gauge",
-        blurb: "Three things that were simply wrong, in rising order of how long they had been wrong.",
-        items: [
-          {
-            title: "Noughts and Crosses",
-            description:
-              "Renamed in the game title, the party picker and the docs. The rest of the site is written in British English, so this was the odd one out from launch. The slug stays `tictactoe` - it is the join key for every score and play session and is baked into the party protocol, so renaming it would break all of that to change a string nobody sees.",
-          },
-          {
-            title: "The \"Rebuilt for 2026\" banner is gone",
-            description: "A launch flag is only useful while it is news.",
-          },
-          {
-            title: "\"Last seen\" finally means last seen",
-            description:
-              "It reported the day the account was created, for everyone, since launch - and it was never a display bug. A Supabase query builder is a lazy thenable that only sends its request inside `then()`, and the presence heartbeat was written as fire-and-forget, so it was built and thrown away without ever reaching the network. Every profile in the database had `last_seen_at` exactly equal to `created_at`, to the microsecond. Now awaited, with failures logged rather than swallowed - the silence is what let it survive this long.",
-          },
-        ],
-      },
-      {
-        heading: "Settings, privacy and consent",
-        icon: "SlidersHorizontal",
-        items: [
-          {
-            title: "A Gameplay section in settings",
-            description:
-              "Default difficulty, sound and music as separate sliders, high contrast, time zone and date format. Volumes save when you let go of the slider rather than on every pixel of the drag, and every row explains what it actually changes - most of them used to restate their own label.",
-          },
-          {
-            title: "Analytics is opt-in, properly",
-            description:
-              "Nothing optional loads until you allow it - not loaded and silenced, genuinely not rendered. Reject carries the same weight as Allow, there is no dismiss-without-choosing, and the banner is not modal, because refusing must not cost you anything. Global Privacy Control counts as a refusal. The stored consent record carries the policy version, so a policy that widens what is collected asks again instead of carrying an old answer over. A new /legal/cookies page generates its tables from the same constants the banner uses, so it cannot describe cookies the site does not set.",
-          },
-        ],
-      },
-      {
-        heading: "Social",
-        icon: "MessageSquare",
-        items: [
-          {
-            title: "Stories you can manage",
-            description:
-              "Delete your own, and post more than one. The database always allowed both - the strip had a single button that chose between viewing and composing, so the composer became unreachable the moment you had a story.",
-          },
-          {
-            title: "Report a message",
-            description:
-              "A report action on any message, and the conversation around it in the admin queue - because a given message reads as a joke or as abuse depending entirely on what surrounds it. Scoped deliberately: the lookup resolves the message from the report row rather than taking a conversation id, so staff get what they need to judge one report and cannot page through an inbox with it.",
-          },
-        ],
-      },
-      {
-        heading: "Playing",
-        icon: "Gamepad2",
-        items: [
-          {
-            title: "Fullscreen that fits the screen",
-            description:
-              "It used to stretch a small canvas buffer across a large display, which is what made it look soft, and reserved a hardcoded 170 pixels for the controls whatever the screen was. The buffer now tracks the element's real size, and the layout measures its own leftover space.",
-          },
-          {
-            title: "Choose your difficulty",
-            description:
-              "On Frogger, Snake, Minesweeper and Hangman, starting from your saved default. Each is tuned on its own terms rather than by one global scalar - doubling speed makes Snake harder and Whack-a-Mole easier, so only the engine knows which way \"harder\" points. Rewards scale with the choice, so easy is a comfort setting rather than the best way to farm credits. Every run records its difficulty; ranking each difficulty separately is still to come.",
-          },
-        ],
-      },
-    ],
-  },
+export const SERIES: ReleaseSeries[] = [
+  // ─────────────────────────────── v1.5 ───────────────────────────────
   {
     version: "v1.5.0",
     codename: "Collector's Edition",
-    date: "2 Aug 2026",
+    dates: "2 - 4 Aug 2026",
     summary:
-      "Things worth keeping. Seasons and collectable sets give the long game a shape, cosmetics now layer three deep and finally include the expressive extras that have been promised since v1.2.0, and the arcade gained two games - a playable Rubik's cube, and the first title rendered with the camera inside the scene.",
-    groups: [
+      "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - a Discord server that now finishes its own setup and keeps itself in step with the site, and a pass over the rough edges underneath all of it.",
+    releases: [
       {
-        heading: "The arcade",
-        icon: "Gamepad2",
-        blurb: "Two new games, and the renderer that makes a third one cheap.",
-        items: [
+        version: "v1.5.4",
+        codename: "Broadcast",
+        date: "4 Aug 2026",
+        scope:
+          "One release: the update log gained its version tree and the Discord channels that mirror it, and neither half is much use without the other.",
+        summary:
+          "Every change that has ever shipped now has a version number and a place in a tree, and the log no longer lives only on the website - releases and announcements are mirrored into Discord and kept there in step, rather than typed out twice and left to drift.",
+        groups: [
           {
-            title: "Cube",
-            description:
-              "The classic 3x3 twisty puzzle. Drag a sticker in the direction you want it to travel and that layer turns, drag the background to look around, or use the standard letters on a keyboard. Scored on moves and time, so a tidy solve beats a lucky one.",
+            heading: "The update log",
+            icon: "History",
+            blurb: "Twenty-four releases across six lines, instead of eight releases and a long list of loose commits.",
+            items: [
+              {
+                title: "Every change has a version",
+                description:
+                  "All 60 changes in production are now assigned to a release. Previously eight releases covered part of the history and the rest - the March prototype, the rebuild, the whole run of Discord work between 26 July and 3 August - sat in a flat list with no version at all.",
+              },
+              {
+                title: "Grouped by size, not by count",
+                description:
+                  "Three small fixes in one afternoon are one patch; a single pull request that redesigns the interface is a patch on its own. Each release says which changes it holds and why it was drawn there, so the grouping is something you can disagree with rather than something you have to take on trust.",
+              },
+              {
+                title: "A tree, not a list",
+                description:
+                  "Releases nest inside their series: open v1.4.0 to find v1.4.10 down to v1.4.0, each opening onto its own notes. The newest line and the newest release inside it are open when the page loads, so the thing you almost certainly came for needs no clicks.",
+              },
+              {
+                title: "Two renumberings, both labelled",
+                description:
+                  "The interface redesign shipped as v1.4.1 while the games and themes overhaul - eight days earlier - carried the same number. \"Sanded Down\" shipped as v1.5.1 while two runs of Discord work from earlier the same day carried none. Chronology wins in both cases, so they became v1.4.10 and v1.5.3 and each says so on its card. Nothing else moved.",
+              },
+            ],
           },
           {
-            title: "Labyrinth",
-            description:
-              "A first-person maze in real 3D: corridors you cannot see round, walls that light properly as you turn, and a map that fills itself in only where you have actually been. Three mazes to a run, each bigger than the last.",
-          },
-          {
-            title: "A 3D renderer, not a 3D library",
-            description:
-              "Both games are drawn on the same plain 2D canvas as everything else in the arcade. Adding a 3D library would have put back more weight than every game engine here carries put together, and undone the work v1.4.1 did to make pages lighter. The renderer is shared, so the next 3D game starts from a camera rather than from trigonometry.",
+            heading: "Discord",
+            icon: "Bot",
+            blurb: "The website is the source of truth; Discord is a mirror of it.",
+            items: [
+              {
+                title: "The update log, in Discord",
+                description:
+                  "Every release posts as its own embed in an update-log channel, oldest first, so the channel reads in the order things happened. Re-syncing edits the message that is already there rather than posting a second copy - each one is fingerprinted, so a sync with nothing to say writes nothing at all.",
+              },
+              {
+                title: "Announcements, in both places",
+                description:
+                  "Publishing an announcement on the website posts it to the Discord announcements channel in the same breath, with its call-to-action link and an optional role ping. Editing one edits the Discord message; unpublishing or deleting one removes it. It is a mirror, not a one-way fire-and-forget post.",
+              },
+              {
+                title: "Channels it can create itself",
+                description:
+                  "Full setup now provisions the two channels as well: readable by everyone, writable by nobody, adopted by name if the server already has them. Both are still overridable with an id from Admin → Discord bot → Publishing.",
+              },
+              {
+                title: "Kept in step without anyone pressing anything",
+                description:
+                  "A cron job re-syncs both every fifteen minutes, so a message deleted by hand comes back and a release added by a deploy appears without an admin remembering. It is idempotent by fingerprint, so the usual run costs one database read.",
+              },
+            ],
           },
         ],
+        commits: [],
       },
       {
-        heading: "Cosmetics & profile",
-        icon: "Palette",
-        blurb: "Layered, optional, and never pay-to-win.",
-        items: [
+        version: "v1.5.3",
+        codename: "Sanded Down",
+        formerly: "v1.5.1",
+        date: "3 - 4 Aug 2026",
+        scope:
+          "Three commits carrying one intention - go round the site and fix what was merely wrong. Published as v1.5.1, but two runs of Discord work landed earlier the same day; numbers that run backwards in time are not worth reading, so this took the next free one and kept its old number in `formerly`.",
+        summary:
+          "The rough edges. No new headline features - the naming that was wrong, the date that was never right, the settings page that never grew past a list of switches, and the consent story a site collecting anything at all is expected to have.",
+        groups: [
           {
-            title: "Decorations and profile frames",
-            description:
-              "Two new layers that sit alongside the ones you already wear rather than replacing them: a decoration over your avatar, and a frame around the whole profile card. An avatar frame, a decoration, a profile frame, a nameplate and an effect can all be on at once.",
+            heading: "Corrections",
+            icon: "SlidersHorizontal",
+            blurb: "Three things that were simply wrong, in rising order of how long they had been wrong.",
+            items: [
+              {
+                title: "Noughts and Crosses",
+                description:
+                  "Renamed in the game title, the party picker and the docs. The rest of the site is written in British English, so this was the odd one out from launch. The slug stays `tictactoe` - it is the join key for every score and play session and is baked into the party protocol, so renaming it would break all of that to change a string nobody sees.",
+              },
+              {
+                title: "The \"Rebuilt for 2026\" banner is gone",
+                description: "A launch flag is only useful while it is news.",
+              },
+              {
+                title: "\"Last seen\" finally means last seen",
+                description:
+                  "It reported the day the account was created, for everyone, since launch - and it was never a display bug. A Supabase query builder is a lazy thenable that only sends its request inside `then()`, and the presence heartbeat was written as fire-and-forget, so it was built and thrown away without ever reaching the network. Every profile in the database had `last_seen_at` exactly equal to `created_at`, to the microsecond. Now awaited, with failures logged rather than swallowed - the silence is what let it survive this long.",
+              },
+            ],
           },
           {
-            title: "Entrances, cursor trails and profile music",
-            description:
-              "The last of the extras promised back in v1.2.0. Your profile can arrive with an animation, leave a trail behind a visitor's cursor, and play a track you already own from the music library. The music is click-to-play, never automatic - a profile that starts making noise on its own is nobody's favourite feature.",
+            heading: "Settings, privacy and consent",
+            icon: "SlidersHorizontal",
+            items: [
+              {
+                title: "A Gameplay section in settings",
+                description:
+                  "Default difficulty, sound and music as separate sliders, high contrast, time zone and date format. Volumes save when you let go of the slider rather than on every pixel of the drag, and every row explains what it actually changes - most of them used to restate their own label.",
+              },
+              {
+                title: "Analytics is opt-in, properly",
+                description:
+                  "Nothing optional loads until you allow it - not loaded and silenced, genuinely not rendered. Reject carries the same weight as Allow, there is no dismiss-without-choosing, and the banner is not modal, because refusing must not cost you anything. Global Privacy Control counts as a refusal. The stored consent record carries the policy version, so a policy that widens what is collected asks again instead of carrying an old answer over. A new /legal/cookies page generates its tables from the same constants the banner uses, so it cannot describe cookies the site does not set.",
+              },
+            ],
           },
           {
-            title: "Now playing, and an optional view counter",
-            description:
-              "A chip under your name shows what you are playing, or last played, worked out from your sessions rather than anything new being recorded, and it follows the online-status setting you already had. The visitor counter is off by default, counts unique people per day rather than refreshes, and never counts you.",
+            heading: "Social",
+            icon: "MessageSquare",
+            items: [
+              {
+                title: "Stories you can manage",
+                description:
+                  "Delete your own, and post more than one. The database always allowed both - the strip had a single button that chose between viewing and composing, so the composer became unreachable the moment you had a story.",
+              },
+              {
+                title: "Report a message",
+                description:
+                  "A report action on any message, and the conversation around it in the admin queue - because a given message reads as a joke or as abuse depending entirely on what surrounds it. Scoped deliberately: the lookup resolves the message from the report row rather than taking a conversation id, so staff get what they need to judge one report and cannot page through an inbox with it.",
+              },
+            ],
           },
           {
-            title: "Loadout presets",
-            description:
-              "Save everything you are wearing as a set and switch between them. Unlocked at level 20.",
+            heading: "Playing",
+            icon: "Gamepad2",
+            items: [
+              {
+                title: "Fullscreen that fits the screen",
+                description:
+                  "It used to stretch a small canvas buffer across a large display, which is what made it look soft, and reserved a hardcoded 170 pixels for the controls whatever the screen was. The buffer now tracks the element's real size, and the layout measures its own leftover space.",
+              },
+              {
+                title: "Choose your difficulty",
+                description:
+                  "On Frogger, Snake, Minesweeper and Hangman, starting from your saved default. Each is tuned on its own terms rather than by one global scalar - doubling speed makes Snake harder and Whack-a-Mole easier, so only the engine knows which way \"harder\" points. Rewards scale with the choice, so easy is a comfort setting rather than the best way to farm credits. Every run records its difficulty; ranking each difficulty separately is still to come.",
+              },
+            ],
           },
         ],
+        commits: ["0f5d18e", "2007b71", "560609a"],
       },
       {
-        heading: "Collecting",
-        icon: "Gift",
-        blurb: "The long game: sets to complete, seasons to climb, and perks for boosters.",
-        items: [
+        version: "v1.5.2",
+        codename: "Server Export",
+        date: "3 Aug 2026",
+        scope:
+          "One substantial change plus the roadmap edit that shipped beside it. The export is groundwork for reorganising the server, which is why it is its own release rather than part of the setup work before it.",
+        summary:
+          "A way to see the whole Discord server at once - and the diagnostics that answer most 'the bot is broken' reports before anyone has to ask.",
+        groups: [
           {
-            title: "Seasons",
-            description:
-              "A tier track that fills as you play, with a reward at each tier. Progress is worked out from what you have actually done rather than a stored counter, so it can never drift; the only thing recorded is whether you have taken a reward.",
-          },
-          {
-            title: "Collections",
-            description:
-              "Cosmetic sets with an exclusive badge for finishing one. Owning the set is derived from your inventory, so items arriving by any route count.",
-          },
-          {
-            title: "Booster perks",
-            description:
-              "A monthly exclusive cosmetic, a monthly token to gift any cosmetic to a friend for 30 days, and early access to new games before everyone else. Locked games stay visible with a countdown, because a perk nobody can see is a perk nobody wants.",
+            heading: "Seeing the server",
+            icon: "Bot",
+            items: [
+              {
+                title: "/export, and Sync → Export the server",
+                description:
+                  "Both produce the same JSON: every channel nested under its category in draw order, every role, every permission overwrite - with ids resolved to names and bitfields decoded, because `\"deny\": \"1024\"` on an id says nothing and `deny: [\"ViewChannel\"]` on @everyone says all of it. In Discord it arrives as a file attachment, since a modest server exports past the 2,000-character message limit and a truncated server map is worse than none.",
+              },
+              {
+                title: "Problems, listed above the data",
+                description:
+                  "The export reports what cannot be seen from inside Discord: the bot's own highest role and which roles sit above it, its effective permissions, every configured id that no longer resolves, and whether the gateway worker has ever checked in.",
+              },
+              {
+                title: "Role sync every two minutes",
+                description:
+                  "It was nightly, which cannot hold up a promise of the same roles and level as the website. Costs one database round trip when nobody is linked.",
+              },
+            ],
           },
         ],
+        commits: ["9191368", "de6cfc9"],
       },
       {
-        heading: "Social",
-        icon: "Users",
-        items: [
+        version: "v1.5.1",
+        codename: "Setup, Finished",
+        date: "3 Aug 2026",
+        scope:
+          "Three commits about the same button, including the hotfix for the one before it - one release, because shipping the fix as its own version would suggest the feature was ever usable without it.",
+        summary:
+          "Full setup stopped two steps short of doing anything useful. It now provisions the channels its panels live in, and there is a way to clear a dashboard that has been pointed at the wrong server.",
+        groups: [
           {
-            title: "Friends activity feed",
-            description:
-              "Recent achievements, purchases and new friendships from the people you follow, in one place.",
+            heading: "Setup",
+            icon: "Sparkles",
+            items: [
+              {
+                title: "Full setup provisions the panel channels",
+                description:
+                  "It created the verification and level roles and the counter channels, then reported both panels as skipped - so a fresh server finished setup holding verification roles with nothing handing them out. It now creates and posts into a verify channel, a support channel, a Tickets category and a Staff role, adopting any that already exist by name rather than duplicating them.",
+              },
+              {
+                title: "Reset all settings",
+                description:
+                  "The point is the ids, not the toggles: a dashboard pointed at one server accumulates role, channel, category and panel-message ids, and a stale id is worse than an empty one because setup reads it as an instruction to use that exact channel. Deletes the rows rather than writing defaults into them, touches nothing inside Discord, and is audit-logged.",
+              },
+              {
+                title: "The reset that safeupdate rejected",
+                description:
+                  "The first cut failed the first time the button was pressed - \"DELETE requires a WHERE clause\". The migration applied cleanly because DDL runs as `postgres`; the dashboard connects as `authenticator`, which preloads `safeupdate` and rejects an unqualified delete even inside a `SECURITY DEFINER` function. Qualified by the same key allowlist the other two config writers already enforce.",
+              },
+              {
+                title: "Panels post into the channel just resolved",
+                description:
+                  "The panel steps re-read the config to find the channel the step before them had written. Depending on that write having landed turned one failed round trip into a panel that silently never posted - the exact failure the channel step was added to remove.",
+              },
+            ],
           },
         ],
+        commits: ["55026b9", "5c39b29", "8c775bb"],
       },
       {
-        heading: "Under the hood",
-        icon: "Rocket",
-        items: [
+        version: "v1.5.0",
+        codename: "Collector's Edition",
+        date: "2 Aug 2026",
+        scope:
+          "Two hundred and twenty-nine files in one pull request, plus the changelog regeneration that followed it. The largest release the site has had.",
+        summary:
+          "Things worth keeping. Seasons and collectable sets give the long game a shape, cosmetics now layer three deep and finally include the expressive extras that have been promised since v1.2.0, and the arcade gained two games - a playable Rubik's cube, and the first title rendered with the camera inside the scene.",
+        groups: [
           {
-            title: "Loading states everywhere",
-            description:
-              "Ten more routes now show a skeleton of the page instead of a blank screen, and spinners wait 200ms before appearing so a fast load never flashes one.",
+            heading: "The arcade",
+            icon: "Gamepad2",
+            blurb: "Two new games, and the renderer that makes a third one cheap.",
+            items: [
+              {
+                title: "Cube",
+                description:
+                  "The classic 3x3 twisty puzzle. Drag a sticker in the direction you want it to travel and that layer turns, drag the background to look around, or use the standard letters on a keyboard. Scored on moves and time, so a tidy solve beats a lucky one.",
+              },
+              {
+                title: "Labyrinth",
+                description:
+                  "A first-person maze in real 3D: corridors you cannot see round, walls that light properly as you turn, and a map that fills itself in only where you have actually been. Three mazes to a run, each bigger than the last.",
+              },
+              {
+                title: "A 3D renderer, not a 3D library",
+                description:
+                  "Both games are drawn on the same plain 2D canvas as everything else in the arcade. Adding a 3D library would have put back more weight than every game engine here carries put together, and undone the work v1.4.1 did to make pages lighter. The renderer is shared, so the next 3D game starts from a camera rather than from trigonometry.",
+              },
+            ],
           },
           {
-            title: "One thumbnail system",
-            description:
-              "Every game card is generated from the same near-black base, grid and vignette, with a single accent hue giving each game its identity. Twenty-six cards now read as one product rather than twenty-six pieces of unrelated art.",
+            heading: "Cosmetics & profile",
+            icon: "Palette",
+            blurb: "Layered, optional, and never pay-to-win.",
+            items: [
+              {
+                title: "Decorations and profile frames",
+                description:
+                  "Two new layers that sit alongside the ones you already wear rather than replacing them: a decoration over your avatar, and a frame around the whole profile card. An avatar frame, a decoration, a profile frame, a nameplate and an effect can all be on at once.",
+              },
+              {
+                title: "Entrances, cursor trails and profile music",
+                description:
+                  "The last of the extras promised back in v1.2.0. Your profile can arrive with an animation, leave a trail behind a visitor's cursor, and play a track you already own from the music library. The music is click-to-play, never automatic - a profile that starts making noise on its own is nobody's favourite feature.",
+              },
+              {
+                title: "Now playing, and an optional view counter",
+                description:
+                  "A chip under your name shows what you are playing, or last played, worked out from your sessions rather than anything new being recorded, and it follows the online-status setting you already had. The visitor counter is off by default, counts unique people per day rather than refreshes, and never counts you.",
+              },
+              {
+                title: "Loadout presets",
+                description:
+                  "Save everything you are wearing as a set and switch between them. Unlocked at level 20.",
+              },
+            ],
+          },
+          {
+            heading: "Collecting",
+            icon: "Gift",
+            blurb: "The long game: sets to complete, seasons to climb, and perks for boosters.",
+            items: [
+              {
+                title: "Seasons",
+                description:
+                  "A tier track that fills as you play, with a reward at each tier. Progress is worked out from what you have actually done rather than a stored counter, so it can never drift; the only thing recorded is whether you have taken a reward.",
+              },
+              {
+                title: "Collections",
+                description:
+                  "Cosmetic sets with an exclusive badge for finishing one. Owning the set is derived from your inventory, so items arriving by any route count.",
+              },
+              {
+                title: "Booster perks",
+                description:
+                  "A monthly exclusive cosmetic, a monthly token to gift any cosmetic to a friend for 30 days, and early access to new games before everyone else. Locked games stay visible with a countdown, because a perk nobody can see is a perk nobody wants.",
+              },
+            ],
+          },
+          {
+            heading: "Social",
+            icon: "Users",
+            items: [
+              {
+                title: "Friends activity feed",
+                description:
+                  "Recent achievements, purchases and new friendships from the people you follow, in one place.",
+              },
+            ],
+          },
+          {
+            heading: "Under the hood",
+            icon: "Rocket",
+            items: [
+              {
+                title: "Loading states everywhere",
+                description:
+                  "Ten more routes now show a skeleton of the page instead of a blank screen, and spinners wait 200ms before appearing so a fast load never flashes one.",
+              },
+              {
+                title: "One thumbnail system",
+                description:
+                  "Every game card is generated from the same near-black base, grid and vignette, with a single accent hue giving each game its identity. Twenty-six cards now read as one product rather than twenty-six pieces of unrelated art.",
+              },
+            ],
           },
         ],
+        commits: ["970ed6a", "7479a8f"],
+        prs: [22],
       },
     ],
   },
-  {
-    version: "v1.4.1",
-    codename: "Refined",
-    date: "28 Jul 2026",
-    summary:
-      "A ground-up pass over how the site looks, feels and performs. One design system instead of many near-copies, motion that stays out of the way, and a lighter page on every device - the whole animation runtime and the query cache left the bundle entirely.",
-    groups: [
-      {
-        heading: "Design system",
-        icon: "Palette",
-        blurb:
-          "The parts every page is built from, fixed once so eight screens stop drifting into eight slightly different looks.",
-        items: [
-          {
-            title: "Elevation, motion and type tokens",
-            description:
-              "Shadows are now brand-tinted tokens that deepen properly in dark mode, headings scale fluidly instead of jumping at breakpoints, and every transition uses one of two shared easing curves. Body text meets AA contrast in both themes.",
-          },
-          {
-            title: "One page header, one empty state",
-            description:
-              "Every top-level page opens with the same masthead, and every 'nothing here yet' surface - no friends, no messages, an empty inventory, no search results - uses the same component, with a real explanation and a way forward rather than a bare sentence.",
-          },
-          {
-            title: "Rebuilt primitives",
-            description:
-              "Buttons gained a proper loading state that doesn't resize mid-click, cards gained surface variants, inputs and selects finally match each other, and dialogs stay inside a short phone screen instead of overflowing off it.",
-          },
-        ],
-      },
-      {
-        heading: "Motion & interaction",
-        icon: "Sparkles",
-        blurb: "Enough to feel alive, little enough to stay out of the way.",
-        items: [
-          {
-            title: "Micro-interactions throughout",
-            description:
-              "Cards lift on hover, grids stagger in, the credit balance rolls when it changes, menus scale from the button that opened them, and the play button on a game card springs up under the pointer. All of it is transform and opacity only, so it runs on the compositor.",
-          },
-          {
-            title: "Reduced motion is a real mode",
-            description:
-              "Every animation is gated behind a motion-safe check rather than merely shortened, so choosing 'reduce motion' gives a genuinely still interface instead of a fast one.",
-          },
-        ],
-      },
-      {
-        heading: "Performance",
-        icon: "Rocket",
-        blurb: "Fewer bytes to download, fewer pixels to repaint.",
-        items: [
-          {
-            title: "Two dependencies removed",
-            description:
-              "The animation library was doing six small jobs that CSS does natively, and the query cache existed for a single call in the command palette. Both are gone; the palette now caches the game list in module scope, and every animation they powered still works.",
-          },
-          {
-            title: "Cheaper painting",
-            description:
-              "Hero and auth backdrops swapped full-viewport blur filters for background gradients, skeleton shimmer became a transform instead of an animated gradient position, and below-the-fold sections skip layout and paint until they approach the viewport.",
-          },
-          {
-            title: "Faster first paint",
-            description:
-              "Fonts swap in rather than blocking, the mono face no longer preloads, and the image size ladder was trimmed to the widths the layout actually requests.",
-          },
-        ],
-      },
-      {
-        heading: "Accessibility & responsiveness",
-        icon: "Users",
-        items: [
-          {
-            title: "Keyboard and screen-reader fixes",
-            description:
-              "A skip link opens every page, focus rings are consistent everywhere and never fire on a mouse click, navigation marks the current page, loading skeletons announce themselves, and progress bars report their value.",
-          },
-          {
-            title: "Built for touch first",
-            description:
-              "The favourite button no longer hides behind a hover state on phones, tab bars and filter rows scroll instead of wrapping, every tap target clears 44px, text inputs stay at 16px so iOS won't zoom, and toasts sit above the mobile tab bar.",
-          },
-          {
-            title: "Grids that fit every width",
-            description:
-              "Game grids fill available space rather than snapping between fixed column counts, which fixes the awkward tablet range where four columns were too many and three left a gap.",
-          },
-        ],
-      },
-    ],
-  },
+
+  // ─────────────────────────────── v1.4 ───────────────────────────────
   {
     version: "v1.4.0",
     codename: "New Dimensions",
-    date: "22 Jul 2026",
-    dateNote: "extended 28 Jul 2026",
+    dates: "22 - 29 Jul 2026",
     summary:
-      "The big games update: a step into 3D, real multiplayer with parties, and store-decorated avatars that show up when you play together - plus admin control over the home screen itself.",
-    groups: [
+      "The longest line the site has had: a step into 3D and real multiplayer at one end, one bot replacing four at the other, and eight patch releases of Discord and dashboard work in between.",
+    releases: [
       {
-        heading: "3D games",
-        icon: "Box",
-        blurb: "Beyond the 2D arcade - fully playable 3D games in the browser.",
-        items: [
+        version: "v1.4.10",
+        codename: "Refined",
+        formerly: "v1.4.1",
+        date: "29 Jul 2026",
+        scope:
+          "Sixty-nine files in one pull request. Published as v1.4.1, which the games and themes overhaul eight days earlier already held - renumbered to the end of the line it actually shipped at.",
+        summary:
+          "A ground-up pass over how the site looks, feels and performs. One design system instead of many near-copies, motion that stays out of the way, and a lighter page on every device - the whole animation runtime and the query cache left the bundle entirely.",
+        groups: [
           {
-            title: "Playable 3D games",
-            description:
-              "Browser-based 3D titles running smoothly on desktop and mobile. First out: Turbo Horizon, an OutRun-style pseudo-3D racer. Further titles are planned for v1.5.0.",
+            heading: "Design system",
+            icon: "Palette",
+            blurb:
+              "The parts every page is built from, fixed once so eight screens stop drifting into eight slightly different looks.",
+            items: [
+              {
+                title: "Elevation, motion and type tokens",
+                description:
+                  "Shadows are now brand-tinted tokens that deepen properly in dark mode, headings scale fluidly instead of jumping at breakpoints, and every transition uses one of two shared easing curves. Body text meets AA contrast in both themes.",
+              },
+              {
+                title: "One page header, one empty state",
+                description:
+                  "Every top-level page opens with the same masthead, and every 'nothing here yet' surface - no friends, no messages, an empty inventory, no search results - uses the same component, with a real explanation and a way forward rather than a bare sentence.",
+              },
+              {
+                title: "Rebuilt primitives",
+                description:
+                  "Buttons gained a proper loading state that doesn't resize mid-click, cards gained surface variants, inputs and selects finally match each other, and dialogs stay inside a short phone screen instead of overflowing off it.",
+              },
+            ],
+          },
+          {
+            heading: "Motion & interaction",
+            icon: "Sparkles",
+            blurb: "Enough to feel alive, little enough to stay out of the way.",
+            items: [
+              {
+                title: "Micro-interactions throughout",
+                description:
+                  "Cards lift on hover, grids stagger in, the credit balance rolls when it changes, menus scale from the button that opened them, and the play button on a game card springs up under the pointer. All of it is transform and opacity only, so it runs on the compositor.",
+              },
+              {
+                title: "Reduced motion is a real mode",
+                description:
+                  "Every animation is gated behind a motion-safe check rather than merely shortened, so choosing 'reduce motion' gives a genuinely still interface instead of a fast one.",
+              },
+            ],
+          },
+          {
+            heading: "Performance",
+            icon: "Rocket",
+            blurb: "Fewer bytes to download, fewer pixels to repaint.",
+            items: [
+              {
+                title: "Two dependencies removed",
+                description:
+                  "The animation library was doing six small jobs that CSS does natively, and the query cache existed for a single call in the command palette. Both are gone; the palette now caches the game list in module scope, and every animation they powered still works.",
+              },
+              {
+                title: "Cheaper painting",
+                description:
+                  "Hero and auth backdrops swapped full-viewport blur filters for background gradients, skeleton shimmer became a transform instead of an animated gradient position, and below-the-fold sections skip layout and paint until they approach the viewport.",
+              },
+              {
+                title: "Faster first paint",
+                description:
+                  "Fonts swap in rather than blocking, the mono face no longer preloads, and the image size ladder was trimmed to the widths the layout actually requests.",
+              },
+            ],
+          },
+          {
+            heading: "Accessibility & responsiveness",
+            icon: "Users",
+            items: [
+              {
+                title: "Keyboard and screen-reader fixes",
+                description:
+                  "A skip link opens every page, focus rings are consistent everywhere and never fire on a mouse click, navigation marks the current page, loading skeletons announce themselves, and progress bars report their value.",
+              },
+              {
+                title: "Built for touch first",
+                description:
+                  "The favourite button no longer hides behind a hover state on phones, tab bars and filter rows scroll instead of wrapping, every tap target clears 44px, text inputs stay at 16px so iOS won't zoom, and toasts sit above the mobile tab bar.",
+              },
+              {
+                title: "Grids that fit every width",
+                description:
+                  "Game grids fill available space rather than snapping between fixed column counts, which fixes the awkward tablet range where four columns were too many and three left a gap.",
+              },
+            ],
           },
         ],
+        commits: ["0785bc3"],
+        prs: [20],
       },
       {
-        heading: "Multiplayer & parties",
-        icon: "Gamepad2",
-        blurb: "Play with other people - across accounts online, or on one device in the same room.",
-        items: [
+        version: "v1.4.9",
+        codename: "The Dashboard, Tidied",
+        date: "28 - 29 Jul 2026",
+        dateNote: "two pull requests, a day apart",
+        scope:
+          "Two pull requests doing the same job from opposite ends - one grouped the Discord page into tabs, the other rebuilt the shell around every admin page. Six hundred lines together, and neither reads as a release on its own.",
+        summary:
+          "The admin dashboard stopped being eleven equal links above a page and became a sidebar, three groups and one set of shared pieces.",
+        groups: [
           {
-            title: "Real multiplayer games",
-            description:
-              "Games multiple people can play together, online across accounts. Tic-Tac-Toe, Connect 4 and Reversi are true head-to-head matches on one shared board with alternating turns; every other game becomes a score race - same game, same moment, live standings. Local pass-and-play remains in Tic-Tac-Toe via the 2P toggle.",
-          },
-          {
-            title: "Parties",
-            description:
-              "Group up into a party to jump into multiplayer games together. Create one, share a six-character code or invite friends straight from your friends list, and the leader picks the game and starts it for everyone at once.",
+            heading: "Admin dashboard",
+            icon: "LayoutDashboard",
+            items: [
+              {
+                title: "A sidebar instead of a nav bar",
+                description:
+                  "The nav sat above the content, so every page opened by pushing what you came for below the fold. It now sits beside the content on desktop and stays put as you scroll.",
+              },
+              {
+                title: "Every page has a heading",
+                description:
+                  "Pages used to begin however their author felt that day - a bare paragraph, a search box, a heading at whatever size. The heading now comes from the route, so a new page gets a consistent one by adding an entry rather than by remembering to match ten other pages.",
+              },
+              {
+                title: "One set of shared pieces",
+                description:
+                  "Result lines, the Discord-ID field and empty states, in one file. The result line existed in five separate copies and the ID field in two; they had already started to diverge.",
+              },
+              {
+                title: "Four tabs on the Discord page",
+                description:
+                  "One page carrying thirteen cards and several hundred form fields became Actions, Sync, Levelling and Server - grouped by why you came, not by which part of Discord the setting touches. Same URL, so bookmarks still work.",
+              },
+              {
+                title: "Three nav groups instead of eleven links",
+                description:
+                  "Community, Content and System, with Overview above them. Eleven items get re-scanned every visit; three groups are learned once. Open reports now surface as a banner rather than a number to notice.",
+              },
+            ],
           },
         ],
+        commits: ["f91cbea", "2479a5e"],
+        prs: [21, 19],
       },
       {
-        heading: "Admin & layout",
-        icon: "LayoutDashboard",
-        items: [
+        version: "v1.4.8",
+        codename: "Settings That Take Effect",
+        date: "28 Jul 2026",
+        scope:
+          "Three fix-shaped pull requests inside ninety minutes, four hundred lines between them. Each is a paragraph; together they are a release.",
+        summary:
+          "Settings that saved but never applied, linked roles that were duplicated rather than used, and a bot that was still called something else in half its own strings.",
+        groups: [
           {
-            title: "Customisable home screen",
-            description:
-              "Rearrange the homepage straight from the admin dashboard - reorder or hide any section from Admin → Site, no code required.",
+            heading: "Fixes",
+            icon: "SlidersHorizontal",
+            items: [
+              {
+                title: "Linked roles and channels are used, not replaced",
+                description:
+                  "Pointing a setting at an existing role or channel created a second one beside it. A configured id is now an instruction to use that exact one - renamed or recoloured to match if need be - and an id pointing at something since deleted is reported as missing rather than silently replaced.",
+              },
+              {
+                title: "Three dashboard settings that could never take effect",
+                description:
+                  "Fields that were dropped on save, so the value could not survive a reload - including the ticket panel channel, which meant re-posting the panel was impossible.",
+              },
+              {
+                title: "The bot is Classic Games Bot",
+                description:
+                  "One name, defined once, rather than a dozen string literals drifting apart - plus four bugs found in the sweep that renaming it required.",
+              },
+            ],
           },
         ],
+        commits: ["3221adc", "3ce4e03", "a13d56c"],
+        prs: [18, 17, 16],
+      },
+      {
+        version: "v1.4.7",
+        codename: "Run It From the Dashboard",
+        date: "28 Jul 2026",
+        scope:
+          "One pull request, a thousand lines, and a structural change: every Discord operation moved out of the slash-command handlers into functions both surfaces call.",
+        summary:
+          "The dashboard could only store settings - the Discord side of a change happened when someone ran the matching slash command, and until then the panel and the server disagreed.",
+        groups: [
+          {
+            heading: "The dashboard does the work",
+            icon: "LayoutDashboard",
+            items: [
+              {
+                title: "Every operation, from the website",
+                description:
+                  "Announce, moderate, purge, slowmode and lock all call the same functions the slash commands call, so a case raised from the dashboard is numbered, DM'd and logged exactly like one raised in Discord. There is no second implementation to drift.",
+              },
+              {
+                title: "Saving applies",
+                description:
+                  "A save writes to Postgres and then pushes the section to Discord, and the result says what actually changed there. The push is best-effort: a Discord outage is reported as a warning against a successful save, never as a failure that leaves you wondering whether to retype everything.",
+              },
+            ],
+          },
+        ],
+        commits: ["d3986d0"],
+        prs: [15],
+      },
+      {
+        version: "v1.4.6",
+        codename: "Failures That Name Themselves",
+        date: "28 Jul 2026",
+        scope:
+          "Three small fixes in one afternoon, all about the same thing: a Discord call failing without saying why. Two hundred and thirty lines between them - one release, not three.",
+        summary:
+          "Setup failures stopped being opaque. Every one of these was costing a round trip of debugging a permissions problem that was never there.",
+        groups: [
+          {
+            heading: "Diagnostics",
+            icon: "Bot",
+            items: [
+              {
+                title: "Missing credentials are named",
+                description:
+                  "A checklist of which Discord environment variables are actually set, instead of a setup that fails opaquely when one of four is absent.",
+              },
+              {
+                title: "Discord's own error, reported",
+                description:
+                  "When `/setup` cannot create something, the reply is Discord's own message and status code. Any guess we could make about the cause is worse than the answer Discord already sent.",
+              },
+              {
+                title: "The audit-log reason that broke every write",
+                description:
+                  "HTTP header values must be Latin-1, and the audit reason contained an em dash - so `fetch` threw before the request was ever sent, which surfaced as a network error. The header is now URL-encoded, which is how Discord documents it.",
+              },
+            ],
+          },
+        ],
+        commits: ["1c16784", "1da5a10", "13ceba6"],
+        prs: [14, 13, 12],
+      },
+      {
+        version: "v1.4.5",
+        codename: "The Update Log",
+        date: "28 Jul 2026",
+        scope:
+          "One pull request that split the roadmap in two and gave the shipped half its own page - the release this very page came from.",
+        summary:
+          "The roadmap had grown into an archive. Everything shipped moved to /updates, the roadmap became forward-only, and registering slash commands stopped needing a terminal.",
+        groups: [
+          {
+            heading: "Documentation as a page",
+            icon: "History",
+            items: [
+              {
+                title: "An update log at /updates",
+                description:
+                  "Past releases, merged pull requests and every change that has landed on `main`, generated from git rather than maintained by hand.",
+              },
+              {
+                title: "A forward-only roadmap",
+                description:
+                  "The roadmap now carries what is coming and nothing else. When something ships it moves out rather than being marked shipped and left in place - which is how it became an archive the first time.",
+              },
+              {
+                title: "Register commands without a terminal",
+                description:
+                  "A button in the dashboard, or one authenticated POST. Registration is a full replace, so it is safe to repeat.",
+              },
+            ],
+          },
+        ],
+        commits: ["88a3df3"],
+        prs: [11],
+      },
+      {
+        version: "v1.4.4",
+        codename: "Parties",
+        date: "28 Jul 2026",
+        scope:
+          "Forty-five files in one pull request. This is where multiplayer and parties actually shipped - v1.4.0 promised them, and carried an 'extended' note for a week to cover the gap.",
+        summary:
+          "Play with other people: across accounts online, or on one device in the same room - plus a status page, vanity URLs, and the heartbeat that makes the bot's Online light mean something.",
+        groups: [
+          {
+            heading: "Multiplayer & parties",
+            icon: "Gamepad2",
+            blurb: "Play with other people - across accounts online, or on one device in the same room.",
+            items: [
+              {
+                title: "Real multiplayer games",
+                description:
+                  "Games multiple people can play together, online across accounts. Tic-Tac-Toe, Connect 4 and Reversi are true head-to-head matches on one shared board with alternating turns; every other game becomes a score race - same game, same moment, live standings. Local pass-and-play remains in Tic-Tac-Toe via the 2P toggle.",
+              },
+              {
+                title: "Parties",
+                description:
+                  "Group up into a party to jump into multiplayer games together. Create one, share a six-character code or invite friends straight from your friends list, and the leader picks the game and starts it for everyone at once.",
+              },
+            ],
+          },
+          {
+            heading: "Elsewhere",
+            icon: "LayoutDashboard",
+            items: [
+              {
+                title: "Customisable home screen",
+                description:
+                  "Rearrange the homepage straight from the admin dashboard - reorder or hide any section from Admin → Site, no code required.",
+              },
+              {
+                title: "A status page",
+                description:
+                  "One page saying whether the site, the database and the bot are up - including the gateway worker's heartbeat, which until now had nothing writing it.",
+              },
+              {
+                title: "Vanity URLs and booster dailies",
+                description:
+                  "Claim a custom profile link, and an extra daily challenge for boosters that everyone can see but only boosters can claim.",
+              },
+            ],
+          },
+        ],
+        commits: ["f5da50b"],
+        prs: [10],
+      },
+      {
+        version: "v1.4.3",
+        codename: "One Bot",
+        date: "27 Jul 2026",
+        scope:
+          "Thirty-three files and five thousand lines replacing four separate bots. Nothing else went near it, and nothing else belongs with it.",
+        summary:
+          "One bot doing what Appy, Sapphire, Arcane and ServerStats were doing between them - and running for free, because the commands are served by the website itself.",
+        groups: [
+          {
+            heading: "Four bots become one",
+            icon: "Bot",
+            items: [
+              {
+                title: "Join verification (replaces Appy)",
+                description:
+                  "A button panel, a verified role, a minimum account age and an optional welcome message or DM - with the log of who got in and when.",
+              },
+              {
+                title: "Moderation, announcements and tickets (replaces Sapphire)",
+                description:
+                  "Numbered cases with DMs and a mod-log channel, an announcement command with scoped role pings, automod for invites, links, mentions and spam, and a ticket system with its own category and staff role.",
+              },
+              {
+                title: "Levels and milestone roles (replaces Arcane)",
+                description:
+                  "Chat XP with configurable rates, cooldowns and curve, milestone roles handed out as people climb, and level-up announcements.",
+              },
+              {
+                title: "Live counters (replaces ServerStats)",
+                description:
+                  "Voice-channel counters for players online, total members, plays today and Discord members, from templates you can edit.",
+              },
+              {
+                title: "Staying online",
+                description:
+                  "An optional always-on gateway worker for chat XP, automod, join handling and the live feed - and the heartbeat that lets the site say whether it is actually running.",
+              },
+            ],
+          },
+        ],
+        commits: ["36848c8"],
+        prs: [9],
+      },
+      {
+        version: "v1.4.2",
+        codename: "Housekeeping",
+        date: "26 - 27 Jul 2026",
+        scope:
+          "Three unrelated small commits across two quiet days between feature releases. None is worth a version on its own; leaving them unversioned was the thing worth fixing.",
+        summary:
+          "Two fixes worth having and one chore: a boost that was being thrown away, and five RPCs reachable by more roles than intended.",
+        groups: [
+          {
+            heading: "Fixes",
+            icon: "SlidersHorizontal",
+            items: [
+              {
+                title: "Queued boosts are no longer lost",
+                description:
+                  "Buying a boost beyond the stack cap puts it in a queue to take over when the current one expires. The queue was not being drained, so the boost was simply gone. Fixed in the database, where the rule belongs - and the duplicated auth round-trips around it were removed while the code was open.",
+              },
+              {
+                title: "Revoked from PUBLIC, not just anon",
+                description:
+                  "Five RPCs meant for signed-in players were revoked from `anon` but not from `PUBLIC`, which grants to every role including `anon`. Revoking from `anon` alone does nothing while the `PUBLIC` grant stands.",
+              },
+            ],
+          },
+        ],
+        commits: ["4488be0", "bb4b7cf", "7e8bfdc"],
+      },
+      {
+        version: "v1.4.1",
+        codename: "Every Pixel",
+        date: "22 Jul 2026",
+        scope:
+          "Nineteen files in one commit, all about how games look and feel on the device you are actually holding. Its commit message and changelog heading both said v1.4.1, and it keeps the number by right of arriving first.",
+        summary:
+          "Every canvas game re-rendered at device resolution, fullscreen that takes the whole player rather than the page, and a colour theme for the entire site.",
+        groups: [
+          {
+            heading: "Games",
+            icon: "Gamepad2",
+            items: [
+              {
+                title: "Eight games playable again",
+                description:
+                  "Tic-Tac-Toe, Connect Four, Simon, 15 Puzzle, Lights Out, Bubble Pop, Target Rush and Reversi were rebuilt to the quality bar in v1.2.2 and are now republished.",
+              },
+              {
+                title: "HiDPI rendering and proper fullscreen",
+                description:
+                  "Every canvas renders at device resolution up to 2×, so games are pin-sharp on retina screens. Fullscreen takes the whole player - score, controls and touch pads - onto an ambient themed backdrop with the game letterboxed, and it works on mobile.",
+              },
+              {
+                title: "Device-aware controls, and auto-pause",
+                description:
+                  "The Controls tab shows touch controls on touch devices and keyboard controls on desktop, with a toggle to peek at the other. Games pause themselves when the tab loses visibility.",
+              },
+            ],
+          },
+          {
+            heading: "Global colour themes",
+            icon: "Palette",
+            items: [
+              {
+                title: "Recolour the whole site",
+                description:
+                  "Arcade Violet, Midnight, Ocean and Emerald free for everyone; Crimson, Gold Rush, Neon Rose and the animated Synthwave and Aurora reserved for boosters and staff, with a lock shown on the swatches. The gate is enforced in the database, applied before first paint, and the animated ones respect reduced motion.",
+              },
+            ],
+          },
+          {
+            heading: "Performance",
+            icon: "Rocket",
+            items: [
+              {
+                title: "Route-shaped loading skeletons",
+                description:
+                  "The games library, game pages, shop, leaderboards, messages and profiles now show the shape of the page while it loads, and the document preconnects to Supabase for a faster first fetch.",
+              },
+            ],
+          },
+        ],
+        commits: ["d0c55c9"],
+      },
+      {
+        version: "v1.4.0",
+        codename: "New Dimensions",
+        date: "22 Jul 2026",
+        scope:
+          "One commit: the first 3D title and the engine behind it. The parties and multiplayer this release originally promised shipped six days later and are recorded at v1.4.4, where they belong.",
+        summary: "The step out of two dimensions - a pseudo-3D racer running smoothly on a phone.",
+        groups: [
+          {
+            heading: "3D games",
+            icon: "Box",
+            blurb: "Beyond the 2D arcade - fully playable 3D games in the browser.",
+            items: [
+              {
+                title: "Turbo Horizon",
+                description:
+                  "An OutRun-style pseudo-3D racer: a projected road, hills and curves that read correctly at speed, and traffic to weave through - drawn on the same 2D canvas as everything else in the arcade.",
+              },
+              {
+                title: "Pass-and-play",
+                description:
+                  "Two players on one device, taking turns on the same board - the simplest multiplayer there is, and the one that needs no network code at all.",
+              },
+            ],
+          },
+        ],
+        commits: ["fc67f53"],
       },
     ],
   },
+
+  // ─────────────────────────────── v1.3 ───────────────────────────────
   {
     version: "v1.3.0",
     codename: "Living Arcade",
-    date: "22 Jul 2026",
+    dates: "22 Jul 2026",
     summary:
-      "Turn the hub into somewhere players return to for years, not weeks: original music, stacking events, long-term streaks, deep booster and level rewards, and a proper analytics control centre.",
-    groups: [
+      "One release, and a deliberately short line: the loops meant to hold someone for a year rather than a fortnight.",
+    releases: [
       {
-        heading: "Long-term engagement",
-        icon: "Repeat",
-        blurb: "Daily streaks alone won't hold someone for a year - these loops are designed to.",
-        items: [
+        version: "v1.3.0",
+        codename: "Living Arcade",
+        date: "22 Jul 2026",
+        scope:
+          "Twenty-four files, two thousand lines, one commit. Every part of it serves the same goal, so splitting it would have made five releases that each explain a fifth of an idea.",
+        summary:
+          "Turn the hub into somewhere players return to for years, not weeks: original music, stacking events, long-term streaks, deep booster and level rewards, and a proper analytics control centre.",
+        groups: [
           {
-            title: "Community mega-events",
-            description:
-              "Server-wide co-op goals where everyone pulls in the same direction - e.g. 'play 500 games together this weekend' - with a live progress bar and an achievement plus bonus credits for everyone who took part.",
+            heading: "Long-term engagement",
+            icon: "Repeat",
+            blurb: "Daily streaks alone won't hold someone for a year - these loops are designed to.",
+            items: [
+              {
+                title: "Community mega-events",
+                description:
+                  "Server-wide co-op goals where everyone pulls in the same direction - e.g. 'play 500 games together this weekend' - with a live progress bar and an achievement plus bonus credits for everyone who took part.",
+              },
+              {
+                title: "Level-milestone unlocks",
+                description:
+                  "Hitting a level milestone unlocks a real feature, giving levelling a point beyond a number: L5 background music · L10 create groups · L15 stories · L30 a vanity profile URL. Two further milestones are planned for v1.5.0.",
+              },
+              {
+                title: "Message streaks",
+                description:
+                  "A Snapchat-style daily streak, but with messages instead of images - keep a conversation going day after day with a friend to build a streak and earn rewards, giving people a reason to check in on each other.",
+              },
+            ],
           },
           {
-            title: "Level-milestone unlocks",
-            description:
-              "Hitting a level milestone unlocks a real feature, giving levelling a point beyond a number: L5 background music · L10 create groups · L15 stories · L30 a vanity profile URL. Two further milestones are planned for v1.5.0.",
+            heading: "Booster rewards",
+            icon: "Heart",
+            blurb:
+              "Boosters keep the community's home running - the perks should feel genuinely worth it, while never becoming pay-to-win.",
+            items: [
+              {
+                title: "Bonus daily challenges",
+                description:
+                  "An extra daily challenge on top of everyone else's - more ways to earn, every day. Everyone can see it, so the perk is visible, but only boosters can claim it.",
+              },
+              {
+                title: "Boost-tenure badge tiers",
+                description:
+                  "The Booster badge evolves the longer you've boosted (1 month → 3 → 6 → 12), with a visibly fancier treatment at each tier to recognise loyalty.",
+              },
+              {
+                title: "Bigger daily & streak bonuses",
+                description: "A larger daily reward and a faster-growing streak multiplier while your boost is active.",
+              },
+              {
+                title: "Vanity profile URL",
+                description:
+                  "Claim a custom profile link (e.g. /u/yourname). Unlocked by boosting, by reaching level 30, or by being staff - claim or change it from Settings.",
+              },
+            ],
           },
           {
-            title: "Message streaks",
-            description:
-              "A Snapchat-style daily streak, but with messages instead of images - keep a conversation going day after day with a friend to build a streak and earn rewards, giving people a reason to check in on each other.",
+            heading: "Rewards & economy",
+            icon: "Gift",
+            items: [
+              {
+                title: "Background music tracks",
+                description:
+                  "Level 5+ players can buy original 'tracks' from the shop and play them in the background while they browse and play. Every track is composed in-house, so there are zero copyright concerns - and boosters can set one as their profile theme song.",
+              },
+              {
+                title: "Stacking boosts + effect queue",
+                description:
+                  "Credit boosts stack up to 5× (10× for Discord boosters). Buy another beyond the cap and it doesn't go to waste - it joins an effect queue and automatically takes over the moment the current boost runs out, so your boosts are always working.",
+              },
+            ],
+          },
+          {
+            heading: "Analytics & admin",
+            icon: "BarChart3",
+            items: [
+              {
+                title: "Admin analytics centre",
+                description:
+                  "A dedicated admin section for analytics - site clicks, popular games, active players and retention - plus control over which surfaces appear across the site, without touching code.",
+              },
+              {
+                title: "Editable roadmap from admin",
+                description:
+                  "Manage this very roadmap from the admin dashboard - add, edit and reorder releases and items without touching code, so plans stay fresh with a few clicks.",
+              },
+              {
+                title: "Rewarded ads & NitroPay",
+                description:
+                  "The plan to run ads - the simulated 'watch to double your credits' flow and a NitroPay integration - has been dropped. It complicated the reward maths and there was never a network behind it, so the whole programme was removed rather than left half-built. Credits now come from playing, streaks and boosts alone.",
+                dropped: true,
+              },
+            ],
           },
         ],
-      },
-      {
-        heading: "Booster rewards",
-        icon: "Heart",
-        blurb:
-          "Boosters keep the community's home running - the perks should feel genuinely worth it, while never becoming pay-to-win.",
-        items: [
-          {
-            title: "Bonus daily challenges",
-            description:
-              "An extra daily challenge on top of everyone else's - more ways to earn, every day. Everyone can see it, so the perk is visible, but only boosters can claim it.",
-          },
-          {
-            title: "Boost-tenure badge tiers",
-            description:
-              "The Booster badge evolves the longer you've boosted (1 month → 3 → 6 → 12), with a visibly fancier treatment at each tier to recognise loyalty.",
-          },
-          {
-            title: "Bigger daily & streak bonuses",
-            description: "A larger daily reward and a faster-growing streak multiplier while your boost is active.",
-          },
-          {
-            title: "Vanity profile URL",
-            description:
-              "Claim a custom profile link (e.g. /u/yourname). Unlocked by boosting, by reaching level 30, or by being staff - claim or change it from Settings.",
-          },
-        ],
-      },
-      {
-        heading: "Rewards & economy",
-        icon: "Gift",
-        items: [
-          {
-            title: "Background music tracks",
-            description:
-              "Level 5+ players can buy original 'tracks' from the shop and play them in the background while they browse and play. Every track is composed in-house, so there are zero copyright concerns - and boosters can set one as their profile theme song.",
-          },
-          {
-            title: "Stacking boosts + effect queue",
-            description:
-              "Credit boosts stack up to 5× (10× for Discord boosters). Buy another beyond the cap and it doesn't go to waste - it joins an effect queue and automatically takes over the moment the current boost runs out, so your boosts are always working.",
-          },
-        ],
-      },
-      {
-        heading: "Analytics & admin",
-        icon: "BarChart3",
-        items: [
-          {
-            title: "Admin analytics centre",
-            description:
-              "A dedicated admin section for analytics - site clicks, popular games, active players and retention - plus control over which surfaces appear across the site, without touching code.",
-          },
-          {
-            title: "Editable roadmap from admin",
-            description:
-              "Manage this very roadmap from the admin dashboard - add, edit and reorder releases and items without touching code, so plans stay fresh with a few clicks.",
-          },
-          {
-            title: "Rewarded ads & NitroPay",
-            description:
-              "The plan to run ads - the simulated 'watch to double your credits' flow and a NitroPay integration - has been dropped. It complicated the reward maths and there was never a network behind it, so the whole programme was removed rather than left half-built. Credits now come from playing, streaks and boosts alone.",
-            dropped: true,
-          },
-        ],
+        commits: ["389595f"],
       },
     ],
   },
-  {
-    version: "v1.2.3",
-    codename: "The Bot Update",
-    date: "22 Jul 2026",
-    summary:
-      "The Discord bot becomes a first-class citizen - rebuilt serverlessly so it runs for free, with secure account linking, an Arcane-replacing level system, automatic role sync, and a proper legal foundation for the whole platform.",
-    groups: [
-      {
-        heading: "Discord bot 2.0",
-        icon: "Bot",
-        blurb: "One bot, wired straight into your Hub account - no paid hosting anywhere.",
-        items: [
-          {
-            title: "Serverless slash commands",
-            description:
-              "All commands (/link, /rank, /levels, /daily, /pay, /profile, /leaderboard, /sync, moderation) now run through Discord HTTP interactions served by the website itself - signature-verified, free, and always on.",
-          },
-          {
-            title: "Secure account linking",
-            description:
-              "Link Discord from Settings → Connections via Discord OAuth, or with a one-time /link code minted in the server. Both paths prove you own the Discord account; unlink any time.",
-          },
-          {
-            title: "Discord levels (goodbye Arcane)",
-            description:
-              "Chat XP with configurable rates, cooldowns and level curve - anti-spam enforced in the database. /rank and /levels leaderboards, level-up announcements, website notifications, and an optional XP trickle into your Hub level.",
-          },
-          {
-            title: "Role sync",
-            description:
-              "Hub badges, achievements, staff status, nameplates and levels map to Discord roles. Synced on change, on join, on /sync and nightly - the website is always the source of truth.",
-          },
-          {
-            title: "Admin bot controls",
-            description:
-              "A new Admin → Discord bot page to tune XP rates, curves, announcements and the role map without touching code.",
-          },
-        ],
-      },
-      {
-        heading: "Platform",
-        icon: "Sparkles",
-        items: [
-          {
-            title: "Level-milestone unlocks",
-            description:
-              "Levelling now unlocks real features: create groups at level 10 and post stories at level 15 - or link Discord for instant access, as before.",
-          },
-          {
-            title: "Admin analytics",
-            description:
-              "A new Admin → Analytics page: daily/weekly/monthly active players, plays per day, sign-ups per day and average session length - computed from existing data, no extra tracking.",
-          },
-          {
-            title: "Terms of Service & Privacy Policy",
-            description:
-              "Proper, readable legal pages written for UK GDPR and linked from the footer, sign-up and settings - describing exactly what the platform actually collects.",
-          },
-          {
-            title: "Social share card",
-            description: "Links to the Hub now unfurl with a proper branded preview image.",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    version: "v1.2.2",
-    codename: "Arcade & Chat Polish",
-    date: "21 Jul 2026",
-    summary:
-      "A quality pass on the two things people do most - play and chat. Six more games rebuilt to a modern, tactile bar; the kept cosmetics given a Discord-tier animation glow-up; and messaging made genuinely reliable, now with GIFs.",
-    groups: [
-      {
-        heading: "Messaging",
-        icon: "MessageSquare",
-        blurb: "Chat should feel instant and alive - and a little more fun.",
-        items: [
-          {
-            title: "Send GIFs",
-            description:
-              "A Discord-style GIF picker in the composer, powered by Giphy: search or browse trending GIFs and tap one to send. It arrives as a message that renders inline as an image. You pick from Giphy only - no uploading or pasting your own image URLs - so it stays clean and safe.",
-          },
-          {
-            title: "Reliable sending",
-            description:
-              "Messages no longer get stuck on 'Sending…' until you refresh. A sent message now resolves the instant the server confirms it, independent of the realtime echo.",
-          },
-          {
-            title: "Live, lightweight updates",
-            description:
-              "The thread stays live for both sent and received messages without ever reloading the whole page - a cheap background sync fills in anything realtime misses, so you see new messages within seconds.",
-          },
-        ],
-      },
-      {
-        heading: "Games",
-        icon: "Gamepad2",
-        blurb: "Every game held to the standard set by Tic-Tac-Toe and Connect Four.",
-        items: [
-          {
-            title: "Six games rebuilt",
-            description:
-              "Simon, 15 Puzzle, Lights Out, Bubble Pop, Target Rush and Reversi rebuilt from scratch as animated, mobile-first, tactile canvas games - glowing feedback, satisfying motion and smarter opponents where it counts.",
-          },
-        ],
-      },
-      {
-        heading: "Cosmetics & shop",
-        icon: "Sparkles",
-        items: [
-          {
-            title: "Cosmetics glow-up",
-            description:
-              "The kept nameplates, frames, effects, themes, banners, badges and boosts had their particles and animations reworked to a Discord-tier bar - flowing gradients, travelling sheens, rotating rims and layered particle systems, all reduced-motion friendly.",
-          },
-          {
-            title: "Shop refinement",
-            description:
-              "A curated cull of overlapping cosmetics with automatic credit refunds, and the group-creation bug fixed so groups always create cleanly.",
-          },
-        ],
-      },
-    ],
-  },
-  {
-    version: "v1.2.1",
-    codename: "Notifications & Polish",
-    date: "21 Jul 2026",
-    summary:
-      "A small polish release on top of v1.2.0: richer notifications, linkable announcements, a redesigned podium and a handful of quality-of-life fixes.",
-    groups: [
-      {
-        heading: "Notifications & announcements",
-        icon: "Megaphone",
-        items: [
-          {
-            title: "Notification detail overlay",
-            description:
-              "Tap any notification to open it in full - the complete message, the exact date and time it was sent, and an Open button when a link is attached. Opening marks it read.",
-          },
-          {
-            title: "Linkable announcements",
-            description:
-              "Admins can attach a call-to-action link to an announcement, and publishing with 'Notify everyone' now actually sends a notification (with that link) to every player - the toggle previously did nothing.",
-          },
-        ],
-      },
-      {
-        heading: "Polish",
-        icon: "Sparkles",
-        items: [
-          {
-            title: "Podium glow-up",
-            description:
-              "The global leaderboard's top three now sit on a proper tiered gold/silver/bronze podium with rank badges, a crowned #1 and equipped nameplates.",
-          },
-          {
-            title: "Group chat menu",
-            description:
-              "Group conversations gained a header menu to copy the invite link again or leave the group.",
-          },
-        ],
-      },
-    ],
-  },
+
+  // ─────────────────────────────── v1.2 ───────────────────────────────
   {
     version: "v1.2.0",
     codename: "Identity & Connection",
-    date: "21 Jul 2026",
+    dates: "21 - 22 Jul 2026",
     summary:
-      "The release that makes your profile unmistakably yours and the community feel alive: Discord-grade cosmetics, expressive identity, richer friendships, group chats, a modern messenger, and a shop and inventory that are finally a pleasure to use.",
-    groups: [
+      "The line that gave the site a personality: profiles worth looking at, a messenger worth using, an arcade rebuilt to a quality bar, and the first version of the Discord bot.",
+    releases: [
       {
-        heading: "Profile customisation",
-        icon: "Palette",
-        blurb:
-          "Your profile should say who you are before you type a word. We're taking cues from Discord, Roblox, Steam and the big social platforms - layered, expressive, and never pay-to-win.",
-        items: [
+        version: "v1.2.3",
+        codename: "The Bot Update",
+        date: "22 Jul 2026",
+        scope:
+          "Four commits on one day, all platform-level: the bot, the legal pages, the share image and the analytics that arrived with them.",
+        summary:
+          "The Discord bot becomes a first-class citizen - rebuilt serverlessly so it runs for free, with secure account linking, an Arcane-replacing level system, automatic role sync, and a proper legal foundation for the whole platform.",
+        groups: [
           {
-            title: "Nameplates everywhere",
-            description:
-              "Your equipped nameplate stops living only on your profile page and follows you across the whole site - search results, friends lists, leaderboards, chat headers and message bubbles - so people recognise you instantly wherever you show up.",
+            heading: "Discord bot 2.0",
+            icon: "Bot",
+            blurb: "One bot, wired straight into your Hub account - no paid hosting anywhere.",
+            items: [
+              {
+                title: "Serverless slash commands",
+                description:
+                  "All commands (/link, /rank, /levels, /daily, /pay, /profile, /leaderboard, /sync, moderation) now run through Discord HTTP interactions served by the website itself - signature-verified, free, and always on.",
+              },
+              {
+                title: "Secure account linking",
+                description:
+                  "Link Discord from Settings → Connections via Discord OAuth, or with a one-time /link code minted in the server. Both paths prove you own the Discord account; unlink any time.",
+              },
+              {
+                title: "Discord levels (goodbye Arcane)",
+                description:
+                  "Chat XP with configurable rates, cooldowns and level curve - anti-spam enforced in the database. /rank and /levels leaderboards, level-up announcements, website notifications, and an optional XP trickle into your Hub level.",
+              },
+              {
+                title: "Role sync",
+                description:
+                  "Hub badges, achievements, staff status, nameplates and levels map to Discord roles. Synced on change, on join, on /sync and nightly - the website is always the source of truth.",
+              },
+              {
+                title: "Admin bot controls",
+                description:
+                  "A new Admin → Discord bot page to tune XP rates, curves, announcements and the role map without touching code.",
+              },
+            ],
           },
           {
-            title: "Avatar decorations 2.0",
-            description:
-              "Discord-style avatar decorations that render everywhere your avatar appears: animated frames, orbiting particles, soft pulsing glows and looping effects. Layered above your picture and tuned to stay readable at small sizes.",
+            heading: "Platform",
+            icon: "Sparkles",
+            items: [
+              {
+                title: "Level-milestone unlocks",
+                description:
+                  "Levelling now unlocks real features: create groups at level 10 and post stories at level 15 - or link Discord for instant access, as before.",
+              },
+              {
+                title: "Admin analytics",
+                description:
+                  "A new Admin → Analytics page: daily/weekly/monthly active players, plays per day, sign-ups per day and average session length - computed from existing data, no extra tracking.",
+              },
+              {
+                title: "Terms of Service & Privacy Policy",
+                description:
+                  "Proper, readable legal pages written for UK GDPR and linked from the footer, sign-up and settings - describing exactly what the platform actually collects.",
+              },
+              {
+                title: "Social share card",
+                description: "Links to the Hub now unfurl with a proper branded preview image.",
+              },
+            ],
+          },
+        ],
+        commits: ["d240a91", "9b72ea1", "fcf723d", "c36ed76"],
+      },
+      {
+        version: "v1.2.2",
+        codename: "Arcade & Chat Polish",
+        date: "21 Jul 2026",
+        scope:
+          "Nine commits over one long day, all of them the same quality pass held to the bar Tic-Tac-Toe set in the first of them.",
+        summary:
+          "A quality pass on the two things people do most - play and chat. Six more games rebuilt to a modern, tactile bar; the kept cosmetics given a Discord-tier animation glow-up; and messaging made genuinely reliable, now with GIFs.",
+        groups: [
+          {
+            heading: "Messaging",
+            icon: "MessageSquare",
+            blurb: "Chat should feel instant and alive - and a little more fun.",
+            items: [
+              {
+                title: "Send GIFs",
+                description:
+                  "A Discord-style GIF picker in the composer, powered by Giphy: search or browse trending GIFs and tap one to send. It arrives as a message that renders inline as an image. You pick from Giphy only - no uploading or pasting your own image URLs - so it stays clean and safe.",
+              },
+              {
+                title: "Reliable sending",
+                description:
+                  "Messages no longer get stuck on 'Sending…' until you refresh. A sent message now resolves the instant the server confirms it, independent of the realtime echo.",
+              },
+              {
+                title: "Live, lightweight updates",
+                description:
+                  "The thread stays live for both sent and received messages without ever reloading the whole page - a cheap background sync fills in anything realtime misses, so you see new messages within seconds.",
+              },
+            ],
           },
           {
-            title: "Tiered custom banners",
-            description:
-              "Banners scale with how invested you are: a clean solid colour for email-only accounts; animated gradients and a curated library of premade art for Discord-linked players; and full custom PNG/JPEG uploads (with sensible size limits and moderation) for server boosters.",
+            heading: "Games",
+            icon: "Gamepad2",
+            blurb: "Every game held to the standard set by Tic-Tac-Toe and Connect Four.",
+            items: [
+              {
+                title: "Six games rebuilt",
+                description:
+                  "Simon, 15 Puzzle, Lights Out, Bubble Pop, Target Rush and Reversi rebuilt from scratch as animated, mobile-first, tactile canvas games - glowing feedback, satisfying motion and smarter opponents where it counts.",
+              },
+            ],
           },
           {
-            title: "Rich profile effects",
-            description:
-              "A real effects engine, not just a flair badge. Pick a background colour or gradient, add ambient animated layers (falling snow, drifting stars, aurora, embers, confetti), set intensity, and stack multiple accents together for a look that's genuinely yours.",
+            heading: "Cosmetics & shop",
+            icon: "Sparkles",
+            items: [
+              {
+                title: "Cosmetics glow-up",
+                description:
+                  "The kept nameplates, frames, effects, themes, banners, badges and boosts had their particles and animations reworked to a Discord-tier bar - flowing gradients, travelling sheens, rotating rims and layered particle systems, all reduced-motion friendly.",
+              },
+              {
+                title: "Shop refinement",
+                description:
+                  "A curated cull of overlapping cosmetics with automatic credit refunds, and the group-creation bug fixed so groups always create cleanly.",
+              },
+            ],
           },
-          {
-            title: "Profile themes & accents",
-            description:
-              "Recolour your whole profile card - buttons, highlights and dividers - with a curated accent theme, so a visitor feels your vibe the moment the page loads. Hand-picked palettes only, so nothing ever clashes.",
-          },
-          {
-            title: "Display-name styles",
-            description:
-              "A curated set of display fonts plus particle, glow, shimmer and gradient treatments for your name - expressive but always legible.",
-          },
-          {
-            title: "Trophy case & showcases",
-            description:
-              "Steam-style showcases: pin your rarest cosmetics, proudest achievements, favourite games and best scores to the top of your profile so the first thing people see is what you're proud of.",
-          },
-          {
-            title: "Featured achievement pin",
-            description: "Choose one achievement to headline your profile with its full art and rarity.",
-          },
-          {
-            title: "About-me widgets",
-            description:
-              "Optional profile fields - pronouns, a one-line status, favourite game, join date and a short bio - arranged as tidy widgets you can show or hide.",
-          },
-          {
-            title: "Cosmetic rarity tiers",
-            description:
-              "Every cosmetic gets a rarity - common through mythic - with matching visual treatment and a clear label in the shop and inventory, so rare items actually feel rare.",
-          },
-          {
-            title: "Staff-exclusive cosmetics",
-            description:
-              "Genuinely special, unbuyable cosmetics for admins, mods and developers - distinct animated nameplates, frames and decorations - so staff are recognisable at a glance and the role feels earned.",
-          },
-          {
-            title: "Discord link on profile",
-            description:
-              "An optional 'Connect' button that surfaces your Discord for verified players who want it shown - off by default, entirely your call.",
-          },
+        ],
+        commits: [
+          "43fef05",
+          "90c5192",
+          "2b4d810",
+          "d514f0b",
+          "f72cb90",
+          "b4e9788",
+          "1767a9c",
+          "778eede",
+          "63e5495",
         ],
       },
       {
-        heading: "Friends & social",
-        icon: "Users",
-        blurb: "Make the hub somewhere you come to hang out, not just to play.",
-        items: [
+        version: "v1.2.1",
+        codename: "Notifications & Polish",
+        date: "21 Jul 2026",
+        scope:
+          "Five small commits the same day v1.2.0 shipped - the corrections you only find once a release is in front of people.",
+        summary:
+          "A small polish release on top of v1.2.0: richer notifications, linkable announcements, a redesigned podium and a handful of quality-of-life fixes.",
+        groups: [
           {
-            title: "Mutual friends (opt-in)",
-            description:
-              "See the friends you have in common with someone - shown only for users who choose to make their friends list visible, so it's discovery without exposure.",
+            heading: "Notifications & announcements",
+            icon: "Megaphone",
+            items: [
+              {
+                title: "Notification detail overlay",
+                description:
+                  "Tap any notification to open it in full - the complete message, the exact date and time it was sent, and an Open button when a link is attached. Opening marks it read.",
+              },
+              {
+                title: "Linkable announcements",
+                description:
+                  "Admins can attach a call-to-action link to an announcement, and publishing with 'Notify everyone' now actually sends a notification (with that link) to every player - the toggle previously did nothing.",
+              },
+            ],
           },
           {
-            title: "Follow users",
-            description:
-              "A lightweight one-way follow alongside two-way friendships - keep up with players you admire without needing them to accept, and they're notified when you do.",
-          },
-          {
-            title: "Friends-list visibility",
-            description:
-              "Per-user control over who can see your friends list: private, friends only, followers, or fully public.",
-          },
-          {
-            title: "Friend nicknames & notes",
-            description:
-              "Set a private nickname for a friend that only you see, and leave a private note on anyone's profile as a personal reminder of who they are.",
-          },
-          {
-            title: "Group chats",
-            description:
-              "Create a group with a shareable invite link (e.g. /invite/<groupId>), managed by a group admin who can add, remove and promote members. Limited to boosters, mods and admins at first to keep it clean and spam-free.",
-          },
-          {
-            title: "Modern messenger",
-            description:
-              "Rework messaging to feel like WhatsApp - minus file/image/video/audio sharing and calls: clean threads, emoji reactions, replies, pinned and favourite chats, and delivered/seen receipts done right.",
-          },
-          {
-            title: "Emoji & a better mobile keyboard",
-            description:
-              "A proper emoji picker and a solid mobile typing experience across the site - including fixing the frustrating built-in keyboard in Snakes & Ladders while we're in there.",
-          },
-          {
-            title: "Stories",
-            description:
-              "Post text or an achievement to a story that expires after a day. Boosters, mods and admins only for now while we prove out the format and moderation.",
-          },
-          {
-            title: "Rich presence",
-            description:
-              "Upgrade online status to online / offline / do-not-disturb / sleep, add a 'last online' time, and even an optional 'playing now' game - each with fine-grained controls over exactly who can see it.",
-          },
-          {
-            title: "Wishlist & gifting",
-            description:
-              "Add store items to a wishlist you can view and manage from your inventory, and gift items to other players at 75% of the normal price - deliberately cheaper than buying for yourself, so gifting is the generous and the smart move.",
+            heading: "Polish",
+            icon: "Sparkles",
+            items: [
+              {
+                title: "Podium glow-up",
+                description:
+                  "The global leaderboard's top three now sit on a proper tiered gold/silver/bronze podium with rank badges, a crowned #1 and equipped nameplates.",
+              },
+              {
+                title: "Group chat menu",
+                description:
+                  "Group conversations gained a header menu to copy the invite link again or leave the group.",
+              },
+              {
+                title: "Wishlist gifting from a profile",
+                description:
+                  "Gift straight from someone's wishlist, and the weakest games were pulled back to 'coming soon' rather than left on the shelf in the state they were in.",
+              },
+            ],
           },
         ],
+        commits: ["97223b9", "4ea3e49", "a74459c", "1861209", "2da428b"],
       },
       {
-        heading: "Store & inventory",
-        icon: "ShoppingBag",
-        blurb: "Buying, previewing and managing cosmetics should be effortless - and fun.",
-        items: [
+        version: "v1.2.0",
+        codename: "Identity & Connection",
+        date: "21 Jul 2026",
+        scope: "Fifty-nine files in one commit. The largest single release until v1.5.0.",
+        summary:
+          "The release that makes your profile unmistakably yours and the community feel alive: Discord-grade cosmetics, expressive identity, richer friendships, group chats, a modern messenger, and a shop and inventory that are finally a pleasure to use.",
+        groups: [
           {
-            title: "Live item previews",
-            description:
-              "Click any shop item to open a full preview page (in a new tab) that renders the effect live - see exactly how a nameplate, banner, effect or decoration looks on a real profile before you spend a single credit.",
+            heading: "Profile customisation",
+            icon: "Palette",
+            blurb:
+              "Your profile should say who you are before you type a word. We're taking cues from Discord, Roblox, Steam and the big social platforms - layered, expressive, and never pay-to-win.",
+            items: [
+              {
+                title: "Nameplates everywhere",
+                description:
+                  "Your equipped nameplate stops living only on your profile page and follows you across the whole site - search results, friends lists, leaderboards, chat headers and message bubbles - so people recognise you instantly wherever you show up.",
+              },
+              {
+                title: "Avatar decorations 2.0",
+                description:
+                  "Discord-style avatar decorations that render everywhere your avatar appears: animated frames, orbiting particles, soft pulsing glows and looping effects. Layered above your picture and tuned to stay readable at small sizes.",
+              },
+              {
+                title: "Tiered custom banners",
+                description:
+                  "Banners scale with how invested you are: a clean solid colour for email-only accounts; animated gradients and a curated library of premade art for Discord-linked players; and full custom PNG/JPEG uploads (with sensible size limits and moderation) for server boosters.",
+              },
+              {
+                title: "Rich profile effects",
+                description:
+                  "A real effects engine, not just a flair badge. Pick a background colour or gradient, add ambient animated layers (falling snow, drifting stars, aurora, embers, confetti), set intensity, and stack multiple accents together for a look that's genuinely yours.",
+              },
+              {
+                title: "Profile themes & accents",
+                description:
+                  "Recolour your whole profile card - buttons, highlights and dividers - with a curated accent theme, so a visitor feels your vibe the moment the page loads. Hand-picked palettes only, so nothing ever clashes.",
+              },
+              {
+                title: "Display-name styles",
+                description:
+                  "A curated set of display fonts plus particle, glow, shimmer and gradient treatments for your name - expressive but always legible.",
+              },
+              {
+                title: "Trophy case & showcases",
+                description:
+                  "Steam-style showcases: pin your rarest cosmetics, proudest achievements, favourite games and best scores to the top of your profile so the first thing people see is what you're proud of.",
+              },
+              {
+                title: "Featured achievement pin",
+                description: "Choose one achievement to headline your profile with its full art and rarity.",
+              },
+              {
+                title: "About-me widgets",
+                description:
+                  "Optional profile fields - pronouns, a one-line status, favourite game, join date and a short bio - arranged as tidy widgets you can show or hide.",
+              },
+              {
+                title: "Cosmetic rarity tiers",
+                description:
+                  "Every cosmetic gets a rarity - common through mythic - with matching visual treatment and a clear label in the shop and inventory, so rare items actually feel rare.",
+              },
+              {
+                title: "Staff-exclusive cosmetics",
+                description:
+                  "Genuinely special, unbuyable cosmetics for admins, mods and developers - distinct animated nameplates, frames and decorations - so staff are recognisable at a glance and the role feels earned.",
+              },
+              {
+                title: "Discord link on profile",
+                description:
+                  "An optional 'Connect' button that surfaces your Discord for verified players who want it shown - off by default, entirely your call.",
+              },
+            ],
           },
           {
-            title: "Apply straight from the shop",
-            description:
-              "Already own an item? Apply it to your profile or avatar right from the shop page - no detour through the inventory required.",
+            heading: "Friends & social",
+            icon: "Users",
+            blurb: "Make the hub somewhere you come to hang out, not just to play.",
+            items: [
+              {
+                title: "Mutual friends (opt-in)",
+                description:
+                  "See the friends you have in common with someone - shown only for users who choose to make their friends list visible, so it's discovery without exposure.",
+              },
+              {
+                title: "Follow users",
+                description:
+                  "A lightweight one-way follow alongside two-way friendships - keep up with players you admire without needing them to accept, and they're notified when you do.",
+              },
+              {
+                title: "Friends-list visibility",
+                description:
+                  "Per-user control over who can see your friends list: private, friends only, followers, or fully public.",
+              },
+              {
+                title: "Friend nicknames & notes",
+                description:
+                  "Set a private nickname for a friend that only you see, and leave a private note on anyone's profile as a personal reminder of who they are.",
+              },
+              {
+                title: "Group chats",
+                description:
+                  "Create a group with a shareable invite link (e.g. /invite/<groupId>), managed by a group admin who can add, remove and promote members. Limited to boosters, mods and admins at first to keep it clean and spam-free.",
+              },
+              {
+                title: "Modern messenger",
+                description:
+                  "Rework messaging to feel like WhatsApp - minus file/image/video/audio sharing and calls: clean threads, emoji reactions, replies, pinned and favourite chats, and delivered/seen receipts done right.",
+              },
+              {
+                title: "Emoji & a better mobile keyboard",
+                description:
+                  "A proper emoji picker and a solid mobile typing experience across the site - including fixing the frustrating built-in keyboard in Snakes & Ladders while we're in there.",
+              },
+              {
+                title: "Stories",
+                description:
+                  "Post text or an achievement to a story that expires after a day. Boosters, mods and admins only for now while we prove out the format and moderation.",
+              },
+              {
+                title: "Rich presence",
+                description:
+                  "Upgrade online status to online / offline / do-not-disturb / sleep, add a 'last online' time, and even an optional 'playing now' game - each with fine-grained controls over exactly who can see it.",
+              },
+              {
+                title: "Wishlist & gifting",
+                description:
+                  "Add store items to a wishlist you can view and manage from your inventory, and gift items to other players at 75% of the normal price - deliberately cheaper than buying for yourself, so gifting is the generous and the smart move.",
+              },
+            ],
           },
           {
-            title: "Inventory search & filters",
-            description:
-              "A search bar plus filters - by cost, rarity/exclusivity, date acquired and item type - so even a huge collection stays easy to browse and organise.",
+            heading: "Store & inventory",
+            icon: "ShoppingBag",
+            blurb: "Buying, previewing and managing cosmetics should be effortless - and fun.",
+            items: [
+              {
+                title: "Live item previews",
+                description:
+                  "Click any shop item to open a full preview page (in a new tab) that renders the effect live - see exactly how a nameplate, banner, effect or decoration looks on a real profile before you spend a single credit.",
+              },
+              {
+                title: "Apply straight from the shop",
+                description:
+                  "Already own an item? Apply it to your profile or avatar right from the shop page - no detour through the inventory required.",
+              },
+              {
+                title: "Inventory search & filters",
+                description:
+                  "A search bar plus filters - by cost, rarity/exclusivity, date acquired and item type - so even a huge collection stays easy to browse and organise.",
+              },
+              {
+                title: "Better boost display",
+                description:
+                  "Fix the boost countdown timer and multiplier readout so active boosts always show the correct time remaining and the true stacked multiplier at a glance.",
+              },
+            ],
           },
           {
-            title: "Better boost display",
-            description:
-              "Fix the boost countdown timer and multiplier readout so active boosts always show the correct time remaining and the true stacked multiplier at a glance.",
+            heading: "Interface & quality of life",
+            icon: "SlidersHorizontal",
+            items: [
+              {
+                title: "Redesigned navigation",
+                description:
+                  "A proper mobile hamburger menu - today's bar is far too cramped for the space - plus a cleaner desktop nav with more breathing room between items, better spacing and smoother animations. It should simply look and feel good.",
+              },
+              {
+                title: "Organised inventory",
+                description:
+                  "A rebuilt inventory with clear 'applied' indicators on every item and one-tap apply/disable.",
+              },
+              {
+                title: "Easier event customisation",
+                description:
+                  "Spin up an event and set things like a credit multiplier, duration and banner in a couple of clicks - no fiddly config.",
+              },
+              {
+                title: "Faster economy adjustments",
+                description:
+                  "Give or take XP, credits and levels from the admin panel with far less friction - search a player, adjust, done, with an audit trail.",
+              },
+              {
+                title: "Auto device-appropriate controls",
+                description:
+                  "Detect the player's device and show on-screen touch controls on mobile and keyboard/desktop hints on desktop automatically - whichever they're actually using, without a manual toggle.",
+              },
+            ],
           },
         ],
+        commits: ["4c94d75"],
+      },
+    ],
+  },
+
+  // ─────────────────────────────── v1.1 ───────────────────────────────
+  {
+    version: "v1.1.0",
+    codename: "Rebuilt",
+    dates: "19 - 20 Jul 2026",
+    summary:
+      "The rebuild: the hand-written static site replaced by a Next.js app on Supabase, deployed, corrected, and given a public plan.",
+    releases: [
+      {
+        version: "v1.1.2",
+        codename: "Open Plans",
+        date: "20 Jul 2026",
+        scope: "Three commits about one page - two of them edits to the page the first one added.",
+        summary: "The roadmap stopped being a document nobody outside the project could read.",
+        groups: [
+          {
+            heading: "The roadmap",
+            icon: "History",
+            items: [
+              {
+                title: "A public roadmap at /roadmap",
+                description:
+                  "What is planned, grouped by release, with a status on each item - and the definition of done every shipped feature is held to, stated in public.",
+              },
+              {
+                title: "Restructured into v1.2.0, v1.3.0 and v1.4.0",
+                description:
+                  "The first plan was a flat list of wants. Splitting it into three named releases is what made the next fortnight's work legible - and is the reason those three releases exist at all.",
+              },
+            ],
+          },
+        ],
+        commits: ["c5be7ec", "7fa939d", "842ac66"],
+        prs: [8],
       },
       {
-        heading: "Interface & quality of life",
-        icon: "SlidersHorizontal",
-        items: [
+        version: "v1.1.1",
+        codename: "Sharp Edges",
+        date: "20 Jul 2026",
+        scope: "The first pass of corrections after launch, and the upload that carried them.",
+        summary: "Five things that were visibly wrong in front of the first people to use the site.",
+        groups: [
           {
-            title: "Redesigned navigation",
-            description:
-              "A proper mobile hamburger menu - today's bar is far too cramped for the space - plus a cleaner desktop nav with more breathing room between items, better spacing and smoother animations. It should simply look and feel good.",
-          },
-          {
-            title: "Organised inventory",
-            description:
-              "A rebuilt inventory with clear 'applied' indicators on every item and one-tap apply/disable.",
-          },
-          {
-            title: "Easier event customisation",
-            description:
-              "Spin up an event and set things like a credit multiplier, duration and banner in a couple of clicks - no fiddly config.",
-          },
-          {
-            title: "Faster economy adjustments",
-            description:
-              "Give or take XP, credits and levels from the admin panel with far less friction - search a player, adjust, done, with an audit trail.",
-          },
-          {
-            title: "Auto device-appropriate controls",
-            description:
-              "Detect the player's device and show on-screen touch controls on mobile and keyboard/desktop hints on desktop automatically - whichever they're actually using, without a manual toggle.",
+            heading: "Fixes",
+            icon: "SlidersHorizontal",
+            items: [
+              {
+                title: "Gradient text rendered as a solid block",
+                description: "The headline treatment used everywhere fell back to a filled rectangle on some browsers.",
+              },
+              {
+                title: "Long-press to flag in Minesweeper",
+                description: "There was no way to flag a mine on a phone at all - the game was unplayable on touch.",
+              },
+              {
+                title: "Fullscreen stretching and resolution",
+                description: "Games stretched to fill rather than scaling, and rendered at CSS pixels rather than device ones.",
+              },
+              {
+                title: "The rewarded-ads flag removes every ad",
+                description: "Turning ads off in the admin panel left several surfaces still showing them.",
+              },
+              {
+                title: "sitemap.xml and robots.txt",
+                description: "The two files every search engine asks for, and the site had neither.",
+              },
+            ],
           },
         ],
+        commits: ["cc319b6", "b4de700"],
+        prs: [7],
+      },
+      {
+        version: "v1.1.0",
+        codename: "Feature Complete",
+        date: "19 Jul 2026",
+        dateNote: "first deploy 20 Jul 2026",
+        scope:
+          "The rebuild and the six commits that made deploying it repeatable. One release because none of them is any use without the others - an app that cannot be built is not a version of anything.",
+        summary:
+          "Rebuilt from scratch as a Next.js app on Supabase: Discord-only sign-in, mobile-first games, an admin control centre, profile customisation and a living economy.",
+        groups: [
+          {
+            heading: "The rebuild",
+            icon: "Rocket",
+            items: [
+              {
+                title: "Discord-only login and usernames",
+                description:
+                  "Accounts, sign-in and a username that is yours across the site - with Discord as the only identity provider, so there are no passwords to lose.",
+              },
+              {
+                title: "Mobile-first games",
+                description:
+                  "Touch controls, responsive canvases, per-game tuning, and safe-area and overscroll handling - the arcade built for a phone first rather than adapted to one.",
+              },
+              {
+                title: "An admin control centre",
+                description: "Users, games, announcements, reports, economy and feature flags, in one place.",
+              },
+              {
+                title: "Profile customisation",
+                description: "Nameplates, staff flair and profile effects - the first version of the cosmetics engine.",
+              },
+              {
+                title: "A living economy and events",
+                description: "Credits, XP, levels, daily rewards and timed events with multipliers.",
+              },
+            ],
+          },
+          {
+            heading: "Making it deployable",
+            icon: "SlidersHorizontal",
+            items: [
+              {
+                title: "PWA assets, error and loading boundaries, README and CI",
+                description:
+                  "Everything a build needs to fail loudly rather than quietly - with the raster icons generated at build time from one source rather than committed as a dozen files.",
+              },
+              {
+                title: "Zero-config deploy",
+                description:
+                  "Production defaults for the publishable environment values, and its own dedicated Supabase project rather than one shared with something else.",
+              },
+            ],
+          },
+        ],
+        commits: ["8ceae6e", "bccb0cd", "5099af4", "1dfa001", "5feca91", "4aad195", "1efeb47"],
+        prs: [6],
+      },
+    ],
+  },
+
+  // ─────────────────────────────── v1.0 ───────────────────────────────
+  {
+    version: "v1.0.0",
+    codename: "First Cabinet",
+    dates: "21 Mar 2026",
+    summary:
+      "The original site, four months before the rebuild: hand-written pages, two games and no server. Its commits are no longer reachable from `main`, so the pull requests are all that is left of it.",
+    releases: [
+      {
+        version: "v1.0.0",
+        codename: "First Cabinet",
+        date: "21 Mar 2026",
+        scope:
+          "Five pull requests merged in one morning, none of which stands alone. Together they are the entire first version of the site.",
+        summary:
+          "A static arcade of hand-written pages, with scores kept in the browser because there was nowhere else to put them.",
+        groups: [
+          {
+            heading: "The first arcade",
+            icon: "Gamepad2",
+            items: [
+              {
+                title: "Snake and Tetris",
+                description: "The two launch titles, playable in the browser with no account and no server.",
+              },
+              {
+                title: "Game pages built from metadata",
+                description:
+                  "One manifest describing every game, with the landing page and each game's detail content generated from it rather than written twice.",
+              },
+              {
+                title: "Shared frontend assets",
+                description:
+                  "The CSS and scripts every page carried its own copy of, pulled into one place - which is what kept the pages small enough to go on hand-writing.",
+              },
+              {
+                title: "A stats dashboard in your browser",
+                description:
+                  "High scores and plays kept in localStorage: the first version of a profile, with nowhere to sign in.",
+              },
+            ],
+          },
+        ],
+        commits: [],
+        prs: [5, 4, 3, 2, 1],
       },
     ],
   },
 ];
 
+/** Every release, newest first - for anything that wants the flat list. */
+export const RELEASES: UpdateRelease[] = SERIES.flatMap((s) => s.releases);
+
 export const LANDED: LandedChange[] = [
+  { sha: "0f5d18e", date: "4 Aug 2026", subject: "feat(v1.5.1): difficulty picker and message reports, completing the release" },
+  { sha: "2007b71", date: "3 Aug 2026", subject: "feat(v1.5.1): cookie consent, with analytics gated behind it (0065)" },
+  { sha: "560609a", date: "3 Aug 2026", subject: "feat(v1.5.1): rename, banner, presence heartbeat, stories, fullscreen, settings" },
+  { sha: "9191368", date: "3 Aug 2026", subject: "docs(roadmap): plan v1.5.1 and v1.6.0, plus an unscheduled ideas list" },
+  { sha: "de6cfc9", date: "3 Aug 2026", subject: "feat(discord): server export command, and role sync every two minutes" },
+  { sha: "55026b9", date: "3 Aug 2026", subject: "fix(discord): qualify the reset delete, which safeupdate rejected at runtime" },
+  { sha: "5c39b29", date: "3 Aug 2026", subject: "feat(discord): reset-all-settings control, and post panels into the resolved channel" },
+  { sha: "8c775bb", date: "3 Aug 2026", subject: "feat(discord): full setup provisions the panel channels instead of skipping" },
+  { sha: "970ed6a", date: "2 Aug 2026", subject: "docs(updates): regenerate LANDED and the merged pull request list" },
   { sha: "7479a8f", date: "2 Aug 2026", subject: "Merged pull request from v1-5-0-dev-plan-gmjufz", pr: 22 },
   { sha: "0785bc3", date: "29 Jul 2026", subject: "Merged pull request from website-ui-ux-redesign-fn7ric", pr: 20 },
   { sha: "f91cbea", date: "29 Jul 2026", subject: "Merged pull request from games-hub-online-multiplayer-hzzyf4", pr: 21 },
@@ -923,8 +1716,34 @@ export const PULL_REQUESTS: MergedPullRequest[] = [
   { number: 1, title: "Add browser-persisted player stats dashboard", date: "21 Mar 2026" },
 ];
 
+/** sha → the release it shipped in, for the "everything that landed" list. */
+export const RELEASE_OF_COMMIT: Record<string, string> = Object.fromEntries(
+  RELEASES.flatMap((release) => release.commits.map((sha) => [sha, release.version])),
+);
+
+const LANDED_BY_SHA = new Map(LANDED.map((change) => [change.sha, change]));
+
+/** Shas assigned to a release, resolved against `LANDED`. */
+export function commitsOf(release: UpdateRelease): LandedChange[] {
+  return release.commits.flatMap((sha) => {
+    const change = LANDED_BY_SHA.get(sha);
+    return change ? [change] : [];
+  });
+}
+
+/**
+ * Changes in production that no release claims.
+ *
+ * Empty is the goal and currently the truth. It is derived rather than
+ * asserted so that the next unassigned commit shows up on the page as a
+ * question, instead of quietly falling out of the history the way the whole
+ * run between 26 July and 3 August did.
+ */
+export const UNASSIGNED: LandedChange[] = LANDED.filter((c) => !RELEASE_OF_COMMIT[c.sha]);
+
 /** Totals shown at the top of /updates, derived so they can never drift. */
 export const UPDATE_STATS = {
+  series: SERIES.length,
   releases: RELEASES.length,
   features: RELEASES.reduce((n, r) => n + r.groups.reduce((m, g) => m + g.items.length, 0), 0),
   landed: LANDED.length,

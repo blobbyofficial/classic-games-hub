@@ -15,7 +15,8 @@ export type BotConfigKey =
   | "moderation"
   | "tickets"
   | "stats"
-  | "level_roles";
+  | "level_roles"
+  | "publishing";
 
 export interface VerificationConfig {
   enabled: boolean;
@@ -98,6 +99,38 @@ export interface LevelRolesConfig {
   roles: Record<string, string>;
 }
 
+/**
+ * Mirroring the website's update log and announcements into Discord.
+ *
+ * Both channels default to null, which switches that half off rather than
+ * erroring - the same rule every other section here follows. `enabled` is the
+ * master switch, so a server can keep its channel ids while a sync is paused.
+ */
+export interface PublishingConfig {
+  enabled: boolean;
+  /** Where releases are mirrored. Null disables the update-log sync. */
+  update_channel_id: string | null;
+  /** Where published announcements are mirrored. Null disables that sync. */
+  announce_channel_id: string | null;
+  /** Optionally pinged when a *new* release or announcement first appears. */
+  update_ping_role_id: string | null;
+  announce_ping_role_id: string | null;
+  /** Post an announcement to Discord the moment it is published on the site. */
+  announce_on_publish: boolean;
+  /** How many announcements back the mirror keeps in step. */
+  announce_limit: number;
+}
+
+export const PUBLISHING_DEFAULTS: PublishingConfig = {
+  enabled: true,
+  update_channel_id: null,
+  announce_channel_id: null,
+  update_ping_role_id: null,
+  announce_ping_role_id: null,
+  announce_on_publish: true,
+  announce_limit: 25,
+};
+
 export const VERIFICATION_DEFAULTS: VerificationConfig = {
   panel_message_id: null,
   enabled: true,
@@ -178,6 +211,7 @@ const DEFAULTS = {
   tickets: TICKETS_DEFAULTS,
   stats: STATS_DEFAULTS,
   level_roles: LEVEL_ROLES_DEFAULTS,
+  publishing: PUBLISHING_DEFAULTS,
 } as const;
 
 type Configs = {
@@ -186,6 +220,7 @@ type Configs = {
   tickets: TicketsConfig;
   stats: StatsConfig;
   level_roles: LevelRolesConfig;
+  publishing: PublishingConfig;
 };
 
 /**

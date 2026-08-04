@@ -4,11 +4,13 @@ import { getBotConfig } from "./config";
 import { brandEmbed } from "./embeds";
 import { discordEnv } from "./env";
 import { discordRest } from "./rest";
+import { summariseSync, syncAnnouncements, syncUpdateLog } from "./publish";
 import {
   postTicketPanel,
   postVerificationPanel,
   refreshStatChannels,
   setupLevelRoles,
+  setupPublishingChannels,
   setupStatsChannels,
   setupVerificationRoles,
 } from "./setup";
@@ -318,7 +320,13 @@ export async function setChannelLock(
 
 // ── Pushing saved settings to Discord ────────────────────────────────
 
-export type PushSection = "verification" | "level_roles" | "tickets" | "stats" | "moderation";
+export type PushSection =
+  | "verification"
+  | "level_roles"
+  | "tickets"
+  | "stats"
+  | "moderation"
+  | "publishing";
 
 /**
  * Applies what is stored for a section to the Discord server.
@@ -378,6 +386,26 @@ export async function pushSection(section: PushSection): Promise<OpResult> {
         detail: `${summarise(created, "channel")} ${
           refreshed.ok ? `Renamed ${refreshed.updated.length}.` : "Nothing to rename yet."
         }`,
+      };
+    }
+    case "publishing": {
+      const cfg = await getBotConfig("publishing");
+      if (!cfg.enabled) {
+        return { ok: false, error: "Publishing is switched off - tick **Mirror to Discord** under Publishing and save." };
+      }
+      // Resolve the channels first: a push right after someone cleared both
+      // ids should re-provision them rather than report there is nowhere to
+      // write. Idempotent, so an already-correct pair costs one API call.
+      const channels = await setupPublishingChannels();
+      const [log, announcements] = await Promise.all([syncUpdateLog(), syncAnnouncements()]);
+      const problems = [
+        log.ok ? "" : `update log - ${log.error ?? log.detail}`,
+        announcements.ok ? "" : `announcements - ${announcements.error ?? announcements.detail}`,
+      ].filter(Boolean);
+      return {
+        ok: log.ok || announcements.ok,
+        detail: `${summarise(channels, "channel")} Update log: ${summariseSync(log)} Announcements: ${summariseSync(announcements)}`,
+        error: problems.length ? problems.join(" · ") : undefined,
       };
     }
     case "moderation":
