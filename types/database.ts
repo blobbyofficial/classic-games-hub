@@ -710,7 +710,7 @@ export interface Database {
     Views: Record<string, never>;
     Functions: {
       submit_score: {
-        Args: { p_slug: string; p_score: number; p_duration?: number };
+        Args: { p_slug: string; p_score: number; p_duration?: number; p_difficulty?: string };
         Returns: Json;
       };
       claim_daily_reward: { Args: Record<string, never>; Returns: Json };
@@ -755,6 +755,11 @@ export interface Database {
       mark_conversation_read: { Args: { p_conversation: string }; Returns: undefined };
       heartbeat: { Args: Record<string, never>; Returns: undefined };
       /** Cookie consent record (0065). Callable by anon - signed-out people consent too. */
+      /** Reported message plus surrounding context, staff only (0066). */
+      admin_message_report_context: {
+        Args: { p_report_id: number; p_before?: number; p_after?: number };
+        Returns: Json;
+      };
       record_consent: {
         Args: { p_analytics: boolean; p_anonymous_id?: string | null; p_policy_version?: number };
         Returns: Json;

@@ -118,3 +118,22 @@ export function createLoop(update: (dt: number) => void, render: () => void, ste
     },
   };
 }
+
+/**
+ * Pick a per-difficulty value.
+ *
+ * Engines tune with `tune(difficulty, { easy: 3, regular: 2, hard: 1.4 })`
+ * rather than multiplying one number by a global scalar. A single scalar cannot
+ * work across a library this varied: doubling speed makes Snake harder and
+ * Whack-a-Mole easier, and halving a grid makes Minesweeper trivial but
+ * Match-3 impossible. Each engine states its own three values, because only the
+ * engine knows which direction "harder" points in.
+ *
+ * An untuned engine simply never calls this and plays as it always has.
+ */
+export function tune<T>(
+  difficulty: "easy" | "regular" | "hard" | undefined,
+  values: { easy: T; regular: T; hard: T },
+): T {
+  return values[difficulty ?? "regular"];
+}

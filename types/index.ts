@@ -1,8 +1,10 @@
-import type { Database, Tables } from "./database";
+import type { Database, PlayDifficulty, Tables } from "./database";
 
 export type * from "./database";
 
 export type Profile = Tables<"profiles">;
+export type { PlayDifficulty };
+
 export type Game = Tables<"games">;
 export type ShopItem = Tables<"shop_items">;
 export type Achievement = Tables<"achievements">;
@@ -151,6 +153,12 @@ export interface GameEngineContext {
   /** Report transient status text (e.g. "Paused", "Level 3"). */
   onStatus?: (status: string) => void;
   reducedMotion: boolean;
+  /**
+   * How hard the player asked for this run to be. Engines that have not been
+   * tuned yet may ignore it - absent is the same as "regular" - so adding this
+   * did not require touching all twenty-six at once.
+   */
+  difficulty?: PlayDifficulty;
   /** Present only for an online head-to-head match; see `GameNetContext`. */
   net?: GameNetContext;
 }

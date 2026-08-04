@@ -49,6 +49,84 @@ export const REPO_URL = "https://github.com/blobbyofficial/classic-games-hub";
 
 export const RELEASES: UpdateRelease[] = [
   {
+    version: "v1.5.1",
+    codename: "Sanded Down",
+    date: "3 Aug 2026",
+    summary:
+      "The rough edges. No new headline features - the naming that was wrong, the date that was never right, the settings page that never grew past a list of switches, and the consent story a site collecting anything at all is expected to have.",
+    groups: [
+      {
+        heading: "Corrections",
+        icon: "Gauge",
+        blurb: "Three things that were simply wrong, in rising order of how long they had been wrong.",
+        items: [
+          {
+            title: "Noughts and Crosses",
+            description:
+              "Renamed in the game title, the party picker and the docs. The rest of the site is written in British English, so this was the odd one out from launch. The slug stays `tictactoe` - it is the join key for every score and play session and is baked into the party protocol, so renaming it would break all of that to change a string nobody sees.",
+          },
+          {
+            title: "The \"Rebuilt for 2026\" banner is gone",
+            description: "A launch flag is only useful while it is news.",
+          },
+          {
+            title: "\"Last seen\" finally means last seen",
+            description:
+              "It reported the day the account was created, for everyone, since launch - and it was never a display bug. A Supabase query builder is a lazy thenable that only sends its request inside `then()`, and the presence heartbeat was written as fire-and-forget, so it was built and thrown away without ever reaching the network. Every profile in the database had `last_seen_at` exactly equal to `created_at`, to the microsecond. Now awaited, with failures logged rather than swallowed - the silence is what let it survive this long.",
+          },
+        ],
+      },
+      {
+        heading: "Settings, privacy and consent",
+        icon: "SlidersHorizontal",
+        items: [
+          {
+            title: "A Gameplay section in settings",
+            description:
+              "Default difficulty, sound and music as separate sliders, high contrast, time zone and date format. Volumes save when you let go of the slider rather than on every pixel of the drag, and every row explains what it actually changes - most of them used to restate their own label.",
+          },
+          {
+            title: "Analytics is opt-in, properly",
+            description:
+              "Nothing optional loads until you allow it - not loaded and silenced, genuinely not rendered. Reject carries the same weight as Allow, there is no dismiss-without-choosing, and the banner is not modal, because refusing must not cost you anything. Global Privacy Control counts as a refusal. The stored consent record carries the policy version, so a policy that widens what is collected asks again instead of carrying an old answer over. A new /legal/cookies page generates its tables from the same constants the banner uses, so it cannot describe cookies the site does not set.",
+          },
+        ],
+      },
+      {
+        heading: "Social",
+        icon: "MessageSquare",
+        items: [
+          {
+            title: "Stories you can manage",
+            description:
+              "Delete your own, and post more than one. The database always allowed both - the strip had a single button that chose between viewing and composing, so the composer became unreachable the moment you had a story.",
+          },
+          {
+            title: "Report a message",
+            description:
+              "A report action on any message, and the conversation around it in the admin queue - because a given message reads as a joke or as abuse depending entirely on what surrounds it. Scoped deliberately: the lookup resolves the message from the report row rather than taking a conversation id, so staff get what they need to judge one report and cannot page through an inbox with it.",
+          },
+        ],
+      },
+      {
+        heading: "Playing",
+        icon: "Gamepad2",
+        items: [
+          {
+            title: "Fullscreen that fits the screen",
+            description:
+              "It used to stretch a small canvas buffer across a large display, which is what made it look soft, and reserved a hardcoded 170 pixels for the controls whatever the screen was. The buffer now tracks the element's real size, and the layout measures its own leftover space.",
+          },
+          {
+            title: "Choose your difficulty",
+            description:
+              "On Frogger, Snake, Minesweeper and Hangman, starting from your saved default. Each is tuned on its own terms rather than by one global scalar - doubling speed makes Snake harder and Whack-a-Mole easier, so only the engine knows which way \"harder\" points. Rewards scale with the choice, so easy is a comfort setting rather than the best way to farm credits. Every run records its difficulty; ranking each difficulty separately is still to come.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.5.0",
     codename: "Collector's Edition",
     date: "2 Aug 2026",

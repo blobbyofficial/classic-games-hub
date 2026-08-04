@@ -3,6 +3,32 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.5.1 - "Sanded Down"
+
+### 🎮 Difficulty, and reports with context
+
+- **Difficulty picker** on Frogger, Snake, Minesweeper and Hangman, starting
+  from a new saved default. Tuned per engine via a `tune()` helper rather than
+  one global scalar: doubling speed makes Snake harder and Whack-a-Mole easier,
+  and halving a grid makes Minesweeper trivial but Match-3 impossible - only the
+  engine knows which direction "harder" points. Shown only on engines that
+  actually read it, because a control that changes nothing is worse than none.
+- Rewards scale with difficulty (easy 0.75x, hard 1.25x). Without it easy is
+  strictly the best way to earn and the picker becomes a farming setting.
+- **Only regular runs are ranked**, and that is a deliberate half-step. Widening
+  the leaderboard key to include difficulty means re-emitting the three separate
+  functions that upsert into `leaderboard_scores` plus every read that assumes
+  one row per player; getting one wrong silently corrupts the only competitive
+  data on the site. Every run records its difficulty from today, so the history
+  needed to build the split boards is already accumulating.
+- **Report a message** (`0066`), extending the existing reports table rather
+  than adding a second system - `target_type = 'message'` has been accepted
+  since `0004` and was never used. The admin queue loads the surrounding
+  conversation on demand, because a message reads as a joke or as abuse
+  depending entirely on what surrounds it. The RPC resolves the message from the
+  report row rather than taking a conversation id, so it cannot be pointed at an
+  inbox, and it is staff-gated in place of the participant RLS it steps around.
+
 ## Unreleased
 
 ### ♻️ Reset all settings

@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
 import { TouchControls } from "./touch-controls";
 import { RewardOverlay } from "./reward-overlay";
-import type { GameEngineHandle, ScoreResult } from "@/types";
+import type { GameEngineHandle, PlayDifficulty, ScoreResult } from "@/types";
 
 interface Props {
   slug: string;
@@ -22,6 +22,13 @@ interface Props {
   bestScore: number;
   isAuthed: boolean;
 }
+
+/**
+ * Engines that read `difficulty`. The picker is hidden for the rest rather than
+ * shown and ignored: a control that changes nothing is worse than no control,
+ * and the remaining engines are being rewritten in v1.6.0 anyway.
+ */
+const TUNED_ENGINES = new Set(["frogger", "snake", "mines", "hangman"]);
 
 export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -43,6 +50,11 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const settings = useSessionStore((s) => s.settings);
+  const [difficulty, setDifficulty] = useState<PlayDifficulty>(
+    settings?.default_difficulty ?? "regular",
+  );
+  const canChooseDifficulty = TUNED_ENGINES.has(engineId);
 
   const { w, h } = canvasFor(engineId);
   const scheme = CONTROL_SCHEME[engineId] ?? "none";
@@ -63,7 +75,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       }
 
       setSubmitting(true);
-      const res = await submitScore(slug, finalScore, duration);
+      const res = await submitScore(slug, finalScore, duration, difficulty);
       setResult(res);
       setSubmitting(false);
       if (res.ok && res.credits_earned && profile) {
@@ -71,7 +83,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       }
       submittingRef.current = false;
     },
-    [best, isAuthed, profile, setCredits, slug],
+    [best, difficulty, isAuthed, profile, setCredits, slug],
   );
 
   /**
@@ -134,19 +146,20 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
         width: w,
         height: h,
         reducedMotion: reduced,
+        difficulty,
         onScore: setScore,
         onStatus: setStatus,
         onGameOver: (s, d) => void handleGameOver(s, d),
       });
       setLoadingEngine(false);
     });
-  }, [engineId, w, h, handleGameOver]);
+  }, [engineId, w, h, difficulty, handleGameOver, syncCanvasResolution]);
 
   useEffect(() => {
     buildEngine();
     return () => handleRef.current?.destroy();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [engineId, resolvedTheme]);
+  }, [engineId, resolvedTheme, difficulty]);
 
   // Pause with P / Escape.
   useEffect(() => {
@@ -286,6 +299,36 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
           </div>
         </div>
         <div className="flex items-center gap-1.5">
+          {/* Changing this restarts the run, because tuning is read when the
+              engine is built. Better to restart plainly than to let someone
+              finish a run under settings they thought they had changed. */}
+          {canChooseDifficulty && !isFullscreen && (
+            <div
+              role="group"
+              aria-label="Difficulty"
+              className="mr-1 flex rounded-lg border border-border p-0.5"
+            >
+              {(["easy", "regular", "hard"] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d)}
+                  aria-pressed={difficulty === d}
+                  title={
+                    d === "regular"
+                      ? "Ranked on the leaderboard"
+                      : `${d === "easy" ? "Fewer" : "More"} rewards, not ranked`
+                  }
+                  className={`rounded-md px-2 py-1 text-xs font-medium capitalize transition ${
+                    difficulty === d
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          )}
           <Button variant="outline" size="icon" onClick={togglePause} disabled={gameOver} aria-label={paused ? "Resume" : "Pause"}>
             {paused ? <Play /> : <Pause />}
           </Button>

@@ -1,10 +1,14 @@
 import type { GameEngineFactory } from "@/types";
-import { beep, createLoop, palette, roundRect } from "../helpers";
+import { beep, createLoop, palette, roundRect, tune } from "../helpers";
 
-const frogger: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus }) => {
+const frogger: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus, difficulty }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
   const ROWS = 13;
+  // One scalar over every lane speed. The layout is hand-placed and the gaps
+  // are tuned to it, so scaling the whole board keeps those relationships
+  // intact where per-lane edits would quietly make some rows impassable.
+  const PACE = tune(difficulty, { easy: 0.7, regular: 1, hard: 1.35 });
   const rh = height / ROWS;
   const cw = width / 13;
   let frog = { col: 6, row: ROWS - 1 };
@@ -20,16 +24,16 @@ const frogger: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver
   function buildLanes() {
     lanes = [];
     const laneRows = [
-      { row: 1, type: "log", speed: 1.4, len: 3, color: "#a16207" },
-      { row: 2, type: "log", speed: -1.9, len: 2, color: "#92400e" },
-      { row: 3, type: "log", speed: 1.1, len: 4, color: "#a16207" },
-      { row: 4, type: "log", speed: -1.6, len: 2, color: "#92400e" },
-      { row: 5, type: "log", speed: 2.1, len: 3, color: "#a16207" },
-      { row: 7, type: "car", speed: -2.4, len: 1, color: "#ef4444" },
-      { row: 8, type: "car", speed: 1.7, len: 1, color: "#f59e0b" },
-      { row: 9, type: "car", speed: -1.4, len: 2, color: "#38bdf8" },
-      { row: 10, type: "car", speed: 2.6, len: 1, color: "#a78bfa" },
-      { row: 11, type: "car", speed: -1.9, len: 1, color: "#f472b6" },
+      { row: 1, type: "log", speed: 1.4 * PACE, len: 3, color: "#a16207" },
+      { row: 2, type: "log", speed: -1.9 * PACE, len: 2, color: "#92400e" },
+      { row: 3, type: "log", speed: 1.1 * PACE, len: 4, color: "#a16207" },
+      { row: 4, type: "log", speed: -1.6 * PACE, len: 2, color: "#92400e" },
+      { row: 5, type: "log", speed: 2.1 * PACE, len: 3, color: "#a16207" },
+      { row: 7, type: "car", speed: -2.4 * PACE, len: 1, color: "#ef4444" },
+      { row: 8, type: "car", speed: 1.7 * PACE, len: 1, color: "#f59e0b" },
+      { row: 9, type: "car", speed: -1.4 * PACE, len: 2, color: "#38bdf8" },
+      { row: 10, type: "car", speed: 2.6 * PACE, len: 1, color: "#a78bfa" },
+      { row: 11, type: "car", speed: -1.9 * PACE, len: 1, color: "#f472b6" },
     ] as const;
     laneRows.forEach((l) => {
       const items: number[] = [];
