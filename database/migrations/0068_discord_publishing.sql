@@ -1,4 +1,4 @@
--- 0063_discord_publishing.sql
+-- 0068_discord_publishing.sql
 --
 -- Mirroring the update log and announcements into Discord.
 --

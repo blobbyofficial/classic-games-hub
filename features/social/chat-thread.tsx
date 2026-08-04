@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useTransition } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, Send, SmilePlus, Users, MoreVertical, Copy, LogOut } from "lucide-react";
+import { ChevronLeft, Send, SmilePlus, Users, MoreVertical, Copy, LogOut, Flag } from "lucide-react";
 import { toast } from "sonner";
 import type { RealtimeChannel } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/client";
@@ -23,6 +23,7 @@ import { PresenceDot } from "@/components/profile/presence-dot";
 import { SITE } from "@/lib/constants";
 import { cn, isOnline, isGifUrl } from "@/lib/utils";
 import { GifPicker } from "./gif-picker";
+import { ReportDialog } from "./report-dialog";
 import { StreakChip } from "./streak-chip";
 import type { ConversationDetail } from "@/services/social";
 
@@ -102,6 +103,9 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
   const [otherReadAt, setOtherReadAt] = useState<string | null>(conversation.otherLastReadAt);
   const [text, setText] = useState("");
   const [otherTyping, setOtherTyping] = useState(false);
+  // Which message the report dialog is open for, with its sender so the report
+  // names an account as well as a message.
+  const [reporting, setReporting] = useState<{ id: number; senderId: string } | null>(null);
   const [, startSend] = useTransition();
   const channelRef = useRef<RealtimeChannel | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -446,6 +450,19 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
                       <p className="whitespace-pre-wrap break-words">{m.content}</p>
                     </div>
                   )}
+                  {/* Reporting is offered on other people's messages only.
+                      Reporting your own is never a real action, and an option
+                      that does nothing is worse than no option. */}
+                  {typeof m.id === "number" && !mine && (
+                    <button
+                      onClick={() => setReporting({ id: m.id as number, senderId: m.sender_id })}
+                      className="rounded-full p-1 text-muted-foreground opacity-60 transition-opacity hover:bg-accent hover:text-destructive sm:opacity-0 sm:group-hover/msg:opacity-100"
+                      aria-label="Report this message"
+                      title="Report this message"
+                    >
+                      <Flag className="size-4" />
+                    </button>
+                  )}
                   {typeof m.id === "number" && (
                     <Popover>
                       <PopoverTrigger asChild>
@@ -558,6 +575,18 @@ export function ChatThread({ conversation }: { conversation: ConversationDetail 
           <Send />
         </Button>
       </form>
+
+      {/* One dialog for the whole thread rather than one per bubble - a
+          conversation can be hundreds of messages long, and mounting a dialog
+          for each would be hundreds of dialogs to render a single report. */}
+      <ReportDialog
+        open={reporting !== null}
+        onOpenChange={(o) => !o && setReporting(null)}
+        targetType="message"
+        targetUserId={reporting?.senderId}
+        targetId={reporting ? String(reporting.id) : undefined}
+        label="this message"
+      />
     </div>
   );
 }

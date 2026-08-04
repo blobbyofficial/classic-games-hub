@@ -1,5 +1,5 @@
 import type { GameEngineFactory } from "@/types";
-import { beep, palette } from "../helpers";
+import { beep, palette, tune } from "../helpers";
 
 const WORDS = [
   "ARCADE", "JOYSTICK", "PIXEL", "CONSOLE", "AVATAR", "LEVELUP", "RESPAWN",
@@ -8,13 +8,15 @@ const WORDS = [
 ];
 const ALPHABET = "ABCDEFGHIJKLMNOPQRSTUVWXYZ".split("");
 
-const hangman: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus }) => {
+const hangman: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus, difficulty }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
   let word = "";
   let guessed = new Set<string>();
   let wrong = 0;
-  const MAX = 8;
+  // Wrong guesses allowed. The clearest difficulty knob this game has: the word
+  // list and the letters stay the same, only the room for error changes.
+  const MAX = tune(difficulty, { easy: 10, regular: 8, hard: 6 });
   let over = false;
   let raf = 0;
 

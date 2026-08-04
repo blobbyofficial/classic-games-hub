@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { adminResolveReport } from "@/actions/admin";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { MessageReportContext } from "./message-report-context";
 import { timeAgo } from "@/lib/utils";
 
 interface ReportData {
@@ -70,6 +71,9 @@ export function ReportRow({ report }: { report: ReportData }) {
             {timeAgo(report.created_at)}
           </p>
           {report.details && <p className="mt-2 rounded-lg bg-muted/50 p-2 text-sm">{report.details}</p>}
+          {/* Only message reports have a conversation to show. A profile report
+              has nothing surrounding it to read. */}
+          {report.target_type === "message" && <MessageReportContext reportId={report.id} />}
         </div>
         {status === "open" && (
           <div className="flex shrink-0 gap-1.5">

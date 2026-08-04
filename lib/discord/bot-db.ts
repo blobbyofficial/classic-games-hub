@@ -194,7 +194,7 @@ export const botDb = {
       p_action: action,
       p_reason: reason,
     }),
-  /** ref → the Discord message mirroring it (migration 0063). */
+  /** ref → the Discord message mirroring it (migration 0068). */
   posts: (kind: "release" | "announcement") =>
     rpc<Record<string, { channel_id: string; message_id: string; digest: string }>>("bot_posts", {
       p_kind: kind,

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { reviewSchema } from "@/lib/validators";
-import type { RpcResult, ScoreResult } from "@/types";
+import type { PlayDifficulty, RpcResult, ScoreResult } from "@/types";
 
 async function client() {
   const supabase = await createClient();
@@ -17,7 +17,12 @@ async function client() {
  * Persist a completed run. All scoring/anti-cheat/reward logic lives in the
  * `submit_score` DB function; the client only reports raw score + duration.
  */
-export async function submitScore(slug: string, score: number, duration: number): Promise<ScoreResult> {
+export async function submitScore(
+  slug: string,
+  score: number,
+  duration: number,
+  difficulty: PlayDifficulty = "regular",
+): Promise<ScoreResult> {
   const { supabase, user } = await client();
   if (!user) return { ok: false, error: "Log in to save scores and earn rewards" };
 
@@ -28,6 +33,7 @@ export async function submitScore(slug: string, score: number, duration: number)
     p_slug: slug,
     p_score: safeScore,
     p_duration: safeDuration,
+    p_difficulty: difficulty,
   });
   if (error) return { ok: false, error: error.message };
 

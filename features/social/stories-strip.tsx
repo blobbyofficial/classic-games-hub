@@ -2,9 +2,9 @@
 
 import { useMemo, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
-import { Plus, X, ChevronRight } from "lucide-react";
+import { Plus, X, ChevronRight, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-import { postStory } from "@/actions/social";
+import { deleteStory, postStory } from "@/actions/social";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
@@ -59,32 +59,51 @@ export function StoriesStrip({ stories, currentUser }: { stories: StoryItem[]; c
 
   return (
     <div className="flex gap-3 overflow-x-auto pb-1">
-      {/* Your story */}
-      <button
-        onClick={() => (mine ? setViewing(mine) : currentUser.canPost ? setComposeOpen(true) : toast.error("Link your Discord account or reach level 15 to post stories"))}
-        className="flex shrink-0 flex-col items-center gap-1"
-      >
+      {/* Your story.
+          Two controls rather than one: the avatar opens what you have posted,
+          the + adds to it. They used to be a single button that chose between
+          them, which meant that the moment you had one story the composer
+          became unreachable - the reason it looked like only one story at a
+          time was allowed. The database has always permitted several. */}
+      <div className="flex shrink-0 flex-col items-center gap-1">
         <span className="relative">
-          <span
-            className={cn(
-              "block rounded-full p-0.5",
-              mine ? "bg-gradient-to-tr from-primary to-accent" : "bg-transparent",
-            )}
+          <button
+            onClick={() =>
+              mine
+                ? setViewing(mine)
+                : currentUser.canPost
+                  ? setComposeOpen(true)
+                  : toast.error("Link your Discord account or reach level 15 to post stories")
+            }
+            aria-label={mine ? "View your story" : "Add to your story"}
           >
-            <UserAvatar
-              src={currentUser.avatar_url}
-              name={currentUser.display_name ?? currentUser.username}
-              className="size-14 border-2 border-background"
-            />
-          </span>
-          {currentUser.canPost && (
-            <span className="absolute -bottom-0.5 -right-0.5 grid size-5 place-items-center rounded-full bg-primary text-primary-foreground ring-2 ring-background">
-              <Plus className="size-3" />
+            <span
+              className={cn(
+                "block rounded-full p-0.5",
+                mine ? "bg-gradient-to-tr from-primary to-accent" : "bg-transparent",
+              )}
+            >
+              <UserAvatar
+                src={currentUser.avatar_url}
+                name={currentUser.display_name ?? currentUser.username}
+                className="size-14 border-2 border-background"
+              />
             </span>
+          </button>
+          {currentUser.canPost && (
+            <button
+              onClick={() => setComposeOpen(true)}
+              aria-label="Add to your story"
+              className="absolute -bottom-0.5 -right-0.5 grid size-5 place-items-center rounded-full bg-primary text-primary-foreground ring-2 ring-background transition hover:brightness-110"
+            >
+              <Plus className="size-3" />
+            </button>
           )}
         </span>
-        <span className="max-w-16 truncate text-[11px] text-muted-foreground">Your story</span>
-      </button>
+        <span className="max-w-16 truncate text-[11px] text-muted-foreground">
+          {mine ? `Your story${mine.stories.length > 1 ? ` (${mine.stories.length})` : ""}` : "Your story"}
+        </span>
+      </div>
 
       {others.map((g) => (
         <button key={g.user_id} onClick={() => setViewing(g)} className="flex shrink-0 flex-col items-center gap-1">
@@ -123,13 +142,27 @@ export function StoriesStrip({ stories, currentUser }: { stories: StoryItem[]; c
       </Dialog>
 
       {/* Viewer */}
-      <StoryViewer group={viewing} onClose={() => setViewing(null)} />
+      <StoryViewer
+        group={viewing}
+        isMine={viewing?.user_id === currentUser.id}
+        onClose={() => setViewing(null)}
+      />
     </div>
   );
 }
 
-function StoryViewer({ group, onClose }: { group: AuthorGroup | null; onClose: () => void }) {
+function StoryViewer({
+  group,
+  isMine,
+  onClose,
+}: {
+  group: AuthorGroup | null;
+  isMine: boolean;
+  onClose: () => void;
+}) {
+  const router = useRouter();
   const [idx, setIdx] = useState(0);
+  const [pending, start] = useTransition();
   const story = group?.stories[idx];
 
   const next = () => {
@@ -139,6 +172,22 @@ function StoryViewer({ group, onClose }: { group: AuthorGroup | null; onClose: (
       setIdx(0);
       onClose();
     }
+  };
+
+  const remove = () => {
+    if (!story) return;
+    start(async () => {
+      const res = await deleteStory(story.id);
+      if (!res.ok) return void toast.error(res.error ?? "Could not delete");
+      toast.success("Story deleted");
+      // Close rather than trying to re-index into a list the server is about to
+      // replace: `stories` is server data, and refresh() is what re-derives the
+      // groups. Stepping the index locally would show a story that no longer
+      // exists until the refresh landed.
+      setIdx(0);
+      onClose();
+      router.refresh();
+    });
   };
 
   return (
@@ -183,7 +232,20 @@ function StoryViewer({ group, onClose }: { group: AuthorGroup | null; onClose: (
             >
               <p className="text-lg font-medium">{story.content}</p>
             </button>
-            <div className="flex justify-end p-2">
+            <div className="flex items-center justify-between gap-2 p-2">
+              {isMine ? (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={remove}
+                  disabled={pending}
+                  className="text-destructive hover:text-destructive"
+                >
+                  <Trash2 className="size-4" /> {pending ? "Deleting…" : "Delete"}
+                </Button>
+              ) : (
+                <span />
+              )}
               <Button variant="ghost" size="sm" onClick={next}>
                 {idx < group.stories.length - 1 ? "Next" : "Done"} <ChevronRight />
               </Button>

@@ -7,7 +7,7 @@ Discord bot.
 ## Where the plan lives
 
 - **`lib/roadmap.ts`** - what is *coming*, and nothing else. Currently
-  **v1.5.4 "Sanded Down"**. Renders at `/roadmap`.
+  **v1.6.0 "Head to Head"**. Renders at `/roadmap`.
 - **`lib/update-log.ts`** - everything already shipped: releases grouped into
   series, merged pull requests, and every change that has landed on `main`.
   Renders at `/updates`.

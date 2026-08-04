@@ -106,6 +106,24 @@ export async function postStory(kind: "text" | "achievement", content: string): 
   return data as RpcResult;
 }
 
+/**
+ * Removes one of your own stories.
+ *
+ * A direct delete rather than an RPC, because the rule is already stated where
+ * it belongs: the `delete own stories` policy from migration 0027 restricts
+ * this to `user_id = auth.uid()`. Wrapping it in a SECURITY DEFINER function
+ * would mean re-implementing that check in a second place and hoping the two
+ * agree - the policy has been enforcing it since the table was created, it was
+ * simply never called.
+ */
+export async function deleteStory(id: number): Promise<RpcResult> {
+  const { supabase } = await client();
+  const { error } = await supabase.from("stories").delete().eq("id", id);
+  if (error) return { ok: false, error: error.message };
+  revalidatePath("/messages");
+  return { ok: true };
+}
+
 export async function createGroup(name: string): Promise<RpcResult> {
   const { supabase } = await client();
   const { data, error } = await supabase.rpc("create_group", { p_name: name });

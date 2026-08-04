@@ -489,7 +489,7 @@ Publishing** or provisioned by **Run full setup**.
 
 It is a **mirror**, not a series of posts. Every mirrored thing records the
 message that holds it and a fingerprint of what was in it
-(`public.discord_posts`, migration `0063`), which is what makes the difference:
+(`public.discord_posts`, migration `0068`), which is what makes the difference:
 
 | On the website | In Discord |
 | --- | --- |

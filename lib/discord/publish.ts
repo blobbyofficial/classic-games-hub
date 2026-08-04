@@ -19,7 +19,7 @@ import type { Embed } from "./types";
  * one was right.
  *
  * What makes it a mirror rather than a series of posts is `discord_posts`
- * (migration 0063): every mirrored thing remembers the message holding it and
+ * (migration 0068): every mirrored thing remembers the message holding it and
  * a digest of what was in it. So a second sync edits rather than duplicates, a
  * change on the website reaches Discord, unpublishing removes the message, and
  * a sync with nothing to say makes no Discord calls at all.

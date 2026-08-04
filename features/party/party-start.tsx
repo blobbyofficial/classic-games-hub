@@ -92,7 +92,7 @@ export function PartyStart({ onJoined }: { onJoined: () => void }) {
           Invite friends by code or straight from your friends list. Everyone follows the leader between games.
         </Feature>
         <Feature icon={<Swords className="size-4" />} title="Head-to-head">
-          Tic-Tac-Toe, Connect 4 and Reversi become real online matches on one shared board.
+          Noughts and Crosses, Connect 4 and Reversi become real online matches on one shared board.
         </Feature>
         <Feature icon={<Sparkles className="size-4" />} title="Score races">
           Every other game turns into a race - same game, same moment, live scoreboard.

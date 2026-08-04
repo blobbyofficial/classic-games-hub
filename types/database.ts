@@ -11,6 +11,17 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type UserRole = "user" | "moderator" | "admin";
 export type GameStatus = "published" | "draft" | "archived" | "coming_soon";
 export type Difficulty = "easy" | "normal" | "hard";
+
+/**
+ * How hard a *run* was set to play, chosen by the player on the game page.
+ *
+ * Deliberately not `Difficulty`, which is a fixed label on the game describing
+ * how demanding it inherently is. The two are different facts and can disagree
+ * in every combination - a game labelled `hard` is still playable on easy - so
+ * sharing one type would invite code that treats a game's rating as a player's
+ * choice. "regular" rather than "normal" so the two never read as the same word.
+ */
+export type PlayDifficulty = "easy" | "regular" | "hard";
 export type Rarity = "common" | "rare" | "epic" | "legendary" | "mythic";
 export type ShopKind =
   | "avatar_frame"
@@ -86,6 +97,14 @@ export interface Database {
           site_theme: string;
           /** Opt-in profile view counter (0057). Off by default. */
           show_profile_views: boolean;
+          /** Gameplay preferences (0064). */
+          sound_volume: number;
+          music_volume: number;
+          default_difficulty: PlayDifficulty;
+          high_contrast: boolean;
+          /** Empty means "use the browser's zone". */
+          timezone: string;
+          date_format: "auto" | "dmy" | "mdy" | "iso";
           updated_at: string;
         };
         Insert: { user_id: string } & Partial<Database["public"]["Tables"]["user_settings"]["Row"]>;
@@ -691,7 +710,7 @@ export interface Database {
     Views: Record<string, never>;
     Functions: {
       submit_score: {
-        Args: { p_slug: string; p_score: number; p_duration?: number };
+        Args: { p_slug: string; p_score: number; p_duration?: number; p_difficulty?: string };
         Returns: Json;
       };
       claim_daily_reward: { Args: Record<string, never>; Returns: Json };
@@ -735,6 +754,16 @@ export interface Database {
       get_or_create_dm: { Args: { p_user: string }; Returns: string };
       mark_conversation_read: { Args: { p_conversation: string }; Returns: undefined };
       heartbeat: { Args: Record<string, never>; Returns: undefined };
+      /** Cookie consent record (0065). Callable by anon - signed-out people consent too. */
+      /** Reported message plus surrounding context, staff only (0066). */
+      admin_message_report_context: {
+        Args: { p_report_id: number; p_before?: number; p_after?: number };
+        Returns: Json;
+      };
+      record_consent: {
+        Args: { p_analytics: boolean; p_anonymous_id?: string | null; p_policy_version?: number };
+        Returns: Json;
+      };
       friendship_status: { Args: { p_user: string }; Returns: string };
       search_players: {
         Args: { p_query: string };

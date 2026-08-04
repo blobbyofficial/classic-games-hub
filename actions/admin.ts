@@ -492,6 +492,37 @@ export async function adminExportDiscordServer(): Promise<
   return { ok: true, json: JSON.stringify(res.data, null, 2), problems: res.data.problems };
 }
 
+/**
+ * The reported message, with the conversation either side of it.
+ *
+ * Staff-only and scoped to one report: the RPC resolves the message from the
+ * report row rather than taking a conversation id, so this cannot be pointed at
+ * an inbox. Messages RLS restricts reads to participants, which is right for
+ * members and wrong for a moderator acting on a report - the RPC is SECURITY
+ * DEFINER with its own staff check standing in for the policy it steps around.
+ */
+export async function adminMessageReportContext(
+  reportId: number,
+): Promise<RpcResult & { context?: unknown }> {
+  await requireStaff();
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_message_report_context", {
+    p_report_id: reportId,
+  });
+  if (error) return { ok: false, error: error.message };
+  const res = data as { ok?: boolean; error?: string } | null;
+  if (!res?.ok) {
+    return {
+      ok: false,
+      error:
+        res?.error === "bad_target"
+          ? "That report does not point at a readable message."
+          : (res?.error ?? "Could not load the conversation"),
+    };
+  }
+  return { ok: true, context: res };
+}
+
 /** Sections with something to apply in Discord; the rest are read on use. */
 const PUSHABLE = new Set<string>(["verification", "level_roles", "tickets", "stats", "publishing"]);
 

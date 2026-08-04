@@ -138,10 +138,10 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
 
 - **24 playable games** - Snake, Tetris, 2048, Breakout, Pong, Asteroids, Space
   Invaders, Frogger, Neon Runner, Target Rush, Gem Cascade, Bubble Pop,
-  Minesweeper, Memory, 15 Puzzle, Mastermind, Hangman, Simon, Tic-Tac-Toe,
+  Minesweeper, Memory, 15 Puzzle, Mastermind, Hangman, Simon, Noughts and Crosses,
   Connect Four, Reversi, Whack-a-Mole, Lights Out - plus **Turbo Horizon**, an
   OutRun-style pseudo-3D racer. Each is a self-contained, code-split canvas
-  engine with keyboard + touch controls; Tic-Tac-Toe includes local
+  engine with keyboard + touch controls; Noughts and Crosses includes local
   pass-and-play.
 - **Accounts** - email/username + password and OAuth (Discord/Google/GitHub/
   Microsoft); profiles with avatars, tiered banners, bios, pronouns, a status

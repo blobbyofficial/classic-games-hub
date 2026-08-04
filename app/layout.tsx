@@ -1,9 +1,9 @@
 import type { Metadata, Viewport } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
+import { ConsentProvider } from "@/components/providers/consent-provider";
+import { ConsentBanner } from "@/components/consent-banner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cookies } from "next/headers";
 import { SITE } from "@/lib/constants";
@@ -92,24 +92,25 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
-        <ThemeProvider>
-          <TooltipProvider delayDuration={250} skipDelayDuration={400}>
-            {children}
-            <Toaster
-              // Above the mobile tab bar on phones, bottom-right everywhere else.
-              position="bottom-right"
-              theme="system"
-              richColors
-              closeButton
-              gap={10}
-              offset={16}
-              mobileOffset={{ bottom: 84, left: 12, right: 12 }}
-              toastOptions={{ classNames: { toast: "glass !border-border !rounded-xl" } }}
-            />
-          </TooltipProvider>
-        </ThemeProvider>
-        <Analytics />
-        <SpeedInsights />
+        <ConsentProvider>
+          <ThemeProvider>
+            <TooltipProvider delayDuration={250} skipDelayDuration={400}>
+              {children}
+              <Toaster
+                // Above the mobile tab bar on phones, bottom-right everywhere else.
+                position="bottom-right"
+                theme="system"
+                richColors
+                closeButton
+                gap={10}
+                offset={16}
+                mobileOffset={{ bottom: 84, left: 12, right: 12 }}
+                toastOptions={{ classNames: { toast: "glass !border-border !rounded-xl" } }}
+              />
+            </TooltipProvider>
+          </ThemeProvider>
+          <ConsentBanner />
+        </ConsentProvider>
       </body>
     </html>
   );

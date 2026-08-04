@@ -17,17 +17,23 @@
  *
  * Numbers run forwards in time within a series, which is the one property
  * that makes a version number worth reading. Assigning them retrospectively
- * cost exactly one renumbering: the interface redesign was published as
- * v1.4.1 while a *different* release - the games and themes overhaul, eight
- * days earlier - carried the same number in its commit message and its
- * changelog heading. The earlier one keeps v1.4.1 and the redesign became
- * v1.4.10; it carries `formerly` so the old number still finds it.
+ * cost two renumberings, and both say so on their card:
+ *
+ *   - The interface redesign was published as v1.4.1 while a *different*
+ *     release - the games and themes overhaul, eight days earlier - carried
+ *     the same number in its commit message and its changelog heading. The
+ *     earlier one keeps v1.4.1; the redesign became v1.4.10.
+ *   - "Sanded Down" was published as v1.5.1, but two runs of Discord work
+ *     landed earlier the same day carrying no version at all. They take
+ *     v1.5.1 and v1.5.2; it became v1.5.3.
+ *
+ * Both carry `formerly`, so the old number still finds them.
  *
  * `LANDED` is generated from `git log --first-parent main` - every change
  * that reached production, whether it arrived through a pull request or as a
- * direct commit. Regenerate it after a release rather than editing by hand;
- * `RELEASE_COMMITS` below is checked against it, so a sha that is in one and
- * not the other is a build error rather than a quiet omission.
+ * direct commit. Regenerate it after a release rather than editing by hand.
+ * `UNASSIGNED` is derived from it, so a sha that reached production without
+ * being versioned surfaces on the page as a question rather than as nothing.
  */
 
 export interface UpdateItem {
@@ -91,14 +97,14 @@ export const SERIES: ReleaseSeries[] = [
   {
     version: "v1.5.0",
     codename: "Collector's Edition",
-    dates: "2 - 3 Aug 2026",
+    dates: "2 - 4 Aug 2026",
     summary:
-      "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - and a Discord server that now finishes its own setup and keeps itself in step with the site.",
+      "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - a Discord server that now finishes its own setup and keeps itself in step with the site, and a pass over the rough edges underneath all of it.",
     releases: [
       {
-        version: "v1.5.3",
+        version: "v1.5.4",
         codename: "Broadcast",
-        date: "3 Aug 2026",
+        date: "4 Aug 2026",
         scope:
           "One release: the update log gained its version tree and the Discord channels that mirror it, and neither half is much use without the other.",
         summary:
@@ -112,7 +118,7 @@ export const SERIES: ReleaseSeries[] = [
               {
                 title: "Every change has a version",
                 description:
-                  "All 57 changes in production are now assigned to a release. Previously eight releases covered part of the history and the rest - the March prototype, the rebuild, the whole run of Discord work between 26 July and 3 August - sat in a flat list with no version at all.",
+                  "All 60 changes in production are now assigned to a release. Previously eight releases covered part of the history and the rest - the March prototype, the rebuild, the whole run of Discord work between 26 July and 3 August - sat in a flat list with no version at all.",
               },
               {
                 title: "Grouped by size, not by count",
@@ -125,9 +131,9 @@ export const SERIES: ReleaseSeries[] = [
                   "Releases nest inside their series: open v1.4.0 to find v1.4.10 down to v1.4.0, each opening onto its own notes. The newest line and the newest release inside it are open when the page loads, so the thing you almost certainly came for needs no clicks.",
               },
               {
-                title: "One renumbering, labelled",
+                title: "Two renumberings, both labelled",
                 description:
-                  "The interface redesign shipped as v1.4.1 while the games and themes overhaul - eight days earlier - carried the same number. Chronology wins, so the redesign is now v1.4.10 and says so on its card. Nothing else moved.",
+                  "The interface redesign shipped as v1.4.1 while the games and themes overhaul - eight days earlier - carried the same number. \"Sanded Down\" shipped as v1.5.1 while two runs of Discord work from earlier the same day carried none. Chronology wins in both cases, so they became v1.4.10 and v1.5.3 and each says so on its card. Nothing else moved.",
               },
             ],
           },
@@ -160,6 +166,88 @@ export const SERIES: ReleaseSeries[] = [
           },
         ],
         commits: [],
+      },
+      {
+        version: "v1.5.3",
+        codename: "Sanded Down",
+        formerly: "v1.5.1",
+        date: "3 - 4 Aug 2026",
+        scope:
+          "Three commits carrying one intention - go round the site and fix what was merely wrong. Published as v1.5.1, but two runs of Discord work landed earlier the same day; numbers that run backwards in time are not worth reading, so this took the next free one and kept its old number in `formerly`.",
+        summary:
+          "The rough edges. No new headline features - the naming that was wrong, the date that was never right, the settings page that never grew past a list of switches, and the consent story a site collecting anything at all is expected to have.",
+        groups: [
+          {
+            heading: "Corrections",
+            icon: "SlidersHorizontal",
+            blurb: "Three things that were simply wrong, in rising order of how long they had been wrong.",
+            items: [
+              {
+                title: "Noughts and Crosses",
+                description:
+                  "Renamed in the game title, the party picker and the docs. The rest of the site is written in British English, so this was the odd one out from launch. The slug stays `tictactoe` - it is the join key for every score and play session and is baked into the party protocol, so renaming it would break all of that to change a string nobody sees.",
+              },
+              {
+                title: "The \"Rebuilt for 2026\" banner is gone",
+                description: "A launch flag is only useful while it is news.",
+              },
+              {
+                title: "\"Last seen\" finally means last seen",
+                description:
+                  "It reported the day the account was created, for everyone, since launch - and it was never a display bug. A Supabase query builder is a lazy thenable that only sends its request inside `then()`, and the presence heartbeat was written as fire-and-forget, so it was built and thrown away without ever reaching the network. Every profile in the database had `last_seen_at` exactly equal to `created_at`, to the microsecond. Now awaited, with failures logged rather than swallowed - the silence is what let it survive this long.",
+              },
+            ],
+          },
+          {
+            heading: "Settings, privacy and consent",
+            icon: "SlidersHorizontal",
+            items: [
+              {
+                title: "A Gameplay section in settings",
+                description:
+                  "Default difficulty, sound and music as separate sliders, high contrast, time zone and date format. Volumes save when you let go of the slider rather than on every pixel of the drag, and every row explains what it actually changes - most of them used to restate their own label.",
+              },
+              {
+                title: "Analytics is opt-in, properly",
+                description:
+                  "Nothing optional loads until you allow it - not loaded and silenced, genuinely not rendered. Reject carries the same weight as Allow, there is no dismiss-without-choosing, and the banner is not modal, because refusing must not cost you anything. Global Privacy Control counts as a refusal. The stored consent record carries the policy version, so a policy that widens what is collected asks again instead of carrying an old answer over. A new /legal/cookies page generates its tables from the same constants the banner uses, so it cannot describe cookies the site does not set.",
+              },
+            ],
+          },
+          {
+            heading: "Social",
+            icon: "MessageSquare",
+            items: [
+              {
+                title: "Stories you can manage",
+                description:
+                  "Delete your own, and post more than one. The database always allowed both - the strip had a single button that chose between viewing and composing, so the composer became unreachable the moment you had a story.",
+              },
+              {
+                title: "Report a message",
+                description:
+                  "A report action on any message, and the conversation around it in the admin queue - because a given message reads as a joke or as abuse depending entirely on what surrounds it. Scoped deliberately: the lookup resolves the message from the report row rather than taking a conversation id, so staff get what they need to judge one report and cannot page through an inbox with it.",
+              },
+            ],
+          },
+          {
+            heading: "Playing",
+            icon: "Gamepad2",
+            items: [
+              {
+                title: "Fullscreen that fits the screen",
+                description:
+                  "It used to stretch a small canvas buffer across a large display, which is what made it look soft, and reserved a hardcoded 170 pixels for the controls whatever the screen was. The buffer now tracks the element's real size, and the layout measures its own leftover space.",
+              },
+              {
+                title: "Choose your difficulty",
+                description:
+                  "On Frogger, Snake, Minesweeper and Hangman, starting from your saved default. Each is tuned on its own terms rather than by one global scalar - doubling speed makes Snake harder and Whack-a-Mole easier, so only the engine knows which way \"harder\" points. Rewards scale with the choice, so easy is a comfort setting rather than the best way to farm credits. Every run records its difficulty; ranking each difficulty separately is still to come.",
+              },
+            ],
+          },
+        ],
+        commits: ["0f5d18e", "2007b71", "560609a"],
       },
       {
         version: "v1.5.2",
@@ -1527,6 +1615,9 @@ export const SERIES: ReleaseSeries[] = [
 export const RELEASES: UpdateRelease[] = SERIES.flatMap((s) => s.releases);
 
 export const LANDED: LandedChange[] = [
+  { sha: "0f5d18e", date: "4 Aug 2026", subject: "feat(v1.5.1): difficulty picker and message reports, completing the release" },
+  { sha: "2007b71", date: "3 Aug 2026", subject: "feat(v1.5.1): cookie consent, with analytics gated behind it (0065)" },
+  { sha: "560609a", date: "3 Aug 2026", subject: "feat(v1.5.1): rename, banner, presence heartbeat, stories, fullscreen, settings" },
   { sha: "9191368", date: "3 Aug 2026", subject: "docs(roadmap): plan v1.5.1 and v1.6.0, plus an unscheduled ideas list" },
   { sha: "de6cfc9", date: "3 Aug 2026", subject: "feat(discord): server export command, and role sync every two minutes" },
   { sha: "55026b9", date: "3 Aug 2026", subject: "fix(discord): qualify the reset delete, which safeupdate rejected at runtime" },

@@ -1,11 +1,14 @@
 import type { GameEngineFactory } from "@/types";
-import { beep, palette, roundRect } from "../helpers";
+import { beep, palette, roundRect, tune } from "../helpers";
 
-const mines: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus }) => {
+const mines: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus, difficulty }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
-  const N = 9;
-  const MINES = 10;
+  // Board and mine count together: raising mines alone on a 9x9 stops being
+  // "harder" and starts being "unsolvable without guessing", so hard widens the
+  // grid at the same time and keeps the density climbing gently.
+  const N = tune(difficulty, { easy: 9, regular: 9, hard: 12 });
+  const MINES = tune(difficulty, { easy: 8, regular: 10, hard: 26 });
   const size = Math.min(width, height);
   const ox = (width - size) / 2;
   const oy = (height - size) / 2;

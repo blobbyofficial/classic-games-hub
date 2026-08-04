@@ -45,145 +45,48 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
 };
 
 /**
- * Split across three entries rather than one, because the requests behind them
- * are three different sizes and versioning them the same way would mislead.
+ * Two entries, because the work behind them is two different sizes and
+ * versioning it the same way would mislead.
  *
- * v1.5.4 is the patch it says it is: renames, a wrong date, a stray banner,
- * settings that needed filling out. v1.6.0 is not - rewriting the engines,
+ * v1.6.0 is not a patch - rewriting the engines,
  * adding real multiplayer and building tournaments is a release in its own
  * right, and calling that a point-one would set the wrong expectation for how
  * long it takes. The last entry is unscheduled on purpose: ideas worth writing
  * down are not the same as work anyone has committed to.
- *
- * It was planned as v1.5.1, but v1.5.1 through v1.5.3 shipped first - the
- * Discord setup work, the server export, and the versioned update log. A
- * planned number is not a reservation; the next free one is what a release
- * gets.
+
  */
 export const ROADMAP: RoadmapRelease[] = [
-  {
-    version: "v1.5.4",
-    codename: "Sanded Down",
-    status: "next",
-    timeframe: "Next up",
-    summary:
-      "The rough edges. Nothing here is a new headline feature - it is the naming that was wrong, the date that was never right, the settings page that never grew past four toggles, and the consent story a site collecting anything at all is expected to have. Small things, but they are the ones people actually bump into.",
-    groups: [
-      {
-        heading: "Corrections",
-        icon: "Gauge",
-        blurb: "Three things that are simply wrong, in rising order of how long they have been wrong.",
-        items: [
-          {
-            title: "Noughts and Crosses",
-            description:
-              "Rename Tic-Tac-Toe throughout - the game title, the party picker, the controls list and the seeded games row. The rest of the site is written in British English, so this one has been the odd one out since it launched. The slug stays `tictactoe` so existing scores, leaderboard rows and shared links keep working.",
-            status: "next",
-          },
-          {
-            title: "Retire the \"Rebuilt for 2026\" banner",
-            description:
-              "It was a launch flag, and a launch flag is only useful while it is news. Removing it from the homepage hero.",
-            status: "next",
-          },
-          {
-            title: "Fix \"last seen\"",
-            description:
-              "It reports the day the account was created, for everyone. `profiles.last_seen_at` defaults to `now()` when the row is made and the only thing that ever writes it again is the `heartbeat()` RPC - which has never landed for a single account. Every profile in the database currently has `last_seen_at` exactly equal to `created_at`, to the microsecond, despite presence being switched on. So the fix is not the display: it is finding why the write never arrives, then making the failure visible instead of silent, since the call is fire-and-forget and a rejection today shows up as nothing at all.",
-            status: "next",
-          },
-        ],
-      },
-      {
-        heading: "Settings, privacy and consent",
-        icon: "SlidersHorizontal",
-        blurb:
-          "The settings page has never been more than a short list of switches, and the consent story needs to exist before any more data is collected.",
-        items: [
-          {
-            title: "A settings panel worth opening",
-            description:
-              "Reorganise it into sections you can navigate - account, appearance, gameplay, privacy, notifications, connections, data - with search, and per-setting explanations of what each one actually changes. Then fill the gaps: default game difficulty, reduced-motion and high-contrast toggles, sound and music volume separately, keyboard remapping, timezone and date format, and who may message or friend you.",
-            status: "next",
-          },
-          {
-            title: "Cookies and analytics, opt-in",
-            description:
-              "A real consent layer: a banner that sets nothing beyond strictly-necessary cookies until a choice is made, granular categories rather than one all-or-nothing button, refusal as easy as acceptance, a stored record of what was consented to and when, and a way to change your mind afterwards from the settings page. Plus a plain-English cookie and privacy policy naming every cookie and why it exists, self-serve data export and account deletion, and honouring Global Privacy Control. Worth stating plainly: this is a legal area and none of it is legal advice - the build can follow the letter of GDPR/PECR as best we understand it, but the policy wording should be checked by someone qualified before it goes live.",
-            status: "next",
-          },
-          {
-            title: "Notifications that reach you",
-            description:
-              "Web push for the things worth interrupting someone about - a friend request, a party invite, your record being beaten, a tournament starting - built on the existing notifications table so nothing needs a second source of truth. Alongside it, an opt-in email list with a genuine double opt-in, granular categories (product news, weekly recap, tournament reminders), one-click unsubscribe in the header, and a hard rule that transactional email and marketing email never share a list.",
-            status: "next",
-          },
-        ],
-      },
-      {
-        heading: "Playing",
-        icon: "Gamepad2",
-        blurb: "Two things that affect every game on the site rather than any one of them.",
-        items: [
-          {
-            title: "Choose your difficulty",
-            description:
-              "A difficulty control on the game page itself rather than buried in a settings menu or fixed by the engine: easy, regular, hard, and per-game extras where they make sense (grid size, starting speed, lives). Scores stay comparable because the leaderboard records which difficulty a run was set to and ranks each separately - otherwise easy mode quietly erases every record on the board.",
-            status: "next",
-          },
-          {
-            title: "Fullscreen that actually fits",
-            description:
-              "Today fullscreen enlarges the page rather than the game, so a fixed-ratio canvas sits in the middle of a lot of empty background. Instead: scale the canvas to the largest whole-pixel multiple the display allows, letterbox with the game's own palette rather than black, keep the aspect ratio honest on ultrawide and on phones in both orientations, hide every piece of surrounding UI, and hold the on-screen controls in reach on touch devices.",
-            status: "next",
-          },
-        ],
-      },
-      {
-        heading: "Social and safety",
-        icon: "MessageSquare",
-        items: [
-          {
-            title: "Stories you can manage",
-            description:
-              "Delete your own stories, and post more than one at a time - currently a new story silently replaces the old one, which is surprising rather than helpful. Several live at once in the order posted, each with its own expiry, a viewer count, and an archive of your expired ones that only you can see.",
-            status: "next",
-          },
-          {
-            title: "Report a message, and somewhere for reports to go",
-            description:
-              "Reporting exists for profiles but not for what people actually say. Add a report action to any direct or group message, capturing the surrounding conversation so a report arrives with the context needed to judge it. In the admin dashboard, a moderation queue showing the reported message in place, the thread around it, the reporter, the accused, and one-press actions - dismiss, warn, timeout, ban - each written to the audit log. Staff read a reported conversation only, never the inbox at large.",
-            status: "next",
-          },
-        ],
-      },
-    ],
-  },
   {
     version: "v1.6.0",
     codename: "Head to Head",
     status: "later",
-    timeframe: "After v1.5.4",
+    timeframe: "After v1.5.1",
     summary:
-      "The arcade has twenty-six games and no good way to play one against another person, and several of the best-known titles are the weakest to actually play. This release is about both: bring the flagship games up to the standard of the newest ones, then give people something to do with them together.",
+      "The arcade has twenty-six games and no good way to play one against another person, and several of the best-known titles are the weakest to actually play. This release is about both: bring the flagship games up to the standard of the newest ones, then give people something to do with them together - and finally tell people when it is happening.",
     groups: [
       {
         heading: "Make the popular games good",
         icon: "Gamepad2",
         blurb:
-          "The games most people open first are among the oldest on the site, written before the engine conventions settled. Being popular is exactly why they should be the ones that get rewritten.",
+          "The games most people open first are among the oldest here, written before the engine conventions settled. Being popular is exactly why they should be the ones rewritten.",
         items: [
           {
             title: "Rewrite the flagship engines",
             description:
-              "Runner, Frogger and 2048 first, then the rest of the originals. The recurring faults are the same across them: input that drops presses because it is polled per frame instead of buffered, movement tied to frame rate rather than elapsed time, no coyote time or input forgiveness, collision boxes that match the drawing rather than what feels fair, difficulty that jumps instead of ramping, and no feedback on a hit beyond the score changing. Fixing those is a per-engine job, not a shared patch.",
+              "Frogger, Neon Runner and 2048 first - the three named as worst to play, and between them the most opened games on the site. The faults repeat across all of them: input polled once per frame so quick presses vanish, movement tied to frame rate rather than elapsed time so the game is harder on a slow device, no input buffering or forgiveness window, hit boxes that match the drawing rather than what feels fair, difficulty that steps rather than ramps, and no feedback on a hit beyond a number changing.",
             status: "later",
           },
           {
-            title: "A house standard for feel",
+            title: "A house standard for how a game feels",
             description:
-              "Write down what every engine owes the player, and hold new games to it: fixed-timestep simulation with interpolated rendering, a buffered input queue, a defined difficulty ramp, pause that genuinely pauses, resumable state on tab-out, and consistent juice - screen shake, hit pause, particles - available to every engine rather than reinvented per game. Cheaper than fixing the same bug twenty-six times.",
+              "Write down what every engine owes the player and hold new ones to it: fixed-timestep simulation with interpolated rendering, a buffered input queue, a defined difficulty ramp, a pause that genuinely pauses, state that survives a tab-out, and shared juice - screen shake, hit pause, particles - available to every engine instead of reinvented per game. Cheaper than fixing the same bug twenty-six times.",
             status: "later",
+          },
+          {
+            title: "Per-game mastery",
+            description:
+              "Each game gets its own progression: a handful of goals that teach it - survive a minute, clear without losing a life, finish on hard - rather than one global XP number that treats every game as interchangeable. It gives the rewritten games something to show for the depth they gain.",
+            status: "idea",
           },
         ],
       },
@@ -194,8 +97,14 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "3D and multiplayer, as tags rather than categories",
             description:
-              "Both were asked for as new categories, but a game currently holds exactly one category, so adding them as categories would force Labyrinth and Cube out of Puzzle and Noughts and Crosses out of Strategy to gain the new label. They are properties, not genres - a game can be a 3D puzzle, or a multiplayer strategy game. So: a tags column alongside the category, seeded with `3d` and `multiplayer`, with filter chips on the arcade page that combine. Room to grow later - `quick`, `endless`, `touch-friendly` - without another schema change each time.",
+              "Both were asked for as categories, but a game holds exactly one category, so adding them as categories would force Labyrinth and Cube out of Puzzle and Noughts and Crosses out of Strategy just to gain the label. They are properties, not genres - a game can be a 3D puzzle. A tags column alongside the category, with filter chips that combine, and room for `quick`, `endless` or `touch-friendly` later without another schema change each time.",
             status: "later",
+          },
+          {
+            title: "Search that understands the arcade",
+            description:
+              "Twenty-six games is past the point where scrolling is browsing. Search across titles, tags and how a game plays, plus a shelf of \"like this one\" on every game page - the cheapest way to make the back half of the library visible at all.",
+            status: "idea",
           },
         ],
       },
@@ -208,20 +117,32 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Versus a bot",
             description:
-              "An opponent that is always available, at difficulty levels that correspond to something real - easy makes mistakes on purpose, hard plays the best move it can find. Also the honest fallback when nobody else is around, and the way to practise before playing a person.",
+              "An opponent that is always there, at difficulties that mean something - easy makes real mistakes rather than moving at random, hard plays the best line it can find. Also the honest fallback when nobody is online, and the way to practise before facing a person.",
             status: "later",
           },
           {
             title: "Versus someone next to you",
             description:
-              "Two players, one screen, sharing a keyboard or taking turns on a phone. The simplest multiplayer to build and often the most fun, and it needs no network code at all.",
+              "Two players, one screen, sharing a keyboard or passing a phone. The simplest multiplayer to build, often the most fun, and it needs no network code at all.",
             status: "later",
           },
           {
             title: "Versus someone online, by join code",
             description:
-              "A short code you send to a friend, on top of the party system already carrying real-time state. Reconnect if the tab closes, a clear forfeit rather than a game that hangs when someone leaves, spectators for anyone else in the party, and a rematch button that does not make you swap codes again.",
+              "A short code you send a friend, built on the party system that already carries real-time state. Reconnect if a tab closes, a clear forfeit rather than a match that hangs when someone leaves, and a rematch button that does not make you swap codes again.",
             status: "later",
+          },
+          {
+            title: "Quick play and rivalries",
+            description:
+              "A join code needs someone to send it to. Quick play pairs you with whoever else pressed it, roughly matched on that game's rating, and remembers who you keep meeting - a running head-to-head record with the people you play most, which is the part that makes anyone come back for one more.",
+            status: "idea",
+          },
+          {
+            title: "Watch a match",
+            description:
+              "Anyone else in the party can spectate rather than sit through it, on a short delay so a spectator cannot feed information back. The same view a tournament final would be shown through.",
+            status: "idea",
           },
         ],
       },
@@ -232,8 +153,58 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Five games, one winner",
             description:
-              "A party mode that runs through several games in sequence and crowns an overall champion. By default the five most played games at regular difficulty; the host can swap any of them, change the difficulty, and set the length. Points per round rather than sudden death, so one bad game does not end it, with a running scoreboard between rounds and a final standing worth screenshotting. Winners recorded on the profile, and the result announced to Discord.",
+              "A party mode that runs several games in sequence and crowns an overall champion. By default the five most played at regular difficulty; the host can swap any of them, change the difficulty and set the length. Points per round rather than sudden death, so one bad game does not end it, a running scoreboard between rounds, and a final standing worth screenshotting.",
             status: "later",
+          },
+          {
+            title: "Brackets, for when five games is not enough",
+            description:
+              "Single elimination with seeding for anything bigger than a party - sign-ups, byes for odd numbers, and a bracket that fills in live as rounds resolve. The five-game run is the casual mode; this is the one an actual event would use.",
+            status: "idea",
+          },
+          {
+            title: "Results that leave the site",
+            description:
+              "Winners recorded on the profile, announced to Discord as they happen, and the champion given a role that passes to the next winner rather than accumulating forever. A tournament nobody outside the party hears about is a private game with extra steps.",
+            status: "idea",
+          },
+        ],
+      },
+      {
+        heading: "Telling people things",
+        icon: "Megaphone",
+        blurb:
+          "Held back from v1.5.1 deliberately: both need infrastructure that does not exist yet, and half a notification system is worse than none.",
+        items: [
+          {
+            title: "Web push",
+            description:
+              "For the things worth interrupting someone about - a friend request, a party invite, your record being beaten, a tournament starting - built on the notifications table that already exists, so there is no second source of truth. Granular enough to take the tournament alerts and refuse everything else.",
+            status: "later",
+          },
+          {
+            title: "An email list worth being on",
+            description:
+              "Genuine double opt-in, categories rather than one list (product news, a weekly recap of your scores, tournament reminders), one-click unsubscribe in the header, and a hard rule that transactional and marketing email never share a list. Needs an email provider chosen and a sending domain verified before any of it can even be tested.",
+            status: "later",
+          },
+        ],
+      },
+      {
+        heading: "Keeping scores honest",
+        icon: "Gauge",
+        items: [
+          {
+            title: "A board per difficulty",
+            description:
+              "Easy and hard runs are already recorded in full, so the history is accumulating - what is missing is the leaderboard key. Widening it to (game, player, difficulty) means re-emitting the three functions that upsert scores and every read that assumes one row per player, correctly, in one migration. Worth doing carefully rather than quickly.",
+            status: "later",
+          },
+          {
+            title: "Replays, ghosts and validation",
+            description:
+              "Record the input trace rather than video - a few kilobytes - and a run can be replayed from a leaderboard entry, raced against as a ghost, or re-simulated on the server to check the score it claims is one those inputs could actually produce. Splitting the boards by difficulty makes leaderboards more valuable, which makes this worth doing sooner rather than later.",
+            status: "idea",
           },
         ],
       },
@@ -255,12 +226,6 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "A daily challenge",
             description:
               "One game, one seed, the same for everyone, resetting at midnight - so scores are directly comparable in a way a free-play leaderboard never is. A streak for playing every day, and a shareable spoiler-free result card.",
-            status: "idea",
-          },
-          {
-            title: "Replays and ghosts",
-            description:
-              "Record the input trace rather than video - a few kilobytes - and a run can be replayed, watched from a leaderboard entry, or raced against as a ghost. Also the most reliable way to spot a score that is not genuine.",
             status: "idea",
           },
           {
@@ -302,7 +267,7 @@ export const ROADMAP: RoadmapRelease[] = [
           {
             title: "Daily challenge and tournament feeds",
             description:
-              "Post the daily challenge automatically each morning and the standings each evening, and announce tournaments as they start, run and finish - with the winner given a role that expires when the next one is won.",
+              "Post the daily challenge automatically each morning and the standings each evening, and announce tournaments as they start, run and finish.",
             status: "idea",
           },
           {

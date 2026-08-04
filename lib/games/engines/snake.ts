@@ -1,7 +1,7 @@
 import type { GameEngineFactory } from "@/types";
-import { beep, createLoop, palette, roundRect } from "../helpers";
+import { beep, createLoop, palette, roundRect, tune } from "../helpers";
 
-const snake: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus }) => {
+const snake: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus, difficulty }) => {
   const ctx = canvas.getContext("2d")!;
   const cols = 24;
   const rows = Math.round((cols * height) / width);
@@ -13,7 +13,11 @@ const snake: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, 
   let nextDir = dir;
   let food = { x: 0, y: 0 };
   let score = 0;
-  let speed = 8; // cells per second
+  // Cells per second. Both the start and the ceiling move, so easy is not just
+  // a slower opening that ends up at the same place a minute later.
+  const BASE = tune(difficulty, { easy: 6, regular: 8, hard: 11 });
+  const CAP = tune(difficulty, { easy: 14, regular: 20, hard: 26 });
+  let speed = BASE;
   let acc = 0;
   let alive = true;
   let started = false;
@@ -27,7 +31,7 @@ const snake: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, 
     dir = { x: 1, y: 0 };
     nextDir = dir;
     score = 0;
-    speed = 8;
+    speed = BASE;
     alive = true;
     started = false;
     placeFood();
@@ -56,7 +60,7 @@ const snake: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, 
     if (head.x === food.x && head.y === food.y) {
       score += 10;
       onScore(score);
-      speed = Math.min(20, 8 + score / 60);
+      speed = Math.min(CAP, BASE + score / 60);
       beep(660, 0.06);
       placeFood();
     } else {

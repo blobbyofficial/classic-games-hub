@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
-import { User, SlidersHorizontal, Shield, Lock, Link2 } from "lucide-react";
+import { User, SlidersHorizontal, Shield, Lock, Link2, Gamepad2 } from "lucide-react";
 import { getCurrentProfile, getCurrentSettings } from "@/lib/supabase/queries";
 import { getUserAchievements, getUserBestScores } from "@/services/profiles";
 import { createClient } from "@/lib/supabase/server";
@@ -11,14 +11,16 @@ import { VanityUrl } from "@/features/settings/vanity-url";
 import { AppearanceSettings } from "@/features/settings/appearance-settings";
 import { BannerCustomizer } from "@/features/settings/banner-customizer";
 import { PreferencesSettings } from "@/features/settings/preferences-settings";
+import { GameplaySettings } from "@/features/settings/gameplay-settings";
 import { SecuritySettings } from "@/features/settings/security-settings";
 import { BlockedUsers } from "@/features/settings/blocked-users";
+import { ConsentSettings } from "@/features/settings/consent-settings";
 import { ConnectionsSettings, type DiscordConnection } from "@/features/settings/connections-settings";
 import { SiteThemePicker } from "@/features/settings/site-theme-picker";
 
 export const metadata: Metadata = { title: "Settings" };
 
-const TABS = ["profile", "preferences", "privacy", "security", "connections"];
+const TABS = ["profile", "preferences", "gameplay", "privacy", "security", "connections"];
 
 export default async function SettingsPage({
   searchParams,
@@ -59,6 +61,9 @@ export default async function SettingsPage({
           <TabsTrigger value="preferences">
             <SlidersHorizontal className="size-4" /> Preferences
           </TabsTrigger>
+          <TabsTrigger value="gameplay">
+            <Gamepad2 className="size-4" /> Gameplay
+          </TabsTrigger>
           <TabsTrigger value="privacy">
             <Shield className="size-4" /> Privacy
           </TabsTrigger>
@@ -91,12 +96,21 @@ export default async function SettingsPage({
             }
           />
         </TabsContent>
+        <TabsContent value="gameplay" className="space-y-4">
+          <GameplaySettings settings={settings} />
+        </TabsContent>
+
         <TabsContent value="privacy" className="space-y-4">
           <BlockedUsers initial={blocked} />
+          <ConsentSettings />
           <p className="text-sm text-muted-foreground">
             How we handle your data:{" "}
             <Link href="/legal/privacy" className="font-medium text-primary hover:underline">
               Privacy Policy
+            </Link>{" "}
+            ·{" "}
+            <Link href="/legal/cookies" className="font-medium text-primary hover:underline">
+              Cookie Policy
             </Link>{" "}
             ·{" "}
             <Link href="/legal/terms" className="font-medium text-primary hover:underline">

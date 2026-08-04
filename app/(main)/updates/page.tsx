@@ -96,7 +96,7 @@ function byMonth<T extends { date: string }>(rows: T[]): [string, T[]][] {
  *
  * Native `<details>`, so the whole tree works with JavaScript disabled and
  * costs the page nothing - the alternative was a client component holding
- * open/closed state for twenty-four panels that only ever answer to a click.
+ * open/closed state for twenty-five panels that only ever answer to a click.
  *
  * The groups are *named* because they nest. A plain `group-open:` matches any
  * open ancestor carrying `group`, so opening a line turned every collapsed

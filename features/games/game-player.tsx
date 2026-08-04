@@ -13,7 +13,7 @@ import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
 import { TouchControls } from "./touch-controls";
 import { RewardOverlay } from "./reward-overlay";
-import type { GameEngineHandle, ScoreResult } from "@/types";
+import type { GameEngineHandle, PlayDifficulty, ScoreResult } from "@/types";
 
 interface Props {
   slug: string;
@@ -22,6 +22,13 @@ interface Props {
   bestScore: number;
   isAuthed: boolean;
 }
+
+/**
+ * Engines that read `difficulty`. The picker is hidden for the rest rather than
+ * shown and ignored: a control that changes nothing is worse than no control,
+ * and the remaining engines are being rewritten in v1.6.0 anyway.
+ */
+const TUNED_ENGINES = new Set(["frogger", "snake", "mines", "hangman"]);
 
 export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -43,6 +50,11 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const settings = useSessionStore((s) => s.settings);
+  const [difficulty, setDifficulty] = useState<PlayDifficulty>(
+    settings?.default_difficulty ?? "regular",
+  );
+  const canChooseDifficulty = TUNED_ENGINES.has(engineId);
 
   const { w, h } = canvasFor(engineId);
   const scheme = CONTROL_SCHEME[engineId] ?? "none";
@@ -63,7 +75,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       }
 
       setSubmitting(true);
-      const res = await submitScore(slug, finalScore, duration);
+      const res = await submitScore(slug, finalScore, duration, difficulty);
       setResult(res);
       setSubmitting(false);
       if (res.ok && res.credits_earned && profile) {
@@ -71,8 +83,38 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       }
       submittingRef.current = false;
     },
-    [best, isAuthed, profile, setCredits, slug],
+    [best, difficulty, isAuthed, profile, setCredits, slug],
   );
+
+  /**
+   * Match the canvas backbuffer to the size it is actually being drawn at.
+   *
+   * It used to be fixed at the logical w×h (times DPR) whatever the element
+   * measured, so fullscreen stretched a small buffer across a large box and the
+   * result was soft - the "fullscreen looks bad" complaint was mostly this.
+   *
+   * Engines are unaffected: they still draw in logical w×h coordinates, and the
+   * transform absorbs the difference. Nothing in lib/games ever calls
+   * setTransform or resetTransform, so scaling here cannot be undone underneath
+   * us - and every engine repaints each frame through the shared createLoop, so
+   * the clear that a resize causes is gone by the next frame.
+   */
+  const syncCanvasResolution = useCallback(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    if (!rect.width || !rect.height) return;
+    // Capped at 2×: past that the pixels are invisible and the fill rate is not.
+    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const bw = Math.round(rect.width * dpr);
+    const bh = Math.round(rect.height * dpr);
+    // Assigning width/height clears the canvas even when the value is unchanged,
+    // so a ResizeObserver that fires on every layout pass would strobe.
+    if (canvas.width === bw && canvas.height === bh) return;
+    canvas.width = bw;
+    canvas.height = bh;
+    canvas.getContext("2d")?.setTransform(bw / w, 0, 0, bh / h, 0, 0);
+  }, [w, h]);
 
   // (Re)build the engine. Also re-runs on theme change so palettes update.
   const buildEngine = useCallback(() => {
@@ -98,30 +140,26 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       if (!canvasRef.current) return;
       const reduced =
         typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      // Render at device resolution (capped 2×) for crisp HiDPI/fullscreen
-      // output; engines keep working in logical w×h coordinates.
-      const dpr = Math.min(2, window.devicePixelRatio || 1);
-      canvas.width = Math.round(w * dpr);
-      canvas.height = Math.round(h * dpr);
-      canvas.getContext("2d")?.setTransform(dpr, 0, 0, dpr, 0, 0);
+      syncCanvasResolution();
       handleRef.current = factory({
         canvas,
         width: w,
         height: h,
         reducedMotion: reduced,
+        difficulty,
         onScore: setScore,
         onStatus: setStatus,
         onGameOver: (s, d) => void handleGameOver(s, d),
       });
       setLoadingEngine(false);
     });
-  }, [engineId, w, h, handleGameOver]);
+  }, [engineId, w, h, difficulty, handleGameOver, syncCanvasResolution]);
 
   useEffect(() => {
     buildEngine();
     return () => handleRef.current?.destroy();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [engineId, resolvedTheme]);
+  }, [engineId, resolvedTheme, difficulty]);
 
   // Pause with P / Escape.
   useEffect(() => {
@@ -210,6 +248,18 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     return () => document.removeEventListener("fullscreenchange", onChange);
   }, []);
 
+  // Re-resolve whenever the canvas changes size for any reason - entering or
+  // leaving fullscreen, a phone rotating, the window being dragged between a
+  // retina and a non-retina display. Observing the element rather than
+  // listening for `fullscreenchange` covers all of those with one path.
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(() => syncCanvasResolution());
+    observer.observe(canvas);
+    return () => observer.disconnect();
+  }, [syncCanvasResolution]);
+
   // Auto-pause when the tab is hidden mid-run.
   useEffect(() => {
     const onVis = () => {
@@ -249,6 +299,36 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
           </div>
         </div>
         <div className="flex items-center gap-1.5">
+          {/* Changing this restarts the run, because tuning is read when the
+              engine is built. Better to restart plainly than to let someone
+              finish a run under settings they thought they had changed. */}
+          {canChooseDifficulty && !isFullscreen && (
+            <div
+              role="group"
+              aria-label="Difficulty"
+              className="mr-1 flex rounded-lg border border-border p-0.5"
+            >
+              {(["easy", "regular", "hard"] as const).map((d) => (
+                <button
+                  key={d}
+                  onClick={() => setDifficulty(d)}
+                  aria-pressed={difficulty === d}
+                  title={
+                    d === "regular"
+                      ? "Ranked on the leaderboard"
+                      : `${d === "easy" ? "Fewer" : "More"} rewards, not ranked`
+                  }
+                  className={`rounded-md px-2 py-1 text-xs font-medium capitalize transition ${
+                    difficulty === d
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {d}
+                </button>
+              ))}
+            </div>
+          )}
           <Button variant="outline" size="icon" onClick={togglePause} disabled={gameOver} aria-label={paused ? "Resume" : "Pause"}>
             {paused ? <Play /> : <Pause />}
           </Button>
@@ -266,16 +346,22 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
         </div>
       </div>
 
-      <div
-        className={`game-stage relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg ${
-          isFullscreen ? "min-h-0 flex-1" : ""
-        }`}
-        style={
-          isFullscreen
-            ? { maxWidth: `min(100%, calc((100vh - 170px) * ${w} / ${h}))`, aspectRatio: `${w} / ${h}` }
-            : { maxWidth: `min(100%, ${w * 1.1}px)`, aspectRatio: `${w} / ${h}` }
-        }
-      >
+      {/* In fullscreen the stage is centred inside whatever space the HUD and
+          touch controls leave, and sized by `max-width`/`max-height` against
+          that box. It used to subtract a hardcoded 170px from 100vh for the
+          chrome, which is only correct on the one screen it was measured on -
+          too small and the game was letterboxed for no reason, too large and it
+          overflowed. Letting flexbox measure the leftover space is both simpler
+          and right everywhere, and it costs no JavaScript. */}
+      <div className={isFullscreen ? "grid min-h-0 w-full flex-1 place-items-center" : "w-full"}>
+        <div
+          className="game-stage relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
+          style={
+            isFullscreen
+              ? { aspectRatio: `${w} / ${h}`, maxWidth: "100%", maxHeight: "100%" }
+              : { maxWidth: `min(100%, ${w * 1.1}px)`, aspectRatio: `${w} / ${h}` }
+          }
+        >
         <canvas ref={canvasRef} width={w} height={h} className="block size-full touch-none object-contain" />
 
         {loadingEngine && (
@@ -306,6 +392,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
         )}
 
         {gameOver && <RewardOverlay score={score} result={result} loading={submitting} onReplay={replay} />}
+        </div>
       </div>
 
       {/* Touch controls for touch devices; keyboard hints for pointer devices. */}
