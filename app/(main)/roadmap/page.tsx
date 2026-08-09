@@ -19,6 +19,8 @@ import {
   Megaphone,
   Bot,
   Gauge,
+  PartyPopper,
+  ShieldCheck,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +52,8 @@ const ICONS: Record<string, LucideIcon> = {
   Megaphone,
   Bot,
   Gauge,
+  PartyPopper,
+  ShieldCheck,
 };
 
 function StatusPill({ status, className }: { status: RoadmapStatus; className?: string }) {

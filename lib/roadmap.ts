@@ -168,6 +168,68 @@ export const ROADMAP: RoadmapRelease[] = [
         ],
       },
       {
+        heading: "Parties that hold together",
+        icon: "PartyPopper",
+        blurb:
+          "The party exists and works, but only for a keyboard user with an account who trusts everyone else to press ready. Most of what is missing is control for the person hosting.",
+        items: [
+          {
+            title: "Touch controls inside a party",
+            description:
+              "A phone in a party can join, watch and score nothing - the games render but there is nothing to press. On-screen controls per engine, using the same shared control layer the arcade uses outside parties rather than a bespoke pad per game, so a mobile player is a real competitor instead of a spectator with a seat.",
+            status: "later",
+          },
+          {
+            title: "Force the next round",
+            description:
+              "One person still playing holds everyone else on a results screen. A leader-only button that ends the current round, scores whoever is mid-run on what they had, and moves on - with enough warning shown to the players still going that it does not feel like being cut off.",
+            status: "later",
+          },
+          {
+            title: "Remove someone from the party",
+            description:
+              "Leaders can kick from the lobby and mid-tournament alike, because the person spoiling it rarely does so before the games start. Their round scores drop out of the standings, the bracket or points table reflows, and a kick is not a soft block - they cannot rejoin the same party by code.",
+            status: "later",
+          },
+          {
+            title: "Party settings worth opening",
+            description:
+              "Host controls for how many games a tournament runs, the difficulty they run at, the member cap, and whether the party is public, unlisted or invite-only. A tournament toggle that hides the settings that stop meaning anything once it is on, so the panel matches the mode being played rather than showing everything always.",
+            status: "later",
+          },
+          {
+            title: "A lobby with something in it",
+            description:
+              "Today it is a list of names and a ready button. It should show what the party is about to play, each member's record on those games and their head-to-head against the room, past results for this party, and the host controls above gathered in one place instead of scattered across screens.",
+            status: "later",
+          },
+          {
+            title: "Vote for the next game",
+            description:
+              "Members nominate and vote; the leader sees the tally and still makes the call, so a vote is a strong signal rather than a hijack. Off by default per party, because some hosts want to run a set list and the feature should not argue with them.",
+            status: "idea",
+          },
+          {
+            title: "Join without an account",
+            description:
+              "A guest can enter a code, pick a name and play, because making someone sign up before their friends have finished explaining the link is where most parties lose a player. Deliberately limited: no scores kept, no leaderboard entries, no cosmetics, no rejoin after the tab closes, and a running prompt showing exactly what an account would have saved them. The limits are the pitch.",
+            status: "idea",
+          },
+        ],
+      },
+      {
+        heading: "Safety",
+        icon: "ShieldCheck",
+        items: [
+          {
+            title: "Age assurance and under-13 parental consent",
+            description:
+              "A simple age gate at sign-up, and for anyone under 13 an account that stays limited until a parent creates their own account and approves it - the social surfaces (messaging, friends, public parties) are what wait, not the games. A verified Discord link satisfies the check on its own, since Discord has already run its own age gate. Needs the legal position settled before it is built, not after.",
+            status: "later",
+          },
+        ],
+      },
+      {
         heading: "Telling people things",
         icon: "Megaphone",
         blurb:
@@ -232,6 +294,18 @@ export const ROADMAP: RoadmapRelease[] = [
             status: "idea",
           },
           {
+            title: "Suggest something for the roadmap",
+            description:
+              "A form on /roadmap where anyone signed in can propose an item, plus other people upvoting so the ones worth reading rise. Suggestions land in the admin panel as a queue with the usual moderation footing - rate limits, a report path, and a visible state so a suggester can see it was read rather than swallowed.",
+            status: "idea",
+          },
+          {
+            title: "Edit the roadmap from the admin panel",
+            description:
+              "Today the roadmap is a TypeScript file, so adding one line is a pull request and a deploy. Moving it into the database - releases, groups and items as rows behind admin-only RPCs - lets staff accept a suggestion straight into a release, reorder and restatus items, and move shipped work into the update log without touching the codebase. The migration has to keep lib/roadmap.ts as the seed and keep /roadmap statically fast; a roadmap nobody can edit is a worse problem than a roadmap that needs a cache bust.",
+            status: "idea",
+          },
+          {
             title: "Seasonal events",
             description:
               "Short themed events with their own cosmetics and a limited-time game variant - the seasons system already built gives these somewhere to live.",
@@ -262,6 +336,12 @@ export const ROADMAP: RoadmapRelease[] = [
             status: "idea",
           },
           {
+            title: "The roadmap, mirrored into #roadmap",
+            description:
+              "The bot already mirrors releases and announcements, so the roadmap is the obvious next thing to publish: one embed per release in a #roadmap channel, edited in place rather than reposted, so the channel is the current plan instead of a scroll of stale copies. Sensible alongside an editable roadmap - a change made in the admin panel appears in Discord without anyone re-posting it.",
+            status: "idea",
+          },
+          {
             title: "Ticket transcripts in the dashboard",
             description:
               "Closed tickets currently end in Discord. Writing the transcript back to the admin panel would put support history in the same place as reports and the audit log.",
@@ -277,6 +357,12 @@ export const ROADMAP: RoadmapRelease[] = [
             title: "An onboarding path rather than a wall",
             description:
               "Rules, then verify, then a role picker for which games you care about - so a new member leaves the door with the channels they want already visible, instead of every channel at once.",
+            status: "idea",
+          },
+          {
+            title: "Two-step verification at the door",
+            description:
+              "Nobody sees the server until both halves are done: link a Classic Games Hub account to their Discord, then react ✅ on the verify post. Linking first is the point - it means every member is an account we can act on, and the reaction is only the last click. Fits with the onboarding path above rather than replacing it.",
             status: "idea",
           },
           {
