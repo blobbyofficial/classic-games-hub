@@ -23,6 +23,8 @@ import {
   Crosshair,
   Brain,
   Rocket,
+  Maximize2,
+  Volume2,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,6 +60,8 @@ const ICONS: Record<string, LucideIcon> = {
   Crosshair,
   Brain,
   Rocket,
+  Maximize2,
+  Volume2,
 };
 
 function StatusPill({ status, className }: { status: RoadmapStatus; className?: string }) {

@@ -137,22 +137,27 @@ export const SERIES: ReleaseSeries[] = [
             heading: "A plan for each of the twenty-six",
             icon: "Rocket",
             blurb:
-              "Written from measurements rather than impressions, which is why it is unflattering in specific rather than general ways.",
+              "Not a repair list. Every game gets a new look, animation on essentially everything, a mobile pass, and a stage that fills your screen.",
             items: [
               {
-                title: "The roadmap is now v1.6.0 'Ground Up'",
+                title: "Five releases, and every game gets the same four promises",
                 description:
-                  "Four of the twenty-six engines respond to the difficulty picker. Three honour reduced motion. Six have a pause button that does not pause. The sound slider in settings saves what you set and controls nothing at all in any game. Every game gets its own entry saying what is wrong with it and what it becomes, grouped by category, behind eight shared foundations they all depend on.",
+                  "v1.6.0 'Ground Up' builds the platform and reopens nothing. Three waves then rebuild and reopen the games a category at a time, and inside them every game is its own section carrying the same four items - the look, the animation, the feel and mobile, and what it does with the whole screen. All twenty-six have all four, and the repetition is deliberate: a game receiving less than the others is visible at a glance. v2.0.0 is the relaunch, and Head to Head moves behind all of it.",
+              },
+              {
+                title: "The platform comes first",
+                description:
+                  "A stage that fills your whole screen rather than a small box on a page - and rather than today's fullscreen, which deliberately letterboxes the canvas, so Snake uses about 56% of a laptop screen and Tetris about 35%. An effects library, so animation stops being something eight games happen to have and fourteen do not. Skins and arenas for every game, free, earned, bought or boosted. A mixer, so the sound slider does something. And input that does not throw your presses away.",
+              },
+              {
+                title: "Written from measurements, not impressions",
+                description:
+                  "Four of the twenty-six engines respond to the difficulty picker. Three honour reduced motion. Six have a pause button that does not pause. Eighteen freeze their layout the moment they start, so they cannot be resized at all. Twenty-one hardcode their text sizes in pixels. And the sound slider in settings saves what you set and is read by nothing.",
               },
               {
                 title: "Some of what reading all 26 engines turned up",
                 description:
-                  "Neon Runner's touch button only ever sends a jump, so ducking under its overhead obstacles is impossible on a phone. Frogger has no lily pads to fill. Space Invaders' own description promises barricades the game does not have. Connect Four advertises keyboard controls it never implemented. Gem Cascade's timer keeps draining behind the pause overlay. And Snake has been reporting the length of the snake where the number of seconds played belongs, on every run ever recorded.",
-              },
-              {
-                title: "Head to Head moves to v1.7.0",
-                description:
-                  "Behind the rebuild rather than beside it - multiplayer written against engines that are still being replaced would only have to be written twice. Its 'Make the popular games good' group is gone from it rather than duplicated, because that group is what v1.6.0 became.",
+                  "Neon Runner's touch button only ever sends a jump, so ducking under its overhead obstacles is impossible on a phone. Frogger has no lily pads to fill. Space Invaders' own description promises barricades the game does not have. Connect Four advertises keyboard controls it never implemented. Gem Cascade's timer keeps draining behind the pause overlay. 2048 works out how far each tile should slide and then throws the number away, which is why nothing animates. And Snake has been reporting the length of the snake where the number of seconds played belongs, on every run ever recorded.",
               },
             ],
           },

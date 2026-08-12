@@ -28,22 +28,33 @@ live roadmap at `/roadmap`.
 
 ### 🗺️ A plan for each of the 26 games
 
-- **The roadmap is now v1.6.0 "Ground Up"** and lists what is wrong with every
-  single game and what it becomes - written from measurements rather than
-  impressions. Four of 26 engines respond to the difficulty picker, three honour
-  reduced motion, six have a pause button that does not pause, and the sound
-  slider in settings controls nothing at all.
-- Some of what it found: Neon Runner's touch button only sends a jump, so
-  ducking under its overhead obstacles is impossible on a phone; Frogger has no
-  lily pads to fill; Space Invaders' own description promises barricades the
-  game does not have; Connect Four advertises keyboard controls it never
-  implemented; Gem Cascade's timer keeps draining behind the pause overlay; and
-  Snake has been reporting the length of the snake where the number of seconds
-  played belongs.
-- **"Head to Head" moves to v1.7.0**, behind the rebuild rather than beside it -
-  multiplayer written against engines that are still being replaced would only
-  have to be written twice. Its "Make the popular games good" group is gone from
-  it rather than duplicated, because that group is what v1.6.0 became.
+- **The roadmap is now a five-release rebuild programme.** v1.6.0 "Ground Up"
+  builds the platform and reopens nothing; three waves then rebuild and reopen
+  the games a category at a time; v2.0.0 is the relaunch. Head to Head moves
+  behind all of it to v2.1.0, because multiplayer written against engines that
+  are still being replaced would only have to be written twice.
+- **Every game is now its own section carrying the same four promises** - the
+  look, the animation, the feel and mobile, and what it does with the whole
+  screen. All 26 have all four. The repetition is the point: a game receiving
+  less than the others is visible at a glance.
+- **The platform comes first because it is what makes 26 overhauls affordable.**
+  A stage that fills your screen instead of a letterboxed square, an effects
+  library so animation stops being something eight games happen to have, skins
+  and arenas, a mixer so the volume slider does something, and input that does
+  not throw your presses away.
+- Written from measurements, not impressions: 4 of 26 engines respond to the
+  difficulty picker, 3 honour reduced motion, 6 have a pause button that does
+  not pause, 18 freeze their layout at startup so they cannot be resized, 21
+  hardcode their text sizes in pixels, and the sound slider saves what you set
+  and is read by nothing.
+- Some of what reading all 26 engines turned up: Neon Runner's touch button only
+  sends a jump, so ducking under its overhead obstacles is impossible on a
+  phone; Frogger has no lily pads to fill; Space Invaders' own description
+  promises barricades the game does not have; Connect Four advertises keyboard
+  controls it never implemented; Gem Cascade's timer keeps draining behind the
+  pause overlay; 2048 works out how far each tile should slide and then throws
+  the number away, which is why nothing animates; and Snake has been reporting
+  the length of the snake where the number of seconds played belongs.
 
 ### 🧹 Smaller things
 
