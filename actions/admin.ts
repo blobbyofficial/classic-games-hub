@@ -15,7 +15,7 @@ import {
   usernameSchema,
 } from "@/lib/validators";
 import type { PushSection } from "@/lib/discord/ops";
-import type { RpcResult } from "@/types";
+import type { GameStatus, RpcResult } from "@/types";
 
 export async function adminAdjustCredits(userId: string, amount: number, reason: string): Promise<RpcResult> {
   await requireStaff();
@@ -158,7 +158,7 @@ export async function adminToggleFeatured(id: string, featured: boolean): Promis
 
 export async function adminSetGameStatus(
   id: string,
-  status: "published" | "draft" | "archived" | "coming_soon",
+  status: GameStatus,
 ): Promise<RpcResult> {
   await requireStaff();
   const supabase = await createClient();
@@ -166,6 +166,9 @@ export async function adminSetGameStatus(
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/games");
   revalidatePath("/games");
+  // Status decides the featured rail on the home page too, so reopening a game
+  // has to clear that as well or it stays missing until the next deploy.
+  revalidatePath("/", "layout");
   return { ok: true };
 }
 

@@ -9,7 +9,7 @@
 export type Json = string | number | boolean | null | { [key: string]: Json | undefined } | Json[];
 
 export type UserRole = "user" | "moderator" | "admin";
-export type GameStatus = "published" | "draft" | "archived" | "coming_soon";
+export type GameStatus = "published" | "draft" | "archived" | "coming_soon" | "in_development";
 export type Difficulty = "easy" | "normal" | "hard";
 
 /**

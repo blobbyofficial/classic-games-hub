@@ -6,6 +6,7 @@ export interface PlatformStatus {
   players: { total: number; online: number; active_24h: number; discord_linked: number };
   games: {
     published: number;
+    in_development: number;
     coming_soon: number;
     plays_today: number;
     plays_last_hour: number;

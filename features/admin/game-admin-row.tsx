@@ -89,6 +89,7 @@ export function GameAdminRow({ game }: { game: Game }) {
         </SelectTrigger>
         <SelectContent>
           <SelectItem value="published">Published</SelectItem>
+          <SelectItem value="in_development">In development</SelectItem>
           <SelectItem value="draft">Draft</SelectItem>
           <SelectItem value="coming_soon">Coming soon</SelectItem>
           <SelectItem value="archived">Archived</SelectItem>

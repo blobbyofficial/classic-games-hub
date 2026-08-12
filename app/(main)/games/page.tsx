@@ -7,7 +7,7 @@ import { PageHeader } from "@/components/page-header";
 
 export const metadata: Metadata = {
   title: "Games",
-  description: "Browse and play 23 classic arcade, puzzle, strategy and shooter games.",
+  description: "Browse and play 26 classic arcade, puzzle, strategy and shooter games.",
 };
 
 export default async function GamesPage({

@@ -97,10 +97,84 @@ export const SERIES: ReleaseSeries[] = [
   {
     version: "v1.5.0",
     codename: "Collector's Edition",
-    dates: "2 - 4 Aug 2026",
+    dates: "2 - 12 Aug 2026",
     summary:
       "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - a Discord server that now finishes its own setup and keeps itself in step with the site, and a pass over the rough edges underneath all of it.",
     releases: [
+      {
+        version: "v1.5.5",
+        codename: "Under Construction",
+        date: "12 Aug 2026",
+        scope:
+          "One release, because the two halves only make sense together: taking every game offline to normal players is indefensible without publishing what is being done to them, and publishing a rebuild plan for twenty-six games while they all still sit there marked Published would be a plan nobody believed.",
+        summary:
+          "Every game on the site is now marked in development - still listed, still holding its leaderboards, but playable only by staff while it is rebuilt - and the roadmap now says exactly what is wrong with each of the twenty-six and what it becomes.",
+        groups: [
+          {
+            heading: "Every game is being rebuilt",
+            icon: "Gamepad2",
+            blurb:
+              "A new game status meaning shipped, and being rebuilt. Not the same as coming soon, which means never released.",
+            items: [
+              {
+                title: "All 26 games are staff-only for now",
+                description:
+                  "They stay listed, badged and clickable, and keep every leaderboard, rating, favourite and play count they had - nothing is reset. Only admins and moderators may record a play, so each overhaul gets played on the real site, on a real phone, before it opens to everyone. A game comes back by being set to Published from Admin → Games, one at a time, as each rebuild finishes.",
+              },
+              {
+                title: "The lock is in the database, not the page",
+                description:
+                  "The trigger that already enforced booster early access now enforces both rules, so no non-staff account can record a score for an in-development game by any route. The two compose deliberately: boosting does not get you in, because early access is a head start on a release and this is not a release.",
+              },
+              {
+                title: "Widening one word touched five places",
+                description:
+                  "'published' was not a label, it was a literal that the row-level security policy, submit_score, set_party_game, platform_status and the command palette all tested for. Missing any one of them would not have degraded the arcade, it would have emptied it - the security policy alone would have hidden all twenty-six games from everyone who is not staff.",
+              },
+            ],
+          },
+          {
+            heading: "A plan for each of the twenty-six",
+            icon: "Rocket",
+            blurb:
+              "Written from measurements rather than impressions, which is why it is unflattering in specific rather than general ways.",
+            items: [
+              {
+                title: "The roadmap is now v1.6.0 'Ground Up'",
+                description:
+                  "Four of the twenty-six engines respond to the difficulty picker. Three honour reduced motion. Six have a pause button that does not pause. The sound slider in settings saves what you set and controls nothing at all in any game. Every game gets its own entry saying what is wrong with it and what it becomes, grouped by category, behind eight shared foundations they all depend on.",
+              },
+              {
+                title: "Some of what reading all 26 engines turned up",
+                description:
+                  "Neon Runner's touch button only ever sends a jump, so ducking under its overhead obstacles is impossible on a phone. Frogger has no lily pads to fill. Space Invaders' own description promises barricades the game does not have. Connect Four advertises keyboard controls it never implemented. Gem Cascade's timer keeps draining behind the pause overlay. And Snake has been reporting the length of the snake where the number of seconds played belongs, on every run ever recorded.",
+              },
+              {
+                title: "Head to Head moves to v1.7.0",
+                description:
+                  "Behind the rebuild rather than beside it - multiplayer written against engines that are still being replaced would only have to be written twice. Its 'Make the popular games good' group is gone from it rather than duplicated, because that group is what v1.6.0 became.",
+              },
+            ],
+          },
+          {
+            heading: "Smaller things",
+            icon: "Sparkles",
+            items: [
+              {
+                title: "Copy that had drifted from the truth",
+                description:
+                  "The games page claimed there were 23 games; there are 26. The guide for adding a game never mentioned the status column at all, and now documents all five values and who each one lets in.",
+              },
+              {
+                title: "Tidying on the way past",
+                description:
+                  "Removed an unused feature-flag fetch from the game page, and changing a game's status now refreshes the home page too - so reopening a game puts it back on the featured rail immediately rather than at the next deploy.",
+              },
+            ],
+          },
+        ],
+        commits: [],
+      },
       {
         version: "v1.5.4",
         codename: "Broadcast",

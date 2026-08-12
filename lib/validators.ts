@@ -68,7 +68,7 @@ export const gameUpsertSchema = z.object({
   description: z.string().max(2000).optional().or(z.literal("")),
   category: z.string().min(1),
   engine_id: z.string().min(1),
-  status: z.enum(["published", "draft", "archived", "coming_soon"]),
+  status: z.enum(["published", "draft", "archived", "coming_soon", "in_development"]),
   featured: z.boolean(),
   difficulty: z.enum(["easy", "normal", "hard"]),
 });

@@ -80,6 +80,30 @@ the other arcade titles.
 Migrations are append-only and may already be live. Verify one against the real
 database inside a transaction with `rollback` before committing it.
 
+### `status`, and what each value means
+
+A new game defaults to `published`. The column is what decides who may see and
+play it, and four of the five values are enforced in the database rather than
+the UI:
+
+| Value | Who sees it | Who may record a play |
+| --- | --- | --- |
+| `published` | everyone | everyone |
+| `in_development` | everyone, badged | admins and moderators only |
+| `coming_soon` | everyone, card disabled | nobody |
+| `draft` / `archived` | staff only (RLS) | nobody |
+
+`in_development` (`0070`) means *shipped and being rebuilt*: the game keeps its
+leaderboards, ratings, favourites and play count, and reopens by being set back
+to `published` from Admin → Games. **The whole library currently sits in this
+state** while v1.6.0 rebuilds it, so a new game added today should join it
+rather than going straight to `published`.
+
+Note that `status` is one of two independent gates. The other is
+`early_access_until` (`0056`), which restricts a game to boosters and staff
+until a date passes. Both are enforced by the same trigger on `play_sessions`;
+neither is enforced by `submit_score` itself.
+
 ## 4. The thumbnail
 
 Add a `slug -> { accent, glyph }` entry to `GAMES` in

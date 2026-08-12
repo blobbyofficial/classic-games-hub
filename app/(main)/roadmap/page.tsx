@@ -19,6 +19,10 @@ import {
   Megaphone,
   Bot,
   Gauge,
+  Wrench,
+  Crosshair,
+  Brain,
+  Rocket,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -50,6 +54,10 @@ const ICONS: Record<string, LucideIcon> = {
   Megaphone,
   Bot,
   Gauge,
+  Wrench,
+  Crosshair,
+  Brain,
+  Rocket,
 };
 
 function StatusPill({ status, className }: { status: RoadmapStatus; className?: string }) {

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { Play, Star, Users, Lock } from "lucide-react";
+import { Play, Star, Users, Lock, Wrench } from "lucide-react";
 import { cn, compactNumber } from "@/lib/utils";
 import { CATEGORY_META } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
@@ -18,6 +18,11 @@ export function GameCard({
 }) {
   const meta = CATEGORY_META[game.category];
   const comingSoon = game.status === "coming_soon";
+  // Badged but not disabled, like early access rather than coming soon: the
+  // game is real, still favouritable and still holds its leaderboards. Whether
+  // this particular viewer may play it is settled on the game page, which knows
+  // their role; the card does not, and a card that lied either way is worse.
+  const inDevelopment = game.status === "in_development";
   // Early access is shown to everyone, locked. A perk nobody can see is a perk
   // nobody wants, and half the point is that other people know it is running.
   const earlyAccess = Boolean(
@@ -58,6 +63,11 @@ export function GameCard({
             {comingSoon && (
               <Badge variant="neon" className="border-transparent bg-black/45 text-neon backdrop-blur-md">
                 Coming soon
+              </Badge>
+            )}
+            {inDevelopment && (
+              <Badge variant="warning" className="border-transparent bg-black/45 text-warning backdrop-blur-md">
+                <Wrench className="size-3" /> In development
               </Badge>
             )}
             {earlyAccess && !comingSoon && (

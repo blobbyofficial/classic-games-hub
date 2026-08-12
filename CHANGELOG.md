@@ -3,6 +3,57 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.5.5 - "Under Construction" (the whole arcade goes into development)
+
+### 🚧 Every game is being rebuilt
+
+- **All 26 games are now `in_development`**, a new game status meaning *shipped,
+  and being rebuilt*. They stay listed, badged and clickable, and they keep every
+  leaderboard, rating, favourite and play count they had. Only admins and
+  moderators may record a play while a game is in this state, so each overhaul
+  can be played on the real site - on a real phone - before it reopens to
+  everyone. A game comes back by being set to Published from Admin → Games.
+- **Not the same thing as "coming soon"**, which means never released and
+  disables the card outright. These games have history; pretending otherwise
+  would have thrown away favourites and told players something untrue.
+- **The gate is in the database, not the page.** The existing `play_sessions`
+  trigger that enforces booster early access now enforces both rules, so a
+  non-staff account cannot record a score for an in-development game by any
+  route. The two compose deliberately: boosting does *not* get you in, because
+  early access is a head start on a release and this is not a release.
+- Widening the status meant widening everything that tested for the literal
+  `'published'` - the row-level security policy, `submit_score`, `set_party_game`,
+  `platform_status` and the command palette. Missing any one of them would not
+  have degraded the arcade, it would have emptied it.
+
+### 🗺️ A plan for each of the 26 games
+
+- **The roadmap is now v1.6.0 "Ground Up"** and lists what is wrong with every
+  single game and what it becomes - written from measurements rather than
+  impressions. Four of 26 engines respond to the difficulty picker, three honour
+  reduced motion, six have a pause button that does not pause, and the sound
+  slider in settings controls nothing at all.
+- Some of what it found: Neon Runner's touch button only sends a jump, so
+  ducking under its overhead obstacles is impossible on a phone; Frogger has no
+  lily pads to fill; Space Invaders' own description promises barricades the
+  game does not have; Connect Four advertises keyboard controls it never
+  implemented; Gem Cascade's timer keeps draining behind the pause overlay; and
+  Snake has been reporting the length of the snake where the number of seconds
+  played belongs.
+- **"Head to Head" moves to v1.7.0**, behind the rebuild rather than beside it -
+  multiplayer written against engines that are still being replaced would only
+  have to be written twice. Its "Make the popular games good" group is gone from
+  it rather than duplicated, because that group is what v1.6.0 became.
+
+### 🧹 Smaller things
+
+- The games page claimed there were 23 games. There are 26.
+- `docs/adding-a-game.md` never mentioned `status`; it now documents all five
+  values and who each one lets in.
+- Removed an unused feature-flag fetch from the game page, and changing a game's
+  status now refreshes the home page too, so reopening a game restores it to the
+  featured rail immediately.
+
 ## v1.5.4 - "Broadcast" (versioned update log, and Discord mirroring)
 
 ### 🗂️ Every change has a version

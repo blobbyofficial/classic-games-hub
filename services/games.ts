@@ -12,14 +12,23 @@ export const getPublishedGames = cache(async (): Promise<GameWithMeta[]> => {
   const { data } = await supabase
     .from("games")
     .select("*")
-    .in("status", ["published", "coming_soon"])
+    .in("status", ["published", "coming_soon", "in_development"])
     .order("sort_weight", { ascending: false });
   return (data ?? []).map(withRating);
 });
 
+/**
+ * In-development games stay featured.
+ *
+ * The rule used to be `status === "published"`, which was right when the state
+ * next to it was `coming_soon` - a game nobody has played does not belong on
+ * the front page. It is wrong for `in_development`: the whole library is in
+ * that state while it is rebuilt, so excluding it would empty the featured rail
+ * rather than curate it. A badged shelf beats no shelf.
+ */
 export const getFeaturedGames = cache(async (): Promise<GameWithMeta[]> => {
   const games = await getPublishedGames();
-  return games.filter((g) => g.featured && g.status === "published");
+  return games.filter((g) => g.featured && g.status !== "coming_soon");
 });
 
 export const getGameBySlug = cache(async (slug: string): Promise<GameWithMeta | null> => {

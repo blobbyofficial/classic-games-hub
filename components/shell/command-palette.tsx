@@ -40,7 +40,7 @@ async function loadGames(): Promise<GameHit[]> {
       const { data } = await createClient()
         .from("games")
         .select("slug, title, category")
-        .eq("status", "published")
+        .in("status", ["published", "in_development"])
         .order("sort_weight", { ascending: false });
       gamesCache = (data as GameHit[] | null) ?? [];
       return gamesCache;

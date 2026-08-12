@@ -5,10 +5,11 @@ import type { Metadata } from "next";
 import { Gamepad2, Trophy, Users, Keyboard, Info, MessageSquare, ChevronLeft } from "lucide-react";
 import { getGameBySlug, getPublishedGames } from "@/services/games";
 import { ControlsList } from "@/features/games/controls-list";
-import { getSessionUser, getFeatureFlags, getCurrentProfile } from "@/lib/supabase/queries";
+import { getSessionUser, getCurrentProfile } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { GamePlayer } from "@/features/games/game-player";
 import { EarlyAccessLock } from "@/features/games/early-access-lock";
+import { InDevelopmentLock } from "@/features/games/in-development-lock";
 import { LeaderboardTabs } from "@/features/leaderboards/leaderboard-tabs";
 import { RateGame } from "@/features/games/rate-game";
 import { GameCard } from "@/components/games/game-card";
@@ -35,14 +36,20 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
 export default async function GameDetailPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = await params;
   const game = await getGameBySlug(slug);
-  if (!game || (game.status !== "published" && game.status !== "coming_soon")) notFound();
+  if (
+    !game ||
+    (game.status !== "published" &&
+      game.status !== "coming_soon" &&
+      game.status !== "in_development")
+  ) {
+    notFound();
+  }
 
   // getCurrentProfile shares the cached session with getSessionUser, so adding
   // it to the batch for the early-access check costs no extra round trip.
-  const [user, allGames, flags, profile] = await Promise.all([
+  const [user, allGames, profile] = await Promise.all([
     getSessionUser(),
     getPublishedGames(),
-    getFeatureFlags(),
     getCurrentProfile(),
   ]);
   const supabase = await createClient();
@@ -76,13 +83,20 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
   const related = allGames.filter((g) => g.category === game.category && g.id !== game.id).slice(0, 5);
   const comingSoon = game.status === "coming_soon";
 
+  const isStaff = profile?.role === "admin" || profile?.role === "moderator";
+
   // Booster early access. The database refuses to record a play for anyone who
   // is not eligible (0056), so this only decides what to render.
   const earlyUntil = game.early_access_until;
   const inEarlyAccess = Boolean(earlyUntil && new Date(earlyUntil) > new Date());
-  const mayPlayEarly =
-    profile?.booster_since != null || profile?.role === "admin" || profile?.role === "moderator";
+  const mayPlayEarly = profile?.booster_since != null || isStaff;
   const earlyLocked = inEarlyAccess && !mayPlayEarly;
+
+  // Being rebuilt (0070). Staff only, so each overhaul can be played on the
+  // real site before it reopens. Boosters deliberately do not get in: early
+  // access is a head start on a release, and this is not a release.
+  const inDevelopment = game.status === "in_development";
+  const devLocked = inDevelopment && !isStaff;
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
@@ -132,6 +146,8 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
                 <p className="text-muted-foreground">This game is on its way. Check back shortly!</p>
               </div>
             </Card>
+          ) : devLocked ? (
+            <InDevelopmentLock title={game.title} />
           ) : earlyLocked ? (
             <EarlyAccessLock until={earlyUntil!} title={game.title} />
           ) : (
