@@ -1,1 +1,9 @@
-{ "permissions": { "allow": ["Bash(git push:*)"] } }
+{
+  "permissions": {
+    "allow": [
+      "Bash(git push:*)",
+      "mcp__Vercel__list_deployments",
+      "mcp__Vercel__get_project"
+    ]
+  }
+}

@@ -25,6 +25,8 @@ import {
   Rocket,
   Maximize2,
   Volume2,
+  ShieldCheck,
+  Lock,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,6 +64,8 @@ const ICONS: Record<string, LucideIcon> = {
   Rocket,
   Maximize2,
   Volume2,
+  ShieldCheck,
+  Lock,
 };
 
 function StatusPill({ status, className }: { status: RoadmapStatus; className?: string }) {

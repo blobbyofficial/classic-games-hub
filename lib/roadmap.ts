@@ -1113,6 +1113,132 @@ export const ROADMAP: RoadmapRelease[] = [
     ],
   },
   {
+    version: "v2.2.0",
+    codename: "Player Made",
+    status: "later",
+    timeframe: "After Head to Head",
+    summary:
+      "Every game here was made by the people who run the place. This is the release where that stops being true: you build a game in the browser, play it yourself until it is worth showing, submit it, and once a real person has sat down and played it, it goes into the arcade beside the other twenty-six. The obstacle is worth naming rather than glossing over - every engine on this site is a TypeScript file listed in an import map, and nothing written by a player can ever join that list. Games made by players need a second way of running entirely, walled off from the rest of the site. It comes after the rebuild because a game somebody made deserves the same stage, the same effects and the same controls as everything else, and a runtime written against the shell that is currently being replaced would only have to be written twice.",
+    groups: [
+      {
+        heading: "Building a game",
+        icon: "Wrench",
+        blurb:
+          "In the browser, on the site, with nothing to install and no account anywhere else.",
+        items: [
+          {
+            title: "A game editor on the site",
+            description:
+              "Code down one side, the game running down the other, and a button between them that starts it. Templates to open rather than an empty file - a blank one, something top-down, something that jumps and a board game - because the hardest part of a first game is the first twenty lines, not the last two hundred. It saves as you go and it never leaves the browser.",
+          },
+          {
+            title: "A smaller API than the engines get",
+            description:
+              "The twenty-six are handed a bare canvas and left to it, which is right for code that ships with the site and wrong for code that does not. A game made by a player draws through a shorter set of instructions - shapes, text, sprites, sound - and reads input by asking what is currently held rather than by listening for keys. That indirection is the whole point: it is what lets the rebuilt stage, the scaling HUD, the effects library and the touch controls arrive underneath a game that was published months earlier without breaking it, and what makes the same game playable on a phone without its author thinking about phones.",
+          },
+          {
+            title: "Playtest it before anyone else can",
+            description:
+              "A draft runs in exactly the runtime a published game runs in, so what you test is what everyone else will get. It earns nothing, records nothing and appears on no leaderboard, and there is no separate preview mode that behaves slightly differently and hides the bug until launch day.",
+          },
+          {
+            title: "Sprites and sounds you upload",
+            description:
+              "Images and short audio, with limits on how many and how large, kept with the game rather than hotlinked from somewhere that can change underneath it. The reviewer sees every single one before it goes live, which is only possible because the game cannot reach out and fetch a twenty-seventh once it is running.",
+          },
+        ],
+      },
+      {
+        heading: "Getting it published",
+        icon: "ShieldCheck",
+        blurb:
+          "Modelled on how Roblox does it, with one deliberate difference: there is no automatic route to the front page.",
+        items: [
+          {
+            title: "Nothing publishes itself",
+            description:
+              "Every submission waits in a queue for a person. No trusted-author fast lane, no automatic approval for a small change, no scanner deciding on its own that something looks fine. It is slower and it does not scale forever, and it is the right trade for an arcade this size - the alternative is finding out what got published by reading a complaint.",
+          },
+          {
+            title: "A review queue somebody actually plays",
+            description:
+              "One place in the admin area holding everything waiting, oldest first, with the code, the assets, who wrote it and what they have submitted before. The part that matters is that the exact build under review is playable right there, because approving a game you have only read is not reviewing it.",
+          },
+          {
+            title: "What a game pays out is set by the reviewer",
+            description:
+              "The score ceiling, how much score converts into credits and the hard cap on a single run are staff values, filled in at approval and never taken from the person who wrote the game. Otherwise the first thing anybody publishes is a button that pays ten thousand credits a press, and they will not even have to be dishonest about it - the numbers are just the wrong person's to choose.",
+          },
+          {
+            title: "Update a game without taking it down",
+            description:
+              "A published game keeps a live version and a draft version, so improving it means editing the draft and submitting that. What is already out there carries on being played, with its ratings and its leaderboards, right up until the new one is approved. Nobody should have to choose between fixing a bug and staying open.",
+          },
+          {
+            title: "A rejection that says why",
+            description:
+              "Turning something down leaves a written reason that reaches its author, and stays on the game so they can read it again while they fix it. A queue that silently swallows work teaches people to stop submitting.",
+          },
+        ],
+      },
+      {
+        heading: "Playing what other people made",
+        icon: "Gamepad2",
+        items: [
+          {
+            title: "A game made by a player is just a game",
+            description:
+              "Same page, same card, same favourite button, same ratings and reviews, same leaderboards split by difficulty, same achievements. Not a roped-off section of lesser things with a different layout - it appears in search, in the command palette, in recently played and on the library shelf, because underneath it is the same kind of row as Snake.",
+          },
+          {
+            title: "Made by players, on the library",
+            description:
+              "A filter for them and a shelf on the games page, the author's name on the card and a link to their profile, and a games tab on every profile listing what that person has published. Somebody making things here should be findable for it.",
+          },
+          {
+            title: "Worth playing, not worth farming",
+            description:
+              "Playing one earns credits and XP like anything else, at a lower rate and with a minimum length to the run, because a game whose author decides the payout is a very different object to a game whose author does not. The existing hourly limit already stops the obvious version of this; the rest is making sure a published game cannot be quietly rewritten into a slot machine.",
+          },
+          {
+            title: "Whether the people making them ever earn anything",
+            description:
+              "They do not, to begin with, and that is a decision rather than something forgotten. Paying creators per play invents a problem the site does not have yet - alternate accounts, rings of people playing each other's games, and caps that have to be argued about - and it is far easier to add later than to take away. Worth revisiting once there are enough games for it to be a question.",
+            status: "idea",
+          },
+        ],
+      },
+      {
+        heading: "Keeping it safe",
+        icon: "Lock",
+        blurb:
+          "The site is about to start running code it did not write, in your browser, while you are signed in.",
+        items: [
+          {
+            title: "Code the site does not trust",
+            description:
+              "A game made by a player runs sealed off from the page around it, with no way to reach your account, your session, your saved things or the network. It cannot see the site it is running on and it cannot talk to anything outside itself. That wall is the protection - not a check that reads the code looking for suspicious words, which is a useful hint for a reviewer and would be a terrible thing to rely on.",
+          },
+          {
+            title: "A game that hangs gets closed",
+            description:
+              "Nothing stops somebody writing a loop that never ends, by accident far more often than on purpose. A game that stops answering is shut down and says so, rather than freezing the tab and taking the rest of the site with it.",
+          },
+          {
+            title: "Report it, and take it down",
+            description:
+              "The report button the site already has, pointed at games as well as people and messages, so reports arrive in the queue moderators already read. Taking something down removes it from the arcade, tells its author why, and leaves a record of who decided - the same for every decision made about somebody else's work.",
+          },
+          {
+            title: "Who can publish at all",
+            description:
+              "A level requirement to make a game and a limit on how many can be submitted a day. Not to keep anybody out, but because a queue reviewed by hand only works while a person can keep up with it, and the first thing an open submission form attracts is somebody testing how open it is.",
+          },
+        ],
+      },
+    ],
+  },
+  {
     version: "Unscheduled",
     codename: "Ideas we are kicking around",
     status: "idea",

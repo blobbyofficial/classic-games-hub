@@ -580,6 +580,19 @@ html[data-site-theme="aurora"] {
     -webkit-backdrop-filter: none !important;
   }
 
+  /* `--glass` is only 55-72% opaque: it is legible because the blur behind it
+     flattens whatever it covers, not because the fill is solid. Removing the
+     blur without also making the fill opaque leaves the page showing straight
+     through the panel, which is worst on overlay chrome sitting above dense
+     content. So make the same swap the @supports fallback below makes.
+
+     Only `.glass` gets this. The `[class*="backdrop-blur"]` half of the rule
+     above also catches modal scrims, which are *meant* to stay translucent -
+     forcing those opaque would black out the page behind the dialog. */
+  html[data-reduced-motion="true"] .glass {
+    background: var(--card);
+  }
+
   html[data-reduced-motion="true"][data-site-theme="synthwave"],
   html[data-reduced-motion="true"][data-site-theme="aurora"] {
     animation: none !important;
