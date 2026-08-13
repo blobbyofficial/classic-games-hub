@@ -75,6 +75,7 @@ create or replace function public.status_rank(p_status text)
 returns int
 language sql
 immutable
+set search_path = public
 as $$
   select case p_status
     when 'operational'         then 0
@@ -91,6 +92,7 @@ create or replace function public.status_indicator(p_rank int)
 returns text
 language sql
 immutable
+set search_path = public
 as $$
   select case
     when p_rank >= 4 then 'critical'
