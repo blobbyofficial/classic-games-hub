@@ -14,9 +14,13 @@ import { createAdminClient } from "@/lib/supabase/server";
  * the repeats cost nothing. It also means someone who starts boosting on the
  * 28th still receives that month's item.
  *
- * Ordered after the role sync in vercel.json, because that job is what
- * refreshes profiles.booster_since from Discord - running this first would
- * hand out drops based on yesterday's boost list.
+ * Scheduled at 06:00, an hour after the Vercel cron that role sync used to
+ * occupy, because role sync is what refreshes profiles.booster_since from
+ * Discord and running this first would hand out drops based on a stale boost
+ * list. Role sync now runs from an external scheduler (docs/cron-jobs.md), so
+ * that ordering only holds while that scheduler is up; until it is,
+ * booster_since goes stale and a new booster waits for their drop. The grant
+ * is idempotent and runs daily, so they get it on the next run either way.
  */
 
 export const runtime = "nodejs";

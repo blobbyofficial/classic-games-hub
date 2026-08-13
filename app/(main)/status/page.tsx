@@ -133,7 +133,7 @@ export default async function StatusPage() {
               <StatTile icon={Play} label="Plays last hour" value={formatNumber(platform.games.plays_last_hour)} />
               <StatTile icon={Users} label="Registered players" value={formatNumber(platform.players.total)} />
               <StatTile icon={Link2} label="Discord linked" value={formatNumber(platform.players.discord_linked)} />
-              <StatTile icon={Gamepad2} label="Games" value={formatNumber(platform.games.published + platform.games.in_development)} />
+              <StatTile icon={Gamepad2} label="Games" value={formatNumber(platform.games.published + (platform.games.in_development ?? 0))} />
               <StatTile icon={Coins} label="Credits earned today" value={formatNumber(platform.economy.credits_awarded_24h)} accent="text-gold" />
             </div>
           </section>

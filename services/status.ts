@@ -24,7 +24,14 @@ export interface PlatformStatus {
   players: { total: number; online: number; active_24h: number; discord_linked: number };
   games: {
     published: number;
-    in_development: number;
+    /**
+     * Optional because it arrives with 0070, and a migration reaches Supabase
+     * separately from the deploy that expects it - the key is simply absent
+     * from the jsonb until then. Read it with `?? 0`: `published + undefined`
+     * is NaN, and `formatNumber` guards null and undefined but not NaN, so the
+     * tile renders the string "NaN" rather than a number.
+     */
+    in_development?: number;
     coming_soon: number;
     plays_today: number;
     plays_last_hour: number;

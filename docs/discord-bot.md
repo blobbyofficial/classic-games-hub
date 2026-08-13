@@ -312,10 +312,13 @@ with no row simply grants nothing, so the job is safe to leave running forever
 without anyone topping the table up.
 
 `/api/cron/booster-drops` calls `grant_booster_drops()` with the service key.
-It is scheduled **daily** in `vercel.json`, at 06:00 UTC - after the role sync
-at 04:30, because that job is what refreshes `profiles.booster_since` from
-Discord, and running the grant first would hand out drops based on yesterday's
-boost list.
+It is scheduled **daily** in `vercel.json`, at 06:00 UTC. That slot is an hour
+after the one role sync used to hold, because role sync is what refreshes
+`profiles.booster_since` from Discord and running the grant first would hand
+out drops based on a stale boost list. Role sync now runs from an external
+scheduler (`docs/cron-jobs.md`), so while that scheduler is down `booster_since`
+goes stale and a new booster waits a run for their drop - the grant is
+idempotent and daily, so nothing is lost.
 
 Daily rather than monthly is deliberate: a once-a-month job has exactly one
 chance to fire, and a failure costs a whole month of boosters their drop. The
