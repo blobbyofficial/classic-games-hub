@@ -105,6 +105,19 @@ and Admin → Status. See `docs/status.md`.
 `/status` compares them, so a migration that has not been applied to Supabase is
 visible rather than mysterious.
 
+## Scheduled jobs
+
+`vercel.json` carries **two** cron entries, both daily, and has to stay that
+way. The Hobby plan rejects a sub-daily expression when the deployment is
+*created*, so a push produces no deployment at all - no build, no error,
+nothing in the dashboard, and reconnecting the repository does not help. That
+cost ten days of deploys in August 2026. **If pushes stop deploying, read
+`vercel.json` before anything else.**
+
+The jobs that need a tighter cadence - the five-minute status probe, role sync,
+counter channels - run from an external scheduler instead. `docs/cron-jobs.md`
+has the table of what runs where and the setup.
+
 ## Extending the platform
 
 Two things touch more files than they look like they should, and both have a

@@ -109,9 +109,10 @@ bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handlin
   `/setup refresh-stats` or the admin dashboard. Discord rate-limits channel
   renames to ~2 per 10 minutes per channel, so that's the practical ceiling.
 - Serverless fallback: `GET /api/cron/discord-stats` with
-  `Authorization: Bearer $CRON_SECRET`. Vercel Hobby crons only run daily, so
-  for a 10-minute cadence use Supabase `pg_cron` + `pg_net`, cron-job.org, or
-  just run the worker.
+  `Authorization: Bearer $CRON_SECRET`. Vercel Hobby crons only run daily and
+  this route is not in `vercel.json` at all, so for a 10-minute cadence use
+  Supabase `pg_cron` + `pg_net`, cron-job.org, or just run the worker. All five
+  scheduled jobs and where each one runs are in `docs/cron-jobs.md`.
 
 ## Is there any way for the bot to always be online?
 

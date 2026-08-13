@@ -3,6 +3,35 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.5.7 - "Unblocked" (the deployments start again)
+
+### 🚀 Ten days of pushes that never built
+
+- **Nothing had deployed since 3 August**, and not because a build was failing -
+  because no build was ever *started*. Vercel's Hobby plan caps cron jobs at two,
+  each running at most once a day, and it rejects a sub-daily expression when the
+  deployment is **created**. There is no failed build to look at, no error in the
+  dashboard, and no clue in the repository; every push simply vanished, which is
+  why reconnecting the git integration changed nothing.
+- The culprit was `de6cfc9`, which moved role sync from `30 4 * * *` to
+  `*/2 * * * *` and was itself the first commit that never shipped. `c0d2064`
+  then added a `*/15` job and v1.5.6 a `*/5` one, so by the time anyone counted
+  there were five crons, four of them sub-daily. The application code was fine
+  throughout - typecheck, lint and build all passed on the stuck commit.
+- **`vercel.json` is back to two daily entries**: `discord-publish` at 05:00 and
+  `booster-drops` at 06:00. Those two because a daily run still serves them -
+  publishing mirrors announcements immediately and the cron only recovers what
+  was missed, and the booster drop is daily by design.
+- **The status probe deliberately did not stay.** `status_record_checks` counts
+  a failed check as five minutes of downtime, so a daily probe would not merely
+  be coarse, it would report wrong uptime percentages. It runs from an external
+  scheduler along with role sync and the counter channels, all three authorised
+  with the same `Authorization: Bearer $CRON_SECRET` header Vercel itself sends.
+- **`docs/cron-jobs.md`** is new: which job wants which cadence, which two are on
+  Vercel and why, how to point a scheduler at the rest, and what to move back if
+  the plan ever changes. The warning is repeated in `CLAUDE.md`, because the
+  failure is silent and the first instinct - relink the repository - is wrong.
+
 ## v1.5.6 - "Is It Just Me?" (a real status page, and an API for it)
 
 ### 📊 /status became a status page

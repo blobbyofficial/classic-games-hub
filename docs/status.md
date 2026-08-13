@@ -49,8 +49,14 @@ published on the page beside the service.
 
 ## The probe
 
-`/api/cron/status-probe`, every 5 minutes (`vercel.json`), authorised with
+`/api/cron/status-probe`, every 5 minutes, authorised with
 `Authorization: Bearer $CRON_SECRET`.
+
+The schedule lives in an external scheduler rather than `vercel.json`, because
+Vercel's Hobby plan runs crons at most once a day and a daily probe would make
+the uptime percentages wrong - `status_record_checks` counts a failed check as
+five minutes of downtime. See `docs/cron-jobs.md`; if the probe is not
+scheduled, the page has no data to draw and says so rather than claiming green.
 
 Four round trips cover ten components:
 

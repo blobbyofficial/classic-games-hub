@@ -3,7 +3,7 @@ import { syncAllMembers } from "@/lib/discord/role-sync";
 import { discordEnv } from "@/lib/discord/env";
 
 /**
- * Role-sync reconcile, every two minutes (vercel.json cron). Catches everything
+ * Role-sync reconcile, every two minutes. Catches everything
  * the on-change sync can't: members who joined the server after linking, roles
  * renamed or recreated, awards earned while the site was quiet, levels gained
  * from chat, and any sync that failed at the time.
@@ -17,9 +17,9 @@ import { discordEnv } from "@/lib/discord/env";
  * rate-limits a channel rename to roughly twice per ten minutes, so a
  * two-minute refresh would spend its whole budget being throttled.
  *
- * Vercel calls cron routes with `Authorization: Bearer ${CRON_SECRET}`.
- * Vercel's Hobby plan only runs crons once a day; on Hobby, point any free
- * uptime pinger at this URL with the same bearer token instead.
+ * Vercel's Hobby plan only runs crons once a day, so this is not in vercel.json
+ * at all - an external scheduler sends `Authorization: Bearer ${CRON_SECRET}`,
+ * the same header Vercel's own cron would. See docs/cron-jobs.md.
  */
 
 export const runtime = "nodejs";

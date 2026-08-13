@@ -13,10 +13,12 @@ import { summariseSync, syncAnnouncements, syncUpdateLog } from "@/lib/discord/p
  * somebody eventually deletes a message by hand; all three are invisible until
  * something re-checks. Every release and announcement carries a digest, so a
  * run with nothing to do costs two database reads and makes no Discord calls
- * at all - which is what makes running it this often reasonable.
+ * at all.
  *
- * Ordered after the role sync in vercel.json for no reason beyond keeping the
- * Discord jobs together; the two share no state.
+ * It is one of the two jobs in vercel.json, which on the Hobby plan means daily
+ * (docs/cron-jobs.md). Recovery is exactly the shape of job a daily sweep still
+ * serves, and of the five it is the one where no schedule at all breaks
+ * something quietly: a deploy adds releases with nobody pressing anything.
  */
 
 export const runtime = "nodejs";

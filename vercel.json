@@ -2,20 +2,8 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "crons": [
     {
-      "path": "/api/cron/status-probe",
-      "schedule": "*/5 * * * *"
-    },
-    {
-      "path": "/api/cron/discord-role-sync",
-      "schedule": "*/2 * * * *"
-    },
-    {
-      "path": "/api/cron/discord-stats",
-      "schedule": "*/10 * * * *"
-    },
-    {
       "path": "/api/cron/discord-publish",
-      "schedule": "*/15 * * * *"
+      "schedule": "0 5 * * *"
     },
     {
       "path": "/api/cron/booster-drops",

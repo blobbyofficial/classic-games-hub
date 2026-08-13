@@ -9,10 +9,15 @@ import { siteUrl } from "@/lib/version";
  *
  *   curl -H "Authorization: Bearer $CRON_SECRET" https://<domain>/api/cron/status-probe
  *
- * Every five minutes is the intended cadence (see vercel.json), because that is
- * what `status_record_checks` assumes when it counts a failed check as five
- * minutes of downtime, and what makes "two consecutive failures" mean "this has
+ * Every five minutes is the intended cadence, because that is what
+ * `status_record_checks` assumes when it counts a failed check as five minutes
+ * of downtime, and what makes "two consecutive failures" mean "this has
  * survived five minutes" rather than "this blipped twice in ten seconds".
+ *
+ * That cadence is deliberately *not* in vercel.json. Vercel's Hobby plan caps
+ * crons at once a day, and a daily probe would not merely be coarse - it would
+ * report each failure as five minutes of downtime once a day and make the
+ * uptime percentages wrong. An external scheduler drives it; docs/cron-jobs.md.
  *
  * Four probes cover ten components:
  *

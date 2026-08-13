@@ -10,11 +10,11 @@ import { refreshStatChannels } from "@/lib/discord/setup";
  *
  *   curl -H "Authorization: Bearer $CRON_SECRET" https://<domain>/api/cron/discord-stats
  *
- * Vercel's own cron runs it daily on Hobby plans (see vercel.json); for a
- * 10-minute cadence use Supabase pg_cron + pg_net, cron-job.org, or the
- * companion worker in bot/ (which refreshes on the same schedule while it's
- * running). Discord rate-limits channel renames to ~2 per 10 minutes per
- * channel, so don't go faster than that.
+ * Vercel's Hobby plan only runs crons daily, so this is not in vercel.json; use
+ * Supabase pg_cron + pg_net, cron-job.org, or the companion worker in bot/
+ * (which refreshes on the same schedule while it's running). Discord
+ * rate-limits channel renames to ~2 per 10 minutes per channel, so don't go
+ * faster than that. See docs/cron-jobs.md.
  */
 
 export const runtime = "nodejs";
