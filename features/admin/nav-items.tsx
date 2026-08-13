@@ -10,6 +10,7 @@ import {
   BarChart3,
   PartyPopper,
   Globe,
+  Activity,
   type LucideIcon,
 } from "lucide-react";
 
@@ -74,6 +75,12 @@ export const GROUPS: { label: string; items: NavItem[] }[] = [
   {
     label: "System",
     items: [
+      {
+        href: "/admin/status",
+        label: "Status",
+        description: "Declare an incident, post updates, review player reports.",
+        icon: Activity,
+      },
       {
         href: "/admin/discord",
         label: "Discord bot",

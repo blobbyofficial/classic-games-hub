@@ -23,6 +23,10 @@ import {
   Layers,
   Package,
   Rocket,
+  Activity,
+  Radar,
+  Code2,
+  Tag,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -62,6 +66,10 @@ const ICONS: Record<string, LucideIcon> = {
   Bot,
   History,
   Rocket,
+  Activity,
+  Radar,
+  Code2,
+  Tag,
 };
 
 function Stat({ icon: Icon, value, label }: { icon: LucideIcon; value: number; label: string }) {

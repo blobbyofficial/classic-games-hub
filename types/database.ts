@@ -46,6 +46,28 @@ export type FriendsVisibility = "private" | "friends" | "followers" | "public";
 export type ReportStatus = "open" | "resolved" | "dismissed";
 export type AnnouncementLevel = "info" | "update" | "event" | "alert";
 
+/**
+ * Status-page vocabulary (0071), mirroring the check constraints on
+ * status_components and status_incidents. `lib/status.ts` re-declares these for
+ * the UI rather than importing them, keeping this file a pure mirror of the
+ * schema the way the rest of it is.
+ */
+export type StatusComponentState =
+  | "operational"
+  | "degraded_performance"
+  | "partial_outage"
+  | "major_outage"
+  | "under_maintenance";
+export type StatusIncidentState =
+  | "investigating"
+  | "identified"
+  | "monitoring"
+  | "resolved"
+  | "scheduled"
+  | "in_progress"
+  | "verifying"
+  | "completed";
+
 export interface Database {
   public: {
     Tables: {
@@ -708,6 +730,126 @@ export interface Database {
         Update: never;
         Relationships: [];
       };
+      // ── Status page (0071) ──
+      status_components: {
+        Row: {
+          id: string;
+          slug: string;
+          name: string;
+          description: string | null;
+          group_name: string;
+          position: number;
+          status: StatusComponentState;
+          pinned_status: StatusComponentState | null;
+          pinned_reason: string | null;
+          pinned_by: string | null;
+          pinned_at: string | null;
+          probe: "none" | "http" | "auth" | "db" | "discord_worker" | "discord_api";
+          probe_target: string | null;
+          degraded_ms: number;
+          visible: boolean;
+          created_at: string;
+          updated_at: string;
+        };
+        Insert: never;
+        Update: Partial<{ status: StatusComponentState; visible: boolean; degraded_ms: number }>;
+        Relationships: [];
+      };
+      status_incidents: {
+        Row: {
+          id: string;
+          ref: number;
+          kind: "incident" | "maintenance";
+          title: string;
+          impact: "none" | "minor" | "major" | "critical" | "maintenance";
+          status: StatusIncidentState;
+          started_at: string;
+          resolved_at: string | null;
+          scheduled_for: string | null;
+          scheduled_until: string | null;
+          auto: boolean;
+          auto_key: string | null;
+          created_by: string | null;
+          created_at: string;
+          updated_at: string;
+        };
+        // Opened and updated through the status_incident_* RPCs (0071).
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      status_incident_updates: {
+        Row: {
+          id: string;
+          incident_id: string;
+          status: StatusIncidentState;
+          body: string;
+          author_id: string | null;
+          created_at: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      status_incident_components: {
+        Row: {
+          incident_id: string;
+          component_id: string;
+          component_status: StatusComponentState;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      status_checks: {
+        Row: {
+          id: number;
+          component_id: string;
+          checked_at: string;
+          ok: boolean;
+          latency_ms: number | null;
+          detail: string | null;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      status_days: {
+        Row: {
+          component_id: string;
+          day: string;
+          checks: number;
+          failures: number;
+          degraded: number;
+          downtime_seconds: number;
+          latency_sum: number;
+          latency_count: number;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      status_reports: {
+        Row: {
+          id: string;
+          component_id: string | null;
+          problem: string;
+          note: string | null;
+          user_id: string | null;
+          fingerprint: string;
+          created_at: string;
+        };
+        // Written only by status_report_submit(), which is service_role-only.
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
+      status_meta: {
+        Row: { key: string; value: Json; updated_at: string };
+        Insert: never;
+        Update: { value?: Json };
+        Relationships: [];
+      };
     };
     Views: Record<string, never>;
     Functions: {
@@ -949,6 +1091,51 @@ export interface Database {
       // ── Vanity URLs (0045) ──
       set_vanity_slug: { Args: { p_slug: string | null }; Returns: Json };
       resolve_profile_slug: { Args: { p_slug: string }; Returns: string | null };
+      // ── Status page (0071) ──
+      // Public readers.
+      status_summary: { Args: Record<string, never>; Returns: Json };
+      status_component: { Args: { p_slug: string }; Returns: Json };
+      status_incident_history: {
+        Args: { p_limit?: number; p_before?: string | null; p_kind?: string | null };
+        Returns: Json;
+      };
+      status_uptime: { Args: { p_slug: string; p_days?: number }; Returns: Json };
+      status_uptime_matrix: { Args: { p_days?: number }; Returns: Json };
+      status_reports_timeline: { Args: { p_slug?: string | null; p_hours?: number }; Returns: Json };
+      // Service-role only: the probe, and the report writer.
+      status_selfcheck: { Args: Record<string, never>; Returns: Json };
+      status_record_checks: { Args: { p_results: Json }; Returns: Json };
+      status_prune: { Args: Record<string, never>; Returns: Json };
+      status_report_submit: {
+        Args: {
+          p_slug: string | null;
+          p_problem: string;
+          p_fingerprint: string;
+          p_note?: string | null;
+          p_user?: string | null;
+        };
+        Returns: Json;
+      };
+      // Staff writers - these check is_staff() themselves.
+      status_incident_open: {
+        Args: {
+          p_title: string;
+          p_body: string;
+          p_impact?: string;
+          p_kind?: string;
+          p_status?: string | null;
+          p_components?: Json;
+          p_scheduled_for?: string | null;
+          p_scheduled_until?: string | null;
+        };
+        Returns: Json;
+      };
+      status_incident_post: { Args: { p_id: string; p_status: string; p_body: string }; Returns: Json };
+      status_component_pin: {
+        Args: { p_slug: string; p_status?: string | null; p_reason?: string | null };
+        Returns: Json;
+      };
+      status_recent_reports: { Args: { p_limit?: number }; Returns: Json };
     };
     Enums: Record<string, never>;
     CompositeTypes: Record<string, never>;

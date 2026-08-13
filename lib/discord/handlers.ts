@@ -355,6 +355,7 @@ export function handleHelp() {
           "**Server**",
           "`/verify` - verify yourself and unlock the server",
           "`/ticket [subject]` - open a private support ticket",
+          "`/status [service]` - is the site working? uptime, incidents and versions",
           "",
           "**Staff only**",
           "`/warn` `/timeout` `/untimeout` `/kick` `/ban` `/unban` `/warnings`",

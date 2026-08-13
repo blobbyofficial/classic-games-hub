@@ -1,155 +1,180 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import {
   Activity,
-  Users,
-  Gamepad2,
-  Play,
-  MessageSquare,
-  Coins,
-  Link2,
-  ShieldAlert,
-  Heart,
-  Bot,
   Clock,
+  Coins,
+  Gamepad2,
+  History,
+  Link2,
+  Play,
+  ShieldAlert,
+  Users,
 } from "lucide-react";
-import { getPlatformStatus } from "@/services/status";
+import {
+  getIncidentHistory,
+  getPlatformStatus,
+  getReportTimeline,
+  getSchemaVersion,
+  getStatusSummary,
+  getUptimeMatrix,
+} from "@/services/status";
 import { getCurrentProfile } from "@/lib/supabase/queries";
+import { PageHeader } from "@/components/page-header";
 import { StatTile } from "@/components/stat-tile";
-import { formatNumber, timeAgo } from "@/lib/utils";
+import { formatNumber } from "@/lib/utils";
+import { AutoRefresh } from "@/features/status/auto-refresh";
+import { ApiCard } from "@/features/status/api-card";
+import { ComponentBoard } from "@/features/status/component-board";
+import { IncidentCard } from "@/features/status/incident-card";
+import { ReportPanel } from "@/features/status/report-panel";
+import { StatusBanner } from "@/features/status/status-banner";
+import { VersionsCard } from "@/features/status/versions-card";
 
 export const metadata: Metadata = {
   title: "Status",
-  description: "Live platform status for Classic Games Hub - players online, games, and services.",
+  description:
+    "Live status for Classic Games Hub - uptime, incidents, versions and problems reported by players.",
 };
 
-// Counts are only interesting when they're current.
+// Everything here is only worth reading if it is current.
 export const dynamic = "force-dynamic";
 
 export default async function StatusPage() {
-  const [status, profile] = await Promise.all([getPlatformStatus(), getCurrentProfile()]);
+  const [summary, matrix, reports, history, platform, profile, schema] = await Promise.all([
+    getStatusSummary(),
+    getUptimeMatrix(90),
+    getReportTimeline(null, 24),
+    getIncidentHistory(10),
+    getPlatformStatus(),
+    getCurrentProfile(),
+    getSchemaVersion(),
+  ]);
+
   const isStaff = profile?.role === "admin" || profile?.role === "moderator";
 
-  if (!status) {
+  // The one case the page has to handle better than any other page on the site:
+  // the database being unreachable is exactly when someone loads /status, so it
+  // says so plainly rather than rendering an error boundary.
+  if (!summary) {
     return (
       <div className="mx-auto max-w-3xl">
-        <h1 className="text-2xl font-bold tracking-tight">Status</h1>
-        <p className="mt-4 rounded-2xl border border-dashed border-border p-8 text-center text-sm text-muted-foreground">
-          Status is unavailable right now. That usually means the database is unreachable - try again
-          in a moment.
-        </p>
+        <PageHeader icon={Activity} title="Status" />
+        <div className="rounded-2xl border border-destructive/30 bg-destructive/5 p-8 text-center">
+          <p className="font-semibold text-destructive">We cannot read our own status right now.</p>
+          <p className="mt-1.5 text-sm text-muted-foreground">
+            That almost always means the database is unreachable, which means the site is having
+            real problems. Try again in a minute.
+          </p>
+        </div>
       </div>
     );
   }
 
-  const { players, games, social, economy, discord, moderation } = status;
+  const resolved = (history ?? []).filter((incident) => incident.resolved_at);
 
   return (
-    <div className="mx-auto max-w-3xl space-y-8">
-      <div className="flex items-center gap-3">
-        <span className="grid size-11 place-items-center rounded-xl bg-primary/10 text-primary">
-          <Activity className="size-6" />
-        </span>
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Platform status</h1>
-          <p className="text-sm text-muted-foreground">
-            Live numbers, generated {timeAgo(status.generated_at)}.
-          </p>
-        </div>
-      </div>
+    <div className="mx-auto max-w-4xl">
+      <AutoRefresh seconds={60} />
 
-      <Section title="Players">
-        <StatTile icon={Users} label="Registered" value={formatNumber(players.total)} />
-        <StatTile icon={Activity} label="Online now" value={formatNumber(players.online)} accent="text-success" />
-        <StatTile icon={Clock} label="Active today" value={formatNumber(players.active_24h)} />
-        <StatTile icon={Link2} label="Discord linked" value={formatNumber(players.discord_linked)} />
-      </Section>
+      <PageHeader
+        icon={Activity}
+        title="Platform status"
+        description="Whether everything is working, what broke recently, and what players are telling us right now."
+      />
 
-      <Section title="Games">
-        <StatTile icon={Gamepad2} label="Published" value={formatNumber(games.published)} />
-        <StatTile icon={Play} label="Plays today" value={formatNumber(games.plays_today)} />
-        <StatTile icon={Play} label="Plays last hour" value={formatNumber(games.plays_last_hour)} />
-        <StatTile icon={Play} label="Plays all time" value={formatNumber(games.plays_total)} />
-      </Section>
+      <div className="space-y-8">
+        <StatusBanner summary={summary} />
 
-      <Section title="Community">
-        <StatTile icon={MessageSquare} label="Messages today" value={formatNumber(social.messages_24h)} />
-        <StatTile icon={Heart} label="Friendships" value={formatNumber(social.friendships)} />
-        <StatTile icon={Coins} label="Credits earned today" value={formatNumber(economy.credits_awarded_24h)} accent="text-gold" />
-        <StatTile icon={Coins} label="Shop items" value={formatNumber(economy.shop_items)} />
-      </Section>
+        {summary.incidents.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="text-sm font-semibold text-muted-foreground">Open incidents</h2>
+            {summary.incidents.map((incident) => (
+              <IncidentCard key={incident.id} incident={incident} />
+            ))}
+          </section>
+        )}
 
-      <section className="space-y-3">
-        <h2 className="text-sm font-semibold text-muted-foreground">Discord bot</h2>
-        <div className="rounded-2xl border border-border bg-card p-5">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2">
-              <Bot className="size-5 text-primary" />
-              <div>
-                <p className="font-semibold">Gateway worker</p>
-                <p className="text-xs text-muted-foreground">
-                  {discord.worker_last_seen
-                    ? `Last heartbeat ${timeAgo(discord.worker_last_seen)}`
-                    : "No heartbeat recorded yet"}
-                </p>
-              </div>
+        {summary.maintenance.length > 0 && (
+          <section className="space-y-3">
+            <h2 className="text-sm font-semibold text-muted-foreground">Scheduled maintenance</h2>
+            {summary.maintenance.map((incident) => (
+              <IncidentCard key={incident.id} incident={incident} />
+            ))}
+          </section>
+        )}
+
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground">
+            Services <span className="font-normal">- 90 days of uptime</span>
+          </h2>
+          <ComponentBoard components={summary.components} matrix={matrix} />
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-sm font-semibold text-muted-foreground">Reported by players</h2>
+          <ReportPanel timeline={reports} components={summary.components} />
+        </section>
+
+        <section className="grid gap-4 lg:grid-cols-2">
+          <VersionsCard summary={summary} schema={schema} />
+          <ApiCard />
+        </section>
+
+        {platform && (
+          <section className="space-y-3">
+            <h2 className="text-sm font-semibold text-muted-foreground">
+              Right now <span className="font-normal">- how busy the arcade is</span>
+            </h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <StatTile icon={Users} label="Players online" value={formatNumber(platform.players.online)} accent="text-success" />
+              <StatTile icon={Clock} label="Active today" value={formatNumber(platform.players.active_24h)} />
+              <StatTile icon={Play} label="Plays today" value={formatNumber(platform.games.plays_today)} />
+              <StatTile icon={Play} label="Plays last hour" value={formatNumber(platform.games.plays_last_hour)} />
+              <StatTile icon={Users} label="Registered players" value={formatNumber(platform.players.total)} />
+              <StatTile icon={Link2} label="Discord linked" value={formatNumber(platform.players.discord_linked)} />
+              <StatTile icon={Gamepad2} label="Games" value={formatNumber(platform.games.published + platform.games.in_development)} />
+              <StatTile icon={Coins} label="Credits earned today" value={formatNumber(platform.economy.credits_awarded_24h)} accent="text-gold" />
             </div>
-            <span
-              className={`flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${
-                discord.worker_online
-                  ? "bg-success/15 text-success"
-                  : "bg-destructive/15 text-destructive"
-              }`}
-            >
-              <span className={`size-2 rounded-full ${discord.worker_online ? "bg-success" : "bg-destructive"}`} />
-              {discord.worker_online ? "Online" : "Offline"}
-            </span>
-          </div>
+          </section>
+        )}
 
-          <dl className="mt-4 grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2">
-            <Row label="Levelling" value={discord.leveling_enabled ? "On" : "Off"} />
-            <Row label="Verification" value={discord.verification_configured ? "Configured" : "Not set up"} />
-            <Row label="Tickets" value={discord.tickets_configured ? "Configured" : "Not set up"} />
-            <Row label="Live counters" value={discord.counters_configured ? "Configured" : "Not set up"} />
-            <Row
-              label="Milestone roles"
-              value={`${discord.milestone_roles_created}/${discord.milestone_roles_expected} created`}
-            />
-            <Row label="Chat members tracked" value={formatNumber(discord.chat_members)} />
-          </dl>
-        </div>
-      </section>
+        {resolved.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-center gap-2">
+              <History className="size-4 text-muted-foreground" />
+              <h2 className="text-sm font-semibold text-muted-foreground">Recently resolved</h2>
+            </div>
+            {resolved.map((incident) => (
+              <IncidentCard key={incident.id} incident={incident} compact />
+            ))}
+          </section>
+        )}
 
-      {isStaff && (
-        <Section title="Moderation (staff only)">
-          <StatTile
-            icon={ShieldAlert}
-            label="Open reports"
-            value={formatNumber(moderation.open_reports)}
-            accent={moderation.open_reports > 0 ? "text-destructive" : "text-primary"}
-          />
-          <StatTile icon={ShieldAlert} label="Suspended accounts" value={formatNumber(moderation.banned)} />
-          <StatTile icon={ShieldAlert} label="Mod cases" value={formatNumber(discord.mod_cases)} />
-          <StatTile icon={ShieldAlert} label="Open tickets" value={formatNumber(discord.open_tickets)} />
-        </Section>
-      )}
-    </div>
-  );
-}
-
-function Section({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <section className="space-y-3">
-      <h2 className="text-sm font-semibold text-muted-foreground">{title}</h2>
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">{children}</div>
-    </section>
-  );
-}
-
-function Row({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="flex items-center justify-between gap-3 border-b border-border/60 py-1.5 last:border-0">
-      <dt className="text-muted-foreground">{label}</dt>
-      <dd className="font-medium">{value}</dd>
+        {isStaff && platform && (
+          <section className="space-y-3">
+            <h2 className="text-sm font-semibold text-muted-foreground">Moderation (staff only)</h2>
+            <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+              <StatTile
+                icon={ShieldAlert}
+                label="Open reports"
+                value={formatNumber(platform.moderation.open_reports)}
+                accent={platform.moderation.open_reports > 0 ? "text-destructive" : "text-primary"}
+              />
+              <StatTile icon={ShieldAlert} label="Suspended accounts" value={formatNumber(platform.moderation.banned)} />
+              <StatTile icon={ShieldAlert} label="Mod cases" value={formatNumber(platform.discord.mod_cases)} />
+              <StatTile icon={ShieldAlert} label="Open tickets" value={formatNumber(platform.discord.open_tickets)} />
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Open, update and resolve incidents from{" "}
+              <Link href="/admin/status" className="font-medium text-primary hover:underline">
+                the status console
+              </Link>
+              .
+            </p>
+          </section>
+        )}
+      </div>
     </div>
   );
 }

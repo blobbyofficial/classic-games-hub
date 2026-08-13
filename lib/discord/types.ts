@@ -7,6 +7,7 @@ export const InteractionType = {
   Ping: 1,
   ApplicationCommand: 2,
   MessageComponent: 3,
+  Autocomplete: 4,
   ModalSubmit: 5,
 } as const;
 
@@ -16,6 +17,9 @@ export const InteractionResponseType = {
   DeferredChannelMessage: 5,
   DeferredUpdateMessage: 6,
   UpdateMessage: 7,
+  // Autocomplete cannot be deferred - Discord wants the choices inside the
+  // same 3-second window, so whatever answers one has to be a cheap read.
+  AutocompleteResult: 8,
   Modal: 9,
 } as const;
 
@@ -31,6 +35,8 @@ export interface DiscordUser {
 export interface InteractionOption {
   name: string;
   value?: string | number | boolean;
+  /** Set on the option the user is currently typing into (autocomplete). */
+  focused?: boolean;
 }
 
 export interface InteractionMember {
