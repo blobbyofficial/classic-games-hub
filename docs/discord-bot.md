@@ -225,6 +225,14 @@ key is service-role and belongs only here.
 Changing a variable on Vercel does **not** affect the running deployment -
 redeploy afterwards, or the old build keeps its old (empty) values.
 
+That sentence did real damage between 3 and 13 August 2026, when `vercel.json`
+was making Vercel refuse every deployment (`docs/cron-jobs.md`). Any variable
+set in that window was accepted by the dashboard and never reached a running
+build, because the redeploy it needed could not happen. **If the bot was
+configured while deployments were broken, set the variables again - or just
+redeploy - and check Admin → Discord bot before assuming a credential is
+wrong.**
+
 ## Setup (one-time)
 
 1. **Create the Discord application**
@@ -243,9 +251,10 @@ redeploy afterwards, or the old build keeps its old (empty) values.
 2. **Vercel env vars** (server only): `DISCORD_CLIENT_ID`,
    `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN`, `DISCORD_GUILD_ID`,
    `CRON_SECRET`, `SUPABASE_SECRET_KEY`. Redeploy.
-3. **Supabase**: apply migrations `0033_discord_bot_v2.sql` and
-   `0041_discord_bot_v3.sql` (and enable *manual account linking* under
-   Auth → Providers).
+3. **Supabase**: apply every migration in `database/migrations/` in order, not
+   just the ones named after the bot - `0063` and `0068` add publishing, and
+   `status_meta.schema` on `/status` is what tells you the database and the
+   build agree. Enable *manual account linking* under Auth → Providers.
 4. **Register the slash commands** (once, and after any command change):
    `curl -X POST https://<your-domain>/api/discord/register -H "Authorization: Bearer <CRON_SECRET>"`
 5. **Point Discord at the endpoint**: Developer Portal → General Information →

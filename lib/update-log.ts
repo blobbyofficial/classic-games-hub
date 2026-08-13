@@ -288,7 +288,7 @@ export const SERIES: ReleaseSeries[] = [
               {
                 title: "Five releases, and every game gets the same four promises",
                 description:
-                  "v1.6.0 'Ground Up' builds the platform and reopens nothing. Three waves then rebuild and reopen the games a category at a time, and inside them every game is its own section carrying the same four items - the look, the animation, the feel and mobile, and what it does with the whole screen. All twenty-six have all four, and the repetition is deliberate: a game receiving less than the others is visible at a glance. v2.0.0 is the relaunch, and Head to Head moves behind all of it.",
+                  "v1.6.0 'Ground Up' builds the platform and reopens nothing. Three waves then rebuild and reopen the games a category at a time, and inside them every game is its own section carrying the same four items - the look, the animation, the feel and mobile, and what it does with the whole screen. All twenty-six have all four, and the repetition is deliberate: a game receiving less than the others is visible at a glance. The relaunch closes the series, and Head to Head moves behind all of it.",
               },
               {
                 title: "The platform comes first",

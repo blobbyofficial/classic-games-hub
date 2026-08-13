@@ -58,6 +58,13 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
  * Head to Head sits behind the relaunch rather than beside it: multiplayer
  * written against engines that are still being replaced would only have to be
  * written twice.
+ *
+ * EVERYTHING PLANNED STAYS IN THE 1.x LINE. The relaunch, Head to Head and
+ * Player Made were numbered v2.0.0-v2.2.0 while they were being sketched, which
+ * awarded a major version to work that has not started. They are v1.7.0, v1.8.0
+ * and v1.9.0 instead. 2.0.0 is left unclaimed on purpose - a planned number is
+ * not a reservation (see CLAUDE.md), so the number to reach for it with is
+ * whichever one is free when there is something worth calling 2.0.0.
  */
 export const ROADMAP: RoadmapRelease[] = [
   {
@@ -964,12 +971,12 @@ export const ROADMAP: RoadmapRelease[] = [
     ],
   },
   {
-    version: "v2.0.0",
+    version: "v1.7.0",
     codename: "Relaunch",
     status: "later",
     timeframe: "Once all twenty-six are back",
     summary:
-      "The arcade whole again, and the things that only become possible once every game runs on the same platform. This is the version number the rebuild has been heading for: not a patch on what was here, a different arcade.",
+      "The arcade whole again, and the things that only become possible once every game runs on the same platform. It takes the next free number in the 1.x line rather than 2.0.0: a major version is something an arcade earns by being finished and steady, not something a plan awards itself in advance. 2.0.0 stays unclaimed until there is a reason to reach for it.",
     groups: [
       {
         heading: "What the rebuild unlocks",
@@ -1005,7 +1012,7 @@ export const ROADMAP: RoadmapRelease[] = [
     ],
   },
   {
-    version: "v2.1.0",
+    version: "v1.8.0",
     codename: "Head to Head",
     status: "later",
     timeframe: "After the relaunch",
@@ -1113,7 +1120,7 @@ export const ROADMAP: RoadmapRelease[] = [
     ],
   },
   {
-    version: "v2.2.0",
+    version: "v1.9.0",
     codename: "Player Made",
     status: "later",
     timeframe: "After Head to Head",

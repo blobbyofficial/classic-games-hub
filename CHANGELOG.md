@@ -3,6 +3,31 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.5.8 - "Not Two Yet" (the plan stays in the 1.x line)
+
+### 🗺️ Renumbering
+
+- **The relaunch, Head to Head and Player Made were v2.0.0, v2.1.0 and v2.2.0**,
+  which awarded a major version to work that has not started. They are now
+  **v1.7.0, v1.8.0 and v1.9.0**, so the whole plan - the rebuild at v1.6.0-v1.6.3
+  and the three releases behind it - runs in one continuous line.
+- **2.0.0 is deliberately unclaimed.** A planned number is not a reservation, so
+  there is nothing to inherit it: whatever eventually deserves to be called 2.0.0
+  will take it when there is a reason to, rather than because a sketch said so.
+- The relaunch's summary used to justify its own number ("the version number the
+  rebuild has been heading for"). It now says why it *isn't* 2.0.0, which is the
+  more useful sentence.
+
+### 📌 Corrections
+
+- Discord setup told you to apply two named migrations, `0033` and `0041`. The
+  schema is at `0071` and publishing needs `0063` and `0068`, so following it
+  literally left a database that could not run the bot. It now says to apply
+  everything in order and check `status_meta.schema` on `/status`.
+- Documented that env vars set between 3 and 13 August never reached a running
+  build, because the redeploy they need could not happen while `vercel.json` was
+  refusing every deployment. A credential that looks wrong may only be missing.
+
 ## v1.5.7 - "Unblocked" (the deployments start again)
 
 ### 🚀 Ten days of pushes that never built
