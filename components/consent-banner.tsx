@@ -39,7 +39,13 @@ export function ConsentBanner() {
       aria-label="Cookie choices"
       className="fixed inset-x-0 bottom-0 z-50 p-3 [padding-bottom:calc(env(safe-area-inset-bottom)+0.75rem)] sm:p-4"
     >
-      <div className="glass mx-auto flex max-w-3xl flex-col gap-3 rounded-2xl border border-border p-4 shadow-lg sm:flex-row sm:items-center sm:gap-4">
+      {/* Deliberately not `glass`. This panel sits above whatever happens to be
+          at the bottom of the page, and a translucent fill puts that content
+          behind the words people are being asked to read before consenting.
+          A solid surface is the one thing here that has to hold on every
+          browser and every motion setting, so it does not depend on
+          backdrop-filter to be legible. */}
+      <div className="mx-auto flex max-w-3xl flex-col gap-3 rounded-2xl border border-border bg-card p-4 shadow-xl sm:flex-row sm:items-center sm:gap-4">
         <Cookie className="hidden size-6 shrink-0 text-primary sm:block" />
         <div className="min-w-0 flex-1">
           <p className="text-sm font-semibold">Analytics, only if you say so</p>
