@@ -89,6 +89,22 @@ Registration is a full replace, so it is safe to repeat.
 
 See `docs/discord-bot.md`, and `docs/parties.md` for the multiplayer design.
 
+## Is it working?
+
+`/status` is the health page: probes every five minutes, incidents with
+timelines, 90 days of uptime, and Downdetector-style player reports. It speaks
+Statuspage's vocabulary on purpose (`operational`, `degraded_performance`,
+`major_outage`, and a `none`/`minor`/`major`/`critical` indicator) so the public
+API it exposes is understood by tools already written against a status page.
+
+The same data serves `/api/status/*` (CORS-open, no key), `/status` in Discord,
+and Admin → Status. See `docs/status.md`.
+
+**Every migration bumps the schema version in two places**: the
+`status_meta.schema` row in SQL, and `EXPECTED_SCHEMA` in `lib/version.ts`.
+`/status` compares them, so a migration that has not been applied to Supabase is
+visible rather than mysterious.
+
 ## Extending the platform
 
 Two things touch more files than they look like they should, and both have a

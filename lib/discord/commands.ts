@@ -78,6 +78,20 @@ export const SLASH_COMMANDS = [
     description: "Sync your Discord roles with your Hub account.",
   },
   {
+    name: "status",
+    description: "Is Classic Games Hub working right now?",
+    options: [
+      {
+        type: STRING,
+        name: "service",
+        description: "A service, or incidents / reports / versions. Leave blank for everything.",
+        // Filled from the live component list, so a service added to the status
+        // page appears here without touching this file or re-registering.
+        autocomplete: true,
+      },
+    ],
+  },
+  {
     name: "help",
     description: "What can this bot do?",
   },

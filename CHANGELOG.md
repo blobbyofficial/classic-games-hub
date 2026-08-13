@@ -3,6 +3,110 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.5.6 - "Is It Just Me?" (a real status page, and an API for it)
+
+### 📊 /status became a status page
+
+- **It used to be a counter.** The old page showed players online, plays today
+  and credits awarded - genuinely interesting, and no help at all with "is the
+  arcade broken", which is the only question anyone opens a status page to ask.
+  Those numbers are still there, in their own section, underneath the answer.
+- **Ten services, each with 90 days of uptime**, drawn as a bar per day. A
+  single red notch in a field of green is visible from across a room in a way
+  "99.87% uptime" never is. A day with no checks is drawn as *no data* and left
+  out of the percentage - a day before we were watching did not have perfect
+  uptime, and rounding it up would be the one lie a status page cannot tell.
+- **Incidents have timelines**, not just a current state: investigating →
+  identified → monitoring → resolved, each update timestamped and attributed.
+  Scheduled maintenance gets its own section and its own words, because planned
+  work is not an outage.
+- **The vocabulary is Statuspage's on purpose** - `operational`,
+  `degraded_performance`, `major_outage`, and a `none`/`minor`/`major`/`critical`
+  indicator. Inventing our own would have cost nothing here and everything at
+  the edges, where the API is meant to be read by other people's tools.
+
+### 📣 Players can report problems, Downdetector-style
+
+- **A "Report a problem" button that needs no account**, because the person best
+  placed to tell us sign-in is broken is the person who cannot sign in. Two
+  taps: what is going wrong, and where.
+- **Reports are counted, never quoted.** The page shows 15-minute buckets over
+  24 hours against the site's own baseline, plus a percentage breakdown of what
+  is being reported. The free-text notes are staff-only.
+- **The signal needs a floor *and* a multiple** to fire. A multiple alone makes
+  a quiet site hysterical - two reports against a baseline of 0.3 is a 6× spike
+  and means nothing - and a floor alone makes a busy site deaf. The baseline
+  also excludes the last hour, so an outage in progress cannot raise the bar it
+  is being measured against.
+- **It is deliberately hard to skew.** The submit RPC is service-role only, so
+  it is not reachable with the key that ships in the browser; the fingerprint is
+  derived from the request rather than chosen by the sender; and a per-component
+  cooldown and hourly cap are enforced in the database, not the route. No IP
+  address is stored - the fingerprint is a daily hash that cannot be matched
+  across days.
+- **This is the half automated checks cannot do.** A game that renders a blank
+  canvas returns HTTP 200 all day long. Forty people saying so in a quarter of
+  an hour is the only thing that catches it.
+
+### 🤖 A probe, and incidents that open themselves
+
+- **Every five minutes**, four round trips check ten services: the site's own
+  front page, Supabase auth, Discord's gateway, and one `status_selfcheck()`
+  that times a representative read per database-backed area. Adding a service to
+  the page does not add a round trip to the probe.
+- **Two consecutive failures open an incident; two successes close it.** One
+  failed check is a network blip far more often than an outage, and an incident
+  per blip trains everyone to ignore the page. A partial unique index guarantees
+  at most one open automatic incident per service, so a flapping probe cannot
+  fill the page with duplicates.
+- **Three sources of truth, and a defined winner.** Probes write what they
+  measured, incidents carry their own per-service claim, and a staff pin beats
+  both - the only one that can make the board look *better* than the evidence,
+  which is why it records who set it and why, in public.
+
+### 🔌 An API anyone can use
+
+- **`/api/status/*`, CORS-open and keyless**, cached 30 seconds at the edge with
+  a stale-while-revalidate window so polling it does not become load and a slow
+  database serves the last known answer rather than an error. Summary,
+  components, one component, incidents, uptime, reports, and a POST to submit
+  one.
+- **`?format=statuspage`** returns Statuspage's `summary.json` shape, so an
+  existing status widget or uptime tool can point at this site and just work.
+- **`/api/status/badge`** is an SVG badge for READMEs and other sites, in
+  shields.io's proportions so it sits level with its neighbours.
+- **An unreachable database answers 503, never an empty list.** Reporting "no
+  incidents" because nothing could be read is exactly the failure that makes a
+  status page worthless.
+
+### 💬 `/status` in Discord
+
+- **`/status [service]`**, answering from the same endpoints as the page, and
+  public rather than ephemeral - "is the site down" is a question a whole
+  channel is usually asking at once.
+- **The service option autocompletes from the live component list**, so a
+  service added to the status page appears in Discord without a code change or a
+  re-registration. `incidents`, `reports` and `versions` are offered alongside
+  the services, so nobody has to know they exist.
+
+### 🏷️ Versions you can actually check
+
+- **Four numbers, side by side, because they can disagree**: the release, the
+  deployed commit, the database schema, and the bot worker's own version.
+- **Migrations are applied to Supabase separately from deploys**, so the schema
+  and the app drift apart routinely - and used to do so silently. The page now
+  compares what the database reports against what the build expects and says so
+  when they differ.
+
+### 🛠️ Running an incident
+
+- **Admin → Status** is one screen: declare, update, resolve, pin a service, and
+  read what players actually wrote. Whoever is using it is using it while
+  something is on fire, and a flow across three pages is a flow nobody finishes.
+- **Closing an incident is posting its final update**, not a separate button, so
+  a resolved incident can never have a timeline that stops mid-sentence.
+  Resolving also releases its claim on the affected services automatically.
+
 ## v1.5.5 - "Under Construction" (the whole arcade goes into development)
 
 ### 🚧 Every game is being rebuilt

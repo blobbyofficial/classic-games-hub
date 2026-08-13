@@ -45,6 +45,7 @@ import {
   reply,
   errorEmbed,
 } from "@/lib/discord/handlers";
+import { handleStatus, statusChoices } from "@/lib/discord/status";
 import {
   CustomId,
   EPHEMERAL,
@@ -134,6 +135,9 @@ export async function POST(request: Request) {
   }
 
   try {
+    if (interaction.type === InteractionType.Autocomplete) {
+      return await handleAutocomplete(interaction);
+    }
     if (interaction.type === InteractionType.MessageComponent) {
       return await handleComponent(interaction);
     }
@@ -151,6 +155,32 @@ export async function POST(request: Request) {
     );
     return NextResponse.json(reply([errorEmbed("Something went wrong running that.")], true));
   }
+}
+
+// ── Autocomplete ─────────────────────────────────────────────────────
+
+/**
+ * Fills the `service` option on `/status` as someone types.
+ *
+ * Autocomplete cannot be deferred - Discord wants choices inside the same
+ * three-second window as any other interaction - so whatever answers here has
+ * to be a cheap read, and `statusChoices` is one indexed select. An empty list
+ * is a valid answer, so a failure degrades to "no suggestions" rather than to a
+ * broken-looking command.
+ */
+async function handleAutocomplete(interaction: Interaction) {
+  const focused = interaction.data?.options?.find((o) => o.focused);
+  const typed = typeof focused?.value === "string" ? focused.value : "";
+
+  const choices =
+    interaction.data?.name === "status" && focused?.name === "service"
+      ? await statusChoices(typed)
+      : [];
+
+  return NextResponse.json({
+    type: InteractionResponseType.AutocompleteResult,
+    data: { choices },
+  });
 }
 
 // ── Buttons & modals (verification panel, ticket panel) ──────────────
@@ -240,6 +270,10 @@ async function handleCommand(interaction: Interaction) {
       return NextResponse.json(await handleLevels());
     case "leaderboard":
       return NextResponse.json(await handleLeaderboard());
+    // Public and not ephemeral: "is the site down" is a question a whole
+    // channel is usually asking at once, so the answer is worth everyone seeing.
+    case "status":
+      return NextResponse.json(reply(await handleStatus(opt<string>(options, "service"))));
     case "help":
       return NextResponse.json(handleHelp());
 

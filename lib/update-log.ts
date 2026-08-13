@@ -97,10 +97,156 @@ export const SERIES: ReleaseSeries[] = [
   {
     version: "v1.5.0",
     codename: "Collector's Edition",
-    dates: "2 - 12 Aug 2026",
+    dates: "2 - 13 Aug 2026",
     summary:
       "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - a Discord server that now finishes its own setup and keeps itself in step with the site, and a pass over the rough edges underneath all of it.",
     releases: [
+      {
+        version: "v1.5.6",
+        codename: "Is It Just Me?",
+        date: "13 Aug 2026",
+        scope:
+          "One release, because a status page and the API behind it are the same piece of work seen from two sides: the page is the API's first consumer, the Discord command is its second, and building either without the other would have meant writing the definition of 'is the shop up' twice and watching the two drift.",
+        summary:
+          "/status stopped being a list of counters and became a status page: ten services with ninety days of uptime each, incidents with timelines, a probe that opens and closes them by itself, and a Downdetector-style report button so players can say something is broken before our own checks notice. All of it is a public, keyless API, which is what /status in Discord now reads.",
+        groups: [
+          {
+            heading: "A page that answers the question people came with",
+            icon: "Activity",
+            blurb:
+              "The old page counted players online and plays today. Interesting, and no help at all with 'is the arcade broken'.",
+            items: [
+              {
+                title: "Ten services, ninety days of uptime each",
+                description:
+                  "One bar per day per service, which is the shape you read at a glance: a single red notch in a field of green is visible from across a room in a way '99.87% uptime' never is. A day with no checks is drawn as no data and left out of the percentage - a day before we were watching did not have perfect uptime, and rounding it up would be the one lie a status page cannot tell.",
+              },
+              {
+                title: "Incidents have a timeline, not just a state",
+                description:
+                  "Investigating, identified, monitoring, resolved - each update timestamped and attributed, newest first. A page showing only the current state makes people refresh it; a page showing 'identified twenty minutes ago, monitoring since ten' tells them whether to keep waiting. Scheduled maintenance gets its own section and its own words, because planned work is not an outage.",
+              },
+              {
+                title: "The busy-ness numbers are still there",
+                description:
+                  "Players online, plays today, credits earned - kept, and moved below the answer. They are a different question, and a page that led with them was answering the one nobody asked.",
+              },
+              {
+                title: "Someone else's vocabulary, on purpose",
+                description:
+                  "The statuses are Statuspage's - operational, degraded performance, partial outage, major outage - as is the none/minor/major/critical indicator on top. Inventing our own would have cost nothing here and everything at the edges, because the API this feeds is meant to be read by tools already written against a status page. It also settles a hundred small naming arguments by deferring to prior art.",
+              },
+            ],
+          },
+          {
+            heading: "Players can say it is broken",
+            icon: "Megaphone",
+            blurb:
+              "Downdetector's idea: one tap, counted in aggregate, compared against the site's own normal.",
+            items: [
+              {
+                title: "A report button that needs no account",
+                description:
+                  "Two taps - what is going wrong, and where - and no sign-in, because the person best placed to tell us sign-in is broken is the person who cannot sign in. The problems are phrased as symptoms rather than causes, since nobody reporting one can know the cause and guessing at it makes the total useless.",
+              },
+              {
+                title: "The half automated checks cannot do",
+                description:
+                  "A game that renders a blank canvas returns HTTP 200 all day long, and every probe we have will call it healthy. Forty people saying otherwise in a quarter of an hour is the only signal that catches it - which is exactly why it is worth the machinery underneath.",
+              },
+              {
+                title: "A signal that needs a floor and a multiple",
+                description:
+                  "Reports are bucketed by quarter hour against a rolling baseline, and the alert needs both to fire. A multiple alone makes a quiet site hysterical - two reports against a baseline of 0.3 is a sixfold spike and means nothing - and a floor alone makes a busy site deaf. The baseline also excludes the last hour, so an outage in progress cannot raise the bar it is being measured against.",
+              },
+              {
+                title: "Counted, never quoted",
+                description:
+                  "The page shows totals and a percentage breakdown of what is being reported. The free-text notes people leave are staff-only and are read in the admin console, because they are evidence for whoever is on call rather than page content.",
+              },
+              {
+                title: "Deliberately expensive to fake",
+                description:
+                  "The whole value of a report count is that it is hard to poison, so the submit function is service-role only rather than reachable with the key that ships in the browser; the fingerprint that rate-limits it is derived from the request rather than chosen by the sender; and both the per-service cooldown and the hourly cap are enforced in the database. No address is stored - the fingerprint is a daily hash, so it cannot be matched across days into a way of following anyone around.",
+              },
+            ],
+          },
+          {
+            heading: "Checks that run themselves",
+            icon: "Radar",
+            items: [
+              {
+                title: "Four round trips cover ten services",
+                description:
+                  "Every five minutes: the site's own front page, Supabase auth, Discord's gateway, and one self-check inside the database that times a representative read per area and reads the bot's heartbeat on the way past. Adding a service to the page does not add a round trip to the probe.",
+              },
+              {
+                title: "Two failures open an incident, two successes close it",
+                description:
+                  "One failed check is a network blip far more often than an outage, and an incident opened for every blip trains everyone to ignore the page. Two in a row at this cadence means the fault has survived five minutes. A partial unique index guarantees at most one open automatic incident per service, so a flapping probe cannot bury the page in duplicates.",
+              },
+              {
+                title: "Three sources of truth, and a defined winner",
+                description:
+                  "Probes write what they measured; an open incident carries its own claim about each service it names, because a human saying 'leaderboards are degraded' must be able to say so while the probe is still happily getting a 200; and a staff pin beats both. The pin is the only one that can make the board look better than the evidence, which is why it records who set it and why, in public.",
+              },
+              {
+                title: "Uptime that stays cheap to draw",
+                description:
+                  "Each check folds into a daily rollup, so ninety bars for ten services is a ninety-row scan rather than an aggregate over a quarter of a million samples - and it is what lets the raw samples be thrown away after a fortnight without losing the history.",
+              },
+            ],
+          },
+          {
+            heading: "An API, and the same answer everywhere",
+            icon: "Code2",
+            items: [
+              {
+                title: "Public, keyless, and open to anyone",
+                description:
+                  "Summary, components, one component, incidents, uptime and reports, all as JSON with CORS open and a short shared cache so polling it does not become load. Add format=statuspage to the summary and it comes back in the shape existing status widgets and uptime tools already understand.",
+              },
+              {
+                title: "A badge for anywhere else",
+                description:
+                  "An SVG badge in shields.io's proportions, because a badge that does not sit level with the row of badges already in a README is worse than no badge.",
+              },
+              {
+                title: "503, never an empty list",
+                description:
+                  "When the database cannot be read the API says so and the page says so. Answering 'no incidents' because nothing could be fetched is precisely the failure that makes a status page worthless, and it is the one thing every endpoint here is written to avoid.",
+              },
+              {
+                title: "/status in Discord, reading the same endpoints",
+                description:
+                  "Public rather than ephemeral, because 'is the site down' is a question a whole channel is usually asking at once. The service option autocompletes from the live component list, so a service added to the page appears in Discord with no code change and no re-registration, and incidents, reports and versions are offered alongside the services so nobody has to know they exist.",
+              },
+            ],
+          },
+          {
+            heading: "Versions, and running an incident",
+            icon: "Tag",
+            items: [
+              {
+                title: "Four versions that can disagree, shown together",
+                description:
+                  "The release, the deployed commit, the database schema and the bot worker's own version. Migrations are applied to Supabase separately from deploys, so the schema and the app drift apart routinely and used to do it silently - the page now compares what the database reports against what the build expects and says when they differ.",
+              },
+              {
+                title: "One screen to run an incident from",
+                description:
+                  "Declare it, post updates, close it, pin a service, and read what players actually wrote - all in one place, because whoever is using it is using it while something is on fire and a flow spread across three pages is a flow nobody finishes.",
+              },
+              {
+                title: "Closing an incident is its final update",
+                description:
+                  "There is no separate close button, so a resolved incident can never have a timeline that stops mid-sentence. Resolving also releases the incident's claim on the services it named, so the board goes back to whatever the checks say without anyone having to remember to unpick it.",
+              },
+            ],
+          },
+        ],
+        commits: [],
+      },
       {
         version: "v1.5.5",
         codename: "Under Construction",
