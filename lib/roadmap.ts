@@ -249,6 +249,20 @@ export const ROADMAP: RoadmapRelease[] = [
           },
         ],
       },
+      {
+        heading: "What it costs to load",
+        icon: "Gauge",
+        blurb:
+          "A phone that is already struggling before the game starts does not get faster because the game got prettier.",
+        items: [
+          {
+            title: "Far less JavaScript on a phone",
+            description:
+              "116 components are marked `\"use client\"`, which is most of the interface. Every one of them ships its code to the browser and is re-executed there on load, so on a mid-range phone the cost of starting the site up dominates anything the games themselves do - and it is paid on every page, before a single frame is drawn. The work is to find the ones that are client components by habit rather than need (anything with no state, no effect and no event handler is a server component wearing the wrong label), and to push the rest down the tree so an interactive control does not drag its whole page into the browser with it. Measured against the number, not the feeling: the count is the target.",
+            status: "later",
+          },
+        ],
+      },
     ],
   },
   {
@@ -1257,6 +1271,12 @@ export const ROADMAP: RoadmapRelease[] = [
         heading: "The site",
         icon: "Sparkles",
         items: [
+          {
+            title: "Knowing whether anyone comes back",
+            description:
+              "Nothing on the site measures return visits. There is a count of registered players and a count of plays, and no way at all to answer the only question retention work is judged on - of the people who signed up on a given day, how many came back the next day, the next week, the next month. Everything needed is already recorded (`profiles.created_at`, `play_sessions.created_at`), so this is a cohort view and a panel rather than new tracking, and it deliberately collects no more about a player than the site already has. Worth building before there is an audience rather than after: a cohort you did not measure at the time cannot be reconstructed later, and every retention feature already built - streaks, challenges, seasons, achievements - is currently being shipped blind.",
+            status: "idea",
+          },
           {
             title: "An accessibility pass",
             description:
