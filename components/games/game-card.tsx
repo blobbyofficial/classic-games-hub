@@ -54,24 +54,30 @@ export function GameCard({
               to stay legible over any thumbnail, light or dark. */}
           <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/25 to-transparent" />
 
+          {/* No backdrop-blur on any of these. The library renders this card
+              twenty-six times, and each filtered layer is a separate composite
+              pass the GPU redoes on scroll - the single worst offender for how
+              /games felt on a phone. Every one of them sits on a thumbnail that
+              already has a gradient over it, so raising the opacity gets the
+              same legibility for nothing. */}
           <div className="absolute left-2.5 top-2.5 flex gap-1.5">
             {game.featured && !comingSoon && (
-              <Badge variant="gold" className="border-transparent bg-black/45 text-gold backdrop-blur-md">
+              <Badge variant="gold" className="border-transparent bg-black/70 text-gold">
                 <Star className="fill-current" /> Featured
               </Badge>
             )}
             {comingSoon && (
-              <Badge variant="neon" className="border-transparent bg-black/45 text-neon backdrop-blur-md">
+              <Badge variant="neon" className="border-transparent bg-black/70 text-neon">
                 Coming soon
               </Badge>
             )}
             {inDevelopment && (
-              <Badge variant="warning" className="border-transparent bg-black/45 text-warning backdrop-blur-md">
+              <Badge variant="warning" className="border-transparent bg-black/70 text-warning">
                 <Wrench className="size-3" /> In development
               </Badge>
             )}
             {earlyAccess && !comingSoon && (
-              <Badge className="border-none bg-[#f47fff]/85 text-white backdrop-blur-md">
+              <Badge className="border-none bg-[#f47fff] text-white">
                 <Lock className="size-3" /> Early access
               </Badge>
             )}
@@ -82,7 +88,7 @@ export function GameCard({
               aria-hidden
               className="absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
             >
-              <span className="grid size-14 place-items-center rounded-full bg-primary/90 text-white shadow-lg backdrop-blur-sm transition-transform duration-300 ease-[var(--ease-spring)] motion-safe:scale-75 motion-safe:group-hover:scale-100 motion-safe:group-focus-within:scale-100">
+              <span className="grid size-14 place-items-center rounded-full bg-primary text-white shadow-lg transition-transform duration-300 ease-[var(--ease-spring)] motion-safe:scale-75 motion-safe:group-hover:scale-100 motion-safe:group-focus-within:scale-100">
                 <Play className="size-6 translate-x-0.5 fill-current" />
               </span>
             </div>

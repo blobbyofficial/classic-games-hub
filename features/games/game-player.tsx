@@ -6,7 +6,6 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { ENGINE_LOADERS } from "@/lib/games/registry";
 import { canvasFor, CONTROL_SCHEME, SWIPE_GAMES } from "@/lib/games/config";
-import { useCoarsePointer } from "@/lib/use-coarse-pointer";
 import { submitScore } from "@/actions/games";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { Button } from "@/components/ui/button";
@@ -58,7 +57,6 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
 
   const { w, h } = canvasFor(engineId);
   const scheme = CONTROL_SCHEME[engineId] ?? "none";
-  const coarse = useCoarsePointer();
 
   const handleGameOver = useCallback(
     async (finalScore: number, durationHint: number) => {
@@ -372,7 +370,12 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
 
         {status && !gameOver && !loadingEngine && (
           <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
-            <span className="rounded-full bg-black/60 px-3 py-1 text-xs font-medium text-white backdrop-blur-sm">
+            {/* Deliberately not backdrop-blurred. This pill is on screen while
+                the game is running, so the filter behind it is recomputed every
+                frame the canvas repaints - one of the few per-frame costs the
+                shell adds on a phone. Over a busy canvas the blur was doing
+                almost nothing that the opacity was not. */}
+            <span className="rounded-full bg-black/75 px-3 py-1 text-xs font-medium text-white">
               {status}
             </span>
           </div>
@@ -395,19 +398,23 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
         </div>
       </div>
 
-      {/* Touch controls for touch devices; keyboard hints for pointer devices. */}
-      {coarse === true && (
-        <div className={isFullscreen ? "w-full max-w-3xl" : undefined}>
-          <TouchControls scheme={scheme} />
-        </div>
-      )}
+      {/* Touch controls for touch devices; keyboard hints for pointer devices.
+          Chosen by media query rather than by a post-mount `(pointer: coarse)`
+          check, which is what this used to do. Reading it in an effect means the
+          first render draws NEITHER block - the state starts null - and one is
+          inserted after hydration. On a phone that inserts the whole control pad
+          underneath a game that has already started, which moves the stage; a
+          stage that changes size resizes the canvas, and resizing a canvas
+          clears it. That was the screen "resizing weirdly" mid-game. A media
+          query is resolved before the first paint, so nothing moves. */}
+      <div className={`hidden pointer-coarse:block ${isFullscreen ? "w-full max-w-3xl" : ""}`}>
+        <TouchControls scheme={scheme} />
+      </div>
 
-      {coarse === false && (
-        <p className="text-center text-xs text-muted-foreground">
-          Tip: press <kbd className="rounded border border-border bg-muted px-1">P</kbd> to pause ·{" "}
-          <kbd className="rounded border border-border bg-muted px-1">R</kbd> to restart in most games
-        </p>
-      )}
+      <p className="hidden text-center text-xs text-muted-foreground pointer-fine:block">
+        Tip: press <kbd className="rounded border border-border bg-muted px-1">P</kbd> to pause ·{" "}
+        <kbd className="rounded border border-border bg-muted px-1">R</kbd> to restart in most games
+      </p>
     </div>
   );
 }
