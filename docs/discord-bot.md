@@ -233,6 +233,57 @@ configured while deployments were broken, set the variables again - or just
 redeploy - and check Admin → Discord bot before assuming a credential is
 wrong.**
 
+## Where this deployment actually stands
+
+Verified against the live database on 14 August 2026. Recorded so the next
+session picks up from here instead of re-diagnosing it.
+
+**Nothing is broken. Nothing has ever been configured.**
+
+- `bot_all_config()` returns `{}` - not a partial setup, an empty one. No
+  channels, roles, panels or publishing targets have ever been saved.
+- `worker_last_seen` is `null` - the gateway worker in `bot/` has never checked
+  in, not once.
+- Both packages typecheck and the site builds. There is no code fault to find.
+- Slash commands were registered from Admin → Discord bot at least once. Whether
+  that call succeeded is **unconfirmed** - if it did, `DISCORD_BOT_TOKEN` and
+  `DISCORD_CLIENT_ID` are present on the deployment, which is most of step 2.
+
+### Pick up here
+
+Work down this list. Steps 1-3 are the ones that decide whether the rest is
+five minutes or an afternoon.
+
+1. **Check what is already set.** Admin → Discord bot lists every required
+   variable as present/absent (booleans - it never renders a secret). That page
+   answers steps 2 and 4 without touching the Vercel dashboard.
+2. **Redeploy before assuming a credential is wrong.** Anything set between
+   3 and 13 August never reached a running build, because no deployment could be
+   created at all (`docs/cron-jobs.md`). A variable that looks broken may simply
+   never have loaded.
+3. **Interactions Endpoint URL** in the Developer Portal →
+   `https://<domain>/api/discord/interactions`. Discord refuses to save it
+   without `DISCORD_PUBLIC_KEY`, and the endpoint is *correct* to reject the
+   unsigned test ping with a 401 - a rejection here means the key is missing,
+   not that the endpoint is broken.
+4. **The bot's own role must sit above every role it manages**, or role sync
+   fails silently on exactly the roles it was installed to manage.
+5. **`/setup status` in Discord**, then work through what it lists. This is what
+   fills `bot_all_config()`, and until it is run the config stays `{}` and every
+   feature that reads it no-ops.
+6. **The worker** (`bot/`) for the green dot, chat XP, automod, the live feed,
+   counter channels and the `/status` heartbeat. `Dockerfile`, `fly.toml` and
+   `render.yaml` are already in the repo, so this is a deploy, not a build. It
+   needs `DISCORD_TOKEN`, `DISCORD_GUILD_ID`, `SUPABASE_URL` and
+   `SUPABASE_SECRET_KEY` - the last is service-role and belongs **only** here.
+7. **Publishing channels.** `update_channel_id` and `announce_channel_id` are
+   both unset, so the daily `discord-publish` cron currently no-ops rather than
+   posting. Setting a channel makes the next run mirror the entire backlog of
+   releases at once, oldest first - expect one burst, then steady state.
+8. **The external cron jobs last**, not first. Role sync and counter channels
+   have nothing to sync or rename until steps 5 and 6 are done, so wiring them
+   earlier buys nothing. See `docs/cron-jobs.md`.
+
 ## Setup (one-time)
 
 1. **Create the Discord application**
