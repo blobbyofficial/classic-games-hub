@@ -21,6 +21,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CATEGORY_META, SITE } from "@/lib/constants";
 import { compactNumber, timeAgo } from "@/lib/utils";
+import { JsonLd } from "@/components/seo/json-ld";
+import { breadcrumbJsonLd, videoGameJsonLd } from "@/lib/seo";
 
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const { slug } = await params;
@@ -29,6 +31,11 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   return {
     title: game.title,
     description: game.tagline ?? game.description ?? `Play ${game.title} on ${SITE.name}.`,
+    // Explicit canonical. Without one, any URL that reaches this page - a
+    // tracking parameter on a shared link, say - is a separate document as far
+    // as Google is concerned, splitting the ranking of a page there is only one
+    // of.
+    alternates: { canonical: `/games/${slug}` },
     openGraph: { images: game.thumbnail_url ? [game.thumbnail_url] : [] },
   };
 }
@@ -100,6 +107,19 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
 
   return (
     <div className="mx-auto max-w-6xl space-y-6">
+      {/* The rich-result payload. A game page is the only thing here that can
+          realistically win a search: nobody outranks Poki for "free online
+          games", but "play <title> online free" is a query with intent and
+          almost no competition, and VideoGame + a zero-price offer is what
+          makes this page eligible to answer it. */}
+      <JsonLd data={videoGameJsonLd(game)} />
+      <JsonLd
+        data={breadcrumbJsonLd([
+          { name: "Home", path: "/" },
+          { name: "Games", path: "/games" },
+          { name: game.title, path: `/games/${game.slug}` },
+        ])}
+      />
       <Link
         href="/games"
         className="group inline-flex items-center gap-1 rounded-lg py-1 text-sm text-muted-foreground transition-colors hover:text-foreground"

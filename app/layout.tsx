@@ -7,6 +7,8 @@ import { ConsentBanner } from "@/components/consent-banner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { cookies } from "next/headers";
 import { SITE } from "@/lib/constants";
+import { JsonLd } from "@/components/seo/json-ld";
+import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { getCurrentSettings } from "@/lib/supabase/queries";
 import { SITE_THEME_IDS } from "@/lib/themes";
 import "@/styles/globals.css";
@@ -92,6 +94,12 @@ export default async function RootLayout({ children }: { children: React.ReactNo
         )}
       </head>
       <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
+        {/* Site-wide identity, on every page so no single page has to be the one
+            Google indexes for it to resolve. Both carry a stable @id, which is
+            what lets the per-page blocks reference the publisher instead of
+            restating it. */}
+        <JsonLd data={organizationJsonLd()} />
+        <JsonLd data={websiteJsonLd()} />
         <ConsentProvider>
           <ThemeProvider>
             <TooltipProvider delayDuration={250} skipDelayDuration={400}>

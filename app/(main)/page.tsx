@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
 import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users } from "lucide-react";
@@ -11,6 +12,7 @@ import { SectionHeader } from "@/components/section-header";
 import { DailyRewardCard } from "@/features/economy/daily-reward-card";
 import { CommunityEventCard } from "@/features/economy/community-event-card";
 import { CategoryRail } from "@/components/games/category-rail";
+import { SITE } from "@/lib/constants";
 import { HomeLeaderboardPreview } from "@/features/leaderboards/home-preview";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -19,6 +21,21 @@ import { compactNumber } from "@/lib/utils";
 // Section keys the admin can reorder/hide from Admin → Flags ("home_layout").
 const DEFAULT_ORDER = ["event", "daily", "recent", "featured", "categories", "all_games"] as const;
 type SectionKey = (typeof DEFAULT_ORDER)[number];
+
+/**
+ * The homepage had no metadata of its own, so it inherited the layout defaults
+ * and declared no canonical. That matters more here than anywhere else: this is
+ * the page that has to answer the query "classic games hub", which currently
+ * returns somebody else. An absolute title (not the `%s · site` template) puts
+ * the full name first, and the description leads with the words the winnable
+ * searches are made of - free, browser, no download.
+ */
+export const metadata: Metadata = {
+  title: { absolute: `${SITE.name} - Play 26 Classic Games Free in Your Browser` },
+  description:
+    "Play 26 classic games free in your browser - Snake, Tetris, Minesweeper, Pong and more. No download, no install. Earn credits, climb leaderboards and unlock cosmetics.",
+  alternates: { canonical: "/" },
+};
 
 export default async function HomePage() {
   // getFavoriteGameIds resolves to an empty set when signed out, so it joins the

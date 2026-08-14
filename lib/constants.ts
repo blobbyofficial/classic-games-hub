@@ -21,8 +21,13 @@ import {
 export const SITE = {
   name: "Classic Games Hub",
   shortName: "CG Hub",
+  // This is the meta description on every page that does not set its own, and
+  // the one Google shows under the brand result - so the number in it has to be
+  // the real one. It said 23 while the library had 26. Leading with "free" and
+  // "in your browser" is deliberate: they are the words the searches this site
+  // can realistically win are built from.
   description:
-    "A modern arcade platform - play 23 classic games, earn credits and XP, unlock achievements, climb leaderboards and hang out with friends.",
+    "Play 26 classic games free in your browser - no download, no install. Earn credits and XP, unlock achievements, climb the leaderboards and play with friends.",
   url: process.env.NEXT_PUBLIC_SITE_URL ?? "https://classic-games-hub.blobbyofficial.com",
   discord: "https://discord.gg/A8PThHqedD",
   founder: "https://www.blobbyofficial.com",
