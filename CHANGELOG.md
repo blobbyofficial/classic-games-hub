@@ -3,6 +3,38 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.5.10 - "No Host Required" (server logs without an always-on process)
+
+### 📝 Logging that runs on free infrastructure
+
+- **v1.5.9 shipped a logging feature nobody here could switch on.** It lives in
+  the gateway worker, and the worker needs a host that stays up - which this
+  deployment has not got and is not going to buy. A built feature that cannot
+  run is worth the same as no feature.
+- **`/api/cron/discord-audit-log` is the way round it.** Discord's own audit log
+  is pollable over plain REST, needs no persistent connection, and contains
+  every *structural* change in the server. Point any free scheduler at it every
+  five minutes - the same one already driving the status probe - and the log
+  channels fill up with no hosted process anywhere.
+- **What it covers:** channels created, renamed, moved, re-permissioned and
+  deleted; roles created, recoloured, re-permissioned and deleted; members
+  kicked, banned, unbanned, timed out, renamed and given roles; invites,
+  webhooks, emoji, stickers, threads, server settings, and messages deleted by
+  a moderator. Permission changes are named, not printed as bitfields.
+- **What it cannot cover, ever:** message *content*, message edits, messages
+  people delete themselves, joins, leaves and voice. None of those exist in
+  Discord's audit log, so this is a permanent limit rather than a gap to close
+  later. `docs/discord-bot.md` has the full comparison table.
+- **A cursor, so it never repeats or skips** (`logging_state`, migration
+  `0073`). The first run records where it is and posts nothing, because
+  switching it on should not dump a hundred historical entries into a channel.
+  It also skips the bot's own actions - those are already reported by whatever
+  performed them, and logging them twice is how a mod-log becomes noise.
+- **Run one or the other.** The worker and the poller write the same structural
+  entries to the same channels, so running both duplicates every line. Said in
+  the docs and in the failure-modes list, because "every entry appears twice" is
+  otherwise a genuinely confusing symptom.
+
 ## v1.5.9 - "On the Record" (server logs, and the bot's own audit)
 
 ### 📝 Server logging (the last thing Sapphire still did better)

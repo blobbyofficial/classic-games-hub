@@ -124,6 +124,16 @@ export const botDb = {
   workerStatus: () =>
     rpc<{ last_seen?: string; version?: string } | null>("bot_get_config", { p_key: "worker" }),
   allConfig: () => rpc<Record<string, Record<string, Json>>>("bot_all_config", {}),
+  /**
+   * How far the serverless audit-log poller has read (0073).
+   *
+   * Its own RPC pair rather than a `BotConfigKey`, for the same reason the
+   * worker's heartbeat is: it is bookkeeping the bot writes to itself, and it
+   * must never appear in the admin settings UI beside things a person edits.
+   */
+  loggingCursor: () => rpc<{ cursor: string | null } | null>("bot_logging_cursor", {}),
+  setLoggingCursor: (cursor: string) =>
+    rpc<{ ok: boolean }>("bot_set_logging_cursor", { p_cursor: cursor }),
   patchConfig: (key: BotConfigKey, patch: Record<string, unknown>) =>
     rpc<{ ok: boolean; error?: string }>("bot_patch_config", { p_key: key, p_patch: patch }),
   verifyMember: (discordId: string, username: string | null, method: string) =>

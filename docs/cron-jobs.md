@@ -28,6 +28,7 @@ Two entries, both daily. Anything else is a silent outage.
 | `/api/cron/status-probe` | 5 min | **external** | `/status` shows no probe data and uptime stops accruing |
 | `/api/cron/discord-role-sync` | 2 min | **external** | roles drift from the site until the next on-change sync |
 | `/api/cron/discord-stats` | 10 min | **external** | counter channels freeze at their last numbers |
+| `/api/cron/discord-audit-log` | 5 min | **external** | server logs stop, unless the gateway worker is running instead |
 | `/api/cron/discord-publish` | 15 min | Vercel, `0 5 * * *` | new releases reach Discord within a day instead of minutes |
 | `/api/cron/booster-drops` | daily | Vercel, `0 6 * * *` | the monthly cosmetic drop never lands |
 

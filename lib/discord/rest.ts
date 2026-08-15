@@ -93,6 +93,41 @@ export interface GuildChannel {
   position?: number;
 }
 
+/**
+ * One audit-log entry, as Discord sends it.
+ *
+ * `changes` is the useful part and the awkward part: a list of
+ * `{key, old_value, new_value}` where the key is the raw API field name
+ * (`rate_limit_per_user`, `$add`) and the value's type depends on the key.
+ * Rendering it is `lib/discord/audit-log.ts`'s whole job.
+ */
+export interface AuditLogChange {
+  key: string;
+  old_value?: unknown;
+  new_value?: unknown;
+}
+
+export interface AuditLogEntry {
+  id: string;
+  action_type: number;
+  user_id: string | null;
+  target_id: string | null;
+  reason?: string | null;
+  changes?: AuditLogChange[];
+  options?: {
+    channel_id?: string;
+    count?: string;
+    id?: string;
+    type?: string;
+    role_name?: string;
+  };
+}
+
+export interface AuditLog {
+  audit_log_entries: AuditLogEntry[];
+  users?: { id: string; username: string; global_name?: string | null; discriminator?: string }[];
+}
+
 export interface PermissionOverwrite {
   id: string;
   /** 0 = role, 1 = member. */
@@ -262,6 +297,21 @@ export const discordRest = {
       method: "DELETE",
       headers: { "X-Audit-Log-Reason": reason },
     }),
+
+  /**
+   * The guild's audit log, newest entries last.
+   *
+   * `after` is a cursor: Discord returns entries *newer* than that id, which
+   * is what makes polling this cheap and gap-free. It is also the only way to
+   * see structural changes without a gateway connection - no webhook is ever
+   * sent for a renamed channel or a recoloured role.
+   */
+  getAuditLog: (guildId: string, after: string | null, limit = 100) =>
+    discordFetch<AuditLog>(
+      `/guilds/${guildId}/audit-logs?limit=${Math.min(100, Math.max(1, limit))}${
+        after ? `&after=${after}` : ""
+      }`,
+    ),
 
   /** Guild with approximate member/presence counts (for stat counters). */
   getGuildCounts: (guildId: string) =>
