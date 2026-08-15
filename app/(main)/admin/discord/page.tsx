@@ -8,6 +8,8 @@ import { DiscordTabs } from "@/features/admin/discord-tabs";
 import { DiscordServerSettings } from "@/features/admin/discord-server-settings";
 import { DiscordPublishingCard } from "@/features/admin/discord-publishing";
 import type { PublishingConfig } from "@/features/admin/discord-publishing";
+import { DiscordLoggingCard } from "@/features/admin/discord-logging";
+import type { LoggingConfig } from "@/features/admin/discord-logging";
 import type {
   LevelRolesConfig,
   ModerationConfig,
@@ -56,13 +58,16 @@ export default async function AdminDiscordPage() {
         <DiscordPublishingCard publishing={mergeConfig("publishing", config.publishing) as PublishingConfig} />
       }
       server={
-        <DiscordServerSettings
-          verification={mergeConfig("verification", config.verification) as VerificationConfig}
-          moderation={mergeConfig("moderation", config.moderation) as ModerationConfig}
-          tickets={mergeConfig("tickets", config.tickets) as TicketsConfig}
-          stats={mergeConfig("stats", config.stats) as StatsConfig}
-          levelRoles={mergeConfig("level_roles", config.level_roles) as LevelRolesConfig}
-        />
+        <>
+          <DiscordServerSettings
+            verification={mergeConfig("verification", config.verification) as VerificationConfig}
+            moderation={mergeConfig("moderation", config.moderation) as ModerationConfig}
+            tickets={mergeConfig("tickets", config.tickets) as TicketsConfig}
+            stats={mergeConfig("stats", config.stats) as StatsConfig}
+            levelRoles={mergeConfig("level_roles", config.level_roles) as LevelRolesConfig}
+          />
+          <DiscordLoggingCard logging={mergeConfig("logging", config.logging) as LoggingConfig} />
+        </>
       }
     />
   );

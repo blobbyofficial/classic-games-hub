@@ -27,6 +27,10 @@ import {
   Radar,
   Code2,
   Tag,
+  ScrollText,
+  ShieldAlert,
+  Bug,
+  Wrench,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -70,6 +74,10 @@ const ICONS: Record<string, LucideIcon> = {
   Radar,
   Code2,
   Tag,
+  ScrollText,
+  ShieldAlert,
+  Bug,
+  Wrench,
 };
 
 function Stat({ icon: Icon, value, label }: { icon: LucideIcon; value: number; label: string }) {

@@ -16,7 +16,8 @@ export type BotConfigKey =
   | "tickets"
   | "stats"
   | "level_roles"
-  | "publishing";
+  | "publishing"
+  | "logging";
 
 export interface VerificationConfig {
   enabled: boolean;
@@ -121,6 +122,72 @@ export interface PublishingConfig {
   announce_limit: number;
 }
 
+/**
+ * Server audit logging - what the gateway worker writes into the log channels.
+ *
+ * The shape is mirrored in `bot/src/hubConfig.ts`, which is the half that
+ * actually reads it; this side exists so the admin panel and `/setup logging`
+ * write something the worker recognises. Keep the two in step.
+ */
+export type LogCategory = "messages" | "members" | "server" | "voice" | "moderation";
+
+export const LOG_EVENTS = [
+  "message_delete",
+  "message_edit",
+  "message_bulk_delete",
+  "member_join",
+  "member_leave",
+  "member_nickname",
+  "member_roles",
+  "member_timeout",
+  "member_ban",
+  "member_unban",
+  "channel_create",
+  "channel_delete",
+  "channel_update",
+  "thread_create",
+  "thread_delete",
+  "role_create",
+  "role_delete",
+  "role_update",
+  "emoji_update",
+  "sticker_update",
+  "invite_create",
+  "invite_delete",
+  "voice_join",
+  "voice_leave",
+  "voice_move",
+  "server_update",
+  "webhook_update",
+] as const;
+
+export type LogEvent = (typeof LOG_EVENTS)[number];
+
+export interface LoggingConfig {
+  enabled: boolean;
+  channel_id: string | null;
+  channels: Record<LogCategory, string | null>;
+  events: Record<LogEvent, boolean>;
+  ignored_channel_ids: string[];
+  ignored_role_ids: string[];
+  ignored_user_ids: string[];
+  ignore_bots: boolean;
+  include_content: boolean;
+}
+
+export const LOGGING_DEFAULTS: LoggingConfig = {
+  // Off until there is a channel to write to - see the worker's note.
+  enabled: false,
+  channel_id: null,
+  channels: { messages: null, members: null, server: null, voice: null, moderation: null },
+  events: Object.fromEntries(LOG_EVENTS.map((e) => [e, true])) as Record<LogEvent, boolean>,
+  ignored_channel_ids: [],
+  ignored_role_ids: [],
+  ignored_user_ids: [],
+  ignore_bots: true,
+  include_content: true,
+};
+
 export const PUBLISHING_DEFAULTS: PublishingConfig = {
   enabled: true,
   update_channel_id: null,
@@ -212,6 +279,7 @@ const DEFAULTS = {
   stats: STATS_DEFAULTS,
   level_roles: LEVEL_ROLES_DEFAULTS,
   publishing: PUBLISHING_DEFAULTS,
+  logging: LOGGING_DEFAULTS,
 } as const;
 
 type Configs = {
@@ -221,12 +289,13 @@ type Configs = {
   stats: StatsConfig;
   level_roles: LevelRolesConfig;
   publishing: PublishingConfig;
+  logging: LoggingConfig;
 };
 
 /**
  * Reads one config key and merges it over the defaults. Nested objects
- * (`automod`, `stats.channels`, `stats.templates`) are merged one level deep
- * so a partially-saved config never loses a field.
+ * (`automod`, `stats.channels`, `stats.templates`, `logging.events`) are
+ * merged one level deep so a partially-saved config never loses a field.
  */
 export async function getBotConfig<K extends keyof Configs>(key: K): Promise<Configs[K]> {
   const raw = (await botDb.getConfig(key)) as Record<string, unknown> | null;
@@ -239,7 +308,7 @@ export function mergeConfig<K extends keyof Configs>(
 ): Configs[K] {
   const base = DEFAULTS[key] as unknown as Record<string, unknown>;
   const merged: Record<string, unknown> = { ...base, ...(raw ?? {}) };
-  for (const nested of ["automod", "channels", "templates"]) {
+  for (const nested of ["automod", "channels", "templates", "events"]) {
     if (nested in base && typeof base[nested] === "object") {
       merged[nested] = {
         ...(base[nested] as Record<string, unknown>),

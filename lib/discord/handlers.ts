@@ -928,6 +928,65 @@ export async function deferredSetupStats(existingOnlineChannel: string | undefin
   await finish(token, summary);
 }
 
+/**
+ * `/setup logging` - the server audit log, in one command.
+ *
+ * Voice defaults to off because it is the one category that is loud without
+ * being useful later: nobody has ever gone looking for who joined General at
+ * 4pm on a Tuesday, and it buries the entries people do come back for.
+ */
+export async function deferredSetupLogging(
+  channelId: string,
+  messagesChannelId: string | undefined,
+  serverChannelId: string | undefined,
+  voice: boolean,
+  token: string,
+) {
+  const cfg = await getBotConfig("logging");
+  await botDb.patchConfig("logging", {
+    enabled: true,
+    channel_id: channelId,
+    channels: {
+      ...cfg.channels,
+      ...(messagesChannelId ? { messages: messagesChannelId } : {}),
+      ...(serverChannelId ? { server: serverChannelId } : {}),
+    },
+    events: {
+      ...cfg.events,
+      voice_join: voice,
+      voice_leave: voice,
+      voice_move: voice,
+    },
+  });
+
+  const worker = await botDb.workerStatus();
+  const workerSeen = worker?.last_seen ? Date.parse(worker.last_seen) : 0;
+  const workerUp = workerSeen > 0 && Date.now() - workerSeen < 5 * 60_000;
+
+  await finish(
+    token,
+    brandEmbed({
+      title: "📝 Server logging on",
+      description: [
+        `Log entries go to <#${channelId}>.`,
+        messagesChannelId ? `Message deletes and edits go to <#${messagesChannelId}>.` : "",
+        serverChannelId ? `Channel, role and server changes go to <#${serverChannelId}>.` : "",
+        voice ? "Voice joins, leaves and moves are included." : "Voice movement is **not** logged - pass `voice: true` if you want it.",
+        "",
+        // Two things silently produce an empty log channel, and both are worth
+        // saying up front rather than leaving someone to wonder for a week.
+        workerUp
+          ? "✅ The gateway worker is running, so entries start now."
+          : "⚠️ **The gateway worker isn't running.** Nothing will be logged until it is - none of these events reach a serverless endpoint. See `docs/discord-bot.md`.",
+        "Give me **View Audit Log** if you want each entry to name who did it.",
+        "Fine-tune which events are logged at Admin → Discord bot → Server.",
+      ]
+        .filter(Boolean)
+        .join("\n"),
+    }),
+  );
+}
+
 export async function deferredSetupModlog(channelId: string, token: string) {
   await botDb.patchConfig("moderation", { log_channel_id: channelId });
   await finish(
@@ -950,12 +1009,13 @@ export async function deferredRefreshStats(token: string) {
 }
 
 export async function deferredSetupStatus(token: string) {
-  const [verification, tickets, stats, levelRoles, moderation, leveling] = await Promise.all([
+  const [verification, tickets, stats, levelRoles, moderation, logging, leveling] = await Promise.all([
     getBotConfig("verification"),
     getBotConfig("tickets"),
     getBotConfig("stats"),
     getBotConfig("level_roles"),
     getBotConfig("moderation"),
+    getBotConfig("logging"),
     botDb.getConfig("leveling"),
   ]);
   const tick = (on: unknown) => (on ? "✅" : "⬜");
@@ -1000,8 +1060,17 @@ export async function deferredSetupStatus(token: string) {
             `Members: ${chan(stats.channels.members)} · Plays today: ${chan(stats.channels.plays)}`,
           ].join("\n"),
         },
+        {
+          name: "📝 Server logs (replaces Sapphire's logs)",
+          value: [
+            `${tick(logging.enabled)} enabled · ${Object.values(logging.events ?? {}).filter(Boolean).length}/${Object.keys(logging.events ?? {}).length} events on`,
+            `Main: ${chan(logging.channel_id)} · Messages: ${chan(logging.channels?.messages)} · Server: ${chan(logging.channels?.server)}`,
+            "Needs the gateway worker running.",
+          ].join("\n"),
+        },
       ],
-      description: "Run `/setup levels`, `/setup verification`, `/setup tickets`, `/setup stats` and `/setup modlog` to fill in the gaps.",
+      description:
+        "Run `/setup levels`, `/setup verification`, `/setup tickets`, `/setup stats`, `/setup modlog` and `/setup logging` to fill in the gaps.",
     }),
   );
 }

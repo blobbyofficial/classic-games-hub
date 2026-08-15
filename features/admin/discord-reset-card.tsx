@@ -56,6 +56,20 @@ export function DiscordResetCard() {
             if you do not want two.
           </span>
         </p>
+        {/*
+          Worth stating outright, because it is not obvious and it is the thing
+          that turns "I have lost a week of setup" into a five-minute recovery:
+          every save writes its full value into the audit trail, so a reset is
+          undoable long after the fact.
+        */}
+        <p className="text-xs text-muted-foreground">
+          This is recoverable. Every save is recorded in full in the{" "}
+          <a href="/admin/audit" className="underline underline-offset-4">
+            audit log
+          </a>{" "}
+          under <code>bot_config_update</code>, so a reset can be undone by reading the last value
+          of each section back out - ids included.
+        </p>
 
         {armed ? (
           <div className="flex flex-wrap gap-2">

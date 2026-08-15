@@ -332,15 +332,45 @@ export async function deferredTicketOpen(interaction: Interaction, subject: stri
   ]);
 }
 
-async function transcript(channelId: string): Promise<string> {
+/** How much of one transcript message fits inside a code fence. */
+const TRANSCRIPT_CHUNK = 1900;
+/** At most four messages of transcript, so a busy ticket can't flood the log. */
+const TRANSCRIPT_CHUNKS = 4;
+
+/**
+ * The ticket's conversation, split into postable chunks.
+ *
+ * It used to be one string, trimmed to the last 3800 characters and then
+ * sliced to the first 1900 of *that* - so a long ticket was logged as its
+ * middle, with the question at the start and the resolution at the end both
+ * missing. Chunking keeps the whole thing where it fits, and when it doesn't,
+ * keeps the end: the end of a support ticket is the part with the answer in it.
+ */
+async function transcript(channelId: string): Promise<string[]> {
   const msgs = await discordRest.getMessages(channelId, 100);
-  if (!msgs.ok || !msgs.data) return "_Transcript unavailable._";
+  if (!msgs.ok || !msgs.data) return ["_Transcript unavailable._"];
   const lines = [...msgs.data]
     .reverse()
     .filter((m) => m.content)
     .map((m) => `[${new Date(m.timestamp).toISOString().slice(0, 16).replace("T", " ")}] ${m.author.username}: ${m.content}`);
-  const text = lines.join("\n");
-  return text.length > 3800 ? `…\n${text.slice(-3800)}` : text || "_No messages._";
+  if (lines.length === 0) return ["_No messages._"];
+
+  const chunks: string[] = [];
+  let current = "";
+  for (const line of lines) {
+    const piece = line.length > TRANSCRIPT_CHUNK ? `${line.slice(0, TRANSCRIPT_CHUNK - 1)}…` : line;
+    if (current.length + piece.length + 1 > TRANSCRIPT_CHUNK) {
+      chunks.push(current);
+      current = piece;
+    } else {
+      current = current ? `${current}\n${piece}` : piece;
+    }
+  }
+  if (current) chunks.push(current);
+
+  return chunks.length > TRANSCRIPT_CHUNKS
+    ? [`…${chunks.length - TRANSCRIPT_CHUNKS} earlier chunk(s) omitted…`, ...chunks.slice(-TRANSCRIPT_CHUNKS)]
+    : chunks;
 }
 
 export async function deferredTicketClose(interaction: Interaction) {
@@ -361,7 +391,9 @@ export async function deferredTicketClose(interaction: Interaction) {
   }
 
   if (cfg.log_channel_id) {
-    const body = await transcript(channelId);
+    // Header first: it carries the ticket's only remaining trace once the
+    // channel is gone, so it is the message that has to land even if the
+    // transcript posts fail.
     await discordRest.createMessage(cfg.log_channel_id, {
       embeds: [
         brand({
@@ -370,11 +402,14 @@ export async function deferredTicketClose(interaction: Interaction) {
           timestamp: new Date().toISOString(),
         }),
       ],
-    });
-    await discordRest.createMessage(cfg.log_channel_id, {
-      content: `\`\`\`\n${body.replace(/```/g, "`​``").slice(0, 1900)}\n\`\`\``,
       allowed_mentions: { parse: [] },
     });
+    for (const chunk of await transcript(channelId)) {
+      await discordRest.createMessage(cfg.log_channel_id, {
+        content: `\`\`\`\n${chunk.replace(/```/g, "`​``")}\n\`\`\``,
+        allowed_mentions: { parse: [] },
+      });
+    }
   }
 
   await editOriginal(interaction.token, [
@@ -383,6 +418,8 @@ export async function deferredTicketClose(interaction: Interaction) {
   await discordRest.createMessage(channelId, {
     embeds: [brand({ description: `🔒 Ticket closed by <@${me.id}>. Deleting this channel…` })],
   });
-  await new Promise((r) => setTimeout(r, 5000));
+  // Long enough to read the notice, short enough that a serverless `after()`
+  // is reliably still alive to run the delete.
+  await new Promise((r) => setTimeout(r, 3000));
   await discordRest.deleteChannel(channelId, `Ticket closed by ${me.username}`);
 }

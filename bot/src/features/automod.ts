@@ -16,6 +16,21 @@ const LINK = /https?:\/\/\S+/i;
 /** Recent message timestamps per author, for the flood rule. */
 const recent = new Map<string, number[]>();
 
+/**
+ * Forget authors who have gone quiet.
+ *
+ * This used to be a `recent.clear()` once the map passed 5000 entries, which
+ * threw away *everyone's* history at once - including the person mid-flood the
+ * rule exists to catch. Ageing entries out on a timer bounds the map without
+ * ever helping a spammer.
+ */
+setInterval(() => {
+  const cutoff = Date.now() - 5 * 60_000;
+  for (const [id, stamps] of recent) {
+    if (stamps.length === 0 || stamps[stamps.length - 1] < cutoff) recent.delete(id);
+  }
+}, 60_000).unref();
+
 export async function runAutomod(message: Message): Promise<boolean> {
   if (message.author.bot || !message.inGuild() || message.system) return false;
 
@@ -77,8 +92,24 @@ export async function runAutomod(message: Message): Promise<boolean> {
   return true;
 }
 
+/**
+ * Said once, the first time a content rule has no content to look at.
+ *
+ * The invite and link rules silently match nothing without the Message
+ * Content intent, which looks exactly like automod being broken. It is a
+ * one-tick change in the Developer Portal, so the fix belongs in the log.
+ */
+let warnedAboutContent = false;
+
 function detect(message: Message, rules: Awaited<ReturnType<typeof getConfig>>["moderation"]["automod"]): string | null {
   const content = message.content ?? "";
+
+  if ((rules.block_invites || rules.block_links) && !content && !warnedAboutContent) {
+    warnedAboutContent = true;
+    console.warn(
+      "[automod] the invite/link rules are on but I can't read message content. Enable the **Message Content** intent in the Developer Portal and set MESSAGE_CONTENT_INTENT=true.",
+    );
+  }
 
   if (rules.block_invites && INVITE.test(content)) return "Discord invite link";
   if (rules.block_links && LINK.test(content)) return "links not allowed here";
@@ -93,7 +124,6 @@ function detect(message: Message, rules: Awaited<ReturnType<typeof getConfig>>["
   const stamps = (recent.get(message.author.id) ?? []).filter((t) => now - t < window);
   stamps.push(now);
   recent.set(message.author.id, stamps);
-  if (recent.size > 5000) recent.clear(); // cheap bound; the map is only a heuristic
   if (rules.spam_messages > 0 && stamps.length > rules.spam_messages) {
     return `message flood (${stamps.length} in ${rules.spam_window_seconds}s)`;
   }

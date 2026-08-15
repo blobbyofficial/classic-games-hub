@@ -124,5 +124,4 @@ export const CustomId = {
   VerifyModal: "cgh:verify_modal",
   TicketOpen: "cgh:ticket_open",
   TicketClose: "cgh:ticket_close",
-  TicketConfirmClose: "cgh:ticket_close_confirm",
 } as const;

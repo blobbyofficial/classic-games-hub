@@ -335,6 +335,37 @@ export const SLASH_COMMANDS = [
       },
       {
         type: 1,
+        name: "logging",
+        description: "Log every server change - deletes, edits, roles, channels, bans, joins.",
+        options: [
+          {
+            type: CHANNEL,
+            name: "channel",
+            description: "Where log entries go",
+            required: true,
+            channel_types: [TEXT_CHANNEL],
+          },
+          {
+            type: CHANNEL,
+            name: "messages_channel",
+            description: "Split message deletes/edits off here (they're the noisy ones)",
+            channel_types: [TEXT_CHANNEL],
+          },
+          {
+            type: CHANNEL,
+            name: "server_channel",
+            description: "Split channel/role/server changes off here",
+            channel_types: [TEXT_CHANNEL],
+          },
+          {
+            type: BOOLEAN,
+            name: "voice",
+            description: "Also log voice joins, leaves and moves (default: off)",
+          },
+        ],
+      },
+      {
+        type: 1,
         name: "modlog",
         description: "Set the channel moderation actions are logged to.",
         options: [

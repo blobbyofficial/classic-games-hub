@@ -75,6 +75,9 @@ export const db = {
       p_minutes: input.minutes ?? null,
       p_target_username: input.targetUsername ?? null,
     }),
+  /** Stamps Discord-boost status onto the Hub profile (perks, drops, badges). */
+  setBooster: (discordId: string, since: string | null) =>
+    rpc<{ ok: boolean }>("bot_set_booster", { p_discord: discordId, p_since: since }),
   /** Writes `last_seen` into discord_bot_config; drives /status on the site. */
   heartbeat: (version: string | null) => rpc<{ ok: boolean }>("bot_heartbeat", { p_version: version }),
 };

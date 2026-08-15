@@ -387,6 +387,35 @@ const publishingConfigSchema = z.object({
   announce_limit: z.number().int().min(1).max(100),
 });
 
+/**
+ * Server audit logging.
+ *
+ * `events` is validated as a plain record of booleans rather than an object
+ * with twenty-seven named keys: the worker owns the event list, and a schema
+ * that has to be edited in lockstep with it would reject a config saved by a
+ * newer worker - which is the wrong failure, since an unknown event key costs
+ * nothing and a rejected save costs an admin their edit.
+ */
+const loggingConfigSchema = z.object({
+  enabled: z.boolean(),
+  channel_id: snowflake,
+  channels: z.object({
+    messages: snowflake,
+    members: snowflake,
+    server: snowflake,
+    voice: snowflake,
+    moderation: snowflake,
+  }),
+  events: z.record(z.string().max(40), z.boolean()).refine((e) => Object.keys(e).length <= 60, {
+    message: "Too many event switches.",
+  }),
+  ignored_channel_ids: z.array(z.string().regex(/^\d{5,25}$/)).max(100),
+  ignored_role_ids: z.array(z.string().regex(/^\d{5,25}$/)).max(100),
+  ignored_user_ids: z.array(z.string().regex(/^\d{5,25}$/)).max(100),
+  ignore_bots: z.boolean(),
+  include_content: z.boolean(),
+});
+
 const BOT_SECTIONS = {
   verification: verificationConfigSchema,
   moderation: moderationConfigSchema,
@@ -394,6 +423,7 @@ const BOT_SECTIONS = {
   stats: statsConfigSchema,
   level_roles: levelRolesConfigSchema,
   publishing: publishingConfigSchema,
+  logging: loggingConfigSchema,
 } as const;
 
 export type BotSection = keyof typeof BOT_SECTIONS;

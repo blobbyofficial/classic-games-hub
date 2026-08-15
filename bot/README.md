@@ -16,6 +16,8 @@ to Discord. It covers the things a webhook can never do:
 - **Automod** - invites, links, mass mentions, message floods (off by default)
 - **Live feed** - new high scores & achievements posted to a channel
 - **Stat counters** - voice channels renamed with live Hub numbers
+- **Server logs** - every message, channel, role and member change in the
+  server, each entry naming who did it (`src/features/logging`)
 - **Showing the bot as Online** - see below
 
 ## "Why does the bot show as offline?"
@@ -63,20 +65,36 @@ npm run build && npm start
 
 Privileged intents (Developer Portal → Bot):
 
-- **Server Members** - required (join handling, role sync).
-- **Message Content** - optional. Only the automod invite/link rules need it;
-  set `MESSAGE_CONTENT_INTENT=true` if you enable it. XP never reads message
-  text.
+- **Server Members** - required (join handling, role sync, member logs).
+- **Message Content** - optional, and the one to enable if you want the logs to
+  be worth reading: without it a delete log can say *that* a message was
+  deleted but never *what* it said, and the automod invite/link rules match
+  nothing at all. Set `MESSAGE_CONTENT_INTENT=true` when you turn it on. XP
+  never reads message text either way.
+
+The non-privileged intents (moderation, expressions, invites, voice states,
+webhooks) are requested automatically for the log and need no portal switch.
+
+Permissions the worker wants beyond the usual set:
+
+- **View Audit Log** - without it every log entry still appears, but says
+  "Unknown actor" instead of naming who did it. It is the single permission
+  that decides whether the log is useful.
 
 A `Dockerfile`, `fly.toml` and `render.yaml` are included.
 
 ## Configuration
 
 Nothing about behaviour is configured here any more. Leveling, milestone roles,
-verification, tickets, moderation/automod and the stat counters all live in
-Supabase (`discord_bot_config`) and are edited either from the website
-(**Admin → Discord bot**) or from inside Discord with `/setup …`. The worker
-re-reads all of it once a minute.
+verification, tickets, moderation/automod, the stat counters and the server
+logs all live in Supabase (`discord_bot_config`) and are edited either from the
+website (**Admin → Discord bot**) or from inside Discord with `/setup …`. The
+worker re-reads all of it once a minute, so a settings change never needs a
+restart.
+
+`BOT_VERSION` is the one exception worth setting: it is what `/status` shows as
+the worker's version. `npm_package_version` only exists when npm started the
+process, and the Docker image runs `node dist/index.js` directly.
 
 ## Security
 

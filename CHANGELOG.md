@@ -3,6 +3,80 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.5.9 - "On the Record" (server logs, and the bot's own audit)
+
+### 📝 Server logging (the last thing Sapphire still did better)
+
+- **Every change in the server now gets an entry**: messages deleted and edited,
+  channels created, renamed, moved, re-permissioned and deleted, roles created,
+  recoloured, re-permissioned and deleted, members joining, leaving, being
+  kicked, renamed or given roles, bans, timeouts, emoji, stickers, invites,
+  webhooks, voice movement and the server's own settings. Twenty-seven events.
+- **Each entry names who did it.** Gateway events carry no actor at all, so
+  every one is matched against Discord's audit log - live via
+  `GuildAuditLogEntryCreate`, falling back to a fetch. Needs **View Audit Log**;
+  without it entries still appear, say "Unknown actor", and the worker warns
+  about it once at startup rather than leaving you to discover it.
+- **Updates are diffed to the property.** A role change reads
+  `Colour #5865f2 → #ff0000`; a permission change lists the permissions that
+  moved rather than two bitfields; a channel update names the overwrite that
+  changed and whose it was. "Role updated" is not an audit log entry.
+- **It is built not to be muted.** Five categories, each routable to its own
+  channel, all falling back to one catch-all; every event individually
+  switchable; ignore lists for channels, roles and users. Entries batch ten to
+  a message on a 1.5-second tick, so a raid or a 100-message purge costs a
+  handful of API calls rather than hundreds - and the queue is bounded, because
+  the failure mode of an unbounded one is losing the whole worker.
+- `/setup logging channel:#server-log`, and the full grid at
+  **Admin → Discord bot → Server**. Migration `0072`.
+
+### 🔒 A hole in the interactions endpoint
+
+- **Any server the bot was added to could moderate this one.** Every handler
+  acts on `DISCORD_GUILD_ID`, while the permission check only ever read the
+  permissions Discord sent for the guild the command was *used* in - so someone
+  who could invite the bot to a server they ran could `/ban` there and have it
+  land here. Interactions from any other guild are now refused outright.
+- `/ban`, `/kick`, `/timeout` and `/warn` refuse to target you or the bot. The
+  dashboard has refused both since it was written; the slash commands sent them
+  to Discord and returned a bare "couldn't do that", which reads like a
+  permissions problem and sent people to check role hierarchy.
+
+### 🐛 The worker
+
+- **It ran on every server it was in.** Chat XP, automod and the welcome
+  message were not scoped to `DISCORD_GUILD_ID`, so anyone who added the bot
+  elsewhere got Hub XP awarded against it.
+- **Two unbounded maps.** The XP cooldown map kept one entry per person who has
+  ever spoken, forever; automod's flood map "bounded" itself by wiping
+  *everyone's* history the moment it passed 5000 entries - including the person
+  mid-flood it exists to catch. Both now age entries out on a timer.
+- **An uncaught exception was logged and ignored**, leaving a process that
+  passes its health check and has stopped working - the worst of both. It now
+  exits so the host restarts a clean one.
+- **A Supabase blip became a request storm**: a failed config read wasn't
+  cached, so the RPC was retried on *every message* until it recovered.
+- **Boosting reached the Hub a day late.** The worker never handled
+  `GuildMemberUpdate` and its role sync had drifted from the website's - no
+  `__booster__` key, no `bot_set_booster` call - so a new booster waited for the
+  nightly reconcile. Both implementations now do the same thing.
+- **Automod ignored edits.** Posting something innocuous and editing an invite
+  into it walked past every rule.
+- **The worker's version was blank on `/status`** for the deployment everyone
+  actually uses: `npm_package_version` only exists when npm started the process,
+  and the Docker image runs `node dist/index.js`. `BOT_VERSION` now works.
+- The invite/link rules silently match nothing without the Message Content
+  intent, which looks exactly like automod being broken. Said once, in the log.
+
+### 🎫 Tickets and names
+
+- **Long ticket transcripts were logged as their middle.** The last 3800
+  characters were taken, then the first 1900 of *those* - losing the question at
+  the start and the resolution at the end. Transcripts are now chunked, keeping
+  the end when they don't fit.
+- `/rank @someone` on an unresolved user showed **your** name on their card. The
+  fallback was the invoker's name; it is now "that member".
+
 ## v1.5.8 - "Not Two Yet" (the plan stays in the 1.x line)
 
 ### 🗺️ Renumbering

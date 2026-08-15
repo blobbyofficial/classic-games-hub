@@ -97,10 +97,213 @@ export const SERIES: ReleaseSeries[] = [
   {
     version: "v1.5.0",
     codename: "Collector's Edition",
-    dates: "2 - 13 Aug 2026",
+    dates: "2 - 15 Aug 2026",
     summary:
-      "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - a Discord server that now finishes its own setup and keeps itself in step with the site, and a pass over the rough edges underneath all of it.",
+      "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - a Discord server that now finishes its own setup, keeps itself in step with the site, and writes down everything that happens in it - and a pass over the rough edges underneath all of it.",
     releases: [
+      {
+        version: "v1.5.9",
+        codename: "On the Record",
+        date: "15 Aug 2026",
+        scope:
+          "One release, because it is one audit of one thing. The logging feature is the headline, but it was written after reading the bot end to end, and what that reading turned up - a cross-guild hole in the interactions endpoint, a worker that ran on every server it was in, two maps that only ever grew - belongs with it rather than in a separate 'and also some fixes' release nobody would connect to it.",
+        summary:
+          "The bot now writes down everything that happens in the server: messages deleted and edited, channels and roles created, renamed, moved and re-permissioned, members joining, leaving, being kicked, banned, timed out or renamed, emoji, invites, webhooks and voice. Each entry names who did it. Alongside it, the audit that produced it: a real privilege-escalation hole closed, the worker scoped to one server, and six bugs that were each quietly costing something.",
+        groups: [
+          {
+            heading: "Server logs",
+            icon: "ScrollText",
+            blurb:
+              "The last thing Sapphire still did better, and the one part that genuinely needs the gateway worker - none of these events are ever sent to an HTTP endpoint.",
+            items: [
+              {
+                title: "Twenty-seven events, one channel (or five)",
+                description:
+                  "Messages deleted, edited and bulk-purged; channels created, renamed, moved, re-permissioned and deleted; roles created, recoloured, re-permissioned and deleted; members joining, leaving, kicked, renamed, given and stripped of roles; bans, unbans, timeouts; emoji, stickers, threads, invites, webhooks, voice movement and the server's own settings. Five categories, each routable to its own channel and all falling back to one catch-all, so the simple setup is a single channel and the loud category can be moved out later without touching anything else.",
+              },
+              {
+                title: "Every entry names who did it",
+                description:
+                  "Gateway events carry no actor at all - a deleted message and a recoloured role both arrive anonymous - so each one is matched against Discord's own audit log, live where the entry arrives in time and by a fetch where it doesn't. It needs the View Audit Log permission, and when that is missing the bot says so once at startup rather than silently writing 'Unknown actor' forever and leaving somebody to work out why.",
+              },
+              {
+                title: "Diffed to the property, not to the object",
+                description:
+                  "A role change reads `Colour #5865f2 → #ff0000`. A permission change lists the permissions that moved, not two bitfields that technically contain the same information and answer nobody's question. A channel update names the overwrite that changed and whose it was. 'Role updated' is a notification; this is a log.",
+              },
+              {
+                title: "Built so it doesn't get muted",
+                description:
+                  "The way a log dies is a single channel carrying four hundred message edits a day next to the one role change somebody needed to find. So: every event switchable on its own, ignore lists for channels, roles and users, an ignore-bots switch, and content quoting that can be turned off outright because writing down what people said is a decision worth making deliberately. A channel deletion is logged even when that channel is ignored - hiding that is the one thing an ignore list must never do.",
+              },
+              {
+                title: "A burst costs a handful of requests, not hundreds",
+                description:
+                  "Entries queue per channel and go out ten to a message on a fixed tick, which is what stops a raid or a 100-message purge rate-limiting the log into uselessness at the exact moment it matters. The queue is bounded and drops rather than growing: an out-of-memory worker loses chat XP, automod, the counters and the online dot too.",
+              },
+            ],
+          },
+          {
+            heading: "A hole worth naming",
+            icon: "ShieldAlert",
+            items: [
+              {
+                title: "Any server the bot joined could moderate this one",
+                description:
+                  "Every command handler acts on `DISCORD_GUILD_ID` - this server - while the permission check only ever read the permissions Discord sent for the guild the command was *used* in. So anybody who could add the bot to a server they administered could run `/ban` there and have it land here, with their own server's permissions as the only gate. Adding a bot needs Manage Server in the server you're adding it to and nothing else, so 'we only invited it to one server' was never the control it appeared to be. Interactions from any other guild are now refused before they reach a handler.",
+              },
+              {
+                title: "You can no longer ban yourself, or the bot",
+                description:
+                  "The dashboard has refused both since it was written. The slash commands sent them to Discord and returned a bare 'couldn't ban that member' - an error that reads like a permissions problem and reliably sends people off to check role hierarchy for a fault that was never there.",
+              },
+            ],
+          },
+          {
+            heading: "The worker, read end to end",
+            icon: "Bug",
+            blurb: "Six things that were each costing something quietly.",
+            items: [
+              {
+                title: "It ran on every server it was in",
+                description:
+                  "Chat XP, automod and the welcome message were never scoped to the configured guild, so anyone who added the bot elsewhere got Hub XP awarded against their server's chat. Every listener is now scoped, and the worker says so at startup if it isn't in the guild it was configured for.",
+              },
+              {
+                title: "Two maps that only ever grew",
+                description:
+                  "The XP cooldown map kept one entry per person who has ever spoken, for the lifetime of a process meant to run for months. Automod's flood map 'bounded' itself by wiping everyone's history the moment it passed 5000 entries - including, necessarily, the person mid-flood the rule exists to catch. Both now age entries out on a timer, which bounds them without ever helping a spammer.",
+              },
+              {
+                title: "An uncaught exception was logged and ignored",
+                description:
+                  "Which produced the worst outcome available: a process that passes its health check and has stopped doing its job, so the host never restarts it and nothing looks wrong. It now exits, and the host brings up a clean one.",
+              },
+              {
+                title: "A database blip became a request storm",
+                description:
+                  "A failed config read wasn't cached, so the RPC was retried on every single message until Supabase came back - turning a momentary blip into sustained load at the worst possible time. The answer was never going to change inside the same second anyway.",
+              },
+              {
+                title: "Boosting reached the site a day late",
+                description:
+                  "The worker never listened for member updates, and its role sync had drifted from the website's - no `__booster__` key, no call to stamp the boost onto the profile - so a new booster paid for a month and waited for the nightly reconcile before anything happened. The two implementations now do the same thing, which is the actual fix: drift between them is how someone ends up with different roles depending on which one happened to run.",
+              },
+              {
+                title: "Automod never looked at edits",
+                description:
+                  "Posting something innocuous and editing an invite into it a second later walked past every rule, because a message was only ever checked once.",
+              },
+            ],
+          },
+          {
+            heading: "Smaller, still wrong",
+            icon: "Wrench",
+            items: [
+              {
+                title: "Long ticket transcripts were logged as their middle",
+                description:
+                  "The last 3800 characters were taken and then the first 1900 of *those* were posted - so a long ticket lost the question at the start and the resolution at the end, and kept the part in between. Transcripts are chunked now, and when they still don't fit it is the end that survives, because the end of a support ticket is where the answer is.",
+              },
+              {
+                title: "Someone else's rank card had your name on it",
+                description:
+                  "The fallback for an unresolved target was the invoker's name, so a lookup that failed produced a confident, wrong answer instead of an obviously incomplete one.",
+              },
+              {
+                title: "The worker's version was blank on /status",
+                description:
+                  "It read `npm_package_version`, which only exists when npm started the process - and the Docker image, which is what everyone actually deploys, runs `node dist/index.js` directly. `BOT_VERSION` now covers it.",
+              },
+            ],
+          },
+        ],
+        commits: ["5d23669"],
+      },
+      {
+        version: "v1.5.8",
+        codename: "Not Two Yet",
+        date: "14 Aug 2026",
+        scope:
+          "A documentation-only release, drawn on its own because renumbering the whole forward plan is the kind of change that has to be findable later. Nothing shipped to the site; what changed is what the roadmap claims and what the Discord setup instructions tell you to do.",
+        summary:
+          "The plan stopped awarding itself a major version. The relaunch, Head to Head and Player Made were v2.0.0, v2.1.0 and v2.2.0 for work that has not started; they are now v1.7.0, v1.8.0 and v1.9.0, and 2.0.0 is left deliberately unclaimed. Two pieces of Discord setup guidance that were actively wrong were corrected at the same time.",
+        groups: [
+          {
+            heading: "Renumbering",
+            icon: "Tag",
+            items: [
+              {
+                title: "The forward plan runs in one continuous line",
+                description:
+                  "The relaunch, Head to Head and Player Made carried v2.0.0, v2.1.0 and v2.2.0 - a major version awarded to work nobody had started. They became v1.7.0, v1.8.0 and v1.9.0, so the rebuild at v1.6.0-v1.6.3 and the three releases behind it read as one sequence rather than as a plan that crosses a boundary for no stated reason.",
+              },
+              {
+                title: "2.0.0 is deliberately unclaimed",
+                description:
+                  "A planned number is not a reservation, so nothing inherits it. Whatever eventually deserves to be called 2.0.0 will take it because there is a reason to, not because a sketch written months earlier said so. The relaunch's summary used to justify its own number; it now says why it isn't 2.0.0, which is the more useful sentence.",
+              },
+            ],
+          },
+          {
+            heading: "Corrections",
+            icon: "Bot",
+            items: [
+              {
+                title: "Discord setup named two migrations out of seventy",
+                description:
+                  "It told you to apply `0033` and `0041`. The schema was at `0071`, and publishing needs `0063` and `0068` - so following the instructions literally left a database that could not run the bot. It now says to apply everything in order and check `status_meta.schema` on /status, which is the check that would have caught it.",
+              },
+              {
+                title: "A credential that looks wrong may only be missing",
+                description:
+                  "Env vars set between 3 and 13 August never reached a running build, because the redeploy they need could not happen while `vercel.json` was refusing every deployment. Written down, because the symptom - a variable that is present in the dashboard and absent at runtime - reads as a wrong value and sends you looking in the wrong place.",
+              },
+            ],
+          },
+        ],
+        commits: [],
+      },
+      {
+        version: "v1.5.7",
+        codename: "Unblocked",
+        date: "13 Aug 2026",
+        scope:
+          "One release for one fault, even though the fix is a four-line file. The size of a change and the size of what it unblocked are different measurements, and ten days in which every push silently vanished is worth its own entry in the history.",
+        summary:
+          "Nothing had deployed since 3 August - not because builds were failing, but because none were ever started. Vercel's Hobby plan rejects a sub-daily cron expression when the deployment is created, producing no build, no error and nothing in the dashboard. `vercel.json` is back to two daily entries and the jobs that need a tighter cadence moved to an external scheduler.",
+        groups: [
+          {
+            heading: "Ten days of pushes that never built",
+            icon: "Rocket",
+            blurb:
+              "The application code was fine throughout - typecheck, lint and build all passed on the stuck commit.",
+            items: [
+              {
+                title: "No failed build to find, because there was no build",
+                description:
+                  "Vercel's Hobby plan caps cron jobs at two, each running at most once a day, and it rejects a sub-daily expression at the moment the deployment is *created*. So there is nothing to look at: no failed build, no error in the dashboard, no clue in the repository. Every push simply vanished, which is exactly why reconnecting the git integration - the obvious first move - changed nothing at all.",
+              },
+              {
+                title: "The culprit was the first commit that never shipped",
+                description:
+                  "`de6cfc9` moved role sync from `30 4 * * *` to `*/2 * * * *`. `c0d2064` then added a `*/15` job and v1.5.6 a `*/5` one, so by the time anyone counted there were five crons, four of them sub-daily - and each of those commits was itself invisible, having never deployed.",
+              },
+              {
+                title: "Two daily entries, and the rest moved out",
+                description:
+                  "`vercel.json` carries `discord-publish` at 05:00 and `booster-drops` at 06:00, both of which a daily run genuinely serves. The status probe deliberately did not stay: `status_record_checks` counts a failed check as five minutes of downtime, so a daily probe would not merely be coarse, it would report wrong uptime percentages on the page whose entire job is being right about that.",
+              },
+              {
+                title: "docs/cron-jobs.md, and a warning in CLAUDE.md",
+                description:
+                  "Which job wants which cadence, which two are on Vercel and why, how to point an external scheduler at the rest, and what to move back if the plan ever changes. Repeated in CLAUDE.md because the failure is silent and the first instinct is wrong.",
+              },
+            ],
+          },
+        ],
+        commits: [],
+      },
       {
         version: "v1.5.6",
         codename: "Is It Just Me?",
@@ -1845,6 +2048,10 @@ export const SERIES: ReleaseSeries[] = [
 export const RELEASES: UpdateRelease[] = SERIES.flatMap((s) => s.releases);
 
 export const LANDED: LandedChange[] = [
+  { sha: "5d23669", date: "15 Aug 2026", subject: "feat(discord): server audit logging, and the audit that produced it (0072)" },
+  { sha: "67285b3", date: "5 Aug 2026", subject: "chore: verify the git integration fires after reconnecting" },
+  { sha: "358a871", date: "5 Aug 2026", subject: "chore: trigger a build of 573a225" },
+  { sha: "573a225", date: "4 Aug 2026", subject: "feat(leaderboards): a board per difficulty, and fix an ambiguity 0067 introduced" },
   { sha: "0f5d18e", date: "4 Aug 2026", subject: "feat(v1.5.1): difficulty picker and message reports, completing the release" },
   { sha: "2007b71", date: "3 Aug 2026", subject: "feat(v1.5.1): cookie consent, with analytics gated behind it (0065)" },
   { sha: "560609a", date: "3 Aug 2026", subject: "feat(v1.5.1): rename, banner, presence heartbeat, stories, fullscreen, settings" },
@@ -1964,9 +2171,15 @@ export function commitsOf(release: UpdateRelease): LandedChange[] {
 /**
  * Changes in production that no release claims.
  *
- * Empty is the goal and currently the truth. It is derived rather than
- * asserted so that the next unassigned commit shows up on the page as a
- * question, instead of quietly falling out of the history the way the whole
+ * Empty is the goal, and right now it is not the truth: regenerating `LANDED`
+ * surfaced three commits from 4-5 August that reached `main` without a version
+ * - the per-difficulty leaderboards and two build triggers behind them. They
+ * are listed rather than assigned, because guessing at a release boundary for
+ * someone else's work is how the two renumberings above happened. Whoever
+ * versions them next has the shas to hand.
+ *
+ * It is derived rather than asserted precisely so this shows up on the page as
+ * a question, instead of quietly falling out of the history the way the whole
  * run between 26 July and 3 August did.
  */
 export const UNASSIGNED: LandedChange[] = LANDED.filter((c) => !RELEASE_OF_COMMIT[c.sha]);
