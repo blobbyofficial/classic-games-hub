@@ -218,7 +218,7 @@ export const SERIES: ReleaseSeries[] = [
             ],
           },
         ],
-        commits: [],
+        commits: ["5d23669"],
       },
       {
         version: "v1.5.6",
@@ -1964,6 +1964,10 @@ export const SERIES: ReleaseSeries[] = [
 export const RELEASES: UpdateRelease[] = SERIES.flatMap((s) => s.releases);
 
 export const LANDED: LandedChange[] = [
+  { sha: "5d23669", date: "15 Aug 2026", subject: "feat(discord): server audit logging, and the audit that produced it (0072)" },
+  { sha: "67285b3", date: "5 Aug 2026", subject: "chore: verify the git integration fires after reconnecting" },
+  { sha: "358a871", date: "5 Aug 2026", subject: "chore: trigger a build of 573a225" },
+  { sha: "573a225", date: "4 Aug 2026", subject: "feat(leaderboards): a board per difficulty, and fix an ambiguity 0067 introduced" },
   { sha: "0f5d18e", date: "4 Aug 2026", subject: "feat(v1.5.1): difficulty picker and message reports, completing the release" },
   { sha: "2007b71", date: "3 Aug 2026", subject: "feat(v1.5.1): cookie consent, with analytics gated behind it (0065)" },
   { sha: "560609a", date: "3 Aug 2026", subject: "feat(v1.5.1): rename, banner, presence heartbeat, stories, fullscreen, settings" },
@@ -2083,9 +2087,15 @@ export function commitsOf(release: UpdateRelease): LandedChange[] {
 /**
  * Changes in production that no release claims.
  *
- * Empty is the goal and currently the truth. It is derived rather than
- * asserted so that the next unassigned commit shows up on the page as a
- * question, instead of quietly falling out of the history the way the whole
+ * Empty is the goal, and right now it is not the truth: regenerating `LANDED`
+ * surfaced three commits from 4-5 August that reached `main` without a version
+ * - the per-difficulty leaderboards and two build triggers behind them. They
+ * are listed rather than assigned, because guessing at a release boundary for
+ * someone else's work is how the two renumberings above happened. Whoever
+ * versions them next has the shas to hand.
+ *
+ * It is derived rather than asserted precisely so this shows up on the page as
+ * a question, instead of quietly falling out of the history the way the whole
  * run between 26 July and 3 August did.
  */
 export const UNASSIGNED: LandedChange[] = LANDED.filter((c) => !RELEASE_OF_COMMIT[c.sha]);
