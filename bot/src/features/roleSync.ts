@@ -54,7 +54,17 @@ export async function syncMemberRoles(member: GuildMember): Promise<SyncOutcome>
   const state = await db.roleState(member.id);
   if (!state?.ok) return outcome;
 
+  // Mirror the website's sync exactly (lib/discord/role-sync.ts): boost status
+  // is stamped onto the Hub profile, and `__booster__` is a mappable key. The
+  // two implementations drifting is how a member ends up with a different set
+  // of roles depending on which one happened to run.
+  if (state.linked) {
+    await db.setBooster(member.id, member.premiumSince?.toISOString() ?? null);
+  }
+
   const keys = desiredKeys(state);
+  if (state.linked && !state.is_banned && member.premiumSince) keys.add("__booster__");
+
   const desired = new Set<string>();
   for (const [key, roleId] of Object.entries(map)) {
     if (!roleId) continue;

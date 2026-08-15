@@ -40,6 +40,7 @@ import {
   deferredSetupTickets,
   deferredSetupStats,
   deferredSetupModlog,
+  deferredSetupLogging,
   deferredRefreshStats,
   deferredSetupStatus,
   reply,
@@ -87,6 +88,39 @@ const MANAGE_GUILD = 1n << 5n;
 const MANAGE_MESSAGES = 1n << 13n;
 const MODERATE_MEMBERS = 1n << 40n;
 
+/**
+ * Refuse anything from a server that isn't ours.
+ *
+ * This is a real hole, not a tidiness rule. Every handler acts on
+ * `discordEnv.guildId` - the Hub server - while `hasPermission` only ever
+ * checks the permissions Discord sent for the guild the command was *used* in.
+ * So anyone who could add this bot to a server they administered could run
+ * `/ban` there and have it land here, with their own server's permissions as
+ * the only check. A bot is invitable by anyone holding Manage Server anywhere,
+ * so "we only invited it to one server" was never the control it looked like.
+ *
+ * DMs are allowed through: the commands reachable from a DM are the read-only
+ * account ones, and each guild-only command already refuses without a
+ * `guild_id`.
+ */
+function fromOurGuild(i: Interaction): boolean {
+  if (!i.guild_id) return true;
+  // Unconfigured deployments have no guild to compare against; those already
+  // fail at the first REST call with a readable error.
+  if (!discordEnv.guildId) return true;
+  return i.guild_id === discordEnv.guildId;
+}
+
+const wrongGuild = () =>
+  reply(
+    [
+      errorEmbed(
+        "This bot only works in the Classic Games Hub server. Play at https://classic-games-hub.blobbyofficial.com",
+      ),
+    ],
+    true,
+  );
+
 const deferEphemeral = () =>
   NextResponse.json({
     type: InteractionResponseType.DeferredChannelMessage,
@@ -110,9 +144,39 @@ function resolvedUser(i: Interaction, id: string | undefined) {
   return i.data?.resolved?.users?.[id];
 }
 
-function displayName(i: Interaction, id: string | undefined, fallback: string) {
+/**
+ * The name to print for whoever a command was aimed at.
+ *
+ * The fallback used to be the *invoker's* name, so an unresolved target
+ * produced a rank card titled with the name of the person who asked for it -
+ * a wrong answer that looks like a right one. "That member" is worse to read
+ * and impossible to misread.
+ */
+function displayName(i: Interaction, id: string | undefined, fallback = "that member") {
   const u = resolvedUser(i, id);
   return u?.global_name ?? u?.username ?? fallback;
+}
+
+/** Their name, or yours when the target is you. */
+function targetName(i: Interaction, id: string | undefined, me: { id: string; name: string }) {
+  return id === me.id ? me.name : displayName(i, id);
+}
+
+/**
+ * The two moderation targets that are always a mistake.
+ *
+ * The dashboard path (`ops.moderate`) has refused these since it was written;
+ * the slash-command path never did, so `/ban @yourself` went all the way to
+ * Discord and came back as a bare "Couldn't ban that member" - an error that
+ * reads like a permissions problem and sends people to check role hierarchy.
+ * `discordEnv.appId` is the bot's own user id: for a bot application the two
+ * are the same snowflake.
+ */
+function badModTarget(targetId: string, me: { id: string }): string | null {
+  if (!/^\d{15,25}$/.test(targetId)) return "Pick a member first.";
+  if (targetId === me.id) return "You can't do that to yourself.";
+  if (targetId === discordEnv.appId) return "I'm not going to do that to myself.";
+  return null;
 }
 
 export async function POST(request: Request) {
@@ -133,6 +197,8 @@ export async function POST(request: Request) {
   if (interaction.type === InteractionType.Ping) {
     return NextResponse.json({ type: InteractionResponseType.Pong });
   }
+
+  if (!fromOurGuild(interaction)) return NextResponse.json(wrongGuild());
 
   try {
     if (interaction.type === InteractionType.Autocomplete) {
@@ -240,7 +306,7 @@ async function handleCommand(interaction: Interaction) {
     case "profile": {
       const targetId = opt<string>(options, "user") ?? me.id;
       return NextResponse.json(
-        await handleProfile(targetId, displayName(interaction, targetId, me.name), targetId === me.id),
+        await handleProfile(targetId, targetName(interaction, targetId, me), targetId === me.id),
       );
     }
     case "balance":
@@ -256,12 +322,12 @@ async function handleCommand(interaction: Interaction) {
     }
     case "rank": {
       const targetId = opt<string>(options, "user") ?? me.id;
-      return NextResponse.json(await handleRank(targetId, displayName(interaction, targetId, me.name)));
+      return NextResponse.json(await handleRank(targetId, targetName(interaction, targetId, me)));
     }
     case "level": {
       const targetId = opt<string>(options, "user") ?? me.id;
       return NextResponse.json(
-        await handleLevel(targetId, displayName(interaction, targetId, me.name), targetId === me.id),
+        await handleLevel(targetId, targetName(interaction, targetId, me), targetId === me.id),
       );
     }
     case "rewards":
@@ -309,39 +375,49 @@ async function handleCommand(interaction: Interaction) {
     case "warn": {
       if (!hasPermission(interaction, MODERATE_MEMBERS)) return denied("Moderate Members");
       const targetId = opt<string>(options, "user") ?? "";
+      const bad = badModTarget(targetId, me);
+      if (bad) return NextResponse.json(reply([errorEmbed(bad)], true));
       const reason = String(opt<string>(options, "reason") ?? "");
-      const targetName = displayName(interaction, targetId, "member");
-      after(() => deferredWarn(me, targetId, targetName, reason, "the Classic Games Hub server", token));
+      const name = displayName(interaction, targetId);
+      after(() => deferredWarn(me, targetId, name, reason, "the Classic Games Hub server", token));
       return deferEphemeral();
     }
     case "timeout": {
       if (!hasPermission(interaction, MODERATE_MEMBERS)) return denied("Moderate Members");
       const targetId = opt<string>(options, "user") ?? "";
+      const bad = badModTarget(targetId, me);
+      if (bad) return NextResponse.json(reply([errorEmbed(bad)], true));
       const minutes = Number(opt<number>(options, "minutes") ?? 0);
       const reason = String(opt<string>(options, "reason") ?? "No reason given");
       after(() =>
-        deferredTimeout(me, targetId, displayName(interaction, targetId, "member"), minutes, reason, token),
+        deferredTimeout(me, targetId, displayName(interaction, targetId), minutes, reason, token),
       );
       return deferEphemeral();
     }
     case "untimeout": {
       if (!hasPermission(interaction, MODERATE_MEMBERS)) return denied("Moderate Members");
       const targetId = opt<string>(options, "user") ?? "";
-      after(() => deferredUntimeout(me, targetId, displayName(interaction, targetId, "member"), token));
+      const bad = badModTarget(targetId, me);
+      if (bad) return NextResponse.json(reply([errorEmbed(bad)], true));
+      after(() => deferredUntimeout(me, targetId, displayName(interaction, targetId), token));
       return deferEphemeral();
     }
     case "ban": {
       if (!hasPermission(interaction, BAN_MEMBERS)) return denied("Ban Members");
       const targetId = opt<string>(options, "user") ?? "";
+      const bad = badModTarget(targetId, me);
+      if (bad) return NextResponse.json(reply([errorEmbed(bad)], true));
       const reason = String(opt<string>(options, "reason") ?? "No reason given");
-      after(() => deferredBan(me, targetId, displayName(interaction, targetId, "member"), reason, token));
+      after(() => deferredBan(me, targetId, displayName(interaction, targetId), reason, token));
       return deferEphemeral();
     }
     case "kick": {
       if (!hasPermission(interaction, KICK_MEMBERS)) return denied("Kick Members");
       const targetId = opt<string>(options, "user") ?? "";
+      const bad = badModTarget(targetId, me);
+      if (bad) return NextResponse.json(reply([errorEmbed(bad)], true));
       const reason = String(opt<string>(options, "reason") ?? "No reason given");
-      after(() => deferredKick(me, targetId, displayName(interaction, targetId, "member"), reason, token));
+      after(() => deferredKick(me, targetId, displayName(interaction, targetId), reason, token));
       return deferEphemeral();
     }
     case "unban": {
@@ -355,7 +431,7 @@ async function handleCommand(interaction: Interaction) {
       if (!hasPermission(interaction, MODERATE_MEMBERS)) return denied("Moderate Members");
       const targetId = opt<string>(options, "user") ?? "";
       return NextResponse.json(
-        await handleWarnings(targetId, displayName(interaction, targetId, "member")),
+        await handleWarnings(targetId, displayName(interaction, targetId)),
       );
     }
     case "purge": {
@@ -446,6 +522,17 @@ function handleSetup(interaction: Interaction, token: string) {
       break;
     case "modlog":
       after(() => deferredSetupModlog(opt<string>(subOptions, "channel") ?? "", token));
+      break;
+    case "logging":
+      after(() =>
+        deferredSetupLogging(
+          opt<string>(subOptions, "channel") ?? interaction.channel_id ?? "",
+          opt<string>(subOptions, "messages_channel"),
+          opt<string>(subOptions, "server_channel"),
+          Boolean(opt<boolean>(subOptions, "voice")),
+          token,
+        ),
+      );
       break;
     case "refresh-stats":
       after(() => deferredRefreshStats(token));

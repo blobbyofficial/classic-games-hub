@@ -6,6 +6,18 @@ import { syncMemberRoles } from "./roleSync.js";
 // Cheap in-process pre-filter; the REAL cooldown is enforced in Postgres
 // (bot_award_discord_xp), so restarts can't double-award.
 const lastSeen = new Map<string, number>();
+/**
+ * Drop entries that are past their cooldown.
+ *
+ * The map used to only ever grow: one entry per person who has ever spoken,
+ * kept for the lifetime of a process that is meant to run for months. Pruning
+ * on a timer costs nothing and is the difference between a bounded worker and
+ * a slow leak that only shows up on the host with the smallest memory limit.
+ */
+setInterval(() => {
+  const cutoff = Date.now() - 60 * 60_000;
+  for (const [id, at] of lastSeen) if (at < cutoff) lastSeen.delete(id);
+}, 10 * 60_000).unref();
 
 /**
  * Discord chat XP - the Arcane replacement. Config lives in Supabase

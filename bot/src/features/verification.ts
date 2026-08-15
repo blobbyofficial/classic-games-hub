@@ -58,6 +58,8 @@ export async function handleMemberJoin(member: GuildMember): Promise<void> {
  * serverless handler.)
  */
 export async function maybeWelcome(member: GuildMember): Promise<void> {
+  if (member.guild.id !== config.guildId) return;
+  if (member.user.bot) return;
   const cfg = (await getConfig()).verification;
   if (cfg.enabled || !cfg.welcome_channel_id || !cfg.welcome_message) return;
   const channel = await member.client.channels.fetch(cfg.welcome_channel_id).catch(() => null);

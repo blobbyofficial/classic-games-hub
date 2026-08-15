@@ -28,7 +28,7 @@ Vercel cron (nightly) ──▶ /api/cron/discord-role-sync ──▶ reconcile 
 Any scheduler ─────────▶ /api/cron/discord-stats ──────▶ refresh counters
 
 bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handling,
-     automod, live feed, counters - and the bot's Online status
+     automod, live feed, counters, server logs - and the bot's Online status
      │
      └──every 60s──▶ bot_heartbeat() ──▶ /status shows the worker as Online
 ```
@@ -41,7 +41,7 @@ bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handlin
 | Account linking | Website (Supabase auth + `claim_discord_link`) | free |
 | Role sync + milestone roles | On change, `/sync`, nightly cron, level-up | free |
 | Level/XP storage & rules, cases, tickets | Supabase | free |
-| Chat XP, automod, join handling, live feed, **Online status** | `bot/` worker - any always-on Node host | free-ish (see `bot/README.md`) |
+| Chat XP, automod, join handling, live feed, **server logs**, **Online status** | `bot/` worker - any always-on Node host | free-ish (see `bot/README.md`) |
 
 ## What replaced what
 
@@ -77,6 +77,55 @@ bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handlin
   (`ticket-0001`) visible to the member and the staff role; `/close` or the
   Close button posts a transcript to the log channel and deletes the channel.
   `max_open_per_user` stops ticket spam.
+
+### Sapphire → server logs
+
+The half of Sapphire that took longest to replace, because it is the half that
+needs a gateway connection: none of these events are ever sent to an HTTP
+interactions endpoint, which only hears about things aimed at the bot.
+
+`/setup logging channel:#server-log` switches it on. What gets written:
+
+| Category | Events |
+| --- | --- |
+| **Messages** | deleted, edited (before/after), bulk-purged |
+| **Members** | joined, left, kicked, nickname changed, roles added/removed |
+| **Moderation** | timed out, timeout lifted, banned, unbanned |
+| **Server** | channels created/renamed/moved/deleted, permission overwrites changed, threads, roles created/recoloured/re-permissioned/deleted, emoji, stickers, invites, webhooks, server settings |
+| **Voice** | joined, left, moved between channels |
+
+Three things it does that a plain event dump doesn't:
+
+- **It names who did it.** Gateway events carry no actor, so each one is
+  matched against Discord's own audit log - live via
+  `GuildAuditLogEntryCreate`, falling back to `fetchAuditLogs`. This needs
+  **View Audit Log**; without it every entry still appears but says "Unknown
+  actor", and the bot says so once at startup rather than leaving you to
+  notice.
+- **It diffs down to the property.** A role change reads
+  `Colour #5865f2 → #ff0000`, and a permission change lists the permissions
+  that moved rather than two bitfields. A channel update names the overwrite
+  that changed and for whom.
+- **It doesn't drown you.** Five categories, each routable to its own channel
+  (everything falls back to one catch-all), every one of the 27 events
+  individually switchable, and ignore lists for channels, roles and users.
+  Entries are batched ten to a message on a 1.5-second tick, so a raid or a
+  100-message purge costs a handful of API calls instead of hundreds.
+
+Two limits worth knowing before you go looking for something that isn't there:
+
+- **Deleted and edited message text is only available for messages the worker
+  had cached** - which means messages sent since it last started. Older ones
+  log as "not cached". Discord does not send the old message with the event;
+  no bot can show you one it never saw.
+- **Message content needs the Message Content intent.** Without it the delete
+  log records that a message went, not what it said. `include_content` turns
+  quoting off deliberately if you'd rather it didn't.
+
+Everything is configured at **Admin → Discord bot → Server**, and the worker
+picks changes up within a minute without a restart. A channel *deletion* is
+logged even when that channel is on the ignore list - hiding that is the one
+thing an ignore list should never do.
 
 ### Arcane → levelling and level rewards
 
@@ -272,7 +321,7 @@ five minutes or an afternoon.
    fills `bot_all_config()`, and until it is run the config stays `{}` and every
    feature that reads it no-ops.
 6. **The worker** (`bot/`) for the green dot, chat XP, automod, the live feed,
-   counter channels and the `/status` heartbeat. `Dockerfile`, `fly.toml` and
+   counter channels, the server logs and the `/status` heartbeat. `Dockerfile`, `fly.toml` and
    `render.yaml` are already in the repo, so this is a deploy, not a build. It
    needs `DISCORD_TOKEN`, `DISCORD_GUILD_ID`, `SUPABASE_URL` and
    `SUPABASE_SECRET_KEY` - the last is service-role and belongs **only** here.
@@ -291,19 +340,21 @@ five minutes or an afternoon.
    - *General Information*: **Application ID** → `DISCORD_CLIENT_ID`,
      **Public Key** → `DISCORD_PUBLIC_KEY`.
    - *Bot*: Reset Token → `DISCORD_BOT_TOKEN`. Enable the **Server Members**
-     privileged intent (and **Message Content** only if you want automod's
-     invite/link rules).
+     privileged intent, and **Message Content** if you want automod's
+     invite/link rules or the server log to quote what a deleted message said.
    - *OAuth2 → URL Generator*: scopes `bot` + `applications.commands`;
      permissions: Manage Roles, Manage Channels, Kick Members, Ban Members,
      Moderate Members, Manage Messages, Send Messages, Embed Links, Read
-     Message History. Invite the bot with the generated URL.
+     Message History, **View Audit Log** (that last one is what lets the server
+     log name who did each thing). Invite the bot with the generated URL.
    - Drag the bot's role **above** every role it manages (Server Settings →
      Roles) - Discord refuses to touch roles above its own.
 2. **Vercel env vars** (server only): `DISCORD_CLIENT_ID`,
    `DISCORD_PUBLIC_KEY`, `DISCORD_BOT_TOKEN`, `DISCORD_GUILD_ID`,
    `CRON_SECRET`, `SUPABASE_SECRET_KEY`. Redeploy.
 3. **Supabase**: apply every migration in `database/migrations/` in order, not
-   just the ones named after the bot - `0063` and `0068` add publishing, and
+   just the ones named after the bot - `0063` and `0068` add publishing, `0072`
+   adds the server logs, and
    `status_meta.schema` on `/status` is what tells you the database and the
    build agree. Enable *manual account linking* under Auth → Providers.
 4. **Register the slash commands** (once, and after any command change):
@@ -318,12 +369,14 @@ five minutes or an afternoon.
    /setup tickets channel:#support category:Tickets staff_role:@Staff log_channel:#ticket-logs
    /setup stats
    /setup modlog channel:#mod-log
+   /setup logging channel:#server-log messages_channel:#message-log
    ```
    Verification has one manual step Discord can't automate: deny **View
    Channel** for @everyone (or the Unverified role) on the channels newcomers
    shouldn't see, and allow it for Verified.
-7. **Run the worker** (`bot/`) so chat XP, automod and the Online status work -
-   see `bot/README.md`.
+7. **Run the worker** (`bot/`) so chat XP, automod, the server logs and the
+   Online status work - see `bot/README.md`. `/setup logging` will tell you
+   whether it is running when you run it.
 8. Fine-tune wording, limits and automod at **Admin → Discord bot**.
 
 ## Health & the status page
@@ -362,6 +415,18 @@ For a liveness check that doesn't touch the database, the worker also serves
   appear while it isn't really a member; `Maximum number of guild roles` means
   the server is at Discord's 250-role cap.
 - **User not in the server** → sync is a no-op until they join.
+- **The log channel is empty** → three causes, in the order they're likely.
+  The worker isn't running (nothing else can see these events); logging is off
+  or has no channel set (`/setup status` says which); or every event in that
+  category is switched off. `/setup logging` reports the first of those when
+  you run it.
+- **Log entries say "Unknown actor"** → the bot lacks **View Audit Log**. The
+  events themselves are unaffected, and the worker warns about it once at
+  startup.
+- **Deleted messages log without their text** → either the message predates
+  the worker's current run (it was never cached, and Discord doesn't send the
+  old content), the **Message Content** intent is off, or `include_content`
+  has been turned off deliberately.
 
 ## Monthly booster drops
 

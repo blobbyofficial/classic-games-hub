@@ -97,10 +97,129 @@ export const SERIES: ReleaseSeries[] = [
   {
     version: "v1.5.0",
     codename: "Collector's Edition",
-    dates: "2 - 13 Aug 2026",
+    dates: "2 - 15 Aug 2026",
     summary:
-      "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - a Discord server that now finishes its own setup and keeps itself in step with the site, and a pass over the rough edges underneath all of it.",
+      "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - a Discord server that now finishes its own setup, keeps itself in step with the site, and writes down everything that happens in it - and a pass over the rough edges underneath all of it.",
     releases: [
+      {
+        version: "v1.5.9",
+        codename: "On the Record",
+        date: "15 Aug 2026",
+        scope:
+          "One release, because it is one audit of one thing. The logging feature is the headline, but it was written after reading the bot end to end, and what that reading turned up - a cross-guild hole in the interactions endpoint, a worker that ran on every server it was in, two maps that only ever grew - belongs with it rather than in a separate 'and also some fixes' release nobody would connect to it.",
+        summary:
+          "The bot now writes down everything that happens in the server: messages deleted and edited, channels and roles created, renamed, moved and re-permissioned, members joining, leaving, being kicked, banned, timed out or renamed, emoji, invites, webhooks and voice. Each entry names who did it. Alongside it, the audit that produced it: a real privilege-escalation hole closed, the worker scoped to one server, and six bugs that were each quietly costing something.",
+        groups: [
+          {
+            heading: "Server logs",
+            icon: "ScrollText",
+            blurb:
+              "The last thing Sapphire still did better, and the one part that genuinely needs the gateway worker - none of these events are ever sent to an HTTP endpoint.",
+            items: [
+              {
+                title: "Twenty-seven events, one channel (or five)",
+                description:
+                  "Messages deleted, edited and bulk-purged; channels created, renamed, moved, re-permissioned and deleted; roles created, recoloured, re-permissioned and deleted; members joining, leaving, kicked, renamed, given and stripped of roles; bans, unbans, timeouts; emoji, stickers, threads, invites, webhooks, voice movement and the server's own settings. Five categories, each routable to its own channel and all falling back to one catch-all, so the simple setup is a single channel and the loud category can be moved out later without touching anything else.",
+              },
+              {
+                title: "Every entry names who did it",
+                description:
+                  "Gateway events carry no actor at all - a deleted message and a recoloured role both arrive anonymous - so each one is matched against Discord's own audit log, live where the entry arrives in time and by a fetch where it doesn't. It needs the View Audit Log permission, and when that is missing the bot says so once at startup rather than silently writing 'Unknown actor' forever and leaving somebody to work out why.",
+              },
+              {
+                title: "Diffed to the property, not to the object",
+                description:
+                  "A role change reads `Colour #5865f2 → #ff0000`. A permission change lists the permissions that moved, not two bitfields that technically contain the same information and answer nobody's question. A channel update names the overwrite that changed and whose it was. 'Role updated' is a notification; this is a log.",
+              },
+              {
+                title: "Built so it doesn't get muted",
+                description:
+                  "The way a log dies is a single channel carrying four hundred message edits a day next to the one role change somebody needed to find. So: every event switchable on its own, ignore lists for channels, roles and users, an ignore-bots switch, and content quoting that can be turned off outright because writing down what people said is a decision worth making deliberately. A channel deletion is logged even when that channel is ignored - hiding that is the one thing an ignore list must never do.",
+              },
+              {
+                title: "A burst costs a handful of requests, not hundreds",
+                description:
+                  "Entries queue per channel and go out ten to a message on a fixed tick, which is what stops a raid or a 100-message purge rate-limiting the log into uselessness at the exact moment it matters. The queue is bounded and drops rather than growing: an out-of-memory worker loses chat XP, automod, the counters and the online dot too.",
+              },
+            ],
+          },
+          {
+            heading: "A hole worth naming",
+            icon: "ShieldAlert",
+            items: [
+              {
+                title: "Any server the bot joined could moderate this one",
+                description:
+                  "Every command handler acts on `DISCORD_GUILD_ID` - this server - while the permission check only ever read the permissions Discord sent for the guild the command was *used* in. So anybody who could add the bot to a server they administered could run `/ban` there and have it land here, with their own server's permissions as the only gate. Adding a bot needs Manage Server in the server you're adding it to and nothing else, so 'we only invited it to one server' was never the control it appeared to be. Interactions from any other guild are now refused before they reach a handler.",
+              },
+              {
+                title: "You can no longer ban yourself, or the bot",
+                description:
+                  "The dashboard has refused both since it was written. The slash commands sent them to Discord and returned a bare 'couldn't ban that member' - an error that reads like a permissions problem and reliably sends people off to check role hierarchy for a fault that was never there.",
+              },
+            ],
+          },
+          {
+            heading: "The worker, read end to end",
+            icon: "Bug",
+            blurb: "Six things that were each costing something quietly.",
+            items: [
+              {
+                title: "It ran on every server it was in",
+                description:
+                  "Chat XP, automod and the welcome message were never scoped to the configured guild, so anyone who added the bot elsewhere got Hub XP awarded against their server's chat. Every listener is now scoped, and the worker says so at startup if it isn't in the guild it was configured for.",
+              },
+              {
+                title: "Two maps that only ever grew",
+                description:
+                  "The XP cooldown map kept one entry per person who has ever spoken, for the lifetime of a process meant to run for months. Automod's flood map 'bounded' itself by wiping everyone's history the moment it passed 5000 entries - including, necessarily, the person mid-flood the rule exists to catch. Both now age entries out on a timer, which bounds them without ever helping a spammer.",
+              },
+              {
+                title: "An uncaught exception was logged and ignored",
+                description:
+                  "Which produced the worst outcome available: a process that passes its health check and has stopped doing its job, so the host never restarts it and nothing looks wrong. It now exits, and the host brings up a clean one.",
+              },
+              {
+                title: "A database blip became a request storm",
+                description:
+                  "A failed config read wasn't cached, so the RPC was retried on every single message until Supabase came back - turning a momentary blip into sustained load at the worst possible time. The answer was never going to change inside the same second anyway.",
+              },
+              {
+                title: "Boosting reached the site a day late",
+                description:
+                  "The worker never listened for member updates, and its role sync had drifted from the website's - no `__booster__` key, no call to stamp the boost onto the profile - so a new booster paid for a month and waited for the nightly reconcile before anything happened. The two implementations now do the same thing, which is the actual fix: drift between them is how someone ends up with different roles depending on which one happened to run.",
+              },
+              {
+                title: "Automod never looked at edits",
+                description:
+                  "Posting something innocuous and editing an invite into it a second later walked past every rule, because a message was only ever checked once.",
+              },
+            ],
+          },
+          {
+            heading: "Smaller, still wrong",
+            icon: "Wrench",
+            items: [
+              {
+                title: "Long ticket transcripts were logged as their middle",
+                description:
+                  "The last 3800 characters were taken and then the first 1900 of *those* were posted - so a long ticket lost the question at the start and the resolution at the end, and kept the part in between. Transcripts are chunked now, and when they still don't fit it is the end that survives, because the end of a support ticket is where the answer is.",
+              },
+              {
+                title: "Someone else's rank card had your name on it",
+                description:
+                  "The fallback for an unresolved target was the invoker's name, so a lookup that failed produced a confident, wrong answer instead of an obviously incomplete one.",
+              },
+              {
+                title: "The worker's version was blank on /status",
+                description:
+                  "It read `npm_package_version`, which only exists when npm started the process - and the Docker image, which is what everyone actually deploys, runs `node dist/index.js` directly. `BOT_VERSION` now covers it.",
+              },
+            ],
+          },
+        ],
+        commits: [],
+      },
       {
         version: "v1.5.6",
         codename: "Is It Just Me?",
