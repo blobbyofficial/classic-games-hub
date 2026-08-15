@@ -11,13 +11,16 @@ import { pollAuditLog } from "@/lib/discord/audit-log";
  *   curl -H "Authorization: Bearer $CRON_SECRET" https://<domain>/api/cron/discord-audit-log
  *
  * Vercel's Hobby plan only runs crons daily, so this is deliberately not in
- * vercel.json - a daily audit-log poll would only ever see the most recent 100
- * entries and silently lose everything before them. Use the same free
- * scheduler that already drives the status probe (docs/cron-jobs.md).
+ * vercel.json. Use the same free scheduler that already drives the status
+ * probe (docs/cron-jobs.md).
  *
- * `after` is a cursor, so polling more often costs one request and finds
- * nothing; polling too rarely on a busy server drops entries past the 100-entry
- * page. Five minutes is the balance, and it is the same cadence as the probe.
+ * `after` is a cursor and Discord reverses its ordering when you pass one -
+ * you get the *oldest* entries newer than the cursor - so nothing is ever
+ * skipped however long the gap. What a too-long interval costs is lag: each
+ * run advances at most one 100-entry page, so on a server busier than that
+ * the log falls behind and never catches up. Polling more often costs one
+ * request that finds nothing. Five minutes is the balance, and it matches the
+ * probe's cadence.
  *
  * Run this *instead of* the worker, not alongside it: both write the same
  * entries to the same channels, so running both duplicates every structural

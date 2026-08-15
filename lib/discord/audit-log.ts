@@ -326,13 +326,15 @@ export interface AuditPollResult {
   posted: number;
   cursor?: string | null;
   /**
-   * The page came back full, so entries may have been missed.
+   * The page came back full: there is a backlog, and this run did not clear it.
    *
-   * Discord returns audit entries newest-first, one page at a time. If more
-   * than a page accumulates between polls, advancing the cursor to the newest
-   * entry steps over whatever sat in the middle - and a log that quietly loses
-   * entries is worse than one that admits it, so the count is reported and the
-   * scheduler can be pointed at a shorter interval.
+   * Nothing is lost. Given `after`, Discord reverses its usual ordering and
+   * returns the *oldest* entries newer than the cursor, so a full page means
+   * the next poll resumes exactly where this one stopped. What it does mean is
+   * that the log is running behind real time, and a poll interval too long for
+   * the server's activity never catches up - each run advances at most a page,
+   * so the lag grows without bound. Reported so the scheduler's own output
+   * says to run it more often.
    */
   truncated?: boolean;
 }
@@ -448,7 +450,7 @@ export async function pollAuditLog(): Promise<AuditPollResult> {
   await botDb.setLoggingCursor(newest);
   if (truncated) {
     console.warn(
-      `[discord] audit-log poll returned a full page of ${PAGE}; entries may have been missed. Schedule it more often.`,
+      `[discord] audit-log poll filled its ${PAGE}-entry page, so the log is behind. Nothing is lost - the next run resumes from the cursor - but schedule it more often or the lag keeps growing.`,
     );
   }
   return { ok: true, scanned: entries.length, posted, cursor: newest, truncated };
