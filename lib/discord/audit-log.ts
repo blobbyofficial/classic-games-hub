@@ -325,7 +325,19 @@ export interface AuditPollResult {
   /** Embeds actually posted (the rest were filtered or switched off). */
   posted: number;
   cursor?: string | null;
+  /**
+   * The page came back full, so entries may have been missed.
+   *
+   * Discord returns audit entries newest-first, one page at a time. If more
+   * than a page accumulates between polls, advancing the cursor to the newest
+   * entry steps over whatever sat in the middle - and a log that quietly loses
+   * entries is worse than one that admits it, so the count is reported and the
+   * scheduler can be pointed at a shorter interval.
+   */
+  truncated?: boolean;
 }
+
+const PAGE = 100;
 
 const MAX_EMBEDS_PER_MESSAGE = 10;
 
@@ -344,7 +356,7 @@ export async function pollAuditLog(): Promise<AuditPollResult> {
   const state = await botDb.loggingCursor();
   const cursor = state?.cursor ?? null;
 
-  const log = await discordRest.getAuditLog(guildId, cursor, 100);
+  const log = await discordRest.getAuditLog(guildId, cursor, PAGE);
   if (!log.ok || !log.data) {
     return {
       ok: false,
@@ -360,6 +372,7 @@ export async function pollAuditLog(): Promise<AuditPollResult> {
   if (entries.length === 0) return { ok: true, scanned: 0, posted: 0, cursor };
 
   const newest = entries[entries.length - 1].id;
+  const truncated = entries.length >= PAGE;
 
   // First run has no cursor, so the whole 100-entry backlog would land at once.
   // Record where we are and start logging from the next change instead.
@@ -433,5 +446,10 @@ export async function pollAuditLog(): Promise<AuditPollResult> {
   // Only advance after posting: a crash mid-run re-posts a few entries next
   // time, which is a far better failure than losing them silently.
   await botDb.setLoggingCursor(newest);
-  return { ok: true, scanned: entries.length, posted, cursor: newest };
+  if (truncated) {
+    console.warn(
+      `[discord] audit-log poll returned a full page of ${PAGE}; entries may have been missed. Schedule it more often.`,
+    );
+  }
+  return { ok: true, scanned: entries.length, posted, cursor: newest, truncated };
 }
