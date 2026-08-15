@@ -80,10 +80,6 @@ bot/ gateway worker ──▶ chat XP, milestone roles on level-up, join handlin
 
 ### Sapphire → server logs
 
-The half of Sapphire that took longest to replace, because it is the half that
-needs a gateway connection: none of these events are ever sent to an HTTP
-interactions endpoint, which only hears about things aimed at the bot.
-
 `/setup logging channel:#server-log` switches it on. What gets written:
 
 | Category | Events |
@@ -126,6 +122,39 @@ Everything is configured at **Admin → Discord bot → Server**, and the worker
 picks changes up within a minute without a restart. A channel *deletion* is
 logged even when that channel is on the ignore list - hiding that is the one
 thing an ignore list should never do.
+
+#### Two ways to run the logs
+
+Logging is the one feature with a serverless fallback, because it is the one
+worth having even in a reduced form.
+
+| | **Gateway worker** (`bot/`) | **Cron poller** (`/api/cron/discord-audit-log`) |
+| --- | --- | --- |
+| Needs | an always-on host | any free scheduler, every 5 min |
+| Timing | real time | up to 5 minutes late |
+| Channels, roles, permissions, threads, emoji, invites, webhooks, server settings | ✅ | ✅ |
+| Kicks, bans, unbans, timeouts, nicknames, role grants | ✅ | ✅ |
+| Messages deleted **by a moderator** | ✅ with content | ✅ channel and count only |
+| Messages deleted **by their author** | ✅ | ❌ never audited |
+| Message **edits** | ✅ before/after | ❌ never audited |
+| Joins and leaves | ✅ | ⚠️ kicks only |
+| Voice movement | ✅ | ❌ |
+| The green Online dot, chat XP, automod, live feed, counters | ✅ | ❌ |
+
+The poller reads Discord's own audit log over plain REST, which is why it needs
+no persistent connection - and also why the message-shaped gaps above are
+permanent rather than a limitation worth fixing. Discord does not record
+message content, edits or self-deletions anywhere a REST call can reach.
+
+**Run one or the other, not both.** They write the same structural entries to
+the same channels, so running both duplicates every line. If the worker is up,
+turn the cron off.
+
+The poller keeps a cursor (`logging_state` in `discord_bot_config`, migration
+`0073`), so it never repeats or skips. Its first run records where it is and
+posts nothing - otherwise switching it on would dump a hundred historical
+entries into the channel at once. It also skips the bot's own actions, since
+those are already reported by whatever performed them.
 
 ### Arcane → levelling and level rewards
 
@@ -392,7 +421,7 @@ five minutes or an afternoon.
    `CRON_SECRET`, `SUPABASE_SECRET_KEY`. Redeploy.
 3. **Supabase**: apply every migration in `database/migrations/` in order, not
    just the ones named after the bot - `0063` and `0068` add publishing, `0072`
-   adds the server logs, and
+   and `0073` add the server logs, and
    `status_meta.schema` on `/status` is what tells you the database and the
    build agree. Enable *manual account linking* under Auth → Providers.
 4. **Register the slash commands** (once, and after any command change):
@@ -453,11 +482,14 @@ For a liveness check that doesn't touch the database, the worker also serves
   appear while it isn't really a member; `Maximum number of guild roles` means
   the server is at Discord's 250-role cap.
 - **User not in the server** → sync is a no-op until they join.
-- **The log channel is empty** → three causes, in the order they're likely.
-  The worker isn't running (nothing else can see these events); logging is off
-  or has no channel set (`/setup status` says which); or every event in that
-  category is switched off. `/setup logging` reports the first of those when
-  you run it.
+- **The log channel is empty** → four causes, in the order they're likely.
+  Neither half is running (the worker is down *and* the audit-log cron is not
+  scheduled); logging is off or has no channel set (`/setup status` says
+  which); every event in that category is switched off; or the cron poller has
+  only had its first run, which records a cursor and deliberately posts
+  nothing. `/setup logging` reports whether the worker is up when you run it.
+- **Every log entry is duplicated** → the worker and the cron poller are both
+  running. Turn one off; they cover the same structural events.
 - **Log entries say "Unknown actor"** → the bot lacks **View Audit Log**. The
   events themselves are unaffected, and the worker warns about it once at
   startup.

@@ -102,6 +102,51 @@ export const SERIES: ReleaseSeries[] = [
       "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - a Discord server that now finishes its own setup, keeps itself in step with the site, and writes down everything that happens in it - and a pass over the rough edges underneath all of it.",
     releases: [
       {
+        version: "v1.5.10",
+        codename: "No Host Required",
+        date: "15 Aug 2026",
+        scope:
+          "Its own release rather than a patch onto v1.5.9, because it is a different answer to the same question. v1.5.9 built the logs; this one is about the fact that they could not be switched on, and the shape of what runs without a host is a design decision worth being able to find on its own.",
+        summary:
+          "The logging feature shipped in v1.5.9 lives in the gateway worker, and the worker needs an always-on host this deployment does not have. Discord's audit log is pollable over plain REST, so there is now a second way to run the logs: a cron route, any free scheduler, no hosted process - covering every structural change in the server, and honest about the four things it can never see.",
+        groups: [
+          {
+            heading: "Logs without a host",
+            icon: "ScrollText",
+            blurb:
+              "A feature that cannot be switched on is worth exactly as much as one that was never built.",
+            items: [
+              {
+                title: "Discord's own audit log, polled",
+                description:
+                  "It needs no persistent connection, which is the entire problem with the gateway worker, and it already contains every structural change: channels created, renamed, moved, re-permissioned and deleted; roles created, recoloured, re-permissioned and deleted; members kicked, banned, unbanned, timed out, renamed and given roles; invites, webhooks, emoji, stickers, threads, server settings, and messages deleted by a moderator. Point any free scheduler at one route every five minutes - the same one already running the status probe.",
+              },
+              {
+                title: "Named permissions, not bitfields",
+                description:
+                  "A role that gained Manage Server says so. Printing `1071698660929 → 1071698660961` either side of an arrow is technically the same information and answers nobody's question, which is the difference between a log and a diff of a log.",
+              },
+              {
+                title: "It says what it cannot do",
+                description:
+                  "Message content, message edits, self-deleted messages, joins, leaves and voice are absent from Discord's audit log and always will be - so they are absent here, permanently, rather than being a gap that a later version quietly closes. The docs carry a comparison table rather than a claim of parity, because discovering the limit while looking for a specific deleted message is the worst possible time to find out.",
+              },
+              {
+                title: "A cursor, and a quiet first run",
+                description:
+                  "The poller records where it has read to, so it never repeats an entry or skips one. Its first run records the position and posts nothing at all: switching a log on should not begin by dumping a hundred historical entries into the channel. It also ignores the bot's own actions, which are already reported by whatever performed them.",
+              },
+              {
+                title: "Run one or the other",
+                description:
+                  "The worker and the poller write the same structural entries to the same channels, so running both duplicates every line. It is in the docs and in the failure-modes list, because 'every entry appears twice' is otherwise a genuinely confusing thing to debug.",
+              },
+            ],
+          },
+        ],
+        commits: [],
+      },
+      {
         version: "v1.5.9",
         codename: "On the Record",
         date: "15 Aug 2026",
