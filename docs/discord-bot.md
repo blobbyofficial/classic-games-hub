@@ -284,19 +284,57 @@ wrong.**
 
 ## Where this deployment actually stands
 
-Verified against the live database on 14 August 2026. Recorded so the next
+Verified against the live database on 15 August 2026. Recorded so the next
 session picks up from here instead of re-diagnosing it.
 
-**Nothing is broken. Nothing has ever been configured.**
+**The configuration was restored on 15 August. The worker has still never run.**
 
-- `bot_all_config()` returns `{}` - not a partial setup, an empty one. No
-  channels, roles, panels or publishing targets have ever been saved.
+The 14 August entry here said "nothing has ever been configured", which was
+wrong in a way worth keeping on the record, because the same mistake is easy to
+repeat: an empty `discord_bot_config` was read as *never configured* when it
+actually meant *configured and then cleared*. The audit trail had the whole
+story the config table could not:
+
+- **28 July - 2 August:** seventeen `bot_config_update` entries. Verification
+  (captcha mode, real Verified/Unverified role ids, panel, welcome and log
+  channels), levelling with an announcement channel, automod switched on with
+  invites and links blocked, tickets, and three stat-counter channels.
+- **3 August, 18:46 UTC:** `admin_reset_bot_config` cleared all seven keys. A
+  second reset sixteen minutes later found nothing left to clear. That is the
+  same day `vercel.json` began refusing every deployment, so it most likely
+  happened while debugging that.
+- **15 August:** every section restored verbatim from the audit trail, plus
+  `publishing` and `logging` at their defaults. `bot_all_config()` now returns
+  all nine keys and `platform_status()` reports verification and counters as
+  configured.
+
+**Read the audit log before concluding anything from an empty config table.**
+`admin_set_bot_config` writes the full value it saved into `audit_logs`, so
+every setting this bot has ever had is recoverable long after a reset:
+
+```sql
+select distinct on (target_id) target_id, created_at, details
+from audit_logs where action = 'bot_config_update'
+order by target_id, created_at desc;
+```
+
+Still outstanding:
+
 - `worker_last_seen` is `null` - the gateway worker in `bot/` has never checked
-  in, not once.
-- Both packages typecheck and the site builds. There is no code fault to find.
+  in, not once. Chat XP, automod, the live feed, the counter channels, the
+  server logs and the green Online dot all need it, and none of them will do
+  anything until it is deployed. This is now the single biggest gap.
+- The restored role and channel ids are from 28 July - 2 August and have **not
+  been verified against the live server**. If any were deleted since, `/setup
+  status` reports them as *not found* and leaves them alone rather than
+  replacing them - clear that field to have a fresh one created.
+- Milestone level roles have never been created (`0/9`), and tickets have no
+  category, staff role or panel channel.
+- Publishing channels are unset, so the daily mirror no-ops.
 - Slash commands were registered from Admin → Discord bot at least once. Whether
   that call succeeded is **unconfirmed** - if it did, `DISCORD_BOT_TOKEN` and
   `DISCORD_CLIENT_ID` are present on the deployment, which is most of step 2.
+  `/setup logging` is new in v1.5.9 and needs a re-registration either way.
 
 ### Pick up here
 
