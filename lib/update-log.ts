@@ -221,6 +221,90 @@ export const SERIES: ReleaseSeries[] = [
         commits: ["5d23669"],
       },
       {
+        version: "v1.5.8",
+        codename: "Not Two Yet",
+        date: "14 Aug 2026",
+        scope:
+          "A documentation-only release, drawn on its own because renumbering the whole forward plan is the kind of change that has to be findable later. Nothing shipped to the site; what changed is what the roadmap claims and what the Discord setup instructions tell you to do.",
+        summary:
+          "The plan stopped awarding itself a major version. The relaunch, Head to Head and Player Made were v2.0.0, v2.1.0 and v2.2.0 for work that has not started; they are now v1.7.0, v1.8.0 and v1.9.0, and 2.0.0 is left deliberately unclaimed. Two pieces of Discord setup guidance that were actively wrong were corrected at the same time.",
+        groups: [
+          {
+            heading: "Renumbering",
+            icon: "Tag",
+            items: [
+              {
+                title: "The forward plan runs in one continuous line",
+                description:
+                  "The relaunch, Head to Head and Player Made carried v2.0.0, v2.1.0 and v2.2.0 - a major version awarded to work nobody had started. They became v1.7.0, v1.8.0 and v1.9.0, so the rebuild at v1.6.0-v1.6.3 and the three releases behind it read as one sequence rather than as a plan that crosses a boundary for no stated reason.",
+              },
+              {
+                title: "2.0.0 is deliberately unclaimed",
+                description:
+                  "A planned number is not a reservation, so nothing inherits it. Whatever eventually deserves to be called 2.0.0 will take it because there is a reason to, not because a sketch written months earlier said so. The relaunch's summary used to justify its own number; it now says why it isn't 2.0.0, which is the more useful sentence.",
+              },
+            ],
+          },
+          {
+            heading: "Corrections",
+            icon: "Bot",
+            items: [
+              {
+                title: "Discord setup named two migrations out of seventy",
+                description:
+                  "It told you to apply `0033` and `0041`. The schema was at `0071`, and publishing needs `0063` and `0068` - so following the instructions literally left a database that could not run the bot. It now says to apply everything in order and check `status_meta.schema` on /status, which is the check that would have caught it.",
+              },
+              {
+                title: "A credential that looks wrong may only be missing",
+                description:
+                  "Env vars set between 3 and 13 August never reached a running build, because the redeploy they need could not happen while `vercel.json` was refusing every deployment. Written down, because the symptom - a variable that is present in the dashboard and absent at runtime - reads as a wrong value and sends you looking in the wrong place.",
+              },
+            ],
+          },
+        ],
+        commits: [],
+      },
+      {
+        version: "v1.5.7",
+        codename: "Unblocked",
+        date: "13 Aug 2026",
+        scope:
+          "One release for one fault, even though the fix is a four-line file. The size of a change and the size of what it unblocked are different measurements, and ten days in which every push silently vanished is worth its own entry in the history.",
+        summary:
+          "Nothing had deployed since 3 August - not because builds were failing, but because none were ever started. Vercel's Hobby plan rejects a sub-daily cron expression when the deployment is created, producing no build, no error and nothing in the dashboard. `vercel.json` is back to two daily entries and the jobs that need a tighter cadence moved to an external scheduler.",
+        groups: [
+          {
+            heading: "Ten days of pushes that never built",
+            icon: "Rocket",
+            blurb:
+              "The application code was fine throughout - typecheck, lint and build all passed on the stuck commit.",
+            items: [
+              {
+                title: "No failed build to find, because there was no build",
+                description:
+                  "Vercel's Hobby plan caps cron jobs at two, each running at most once a day, and it rejects a sub-daily expression at the moment the deployment is *created*. So there is nothing to look at: no failed build, no error in the dashboard, no clue in the repository. Every push simply vanished, which is exactly why reconnecting the git integration - the obvious first move - changed nothing at all.",
+              },
+              {
+                title: "The culprit was the first commit that never shipped",
+                description:
+                  "`de6cfc9` moved role sync from `30 4 * * *` to `*/2 * * * *`. `c0d2064` then added a `*/15` job and v1.5.6 a `*/5` one, so by the time anyone counted there were five crons, four of them sub-daily - and each of those commits was itself invisible, having never deployed.",
+              },
+              {
+                title: "Two daily entries, and the rest moved out",
+                description:
+                  "`vercel.json` carries `discord-publish` at 05:00 and `booster-drops` at 06:00, both of which a daily run genuinely serves. The status probe deliberately did not stay: `status_record_checks` counts a failed check as five minutes of downtime, so a daily probe would not merely be coarse, it would report wrong uptime percentages on the page whose entire job is being right about that.",
+              },
+              {
+                title: "docs/cron-jobs.md, and a warning in CLAUDE.md",
+                description:
+                  "Which job wants which cadence, which two are on Vercel and why, how to point an external scheduler at the rest, and what to move back if the plan ever changes. Repeated in CLAUDE.md because the failure is silent and the first instinct is wrong.",
+              },
+            ],
+          },
+        ],
+        commits: [],
+      },
+      {
         version: "v1.5.6",
         codename: "Is It Just Me?",
         date: "13 Aug 2026",
