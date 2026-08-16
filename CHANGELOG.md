@@ -3,6 +3,94 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.5.11 - "Housekeeping" (an audit of the platforms underneath the site)
+
+### 🔁 Continuous integration, running for the first time
+
+- **The CI workflow had never executed.** `ci-workflow.yml` was sitting in
+  `.github/`, and GitHub only reads `.github/workflows/`. Lint, typecheck and
+  build had run on zero pull requests. The file moved one directory. The
+  Definition of Done has asked for all three since it was written, and until
+  now every one was a manual promise.
+- **The bot gets its own job.** Separate package, separate dependencies,
+  separate `tsconfig`, and a `tsc --noEmit` that nothing had ever run - so a
+  change breaking only the gateway worker now fails CI instead of being
+  discovered when the worker next restarts.
+- **Dependabot, grouped.** Both npm packages plus the workflows, weekly,
+  batched into a handful of PRs rather than one per Radix package. Security
+  updates are their own group so they are never buried in a routine bump.
+- **CodeQL, weekly as well as on push.** Weekly is the part that matters: a
+  rule published next month finds today's code instead of waiting for someone
+  to edit the file it applies to.
+- **GitHub Releases are now cut from `lib/update-log.ts`.** The repo had 0
+  releases and 0 tags despite the most structured release data in the project
+  sitting in that file. A version number in this changelog now resolves to a
+  tag and a diff. The script refuses to run against a shallow clone, which
+  would otherwise tag every release at `HEAD`.
+
+### ⏰ The schedule moved into the database
+
+- **`pg_cron` + `pg_net` now drive the four sub-daily jobs** - status probe,
+  role sync, counter channels, audit poller - at the cadences they actually
+  want. `docs/cron-jobs.md` has listed this as the option that "needs no third
+  party" for a while and then recommended a third party.
+- **Why it was worth moving.** Not reliability: the schedule for the site's
+  most timing-sensitive job lived in a free external account with no alerting,
+  and nothing in this repository could tell you whether it still ran.
+  `status_record_checks` counts a failed check as five minutes of downtime, so
+  a probe that quietly stops leaves a *wrong* graph rather than a gap.
+- **The token lives in Vault and its absence is loud.** `CRON_SECRET` is not in
+  the migration. Until it is set, every tick is skipped with a warning naming
+  the fix, instead of firing unauthenticated at a 401 four times a minute
+  forever. Rotation is one update, no redeploy, no reschedule.
+- **`admin_cron_status()`** reports each job's schedule, whether it is active,
+  when it last ran and how it ended - plus whether the token is set, which is
+  the first thing to check when everything fires and nothing happens.
+- **`vercel.json` is untouched and stays untouched.** Two entries, both daily.
+
+### 🖼️ Shared links became worth sharing
+
+- **Profile cards.** A pasted profile now renders the avatar, name, level, XP
+  progress, four stats and best game. Profiles are what people actually send
+  each other, so this was the share surface wasting the most posts.
+- **Game cards.** The thumbnail in a frame that fits, beside the title,
+  tagline, category, play count and rating. Before, the raw square thumbnail
+  was handed to each platform to crop as it pleased, with no title on it.
+- **Four emoji nobody has ever seen.** The site card carried a row of them
+  across the top; `next/og` ships no emoji font, so all four rendered as
+  nothing and the card had a band of empty space where the decoration was
+  meant to be. Removed - which is what it already looked like. The same card
+  also still advertised 23 games. There are 26.
+- **A dead avatar degrades to a letter.** Remote images are fetched with a
+  three-second budget and inlined, so a deleted avatar or a slow host gives a
+  plain card rather than a broken one - `next/og` fetching it directly throws
+  and takes the whole image with it.
+
+### 🛡️ Indexes, policies, and a policy
+
+- **33 foreign keys got covering indexes** (`0074`). Postgres does not index
+  the referencing side for you, so every join across those keys was a
+  sequential scan - and deleting one shop item had to scan the whole of
+  `inventory_items`, `gift_tokens` and `wishlist_items` to check the constraint.
+- **10 RLS policies stopped re-checking who you are for every row.** A bare
+  `auth.uid()` is treated as volatile and evaluated per candidate row; wrapped
+  as `(select auth.uid())` it is an InitPlan evaluated once per query. Same
+  rows out. It mattered most on the two party policies, where the cost was
+  scaling with party size.
+- **A Content-Security-Policy, shipped report-only** (`lib/security-headers.ts`).
+  The static headers have been right for a while; the one that actually
+  contains an XSS was missing, on a site rendering usernames, bios, chat
+  messages and third-party GIFs. Report-only because a policy written from
+  reading the code is a hypothesis and the browser is what knows. Promoting it
+  is renaming one header - see the note about `next-themes` first.
+- **Custom analytics events.** Pageviews say someone opened Snake; they cannot
+  say how many runs finish, what the shop converts at, or which difficulty
+  people abandon. `game_start`, `game_end`, `purchase` and `party_join` -
+  scalars only, nothing identifying, behind the existing consent gate.
+- **Still to do, by hand:** enable leaked-password protection in Supabase Auth,
+  and decide whether Vercel Web Analytics is on - the script ships to every
+  visitor and the API reports the project has none.
+
 ## v1.5.10 - "No Host Required" (server logs without an always-on process)
 
 ### 📝 Logging that runs on free infrastructure

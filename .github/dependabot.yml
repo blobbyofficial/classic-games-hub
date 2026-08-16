@@ -1,0 +1,61 @@
+# Dependency updates for the two npm packages in this repository and for the
+# workflows themselves.
+#
+# Everything is grouped and weekly on purpose. Ungrouped Dependabot on a project
+# with this many Radix packages opens a dozen pull requests a week and trains
+# you to ignore all of them, which costs more than it saves. Security updates
+# are deliberately kept in their own group so they are never buried in a routine
+# version bump.
+version: 2
+
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 5
+    groups:
+      security:
+        applies-to: security-updates
+        patterns: ["*"]
+      radix:
+        patterns: ["@radix-ui/*"]
+      types:
+        patterns: ["@types/*", "typescript", "eslint*"]
+      production:
+        applies-to: version-updates
+        dependency-type: production
+        exclude-patterns: ["@radix-ui/*"]
+      development:
+        applies-to: version-updates
+        dependency-type: development
+        exclude-patterns: ["@types/*", "typescript", "eslint*"]
+    commit-message:
+      prefix: "chore(deps)"
+
+  - package-ecosystem: npm
+    directory: /bot
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    groups:
+      security:
+        applies-to: security-updates
+        patterns: ["*"]
+      bot:
+        applies-to: version-updates
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore(deps,bot)"
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: monthly
+    groups:
+      actions:
+        patterns: ["*"]
+    commit-message:
+      prefix: "chore(ci)"

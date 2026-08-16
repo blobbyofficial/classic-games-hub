@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Coins, Check, Loader2, Clock, Eye } from "lucide-react";
 import { toast } from "sonner";
 import { purchaseItem, equipItem, unequipItem } from "@/actions/economy";
+import { purchase } from "@/lib/analytics";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { DynamicIcon } from "@/components/dynamic-icon";
 import { Button } from "@/components/ui/button";
@@ -79,6 +80,7 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
       }
       if (profile) setCredits(profile.credits - item.price);
       if (!isBoost) setOwned(true);
+      purchase(item.slug, item.price, item.rarity);
       toast.success(`Purchased ${item.name}!`, { description: isBoost ? "Active for 24 hours" : "Equip it from your inventory" });
     });
   };

@@ -1,0 +1,39 @@
+name: Releases
+
+# lib/update-log.ts is the source of truth for what has shipped. This mirrors it
+# into GitHub Releases so every version in the changelog resolves to a tag, a
+# diff and a set of notes. Idempotent - it creates only what is missing.
+on:
+  push:
+    branches: [main]
+    # Only when the log itself changed. A release is added by editing this file,
+    # so anything else cannot have produced one.
+    paths:
+      - "lib/update-log.ts"
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: "Print what would be created without creating it"
+        type: boolean
+        default: false
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # Full history: the script resolves each release's abbreviated sha to
+          # a full one so the tag lands on the commit the release finished at.
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Sync releases
+        run: npx --yes tsx@4 scripts/sync-releases.ts ${{ inputs.dry_run && '--dry-run' || '' }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

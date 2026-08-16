@@ -97,10 +97,127 @@ export const SERIES: ReleaseSeries[] = [
   {
     version: "v1.5.0",
     codename: "Collector's Edition",
-    dates: "2 - 15 Aug 2026",
+    dates: "2 - 16 Aug 2026",
     summary:
       "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - a Discord server that now finishes its own setup, keeps itself in step with the site, and writes down everything that happens in it - and a pass over the rough edges underneath all of it.",
     releases: [
+      {
+        version: "v1.5.11",
+        codename: "Housekeeping",
+        date: "16 Aug 2026",
+        scope:
+          "One release because it is one question answered: are the four platforms this site runs on actually being used, or merely paid for. Everything here came out of that audit, and none of it is a feature - it is the scaffolding that should have been there already. Splitting it into five patches would file the same afternoon's work under five headings nobody would search for.",
+        summary:
+          "An audit of what Supabase, Vercel, GitHub and Cloudflare were actually doing for the site, and the gaps it turned up. CI that had never run once, a scheduler living in somebody's free third-party account, thirty-three unindexed foreign keys, and every shared link on the site rendering the same picture. Nothing here changes how the arcade plays; it changes how much of it is checked, watched and shareable.",
+        groups: [
+          {
+            heading: "Continuous integration, for the first time",
+            icon: "GitBranch",
+            blurb:
+              "The workflow file existed. It was in `.github/`, which is not `.github/workflows/`, so GitHub had never read it.",
+            items: [
+              {
+                title: "Lint, typecheck and build now run on every pull request",
+                description:
+                  "The Definition of Done has asked for all three since it was written, and until now every one of them was a manual promise made by whoever remembered. The file moved one directory and started working. The bot is a second job, because it is a separate package with its own dependencies and its own typecheck that nothing had ever run.",
+              },
+              {
+                title: "Dependabot, grouped rather than firehosed",
+                description:
+                  "Both npm packages and the workflows themselves, weekly, batched into a handful of pull requests instead of one per Radix package. Security updates are their own group so they are never buried in a routine bump.",
+              },
+              {
+                title: "CodeQL scanning, weekly as well as on push",
+                description:
+                  "Weekly matters more than it sounds: it means a rule published next month finds today's code, rather than waiting for someone to happen to edit the file it applies to.",
+              },
+              {
+                title: "Releases cut from the update log",
+                description:
+                  "This file is the most structured record in the project and GitHub had zero releases and zero tags. A workflow now reads it and cuts a tagged release for every version that does not have one, so a version number in the changelog resolves to a diff you can click. It refuses to run against a shallow clone, because that would tag all thirty-one releases at HEAD.",
+              },
+            ],
+          },
+          {
+            heading: "The schedule moved into the database",
+            icon: "Clock",
+            blurb:
+              "`docs/cron-jobs.md` listed Supabase cron as the option that 'needs no third party', and then recommended a third party.",
+            items: [
+              {
+                title: "pg_cron and pg_net run the four sub-daily jobs",
+                description:
+                  "The status probe, role sync, counter channels and the audit poller now fire from Postgres at the cadences they actually want, instead of from a free account on an external scheduler with no alerting. The objection was never that the scheduler was unreliable - it is that `status_record_checks` counts a failed check as five minutes of downtime, so a probe that quietly stops does not leave a gap in the graph, it leaves a wrong one.",
+              },
+              {
+                title: "The token is in Vault, and its absence is loud",
+                description:
+                  "`CRON_SECRET` is not in the migration and never will be. Until it is set, every tick is skipped with a warning naming the fix, rather than firing unauthenticated at a route that would return 401 four times a minute forever. Rotating it is one update with no redeploy.",
+              },
+              {
+                title: "`admin_cron_status()` answers 'is it running?'",
+                description:
+                  "Each job's schedule, whether it is active, when it last ran and how that run ended - plus whether the token is set, which is the first thing to check when everything is firing and nothing is happening. A schedule you cannot inspect is exactly what this replaced.",
+              },
+            ],
+          },
+          {
+            heading: "Shared links became worth sharing",
+            icon: "Image",
+            blurb:
+              "Every profile, every game and the site itself rendered one generic card - and the card had a decorative row that rendered as nothing at all.",
+            items: [
+              {
+                title: "Profile cards",
+                description:
+                  "Paste a profile into Discord and you get the avatar, the name, the level, how far into it they are, four numbers and what they are best at. Profiles are what people actually send each other, so this is the share surface that was wasting the most posts.",
+              },
+              {
+                title: "Game cards",
+                description:
+                  "The thumbnail in a frame that fits, next to the title, the tagline, the category, the play count and the rating. Previously the raw square thumbnail was handed to each platform to crop however it liked, with no title on it anywhere.",
+              },
+              {
+                title: "The emoji nobody could see",
+                description:
+                  "The site card carried four emoji across the top. `next/og` ships no emoji font, so all four rendered as nothing and the card had a band of empty space where the decoration was meant to be. Removed - which is what it already looked like. The same card also still advertised 23 games; there are 26.",
+              },
+              {
+                title: "A dead avatar degrades to a letter",
+                description:
+                  "Remote images are fetched with a three-second budget and inlined, so a deleted avatar or a slow host produces a plain card instead of a broken one. `next/og` fetching it directly would throw and take the whole image down.",
+              },
+            ],
+          },
+          {
+            heading: "Indexes, policies and a policy",
+            icon: "ShieldCheck",
+            items: [
+              {
+                title: "Thirty-three foreign keys got covering indexes",
+                description:
+                  "Postgres does not index the referencing side for you. Without one, every join across that key is a sequential scan and - the part that bites later - deleting a single shop item has to scan the whole of `inventory_items`, `gift_tokens` and `wishlist_items` to check the constraint.",
+              },
+              {
+                title: "Ten RLS policies stopped re-checking who you are per row",
+                description:
+                  "A bare `auth.uid()` in a policy is treated as volatile and evaluated once per candidate row; wrapped as `(select auth.uid())` it becomes an InitPlan evaluated once per query. Same rows out, and the gap widens with every row the table gains. It matters most on the two party policies, where it was scaling with party size.",
+              },
+              {
+                title: "A Content-Security-Policy, in report-only",
+                description:
+                  "The static security headers have been right for a while; the one that actually contains an XSS was missing, on a site that renders usernames, bios, chat messages and third-party GIFs. Shipped report-only on purpose - a policy written from reading the code is a hypothesis, and the browser is the thing that knows. Promoting it to enforcing is renaming one header.",
+              },
+              {
+                title: "Custom analytics events",
+                description:
+                  "Pageviews can say someone opened Snake. They cannot say how many runs get finished, what the shop converts at, or which difficulty people give up on. Five events, scalars only, nothing identifying, behind the same consent gate as everything else.",
+              },
+            ],
+          },
+        ],
+        commits: [],
+      },
       {
         version: "v1.5.10",
         codename: "No Host Required",

@@ -7,6 +7,7 @@ import { toast } from "sonner";
 import { ENGINE_LOADERS } from "@/lib/games/registry";
 import { canvasFor, CONTROL_SCHEME, SWIPE_GAMES } from "@/lib/games/config";
 import { submitScore } from "@/actions/games";
+import { gameStart, gameEnd } from "@/lib/analytics";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
@@ -65,6 +66,10 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       const duration = durationHint || Math.round((Date.now() - startTimeRef.current) / 1000);
       setGameOver(true);
       if (finalScore > best) setBest(finalScore);
+
+      // Before the auth check below, so runs by signed-out visitors are counted
+      // too - they are the ones the completion rate most needs to include.
+      gameEnd(slug, difficulty, finalScore, duration, isAuthed);
 
       if (!isAuthed) {
         setResult({ ok: false, error: "Log in to save scores and earn rewards" });
@@ -150,8 +155,13 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
         onGameOver: (s, d) => void handleGameOver(s, d),
       });
       setLoadingEngine(false);
+      // Counted here rather than at the top of buildEngine, so an engine that
+      // fails to load is not recorded as a run that began. A rebuild genuinely
+      // is a new run - the score resets and the clock restarts - so the theme
+      // and difficulty rebuilds firing this is correct rather than a leak.
+      gameStart(slug, difficulty);
     });
-  }, [engineId, w, h, difficulty, handleGameOver, syncCanvasResolution]);
+  }, [engineId, w, h, difficulty, handleGameOver, syncCanvasResolution, slug]);
 
   useEffect(() => {
     buildEngine();

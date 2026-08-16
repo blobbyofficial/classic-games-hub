@@ -1,5 +1,3 @@
-# NOTE: To enable CI, move this file to .github/workflows/ci.yml
-# (kept out of that folder because the push token lacked GitHub 'workflow' scope).
 name: CI
 
 on:
@@ -7,8 +5,14 @@ on:
     branches: [main]
   pull_request:
 
+# A second push to the same branch makes the first run irrelevant.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  build:
+  site:
+    name: Site
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -34,3 +38,30 @@ jobs:
           NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://isgqukmmhuzhpalbruwt.supabase.co' }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_K6DD29odFaDeNTYozEsifQ_rD1ThsG5' }}
           NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://classic-games-hub.blobbyofficial.com' }}
+
+  bot:
+    # Separate package, separate dependencies, separate tsconfig - so a change
+    # that only breaks the gateway worker still fails CI rather than being
+    # discovered when the worker next restarts.
+    name: Discord bot
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: bot
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: bot/package-lock.json
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build
