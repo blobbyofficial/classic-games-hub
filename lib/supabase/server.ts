@@ -33,6 +33,27 @@ export async function createClient() {
 }
 
 /**
+ * Anonymous client with no cookie access, for reads that are public anyway.
+ *
+ * `createClient()` calls `cookies()`, which opts the caller into dynamic
+ * rendering. That is correct for a page whose content depends on who is asking
+ * and wrong for something like a social card, which is the same picture for
+ * every visitor and wants to be cached. Same anon key, same RLS - it simply
+ * never carries a session, so it cannot accidentally render one person's view
+ * into a shared artefact.
+ */
+export function createPublicClient() {
+  return createServerClient<Database>(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: { getAll: () => [], setAll: () => {} },
+      auth: { persistSession: false, autoRefreshToken: false },
+    },
+  );
+}
+
+/**
  * Privileged client using the service-role/secret key. Bypasses RLS - use only
  * in trusted server code (never expose the key to the browser). Returns null if
  * no secret key is configured so callers can degrade gracefully.

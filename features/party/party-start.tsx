@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { PartyPopper, LogIn, Sparkles, Users2, Swords } from "lucide-react";
 import { toast } from "sonner";
 import { createParty, joinParty } from "@/actions/parties";
+import { partyJoin } from "@/lib/analytics";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,6 +22,7 @@ export function PartyStart({ onJoined }: { onJoined: () => void }) {
         toast.error(res.error ?? "Couldn't create the party");
         return;
       }
+      partyJoin(true, null);
       toast.success(`Party created - code ${res.invite_code as string}`);
       onJoined();
     });
@@ -32,6 +34,7 @@ export function PartyStart({ onJoined }: { onJoined: () => void }) {
         toast.error(res.error ?? "Couldn't join that party");
         return;
       }
+      partyJoin(false, null);
       toast.success("You're in!");
       setCode("");
       onJoined();

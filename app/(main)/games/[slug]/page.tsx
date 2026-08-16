@@ -36,7 +36,10 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
     // as Google is concerned, splitting the ranking of a page there is only one
     // of.
     alternates: { canonical: `/games/${slug}` },
-    openGraph: { images: game.thumbnail_url ? [game.thumbnail_url] : [] },
+    // No openGraph.images here on purpose: an explicit list overrides the
+    // file-based convention, and opengraph-image.tsx in this folder builds a
+    // proper 1.91:1 card around the thumbnail rather than handing platforms a
+    // square to crop.
   };
 }
 

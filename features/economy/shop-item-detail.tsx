@@ -5,6 +5,7 @@ import { Coins, Check, Loader2, Clock, ArrowLeft, Heart, Gift } from "lucide-rea
 import Link from "next/link";
 import { toast } from "sonner";
 import { purchaseItem, equipItem, unequipItem, toggleWishlist } from "@/actions/economy";
+import { purchase } from "@/lib/analytics";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -57,6 +58,7 @@ export function ShopItemDetail({
       if (!res.ok) return void toast.error(res.error ?? "Purchase failed");
       if (profile) patchProfile({ credits: profile.credits - item.price });
       if (!isBoost) setOwned(true);
+      purchase(item.slug, item.price, item.rarity);
       toast.success(`Purchased ${item.name}!`, {
         description: isBoost ? "Active for 24 hours" : "Apply it right here or from your inventory",
       });

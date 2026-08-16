@@ -28,21 +28,10 @@ export default function OpengraphImage() {
           position: "relative",
         }}
       >
-        <div
-          style={{
-            position: "absolute",
-            top: 60,
-            display: "flex",
-            gap: 28,
-            fontSize: 54,
-            opacity: 0.9,
-          }}
-        >
-          <span>🕹️</span>
-          <span>🎮</span>
-          <span>👾</span>
-          <span>🏆</span>
-        </div>
+        {/* There was a row of four emoji here. next/og ships no emoji font, so
+            every one of them rendered as nothing and the card had a band of
+            empty space where the decoration was meant to be. Removing it is
+            what the card already looked like. */}
         <div
           style={{
             display: "flex",
@@ -66,7 +55,7 @@ export default function OpengraphImage() {
             maxWidth: 900,
           }}
         >
-          23 classic games · credits &amp; XP · achievements · leaderboards · friends
+          26 classic games · credits &amp; XP · achievements · leaderboards · friends
         </div>
         <div
           style={{
