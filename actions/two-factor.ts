@@ -87,14 +87,51 @@ export async function startTwoFactorEnrollment(): Promise<
     ok: true,
     enrollment: {
       factorId: data.id,
-      // `qr_code` is raw SVG markup, not a URL. Base64 rather than the
-      // `;utf-8,` prefix Supabase suggests, because the markup contains
-      // characters (`#` in colours, for one) that end a URL early unescaped.
-      qr: `data:image/svg+xml;base64,${Buffer.from(data.totp.qr_code, "utf8").toString("base64")}`,
+      qr: svgDataUrl(data.totp.qr_code),
       secret: data.totp.secret,
       uri: data.totp.uri,
     },
   };
+}
+
+/**
+ * Turn whatever Supabase gave us for `totp.qr_code` into an `<img>`-able data
+ * URL, always base64.
+ *
+ * The field's shape is not stable across versions and the documentation
+ * describes both: the type says "convert it to a URL by prepending
+ * `data:image/svg+xml;utf-8,`", while the official React example passes the
+ * value straight into `src`. It is currently the second - already a data URL -
+ * and blindly base64-encoding it produced a data URL whose payload decoded to
+ * the *text* `data:image/svg+xml;utf-8,<svg…>`, which is not an image. That is
+ * why the QR did not render.
+ *
+ * So detect rather than assume, and re-encode as base64 either way: the
+ * `;utf-8,` form carries raw `<`, `#` and `"` in a URL, where `#` truncates it
+ * at the first colour literal.
+ */
+function svgDataUrl(qrCode: string): string {
+  const value = qrCode.trim();
+  const asBase64 = (svg: string) => `data:image/svg+xml;base64,${Buffer.from(svg, "utf8").toString("base64")}`;
+
+  if (!value.startsWith("data:")) return asBase64(value);
+
+  const comma = value.indexOf(",");
+  if (comma === -1) return asBase64(value);
+
+  const mediaType = value.slice(5, comma);
+  const payload = value.slice(comma + 1);
+  if (/;base64$/i.test(mediaType)) return value;
+
+  // A `;utf-8,` payload may or may not be percent-encoded; decoding a string
+  // with a bare `%` throws, and the raw markup is the right answer then.
+  let svg = payload;
+  try {
+    svg = decodeURIComponent(payload);
+  } catch {
+    // Not percent-encoded - use it as it came.
+  }
+  return asBase64(svg);
 }
 
 /** Abandon an in-progress enrolment, so closing the dialog leaves nothing behind. */

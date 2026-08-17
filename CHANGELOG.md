@@ -18,8 +18,13 @@ live roadmap at `/roadmap`.
 - **Turning it off costs a code.** Disabling verifies against the authenticator
   first, so a session left open on a shared computer cannot quietly remove the
   protection it is sitting behind.
-- **No dependency for the QR.** Supabase returns SVG markup; it is inlined as a
-  base64 data URL, so the dialog fetches nothing.
+- **No dependency for the QR.** The setup dialog inlines it as a base64 data
+  URL, so it fetches nothing. `totp.qr_code` is sometimes already a data URL and
+  sometimes raw SVG markup - Supabase's type and its own example disagree - so
+  `svgDataUrl()` detects which arrived rather than assuming. Assuming shipped a
+  QR that did not render: the payload decoded to the *text*
+  `data:image/svg+xml;utf-8,<svg…>`. Base64 either way also stops the `;utf-8,`
+  form's raw `#` truncating the URL at the first colour literal.
 
 ### 🔑 Recovery codes (0076)
 
