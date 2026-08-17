@@ -30,7 +30,7 @@ export const SITE_RELEASED = RELEASES[0]?.date ?? null;
  * this is imported into a client component, and a number that is one edit per
  * migration is cheaper than a build step that only exists to count files.
  */
-export const EXPECTED_SCHEMA = "0075";
+export const EXPECTED_SCHEMA = "0076";
 
 /** Vercel's build-time git metadata. Absent in local development. */
 export const BUILD = {

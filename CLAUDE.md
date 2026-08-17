@@ -126,6 +126,7 @@ Two things touch more files than they look like they should, and both have a
 checklist:
 
 - `docs/adding-a-game.md` - engine, registry, `games` row, thumbnail, verify.
+- `docs/two-factor.md` - TOTP, the `aal` gate in the proxy, and recovery codes.
 - `docs/cosmetics.md` - the kinds, where each one is drawn, and the five places
   a new kind has to be registered.
 

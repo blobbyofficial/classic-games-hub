@@ -1011,6 +1011,11 @@ export interface Database {
         };
         Returns: Json;
       };
+      // ── Two-factor recovery codes (0076) ──
+      mfa_recovery_replace: { Args: { p_hashes: string[] }; Returns: Json };
+      mfa_recovery_consume: { Args: { p_hash: string }; Returns: Json };
+      mfa_recovery_clear: { Args: Record<string, never>; Returns: Json };
+      mfa_recovery_status: { Args: Record<string, never>; Returns: Json };
       // ── Discord integration (0033) ──
       claim_discord_link: { Args: { p_code: string }; Returns: Json };
       unlink_discord: { Args: Record<string, never>; Returns: Json };

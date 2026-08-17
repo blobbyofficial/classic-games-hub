@@ -31,6 +31,9 @@ import {
   ShieldAlert,
   Bug,
   Wrench,
+  ShieldCheck,
+  KeyRound,
+  Lock,
   type LucideIcon,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -78,6 +81,9 @@ const ICONS: Record<string, LucideIcon> = {
   ShieldAlert,
   Bug,
   Wrench,
+  ShieldCheck,
+  KeyRound,
+  Lock,
 };
 
 function Stat({ icon: Icon, value, label }: { icon: LucideIcon; value: number; label: string }) {

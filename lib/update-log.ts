@@ -97,10 +97,86 @@ export const SERIES: ReleaseSeries[] = [
   {
     version: "v1.5.0",
     codename: "Collector's Edition",
-    dates: "2 - 16 Aug 2026",
+    dates: "2 - 17 Aug 2026",
     summary:
       "Things worth keeping, and the machinery around them: seasons and collectable sets, cosmetics that layer three deep, two new games - a Discord server that now finishes its own setup, keeps itself in step with the site, and writes down everything that happens in it - and a pass over the rough edges underneath all of it.",
     releases: [
+      {
+        version: "v1.5.12",
+        codename: "Second Factor",
+        date: "17 Aug 2026",
+        scope:
+          "One release for one feature. Two-factor authentication is not big, but it is the sort of thing that has to be complete or not shipped at all - a second factor with no way back in is a feature that loses accounts - so the recovery codes, the login gate and the settings panel are the same release rather than a promise to follow up.",
+        summary:
+          "Accounts can now ask for a code from an authenticator app as well as a password. The second factor is Supabase's own TOTP MFA, so nothing here invents cryptography; what the site adds is the parts Supabase leaves out - recovery codes, a login challenge that a half-authenticated session cannot walk around, and somewhere to turn it on.",
+        groups: [
+          {
+            heading: "A second factor at login",
+            icon: "ShieldCheck",
+            blurb:
+              "Settings → Security → Set up two-factor. Scan the QR with any TOTP app, enter one code, done.",
+            items: [
+              {
+                title: "TOTP through Supabase Auth",
+                description:
+                  "Enrol, challenge and verify are the auth API's, and the `aal2` claim it writes into the access token is what the site trusts - so the question 'has this session cleared its second factor?' has one answer, signed, rather than a flag in a table that could disagree with it. The QR arrives as SVG markup and is inlined, so the setup dialog fetches nothing and adds no dependency.",
+              },
+              {
+                title: "Enrolling is not enabling",
+                description:
+                  "A factor stays unverified until a code from the app is accepted, and an unverified factor never makes a login ask for anything. Opening the dialog and wandering off is therefore free, and closing it cleans the attempt up rather than leaving it half-made.",
+              },
+              {
+                title: "Turning it off costs a code",
+                description:
+                  "Disabling asks for the authenticator again, so a session left open on a shared computer cannot quietly remove the protection it is sitting behind.",
+              },
+            ],
+          },
+          {
+            heading: "Recovery codes, because phones get lost",
+            icon: "KeyRound",
+            blurb:
+              "Ten single-use codes, shown once, stored only as hashes.",
+            items: [
+              {
+                title: "A way back in that does not need support",
+                description:
+                  "A second factor with no escape hatch is an account nobody can reach, including whoever runs the site. Ten `XXXXX-XXXXX` codes are issued the moment 2FA goes on, from an alphabet with no I, L, O, U, 0 or 1 - these get copied by hand off a screenshot, and ambiguity is a real failure mode.",
+              },
+              {
+                title: "Using one turns 2FA off, on purpose",
+                description:
+                  "A recovery code cannot raise a session to `aal2` - only the authenticator can. So it does the other thing that unblocks the account: it spends the code, removes the factor, and hands you back a signed-in session with two-factor off and instructions to set it up again. Honest about what just happened, and it leaves no second door standing.",
+              },
+              {
+                title: "The database holds hashes and nothing else",
+                description:
+                  "sha-256, reachable only through four definer functions with no row-level policy behind them - not even the owner of a code can read its hash. A code exists in plaintext exactly once: in the response that shows it to you.",
+              },
+            ],
+          },
+          {
+            heading: "The gate itself",
+            icon: "Lock",
+            blurb:
+              "The interesting half. A password login produces an authenticated session that has to be treated as worthless.",
+            items: [
+              {
+                title: "A pending session can reach three pages",
+                description:
+                  "`/two-factor`, the legal pages and `/status`. Everything else redirects back to the challenge, because a session at `aal1` on an account that owes `aal2` is authenticated in every way that matters to `getUser()` and should be trusted with nothing. Sign out still works - the form posts to the one page the gate allows.",
+              },
+              {
+                title: "It costs no round trip",
+                description:
+                  "The check compares the `aal` claim in the token the proxy is already holding against the factors listed on the session. This runs on every request on the site, so a version of it that asked the auth server would have been a tax on every page load.",
+              },
+            ],
+          },
+        ],
+        commits: [],
+      },
       {
         version: "v1.5.11",
         codename: "Housekeeping",
