@@ -45,10 +45,20 @@ export async function signInWithPassword(_prev: AuthState, formData: FormData): 
   }
 
   const supabase = await createClient();
-  const { error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) return { error: error.message };
 
   revalidatePath("/", "layout");
+
+  // A password alone leaves the session at aal1. If the account has a verified
+  // second factor it owes a code before it is worth anything, so send it
+  // straight to the challenge - the proxy would bounce it there anyway, and one
+  // redirect reads better than two.
+  const owesSecondFactor = (data.user?.factors ?? []).some((f) => f.status === "verified");
+  if (owesSecondFactor) {
+    redirect(next === "/" ? "/two-factor" : `/two-factor?next=${encodeURIComponent(next)}`);
+  }
+
   redirect(next);
 }
 

@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { User, SlidersHorizontal, Shield, Lock, Link2, Gamepad2 } from "lucide-react";
 import { getCurrentProfile, getCurrentSettings } from "@/lib/supabase/queries";
 import { getUserAchievements, getUserBestScores } from "@/services/profiles";
+import { getTwoFactorState } from "@/services/two-factor";
 import { createClient } from "@/lib/supabase/server";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ProfileSettings } from "@/features/settings/profile-settings";
@@ -13,6 +14,7 @@ import { BannerCustomizer } from "@/features/settings/banner-customizer";
 import { PreferencesSettings } from "@/features/settings/preferences-settings";
 import { GameplaySettings } from "@/features/settings/gameplay-settings";
 import { SecuritySettings } from "@/features/settings/security-settings";
+import { TwoFactorSettings } from "@/features/settings/two-factor-settings";
 import { BlockedUsers } from "@/features/settings/blocked-users";
 import { ConsentSettings } from "@/features/settings/consent-settings";
 import { ConnectionsSettings, type DiscordConnection } from "@/features/settings/connections-settings";
@@ -35,9 +37,10 @@ export default async function SettingsPage({
   // Everything below needs only profile.id, so it goes out as one batch instead
   // of three sequential round trips.
   const supabase = await createClient();
-  const [achievements, bestScores, { data: connectionData }, { data: blocks }] = await Promise.all([
+  const [achievements, bestScores, twoFactor, { data: connectionData }, { data: blocks }] = await Promise.all([
     getUserAchievements(profile.id),
     getUserBestScores(profile.id, 24),
+    getTwoFactorState(),
     supabase.rpc("my_discord_connection"),
     supabase
       .from("user_blocks")
@@ -118,8 +121,9 @@ export default async function SettingsPage({
             </Link>
           </p>
         </TabsContent>
-        <TabsContent value="security">
+        <TabsContent value="security" className="space-y-6">
           <SecuritySettings />
+          <TwoFactorSettings state={twoFactor} />
         </TabsContent>
         <TabsContent value="connections">
           <ConnectionsSettings connection={connection} />

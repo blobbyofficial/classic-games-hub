@@ -3,6 +3,60 @@
 All notable changes to Classic Games Hub. Dates are release targets; see the
 live roadmap at `/roadmap`.
 
+## v1.5.12 - "Second Factor" (two-factor authentication)
+
+### 🔐 A second factor at login
+
+- **TOTP through Supabase Auth.** Settings → Security → *Set up two-factor*:
+  scan the QR with any authenticator app, enter one code, done. Enrol,
+  challenge and verify are the auth API's, and the `aal2` claim it writes into
+  the access token is the single signed answer to "has this session cleared its
+  second factor?" - no flag in a table that could disagree with it.
+- **Enrolling is not enabling.** A factor stays unverified until a code from the
+  app is accepted, so opening the dialog and wandering off is free, and closing
+  it cleans the attempt up instead of leaving a half-made factor behind.
+- **Turning it off costs a code.** Disabling verifies against the authenticator
+  first, so a session left open on a shared computer cannot quietly remove the
+  protection it is sitting behind.
+- **No dependency for the QR.** Supabase returns SVG markup; it is inlined as a
+  base64 data URL, so the dialog fetches nothing.
+
+### 🔑 Recovery codes (0076)
+
+- **Ten single-use codes**, issued the moment 2FA goes on and shown exactly
+  once, from an alphabet with no `I`, `L`, `O`, `U`, `0` or `1` - these get
+  copied by hand off a screenshot.
+- **Hashes only.** `mfa_recovery_codes` holds sha-256 and is reachable solely
+  through four `security definer` functions with no row-level policy behind
+  them: not even the owner of a code can read its hash.
+- **Using one turns 2FA off, deliberately.** A recovery code cannot raise a
+  session to `aal2` - only the authenticator can - so it spends the code,
+  removes the factor through the auth admin API, clears the remaining codes and
+  hands back a signed-in session with two-factor off and instructions to set it
+  up again. Requires `SUPABASE_SECRET_KEY`; without it the action says recovery
+  is unavailable rather than burning a code for nothing.
+- **Replay is rejected as *used*,** not as unknown: spent codes are kept, which
+  is also what makes "3 of 10 remaining" honest.
+
+### 🚧 The login gate
+
+- **A pending session can reach three pages** - `/two-factor`, the legal pages
+  and `/status`. Everything else redirects to the challenge, because a session
+  at `aal1` on an account that owes `aal2` is authenticated in every way that
+  matters to `getUser()` and should be trusted with nothing. Signing out still
+  works: the form posts to the one page the gate allows.
+- **It costs no round trip.** The proxy compares the `aal` claim in the token it
+  is already holding with the factors on the session. This runs on every request
+  on the site, so a version that asked the auth server would have taxed every
+  page load.
+- **Password login redirects straight to the challenge** when the account has a
+  verified factor, rather than bouncing off the gate a moment later.
+
+### 📚 Docs
+
+- `docs/two-factor.md` - where each piece lives, why a recovery code does not
+  produce `aal2`, and what to re-test when any of it changes.
+
 ## v1.5.11 - "Housekeeping" (an audit of the platforms underneath the site)
 
 ### 🔁 Continuous integration, running for the first time
