@@ -46,8 +46,16 @@ on `/two-factor` posts back to `/two-factor`.
 ## Enrolling
 
 1. `startTwoFactorEnrollment()` drops any leftover **unverified** factor, then
-   enrols a new one. The QR arrives as raw SVG markup and is handed to the
-   client base64-encoded as a data URL - no QR dependency anywhere.
+   enrols a new one. The QR is normalised by `svgDataUrl()` into a base64 data
+   URL for an `<img>` - no QR dependency anywhere.
+
+   > `totp.qr_code` is **sometimes already a data URL and sometimes raw SVG
+   > markup**, and Supabase's own docs describe both: the type says to prepend
+   > `data:image/svg+xml;utf-8,`, the React example passes the value straight
+   > into `src`. Assuming the raw-markup shape shipped a QR that did not render
+   > at all - the payload decoded to the *text* `data:image/svg+xml;utf-8,<svg…>`.
+   > `svgDataUrl()` detects which it got and always emits base64, which also
+   > avoids the `;utf-8,` form's raw `#` truncating the URL at the first colour.
 2. The factor stays `unverified`, so logins do **not** ask for a code yet.
 3. `confirmTwoFactorEnrollment()` verifies the first code, which promotes the
    factor and raises the session to `aal2`, then issues recovery codes.

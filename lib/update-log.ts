@@ -119,7 +119,7 @@ export const SERIES: ReleaseSeries[] = [
               {
                 title: "TOTP through Supabase Auth",
                 description:
-                  "Enrol, challenge and verify are the auth API's, and the `aal2` claim it writes into the access token is what the site trusts - so the question 'has this session cleared its second factor?' has one answer, signed, rather than a flag in a table that could disagree with it. The QR arrives as SVG markup and is inlined, so the setup dialog fetches nothing and adds no dependency.",
+                  "Enrol, challenge and verify are the auth API's, and the `aal2` claim it writes into the access token is what the site trusts - so the question 'has this session cleared its second factor?' has one answer, signed, rather than a flag in a table that could disagree with it. The QR is inlined as a data URL, so the setup dialog fetches nothing and adds no dependency - after a false start where it rendered as a broken image, because `totp.qr_code` is sometimes already a data URL and sometimes raw markup, and Supabase's type and its own example disagree about which.",
               },
               {
                 title: "Enrolling is not enabling",
