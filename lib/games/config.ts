@@ -1,6 +1,7 @@
 /** Fixed logical canvas resolution per game (drives the aspect-ratio box). */
 export const GAME_CANVAS: Record<string, { w: number; h: number }> = {
   snake: { w: 480, h: 480 },
+  slithery: { w: 480, h: 480 },
   tetris: { w: 400, h: 640 },
   "2048": { w: 460, h: 460 },
   breakout: { w: 520, h: 460 },
@@ -45,10 +46,11 @@ export type ControlScheme =
  * games WITHOUT their own touch input belong here - snake, 2048 and slide
  * already handle touch natively, so adding swipe there would double-fire.
  */
-export const SWIPE_GAMES = new Set(["frogger", "tetris"]);
+export const SWIPE_GAMES = new Set(["frogger", "tetris", "slithery"]);
 
 export const CONTROL_SCHEME: Record<string, ControlScheme> = {
   snake: "dpad",
+  slithery: "dpad",
   tetris: "tetris",
   "2048": "dpad",
   breakout: "paddle",
@@ -72,5 +74,4 @@ export const CONTROL_SCHEME: Record<string, ControlScheme> = {
   reversi: "none",
   whack: "none",
   lightsout: "none",
-  slithery: "none",
 };

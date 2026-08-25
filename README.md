@@ -137,7 +137,7 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
 ## Features
 
 - **24 playable games** - Snake, Tetris, 2048, Breakout, Pong, Asteroids, Space
-  Invaders, Frogger, Neon Runner, Target Rush, Gem Cascade, Bubble Pop,
+  Invaders, Frogger, Neon Runner, Slithery, Target Rush, Gem Cascade, Bubble Pop,
   Minesweeper, Memory, 15 Puzzle, Mastermind, Hangman, Simon, Noughts and Crosses,
   Connect Four, Reversi, Whack-a-Mole, Lights Out - plus **Turbo Horizon**, an
   OutRun-style pseudo-3D racer. Each is a self-contained, code-split canvas

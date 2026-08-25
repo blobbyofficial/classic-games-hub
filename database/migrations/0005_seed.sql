@@ -14,6 +14,13 @@ values
    '[{"keys":"Arrow keys / WASD","action":"Steer"},{"keys":"P","action":"Pause"},{"keys":"R","action":"Restart"}]'::jsonb,
    'snake', '/games/thumbs/snake.svg', true, 100, 'easy', 10000, 20, 25),
 
+  ('slithery', 'Slithery', 'The serpentine challenge',
+   'A modern twist on the classic Snake formula. Navigate a growing snake through a maze of obstacles and power-ups.',
+   'Steer with the arrow keys or WASD. Collect power-ups to gain special abilities. Avoid obstacles and your own tail to survive as long as possible.',
+   'Arcade', array['modern','survival','reflex'],
+   '[{"keys":"Arrow keys / WASD","action":"Steer"},{"keys":"P","action":"Pause"},{"keys":"R","action":"Restart"}]'::jsonb,
+   'slithery', '/games/thumbs/slithery.svg', true, 101, 'medium', 15000, 30, 25),
+
   ('tetris', 'Tetris', 'Stack. Clear. Repeat.',
    'The timeless falling-block puzzle. Rotate and place tetrominoes to clear lines as the pace relentlessly climbs.',
    'Move with the arrow keys, rotate with Up, soft-drop with Down and hard-drop with Space. Clear multiple lines at once for big bonuses.',

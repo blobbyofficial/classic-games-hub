@@ -33,6 +33,7 @@ const SKY = "#38bdf8";
 /** slug -> { accent, glyph: inner SVG markup } */
 const GAMES = {
   snake: { accent: EMERALD, glyph: dots() },
+  slithery: { accent: EMERALD, glyph: dots() },
   tetris: { accent: VIOLET, glyph: tetromino() },
   "2048": { accent: AMBER, glyph: tile("2048") },
   breakout: { accent: SKY, glyph: bricks() },

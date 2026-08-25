@@ -37,6 +37,7 @@ const SCHEME_TOUCH: Record<string, ControlEntry[]> = {
 /** Per-game overrides where the generic scheme text isn't accurate enough. */
 const GAME_TOUCH: Record<string, ControlEntry[]> = {
   snake: [{ keys: "Swipe or D-pad", action: "Steer" }],
+  slithery: [{ keys: "Swipe or D-pad", action: "Steer" }],
   "2048": [{ keys: "Swipe", action: "Slide all tiles" }],
   slide: [{ keys: "Tap a tile (or swipe)", action: "Slide it into the gap" }],
   frogger: [{ keys: "Swipe or D-pad", action: "Hop" }],
