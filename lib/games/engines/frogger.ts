@@ -46,7 +46,6 @@ interface LaneObject {
   kind: VehicleKind | WaterKind;
   color: string;
   laneRow: number;
-
   minGap: number;
   variant: number;
   rotation: number;
@@ -158,14 +157,14 @@ const frogger: GameEngineFactory = ({
   });
 
   /*
-   * Infinite-world settings.
+   * Infinite world settings.
    */
   const WORLD_AHEAD = 35;
   const WORLD_BEHIND = 12;
   const AREA_LENGTH = 24;
 
   /*
-   * All mutable game state lives inside the engine closure.
+   * All mutable state lives inside the engine closure.
    */
   let particles: Particle[] = [];
   let floatingTexts: FloatingText[] = [];
@@ -216,6 +215,9 @@ const frogger: GameEngineFactory = ({
   let specialEvent = "";
   let specialEventTimer = 0;
 
+  /*
+   * Camera position in world-row coordinates.
+   */
   let cameraRow = 0;
   let cameraTargetRow = 0;
 
@@ -248,6 +250,12 @@ const frogger: GameEngineFactory = ({
 
     riding: null,
   };
+
+  /*
+   * ---------------------------------------------------------
+   * HELPERS
+   * ---------------------------------------------------------
+   */
 
   function randomRange(
     min: number,
@@ -295,13 +303,23 @@ const frogger: GameEngineFactory = ({
   }
 
   /*
-   * Converts a world row to screen Y.
+   * Higher world rows are farther forward.
+   *
+   * Because the frog should move UP the screen when moving
+   * forward, world rows are inverted when converted to pixels.
+   *
+   * Row 0 appears near the bottom.
+   * Increasing row numbers appear higher.
    */
   function worldToScreenY(
     row: number,
   ) {
     return (
-      (row - cameraRow) *
+      (
+        VISIBLE_ROWS -
+        1 -
+        (row - cameraRow)
+      ) *
         rh +
       rh / 2
     );
@@ -347,12 +365,16 @@ const frogger: GameEngineFactory = ({
     switch (theme) {
       case "meadow":
         return "MEADOWS";
+
       case "suburb":
         return "SUBURBS";
+
       case "wetland":
         return "WETLANDS";
+
       case "city":
         return "CITY";
+
       case "night":
         return "NIGHT DISTRICT";
     }
@@ -422,7 +444,7 @@ const frogger: GameEngineFactory = ({
 
   /*
    * ---------------------------------------------------------
-   * EFFECTS
+   * PARTICLES / EFFECTS
    * ---------------------------------------------------------
    */
 
@@ -556,8 +578,7 @@ const frogger: GameEngineFactory = ({
         specialEventTimer <=
         0
       ) {
-        specialEvent =
-          "";
+        specialEvent = "";
       }
     }
 
@@ -572,8 +593,7 @@ const frogger: GameEngineFactory = ({
         screenShake <
         0.2
       ) {
-        screenShake =
-          0;
+        screenShake = 0;
       }
     }
 
@@ -640,7 +660,8 @@ const frogger: GameEngineFactory = ({
           : 1;
 
     const scoreMultiplier =
-      scoreBoostTimer > 0
+      scoreBoostTimer >
+      0
         ? 2
         : 1;
 
@@ -715,6 +736,9 @@ const frogger: GameEngineFactory = ({
       return "safe";
     }
 
+    /*
+     * Area transitions have safe strips.
+     */
     if (
       row %
         AREA_LENGTH ===
@@ -726,6 +750,10 @@ const frogger: GameEngineFactory = ({
       return "safe";
     }
 
+    /*
+     * Never make a huge uninterrupted sequence of dangerous
+     * rows.
+     */
     if (
       consecutiveDangerRows >=
       5
@@ -795,8 +823,7 @@ const frogger: GameEngineFactory = ({
     if (
       lastGeneratedType ===
         "safe" &&
-      type ===
-        "safe" &&
+      type === "safe" &&
       Math.random() <
         0.65
     ) {
@@ -816,8 +843,7 @@ const frogger: GameEngineFactory = ({
       consecutiveDangerRows++;
     }
 
-    lastGeneratedType =
-      type;
+    lastGeneratedType = type;
 
     return type;
   }
@@ -876,8 +902,8 @@ const frogger: GameEngineFactory = ({
       direction;
 
     /*
-     * Only 2–4 actual vehicles per lane.
-     * They are never duplicated.
+     * Hard vehicle-count cap.
+     * Vehicles are never added later.
      */
     const vehicleCount =
       randomInt(
@@ -968,23 +994,20 @@ const frogger: GameEngineFactory = ({
               90,
             );
         } else {
-          cursor +=
-            gap;
+          cursor += gap;
         }
 
         objects.push({
           x: cursor,
           speed,
-          width:
-            vehicleWidth,
+          width: vehicleWidth,
           kind,
           color:
             getVehicleColor(
               kind,
             ),
           laneRow: row,
-          minGap:
-            gap,
+          minGap: gap,
           variant:
             randomInt(
               0,
@@ -1007,8 +1030,7 @@ const frogger: GameEngineFactory = ({
               90,
             );
         } else {
-          cursor -=
-            gap;
+          cursor -= gap;
         }
 
         const x =
@@ -1018,16 +1040,14 @@ const frogger: GameEngineFactory = ({
         objects.push({
           x,
           speed,
-          width:
-            vehicleWidth,
+          width: vehicleWidth,
           kind,
           color:
             getVehicleColor(
               kind,
             ),
           laneRow: row,
-          minGap:
-            gap,
+          minGap: gap,
           variant:
             randomInt(
               0,
@@ -1037,8 +1057,7 @@ const frogger: GameEngineFactory = ({
           passed: false,
         });
 
-        cursor =
-          x;
+        cursor = x;
       }
     }
 
@@ -1074,9 +1093,8 @@ const frogger: GameEngineFactory = ({
       direction;
 
     /*
-     * One river row uses one platform type.
-     *
-     * This completely avoids log/lily cross-over.
+     * Each river row gets one platform type.
+     * This prevents log/lily overlap completely.
      */
     const kind: WaterKind =
       randomItem([
@@ -1141,8 +1159,7 @@ const frogger: GameEngineFactory = ({
               70,
             );
         } else {
-          cursor +=
-            gap;
+          cursor += gap;
         }
 
         objects.push({
@@ -1164,8 +1181,7 @@ const frogger: GameEngineFactory = ({
                 ? "#8b5a2b"
                 : "#8f5a2a",
           laneRow: row,
-          minGap:
-            gap,
+          minGap: gap,
           variant:
             randomInt(
               0,
@@ -1192,8 +1208,7 @@ const frogger: GameEngineFactory = ({
               70,
             );
         } else {
-          cursor -=
-            gap;
+          cursor -= gap;
         }
 
         const x =
@@ -1219,8 +1234,7 @@ const frogger: GameEngineFactory = ({
                 ? "#8b5a2b"
                 : "#8f5a2a",
           laneRow: row,
-          minGap:
-            gap,
+          minGap: gap,
           variant:
             randomInt(
               0,
@@ -1234,8 +1248,7 @@ const frogger: GameEngineFactory = ({
           passed: false,
         });
 
-        cursor =
-          x;
+        cursor = x;
       }
     }
 
@@ -1347,7 +1360,7 @@ const frogger: GameEngineFactory = ({
 
   /*
    * ---------------------------------------------------------
-   * FROG / MOVEMENT
+   * CAMERA / FROG MOVEMENT
    * ---------------------------------------------------------
    */
 
@@ -1362,10 +1375,16 @@ const frogger: GameEngineFactory = ({
   }
 
   function updateCamera() {
+    /*
+     * Keep the frog in the lower section of the screen.
+     *
+     * Since larger world rows are rendered higher on screen,
+     * increasing cameraRow reveals more world above.
+     */
     cameraTargetRow =
       Math.max(
         0,
-        frog.row - 4.4,
+        frog.row - 3,
       );
 
     cameraRow +=
@@ -1374,34 +1393,17 @@ const frogger: GameEngineFactory = ({
         cameraRow
       ) *
       0.12;
-  }
 
-  function resetFrog() {
-    frog = {
-      col: 6,
-      row: furthestRow,
-
-      x: cw * 6.5,
-      y: furthestRow,
-
-      targetX: cw * 6.5,
-      targetY: furthestRow,
-
-      startX: cw * 6.5,
-      startY: furthestRow,
-
-      hopFrame: HOP_FRAMES,
-      hopping: false,
-
-      facing: -1,
-      squash: 0,
-
-      riding: null,
-    };
-
-    queuedMove = null;
-
-    updateCamera();
+    if (
+      Math.abs(
+        cameraTargetRow -
+          cameraRow,
+      ) <
+      0.01
+    ) {
+      cameraRow =
+        cameraTargetRow;
+    }
   }
 
   function requestMove(
@@ -1423,6 +1425,7 @@ const frogger: GameEngineFactory = ({
         dc,
         dr,
       };
+
       return;
     }
 
@@ -1436,6 +1439,9 @@ const frogger: GameEngineFactory = ({
     dc: number,
     dr: number,
   ) {
+    /*
+     * Forward is +1 world row.
+     */
     const distance =
       superHopTimer >
       0
@@ -1489,6 +1495,7 @@ const frogger: GameEngineFactory = ({
 
     frog.hopFrame = 0;
     frog.hopping = true;
+
     frog.riding = null;
 
     if (
@@ -1559,6 +1566,8 @@ const frogger: GameEngineFactory = ({
           Math.PI,
       );
 
+    ensureWorldAhead();
+
     if (
       frog.hopFrame >=
       HOP_FRAMES
@@ -1588,8 +1597,11 @@ const frogger: GameEngineFactory = ({
       frog.y =
         frog.targetY;
 
-      frog.hopping = false;
-      frog.squash = 1;
+      frog.hopping =
+        false;
+
+      frog.squash =
+        1;
 
       onLanding();
 
@@ -1705,7 +1717,7 @@ const frogger: GameEngineFactory = ({
 
   /*
    * ---------------------------------------------------------
-   * ROAD / RIVER
+   * ROAD / RIVER COLLISION
    * ---------------------------------------------------------
    */
 
@@ -1719,8 +1731,7 @@ const frogger: GameEngineFactory = ({
     object: LaneObject,
   ) {
     const margin =
-      frogRadius *
-      0.9;
+      frogRadius * 0.9;
 
     return (
       frog.x + margin >
@@ -2006,13 +2017,6 @@ const frogger: GameEngineFactory = ({
           );
       }
 
-      /*
-       * IMPORTANT:
-       *
-       * The initial spawn point is always off-screen.
-       * If another vehicle is further left, we move farther
-       * left instead of putting this vehicle in the middle.
-       */
       let spawnX =
         -object.width -
         randomRange(
@@ -2038,6 +2042,9 @@ const frogger: GameEngineFactory = ({
           );
       }
 
+      /*
+       * Hard guarantee: still outside screen.
+       */
       object.x =
         Math.min(
           spawnX,
@@ -2089,6 +2096,9 @@ const frogger: GameEngineFactory = ({
           );
       }
 
+      /*
+       * Hard guarantee: still outside screen.
+       */
       spawnX =
         Math.max(
           spawnX,
@@ -2100,6 +2110,9 @@ const frogger: GameEngineFactory = ({
         object.width;
     }
 
+    /*
+     * Small per-cycle speed variation keeps traffic natural.
+     */
     object.speed *=
       randomRange(
         0.93,
@@ -2118,8 +2131,7 @@ const frogger: GameEngineFactory = ({
         2,
       );
 
-    object.passed =
-      false;
+    object.passed = false;
   }
 
   function updateLanes() {
@@ -2205,14 +2217,6 @@ const frogger: GameEngineFactory = ({
             );
           }
         } else {
-          /*
-           * River platforms wrap only after they completely
-           * leave the screen.
-           *
-           * Their spacing is preserved because each platform
-           * is moved to the outside of the river, not randomly
-           * dropped into it.
-           */
           if (
             object.speed > 0 &&
             object.x >
@@ -2295,7 +2299,7 @@ const frogger: GameEngineFactory = ({
 
   /*
    * ---------------------------------------------------------
-   * DEATH / RESET
+   * DEATH
    * ---------------------------------------------------------
    */
 
@@ -2520,7 +2524,7 @@ const frogger: GameEngineFactory = ({
 
       if (
         fly.life <=
-        0 ||
+          0 ||
         fly.row <
           frog.row - 8
       ) {
@@ -2561,77 +2565,10 @@ const frogger: GameEngineFactory = ({
     if (
       powerTimer <=
         0 &&
-      powerUp ===
-        null &&
+      powerUp === null &&
       frog.row >= 6
     ) {
       spawnPowerUp();
-    }
-  }
-
-  function collectIfNearby() {
-    const frogY =
-      worldToScreenY(
-        frog.row,
-      );
-
-    if (
-      fly &&
-      Math.hypot(
-        fly.x -
-          frog.x,
-        worldToScreenY(
-          fly.row,
-        ) -
-          frogY,
-      ) <
-        frogSize
-    ) {
-      addScore(
-        250,
-        fly.x,
-        worldToScreenY(
-          fly.row,
-        ),
-        "FLY",
-      );
-
-      beginCombo();
-
-      burst(
-        fly.x,
-        worldToScreenY(
-          fly.row,
-        ),
-        "#facc15",
-        18,
-      );
-
-      beep(
-        900,
-        0.06,
-      );
-
-      fly = null;
-    }
-
-    if (
-      powerUp &&
-      Math.hypot(
-        powerUp.x -
-          frog.x,
-        worldToScreenY(
-          powerUp.row,
-        ) -
-          frogY,
-      ) <
-        frogSize
-    ) {
-      collectPowerUp(
-        powerUp,
-      );
-
-      powerUp = null;
     }
   }
 
@@ -2641,10 +2578,13 @@ const frogger: GameEngineFactory = ({
     switch (type) {
       case "shield":
         return "#7dd3fc";
+
       case "slow":
         return "#c084fc";
+
       case "superHop":
         return "#facc15";
+
       case "score":
         return "#4ade80";
     }
@@ -2656,10 +2596,13 @@ const frogger: GameEngineFactory = ({
     switch (type) {
       case "shield":
         return "S";
+
       case "slow":
         return "T";
+
       case "superHop":
         return "H";
+
       case "score":
         return "2X";
     }
@@ -2736,9 +2679,75 @@ const frogger: GameEngineFactory = ({
     );
   }
 
+  function collectIfNearby() {
+    const frogY =
+      worldToScreenY(
+        frog.row,
+      );
+
+    if (
+      fly &&
+      Math.hypot(
+        fly.x -
+          frog.x,
+        worldToScreenY(
+          fly.row,
+        ) -
+          frogY,
+      ) <
+        frogSize
+    ) {
+      addScore(
+        250,
+        fly.x,
+        worldToScreenY(
+          fly.row,
+        ),
+        "FLY",
+      );
+
+      beginCombo();
+
+      burst(
+        fly.x,
+        worldToScreenY(
+          fly.row,
+        ),
+        "#facc15",
+        18,
+      );
+
+      beep(
+        900,
+        0.06,
+      );
+
+      fly = null;
+    }
+
+    if (
+      powerUp &&
+      Math.hypot(
+        powerUp.x -
+          frog.x,
+        worldToScreenY(
+          powerUp.row,
+        ) -
+          frogY,
+      ) <
+        frogSize
+    ) {
+      collectPowerUp(
+        powerUp,
+      );
+
+      powerUp = null;
+    }
+  }
+
   /*
    * ---------------------------------------------------------
-   * SPECIAL EVENTS
+   * EVENTS
    * ---------------------------------------------------------
    */
 
@@ -2827,9 +2836,6 @@ const frogger: GameEngineFactory = ({
     frog.squash *=
       0.82;
 
-    /*
-     * Trigger occasional special events.
-     */
     if (
       !specialEvent &&
       frog.row > 30 &&
@@ -3026,10 +3032,11 @@ const frogger: GameEngineFactory = ({
         x,
         y +
           rh *
-            (0.2 +
-              (i %
-                3) *
-                0.2),
+            (
+              0.2 +
+              (i % 3) *
+                0.2
+            ),
         3,
         3,
       );
@@ -3319,9 +3326,10 @@ const frogger: GameEngineFactory = ({
       const px =
         left +
         object.width *
-          (0.18 +
-            i *
-              0.22);
+          (
+            0.18 +
+            i * 0.22
+          );
 
       ctx.beginPath();
 
@@ -3455,7 +3463,7 @@ const frogger: GameEngineFactory = ({
 
   /*
    * ---------------------------------------------------------
-   * LILY
+   * LILY PAD
    * ---------------------------------------------------------
    */
 
@@ -3507,7 +3515,7 @@ const frogger: GameEngineFactory = ({
         (Math.PI * 2 * i) /
         segments;
 
-      let r =
+      const r =
         radius *
         (
           0.96 +
@@ -3803,6 +3811,12 @@ const frogger: GameEngineFactory = ({
     ctx.restore();
   }
 
+  /*
+   * ---------------------------------------------------------
+   * COLLECTIBLE DRAWING
+   * ---------------------------------------------------------
+   */
+
   function drawFly() {
     if (!fly) {
       return;
@@ -3939,8 +3953,7 @@ const frogger: GameEngineFactory = ({
 
     ctx.fill();
 
-    ctx.globalAlpha =
-      1;
+    ctx.globalAlpha = 1;
 
     ctx.fillStyle =
       "#ffffff";
@@ -4023,7 +4036,7 @@ const frogger: GameEngineFactory = ({
     }
 
     /*
-     * Destination cell.
+     * Target cell.
      */
     if (
       frog.hopping
@@ -4081,9 +4094,6 @@ const frogger: GameEngineFactory = ({
           VISIBLE_ROWS,
       ) + 2;
 
-    /*
-     * Draw roads/water objects.
-     */
     for (
       let row =
         firstRow;
@@ -4122,8 +4132,7 @@ const frogger: GameEngineFactory = ({
     drawPowerUp();
 
     if (
-      deathTimer >
-      0
+      deathTimer > 0
     ) {
       drawFrog(
         Math.max(
@@ -4570,6 +4579,9 @@ const frogger: GameEngineFactory = ({
     cameraRow = 0;
     cameraTargetRow = 0;
 
+    /*
+     * Start the frog at the bottom of the screen.
+     */
     frog = {
       col: 6,
       row: 0,
@@ -4593,7 +4605,8 @@ const frogger: GameEngineFactory = ({
     };
 
     /*
-     * Initial world.
+     * Generate enough world above the starting position
+     * before the first frame.
      */
     for (
       let row = 0;
@@ -4632,13 +4645,11 @@ const frogger: GameEngineFactory = ({
       event.key.toLowerCase();
 
     /*
-     * In this infinite version:
-     *
-     * UP = forward
-     * DOWN = backward
+     * Forward = increasing world row = visually UP.
      */
     if (
-      key === "arrowup" ||
+      key ===
+        "arrowup" ||
       key === "w"
     ) {
       requestMove(
