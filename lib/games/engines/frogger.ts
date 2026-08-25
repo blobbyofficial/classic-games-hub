@@ -18,7 +18,7 @@ type VehicleKind =
 
 type WaterKind =
   | "log"
-  | "turtle"
+  | "lily"
   | "smallLog";
 
 type Weather =
@@ -41,6 +41,7 @@ interface LaneObject {
   laneRow: number;
   passed: boolean;
   variant: number;
+  rotation: number;
 }
 
 interface Lane {
@@ -92,6 +93,8 @@ interface Frog {
   y: number;
   targetX: number;
   targetY: number;
+  startX: number;
+  startY: number;
   hopFrame: number;
   hopping: boolean;
   facing: number;
@@ -141,6 +144,8 @@ const frogger: GameEngineFactory = ({
     y: rowY(12),
     targetX: cw * 6.5,
     targetY: rowY(12),
+    startX: cw * 6.5,
+    startY: rowY(12),
     hopFrame: HOP_FRAMES,
     hopping: false,
     facing: -1,
@@ -230,18 +235,11 @@ const frogger: GameEngineFactory = ({
     | "river"
     | "road"
     | "safe" {
-    if (row === 0) {
-      return "goal";
-    }
-
-    if (row >= 1 && row <= 5) {
+    if (row === 0) return "goal";
+    if (row >= 1 && row <= 5)
       return "river";
-    }
-
-    if (row >= 7 && row <= 11) {
+    if (row >= 7 && row <= 11)
       return "road";
-    }
-
     return "safe";
   }
 
@@ -270,6 +268,8 @@ const frogger: GameEngineFactory = ({
       y: rowY(12),
       targetX: cw * 6.5,
       targetY: rowY(12),
+      startX: cw * 6.5,
+      startY: rowY(12),
       hopFrame: HOP_FRAMES,
       hopping: false,
       facing: -1,
@@ -279,6 +279,30 @@ const frogger: GameEngineFactory = ({
 
     furthestRow = 12;
     queuedMove = null;
+  }
+
+  /*
+   * IMPORTANT FIX:
+   *
+   * When the frog is riding a moving river object,
+   * the frog's actual X position is authoritative.
+   * Its grid column is continuously derived from X.
+   *
+   * This prevents the old bug where the frog looked like
+   * it moved several squares with a log, but the next hop
+   * still started from its old logical column.
+   */
+  function syncFrogColumnFromWorld() {
+    const estimatedCol =
+      Math.floor(
+        frog.x / cw,
+      );
+
+    frog.col = clamp(
+      estimatedCol,
+      0,
+      COLS - 1,
+    );
   }
 
   function createParticle(
@@ -298,16 +322,31 @@ const frogger: GameEngineFactory = ({
         2;
 
       const speed =
-        randomRange(0.5, 2.8);
+        randomRange(
+          0.5,
+          2.8,
+        );
 
       particles.push({
         x,
         y,
-        vx: Math.cos(angle) * speed,
-        vy: Math.sin(angle) * speed,
-        life: randomRange(15, 32),
+        vx:
+          Math.cos(angle) *
+          speed,
+        vy:
+          Math.sin(angle) *
+          speed,
+        life:
+          randomRange(
+            15,
+            32,
+          ),
         maxLife: 32,
-        size: randomRange(1, 3),
+        size:
+          randomRange(
+            1,
+            3,
+          ),
         color,
       });
     }
@@ -357,7 +396,9 @@ const frogger: GameEngineFactory = ({
           : 1;
 
     const scoreMultiplier =
-      scoreBoostTimer > 0 ? 2 : 1;
+      scoreBoostTimer > 0
+        ? 2
+        : 1;
 
     const value = Math.round(
       base *
@@ -432,7 +473,10 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 190,
-        kinds: ["car", "sports"],
+        kinds: [
+          "car",
+          "sports",
+        ],
       },
       {
         row: 8,
@@ -441,7 +485,10 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 250,
-        kinds: ["car", "van"],
+        kinds: [
+          "car",
+          "van",
+        ],
       },
       {
         row: 9,
@@ -450,7 +497,11 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 300,
-        kinds: ["truck", "bus", "van"],
+        kinds: [
+          "truck",
+          "bus",
+          "van",
+        ],
       },
       {
         row: 10,
@@ -459,7 +510,10 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 215,
-        kinds: ["sports", "car"],
+        kinds: [
+          "sports",
+          "car",
+        ],
       },
       {
         row: 11,
@@ -468,7 +522,11 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 240,
-        kinds: ["car", "van", "truck"],
+        kinds: [
+          "car",
+          "van",
+          "truck",
+        ],
       },
     ];
 
@@ -480,7 +538,8 @@ const frogger: GameEngineFactory = ({
 
       const count =
         Math.ceil(
-          width / config.spacing,
+          width /
+            config.spacing,
         ) + 2;
 
       for (
@@ -500,37 +559,58 @@ const frogger: GameEngineFactory = ({
               ? 2
               : kind === "van"
                 ? 1.35
-                : kind === "sports"
+                : kind ===
+                    "sports"
                   ? 0.78
                   : 1;
 
         objects.push({
           x:
-            i * config.spacing +
-            randomRange(-35, 35),
+            i *
+              config.spacing +
+            randomRange(
+              -35,
+              35,
+            ),
           speed:
             config.speed *
-            randomRange(0.9, 1.1),
-          width: cw * multiplier,
+            randomRange(
+              0.9,
+              1.1,
+            ),
+          width:
+            cw * multiplier,
           kind,
           color:
-            getVehicleColor(kind),
-          laneRow: config.row,
+            getVehicleColor(
+              kind,
+            ),
+          laneRow:
+            config.row,
           passed: false,
-          variant: Math.floor(
-            Math.random() * 3,
-          ),
+          variant:
+            Math.floor(
+              Math.random() * 3,
+            ),
+          rotation: 0,
         });
       }
 
       lanes.push({
-        row: config.row,
+        row:
+          config.row,
         type: "road",
-        speed: config.speed,
+        speed:
+          config.speed,
         objects,
       });
     }
 
+    /*
+     * River layouts deliberately alternate logs and lily pads.
+     * Lily pads are now a real object type rather than
+     * reusing turtle-style graphics.
+     */
     const riverConfigs: {
       row: number;
       speed: number;
@@ -553,7 +633,7 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 245,
-        kind: "turtle",
+        kind: "lily",
       },
       {
         row: 3,
@@ -580,7 +660,7 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 255,
-        kind: "turtle",
+        kind: "lily",
       },
     ];
 
@@ -592,7 +672,8 @@ const frogger: GameEngineFactory = ({
 
       const count =
         Math.ceil(
-          width / config.spacing,
+          width /
+            config.spacing,
         ) + 2;
 
       for (
@@ -603,37 +684,57 @@ const frogger: GameEngineFactory = ({
         const multiplier =
           config.kind === "log"
             ? 1.8
-            : config.kind === "smallLog"
+            : config.kind ===
+                "smallLog"
               ? 0.95
-              : 1.35;
+              : 1.25;
 
         objects.push({
           x:
-            i * config.spacing +
-            randomRange(-50, 50),
+            i *
+              config.spacing +
+            randomRange(
+              -50,
+              50,
+            ),
           speed:
             config.speed *
-            randomRange(0.92, 1.08),
-          width: cw * multiplier,
-          kind: config.kind,
+            randomRange(
+              0.92,
+              1.08,
+            ),
+          width:
+            cw * multiplier,
+          kind:
+            config.kind,
           color:
-            config.kind === "turtle"
-              ? "#15803d"
-              : config.kind === "smallLog"
-                ? "#92400e"
-                : "#a16207",
-          laneRow: config.row,
+            config.kind === "lily"
+              ? "#3f8f3f"
+              : config.kind ===
+                  "smallLog"
+                ? "#8b5a2b"
+                : "#8f5a2a",
+          laneRow:
+            config.row,
           passed: false,
-          variant: Math.floor(
-            Math.random() * 3,
-          ),
+          variant:
+            Math.floor(
+              Math.random() * 3,
+            ),
+          rotation:
+            randomRange(
+              -0.08,
+              0.08,
+            ),
         });
       }
 
       lanes.push({
-        row: config.row,
+        row:
+          config.row,
         type: "river",
-        speed: config.speed,
+        speed:
+          config.speed,
         objects,
       });
     }
@@ -680,6 +781,7 @@ const frogger: GameEngineFactory = ({
     resetFrog();
 
     onScore(0);
+
     onStatus?.(
       "Use the arrow keys to cross",
     );
@@ -709,10 +811,14 @@ const frogger: GameEngineFactory = ({
         dc,
         dr,
       };
+
       return;
     }
 
-    startHop(dc, dr);
+    startHop(
+      dc,
+      dr,
+    );
   }
 
   function startHop(
@@ -720,31 +826,70 @@ const frogger: GameEngineFactory = ({
     dr: number,
   ) {
     const distance =
-      superHopTimer > 0 ? 2 : 1;
+      superHopTimer > 0
+        ? 2
+        : 1;
 
-    const nextCol = clamp(
-      frog.col +
-        dc * distance,
-      0,
-      COLS - 1,
-    );
+    /*
+     * IMPORTANT FIX:
+     * Never use frog.col as the starting position
+     * while riding a moving object. Calculate the
+     * current grid column from the frog's REAL X.
+     */
+    if (!frog.hopping) {
+      syncFrogColumnFromWorld();
 
-    const nextRow = clamp(
-      frog.row +
-        dr * distance,
-      0,
-      ROWS - 1,
-    );
+      if (
+        frog.riding !== null
+      ) {
+        frog.col =
+          clamp(
+            Math.floor(
+              frog.x /
+                cw,
+            ),
+            0,
+            COLS - 1,
+          );
+      }
+    }
+
+    const nextCol =
+      clamp(
+        frog.col +
+          dc *
+            distance,
+        0,
+        COLS - 1,
+      );
+
+    const nextRow =
+      clamp(
+        frog.row +
+          dr *
+            distance,
+        0,
+        ROWS - 1,
+      );
 
     if (
-      nextCol === frog.col &&
-      nextRow === frog.row
+      nextCol ===
+        frog.col &&
+      nextRow ===
+        frog.row
     ) {
       return;
     }
 
+    frog.startX =
+      frog.x;
+
+    frog.startY =
+      frog.y;
+
     frog.targetX =
-      nextCol * cw + cw / 2;
+      nextCol * cw +
+      cw / 2;
 
     frog.targetY =
       rowY(nextRow);
@@ -755,99 +900,120 @@ const frogger: GameEngineFactory = ({
 
     if (dc !== 0) {
       frog.facing =
-        dc > 0 ? 1 : -1;
+        dc > 0
+          ? 1
+          : -1;
     }
 
-    beep(540, 0.03);
+    beep(
+      540,
+      0.03,
+    );
   }
 
   function updateHop() {
-    if (!frog.hopping) {
+    if (
+      !frog.hopping
+    ) {
       return;
     }
 
     frog.hopFrame++;
 
-    const progress = clamp(
-      frog.hopFrame /
-        HOP_FRAMES,
-      0,
-      1,
-    );
+    const progress =
+      clamp(
+        frog.hopFrame /
+          HOP_FRAMES,
+        0,
+        1,
+      );
 
     const eased =
-      progress < 0.5
+      progress <
+      0.5
         ? 2 *
           progress *
           progress
         : 1 -
           Math.pow(
-            -2 * progress + 2,
+            -2 *
+              progress +
+              2,
             2,
           ) /
             2;
 
-    const startX = frog.x;
-    const startY = frog.y;
-
     frog.x =
-      startX +
-      (frog.targetX - startX) *
-        Math.min(1, eased * 1.8);
+      frog.startX +
+      (frog.targetX -
+        frog.startX) *
+        eased;
 
     frog.y =
-      startY +
-      (frog.targetY - startY) *
+      frog.startY +
+      (frog.targetY -
+        frog.startY) *
         eased;
 
     frog.squash =
       Math.sin(
-        progress * Math.PI,
+        progress *
+          Math.PI,
       );
 
     if (
       frog.hopFrame >=
       HOP_FRAMES
     ) {
-      frog.col = clamp(
-        Math.round(
-          frog.targetX / cw -
-            0.5,
-        ),
-        0,
-        COLS - 1,
-      );
+      frog.col =
+        clamp(
+          Math.round(
+            frog.targetX /
+              cw -
+              0.5,
+          ),
+          0,
+          COLS - 1,
+        );
 
-      frog.row = clamp(
-        Math.round(
-          (frog.targetY -
-            rh / 2) /
-            rh,
-        ),
-        0,
-        ROWS - 1,
-      );
+      frog.row =
+        clamp(
+          Math.round(
+            (frog.targetY -
+              rh / 2) /
+              rh,
+          ),
+          0,
+          ROWS - 1,
+        );
 
       frog.x =
         frog.targetX;
+
       frog.y =
         frog.targetY;
 
-      frog.hopping = false;
-      frog.squash = 1;
+      frog.hopping =
+        false;
+
+      frog.squash =
+        1;
 
       onLanding();
 
       if (
         queuedMove &&
         alive &&
-        deathTimer <= 0 &&
-        goalTimer <= 0
+        deathTimer <=
+          0 &&
+        goalTimer <=
+          0
       ) {
         const move =
           queuedMove;
 
-        queuedMove = null;
+        queuedMove =
+          null;
 
         startHop(
           move.dc,
@@ -858,24 +1024,34 @@ const frogger: GameEngineFactory = ({
   }
 
   function onLanding() {
-    const row = frog.row;
+    const row =
+      frog.row;
 
-    if (row < furthestRow) {
+    if (
+      row < furthestRow
+    ) {
       const distance =
-        furthestRow - row;
+        furthestRow -
+        row;
 
-      furthestRow = row;
+      furthestRow =
+        row;
 
       beginCombo();
 
       addScore(
-        10 + distance * 5,
+        10 +
+          distance *
+            5,
         frog.x,
-        frog.y - rh * 0.55,
+        frog.y -
+          rh * 0.55,
       );
     }
 
-    if (row === 0) {
+    if (
+      row === 0
+    ) {
       reachGoal();
       return;
     }
@@ -900,13 +1076,19 @@ const frogger: GameEngineFactory = ({
   function getCurrentLane() {
     return lanes.find(
       (lane) =>
-        lane.row === frog.row,
+        lane.row ===
+        frog.row,
     );
   }
 
   function isOnObject(
     object: LaneObject,
   ) {
+    /*
+     * Slightly generous collision width:
+     * the frog can sit on the object without
+     * needing pixel-perfect alignment.
+     */
     const margin =
       frogRadius;
 
@@ -925,16 +1107,17 @@ const frogger: GameEngineFactory = ({
 
     if (
       !lane ||
-      lane.type !== "road"
+      lane.type !==
+        "road"
     ) {
       return;
     }
 
-    const frogTop =
+    const top =
       frog.y -
       frogRadius;
 
-    const frogBottom =
+    const bottom =
       frog.y +
       frogRadius;
 
@@ -942,11 +1125,15 @@ const frogger: GameEngineFactory = ({
       const object of lane.objects
     ) {
       const objectTop =
-        rowY(lane.row) -
+        rowY(
+          lane.row,
+        ) -
         rh * 0.28;
 
       const objectBottom =
-        rowY(lane.row) +
+        rowY(
+          lane.row,
+        ) +
         rh * 0.28;
 
       const hit =
@@ -957,17 +1144,21 @@ const frogger: GameEngineFactory = ({
           frogRadius <
           object.x +
             object.width &&
-        frogBottom >
+        bottom >
           objectTop &&
-        frogTop <
+        top <
           objectBottom;
 
       if (!hit) {
         continue;
       }
 
-      if (shieldTimer > 0) {
-        shieldTimer = 0;
+      if (
+        shieldTimer >
+        0
+      ) {
+        shieldTimer =
+          0;
 
         burst(
           frog.x,
@@ -978,13 +1169,15 @@ const frogger: GameEngineFactory = ({
 
         addFloatingText(
           frog.x,
-          frog.y - rh * 0.55,
+          frog.y -
+            rh * 0.55,
           "SHIELD!",
           true,
         );
 
         object.x +=
-          object.speed > 0
+          object.speed >
+          0
             ? 55
             : -55;
 
@@ -1004,20 +1197,32 @@ const frogger: GameEngineFactory = ({
 
     if (
       !lane ||
-      lane.type !== "river"
+      lane.type !==
+        "river"
     ) {
       return;
     }
 
     const support =
       lane.objects.find(
-        (object) =>
-          isOnObject(object),
+        (
+          object,
+        ) =>
+          isOnObject(
+            object,
+          ),
       );
 
-    if (support === undefined) {
-      if (shieldTimer > 0) {
-        shieldTimer = 0;
+    if (
+      support ===
+      undefined
+    ) {
+      if (
+        shieldTimer >
+        0
+      ) {
+        shieldTimer =
+          0;
 
         burst(
           frog.x,
@@ -1028,7 +1233,8 @@ const frogger: GameEngineFactory = ({
 
         addFloatingText(
           frog.x,
-          frog.y - rh * 0.55,
+          frog.y -
+            rh * 0.55,
           "SAVED!",
           true,
         );
@@ -1040,13 +1246,17 @@ const frogger: GameEngineFactory = ({
       return;
     }
 
-    frog.riding = support;
+    frog.riding =
+      support;
+
+    syncFrogColumnFromWorld();
   }
 
   function updateRiding() {
     if (
       frog.hopping ||
-      frog.riding === null
+      frog.riding ===
+        null
     ) {
       return;
     }
@@ -1059,28 +1269,38 @@ const frogger: GameEngineFactory = ({
 
     if (
       !lane ||
-      lane.type !== "river"
+      lane.type !==
+        "river"
     ) {
-      frog.riding = null;
+      frog.riding =
+        null;
+
       return;
     }
 
-    const speedMultiplier =
+    const multiplier =
       slowTimer > 0
         ? 0.55
         : 1;
 
     frog.x +=
       object.speed *
-      speedMultiplier;
+      multiplier;
 
     if (
-      specialEvent === "FLOOD"
+      specialEvent ===
+      "FLOOD"
     ) {
       frog.x +=
         object.speed *
         0.35;
     }
+
+    /*
+     * Keep logical grid position synced to
+     * the actual platform movement.
+     */
+    syncFrogColumnFromWorld();
 
     if (
       frog.x <
@@ -1094,9 +1314,13 @@ const frogger: GameEngineFactory = ({
     }
 
     if (
-      !isOnObject(object)
+      !isOnObject(
+        object,
+      )
     ) {
-      frog.riding = null;
+      frog.riding =
+        null;
+
       checkRiverSupport();
     }
   }
@@ -1106,22 +1330,29 @@ const frogger: GameEngineFactory = ({
       const lane of lanes
     ) {
       let multiplier =
-        slowTimer > 0 ? 0.55 : 1;
+        slowTimer >
+        0
+          ? 0.55
+          : 1;
 
       if (
         specialEvent ===
           "RUSH HOUR" &&
-        lane.type === "road"
+        lane.type ===
+          "road"
       ) {
-        multiplier *= 1.35;
+        multiplier *=
+          1.35;
       }
 
       if (
         specialEvent ===
           "FLOOD" &&
-        lane.type === "river"
+        lane.type ===
+          "river"
       ) {
-        multiplier *= 1.35;
+        multiplier *=
+          1.35;
       }
 
       for (
@@ -1143,7 +1374,8 @@ const frogger: GameEngineFactory = ({
             );
         } else if (
           object.x <
-          -object.width - 50
+          -object.width -
+            50
         ) {
           object.x =
             width +
@@ -1163,24 +1395,35 @@ const frogger: GameEngineFactory = ({
       | "edge",
   ) {
     if (
-      deathTimer > 0 ||
+      deathTimer >
+        0 ||
       !alive
     ) {
       return;
     }
 
     busy = true;
-    deathTimer = 34;
 
-    queuedMove = null;
-    frog.riding = null;
+    deathTimer =
+      34;
+
+    queuedMove =
+      null;
+
+    frog.riding =
+      null;
 
     resetCombo();
 
-    screenShake = 8;
+    screenShake =
+      8;
+
     flash = 5;
 
-    if (reason === "water") {
+    if (
+      reason ===
+      "water"
+    ) {
       burst(
         frog.x,
         frog.y,
@@ -1226,10 +1469,18 @@ const frogger: GameEngineFactory = ({
   function finishDeath() {
     lives--;
 
-    if (lives <= 0) {
-      alive = false;
-      busy = false;
-      deathTimer = 0;
+    if (
+      lives <=
+      0
+    ) {
+      alive =
+        false;
+
+      busy =
+        false;
+
+      deathTimer =
+        0;
 
       onStatus?.(
         "Game over",
@@ -1245,12 +1496,16 @@ const frogger: GameEngineFactory = ({
 
     resetFrog();
 
-    busy = false;
-    deathTimer = 0;
+    busy =
+      false;
+
+    deathTimer =
+      0;
 
     onStatus?.(
       `${lives} ${
-        lives === 1
+        lives ===
+        1
           ? "life"
           : "lives"
       } remaining`,
@@ -1259,20 +1514,25 @@ const frogger: GameEngineFactory = ({
 
   function reachGoal() {
     if (
-      goalTimer > 0 ||
+      goalTimer >
+        0 ||
       !alive
     ) {
       return;
     }
 
-    goalTimer = 50;
-    busy = true;
+    goalTimer =
+      50;
+
+    busy =
+      true;
 
     beginCombo();
 
     addScore(
       250 +
-        crossing * 50,
+        crossing *
+          50,
       frog.x,
       frog.y,
       "CROSSING",
@@ -1287,7 +1547,8 @@ const frogger: GameEngineFactory = ({
 
     addFloatingText(
       width / 2,
-      height * 0.18,
+      height *
+        0.18,
       "CROSSING COMPLETE!",
       true,
     );
@@ -1311,35 +1572,48 @@ const frogger: GameEngineFactory = ({
     crossing++;
 
     weather =
-      crossing >= 7
+      crossing >=
+      7
         ? "night"
-        : crossing >= 4
+        : crossing >=
+            4
           ? "evening"
           : "day";
 
     resetFrog();
+
     buildLanes();
 
-    fly = null;
-    powerUp = null;
+    fly =
+      null;
+
+    powerUp =
+      null;
 
     flyTimer =
       Math.max(
         180,
         380 -
-          crossing * 12,
+          crossing *
+            12,
       );
 
-    powerTimer = 420;
+    powerTimer =
+      420;
 
     specialEvent =
       getSpecialEvent();
 
     specialEventTimer =
-      specialEvent ? 600 : 0;
+      specialEvent
+        ? 600
+        : 0;
 
-    busy = false;
-    goalTimer = 0;
+    busy =
+      false;
+
+    goalTimer =
+      0;
 
     onStatus?.(
       specialEvent
@@ -1350,8 +1624,10 @@ const frogger: GameEngineFactory = ({
 
   function getSpecialEvent() {
     if (
-      crossing < 3 ||
-      Math.random() > 0.38
+      crossing <
+        3 ||
+      Math.random() >
+        0.38
     ) {
       return "";
     }
@@ -1366,30 +1642,45 @@ const frogger: GameEngineFactory = ({
   function updateCollectibles() {
     if (fly) {
       fly.life--;
-      fly.pulse += 0.12;
 
-      if (fly.life <= 0) {
-        fly = null;
+      fly.pulse +=
+        0.12;
+
+      if (
+        fly.life <=
+        0
+      ) {
+        fly =
+          null;
       }
     }
 
-    if (powerUp) {
+    if (
+      powerUp
+    ) {
       powerUp.life--;
-      powerUp.pulse += 0.1;
+
+      powerUp.pulse +=
+        0.1;
 
       if (
-        powerUp.life <= 0
+        powerUp.life <=
+        0
       ) {
-        powerUp = null;
+        powerUp =
+          null;
       }
     }
 
     flyTimer--;
 
     if (
-      flyTimer <= 0 &&
-      fly === null &&
-      crossing >= 2
+      flyTimer <=
+        0 &&
+      fly ===
+        null &&
+      crossing >=
+        2
     ) {
       spawnFly();
     }
@@ -1397,9 +1688,12 @@ const frogger: GameEngineFactory = ({
     powerTimer--;
 
     if (
-      powerTimer <= 0 &&
-      powerUp === null &&
-      crossing >= 2
+      powerTimer <=
+        0 &&
+      powerUp ===
+        null &&
+      crossing >=
+        2
     ) {
       spawnPowerUp();
     }
@@ -1423,7 +1717,8 @@ const frogger: GameEngineFactory = ({
     fly = {
       x: randomRange(
         cw,
-        width - cw,
+        width -
+          cw,
       ),
       y: rowY(row),
       life: 260,
@@ -1451,7 +1746,8 @@ const frogger: GameEngineFactory = ({
     powerUp = {
       x: randomRange(
         cw,
-        width - cw,
+        width -
+          cw,
       ),
       y: rowY(row),
       type: randomItem([
@@ -1475,8 +1771,10 @@ const frogger: GameEngineFactory = ({
     if (
       fly &&
       Math.hypot(
-        fly.x - frog.x,
-        fly.y - frog.y,
+        fly.x -
+          frog.x,
+        fly.y -
+          frog.y,
       ) <
         frogSize
     ) {
@@ -1501,14 +1799,17 @@ const frogger: GameEngineFactory = ({
         0.06,
       );
 
-      fly = null;
+      fly =
+        null;
     }
 
     if (
       powerUp &&
       Math.hypot(
-        powerUp.x - frog.x,
-        powerUp.y - frog.y,
+        powerUp.x -
+          frog.x,
+        powerUp.y -
+          frog.y,
       ) <
         frogSize
     ) {
@@ -1516,7 +1817,8 @@ const frogger: GameEngineFactory = ({
         powerUp,
       );
 
-      powerUp = null;
+      powerUp =
+        null;
     }
   }
 
@@ -1527,7 +1829,8 @@ const frogger: GameEngineFactory = ({
       pickup.type
     ) {
       case "shield":
-        shieldTimer = 720;
+        shieldTimer =
+          720;
 
         addFloatingText(
           pickup.x,
@@ -1535,10 +1838,12 @@ const frogger: GameEngineFactory = ({
           "SHIELD",
           true,
         );
+
         break;
 
       case "slow":
-        slowTimer = 420;
+        slowTimer =
+          420;
 
         addFloatingText(
           pickup.x,
@@ -1546,10 +1851,12 @@ const frogger: GameEngineFactory = ({
           "SLOW TIME",
           true,
         );
+
         break;
 
       case "superHop":
-        superHopTimer = 360;
+        superHopTimer =
+          360;
 
         addFloatingText(
           pickup.x,
@@ -1557,10 +1864,12 @@ const frogger: GameEngineFactory = ({
           "SUPER HOP",
           true,
         );
+
         break;
 
       case "score":
-        scoreBoostTimer = 360;
+        scoreBoostTimer =
+          360;
 
         addFloatingText(
           pickup.x,
@@ -1568,6 +1877,7 @@ const frogger: GameEngineFactory = ({
           "2X SCORE",
           true,
         );
+
         break;
     }
 
@@ -1586,31 +1896,50 @@ const frogger: GameEngineFactory = ({
 
   function updateEffects() {
     if (
-      comboTimer > 0
+      comboTimer >
+      0
     ) {
       comboTimer--;
 
       if (
-        comboTimer <= 0
+        comboTimer <=
+        0
       ) {
         resetCombo();
       }
     }
 
-    if (shieldTimer > 0)
+    if (
+      shieldTimer >
+      0
+    ) {
       shieldTimer--;
-
-    if (slowTimer > 0)
-      slowTimer--;
-
-    if (superHopTimer > 0)
-      superHopTimer--;
-
-    if (scoreBoostTimer > 0)
-      scoreBoostTimer--;
+    }
 
     if (
-      specialEventTimer > 0
+      slowTimer >
+      0
+    ) {
+      slowTimer--;
+    }
+
+    if (
+      superHopTimer >
+      0
+    ) {
+      superHopTimer--;
+    }
+
+    if (
+      scoreBoostTimer >
+      0
+    ) {
+      scoreBoostTimer--;
+    }
+
+    if (
+      specialEventTimer >
+      0
     ) {
       specialEventTimer--;
 
@@ -1618,59 +1947,73 @@ const frogger: GameEngineFactory = ({
         specialEventTimer <=
         0
       ) {
-        specialEvent = "";
+        specialEvent =
+          "";
       }
     }
 
     if (
-      screenShake > 0
+      screenShake >
+      0
     ) {
-      screenShake *= 0.85;
+      screenShake *=
+        0.85;
 
       if (
-        screenShake < 0.2
+        screenShake <
+        0.2
       ) {
-        screenShake = 0;
+        screenShake =
+          0;
       }
     }
 
-    if (flash > 0)
+    if (
+      flash >
+      0
+    ) {
       flash--;
+    }
 
-    particles.forEach(
-      (particle) => {
-        particle.x +=
-          particle.vx;
+    for (
+      const particle of particles
+    ) {
+      particle.x +=
+        particle.vx;
 
-        particle.y +=
-          particle.vy;
+      particle.y +=
+        particle.vy;
 
-        particle.vy +=
-          0.025;
+      particle.vy +=
+        0.025;
 
-        particle.vx *= 0.98;
+      particle.vx *=
+        0.98;
 
-        particle.life--;
-      },
-    );
+      particle.life--;
+    }
 
     particles =
       particles.filter(
         (particle) =>
-          particle.life > 0,
+          particle.life >
+          0,
       );
 
-    floatingTexts.forEach(
-      (item) => {
-        item.y -= 0.35;
-        item.life--;
-      },
-    );
+    for (
+      const item of floatingTexts
+    ) {
+      item.y -=
+        0.35;
+
+      item.life--;
+    }
 
     floatingTexts =
       floatingTexts.filter(
         (item) =>
-          item.life > 0,
+          item.life >
+          0,
       );
   }
 
@@ -1684,12 +2027,14 @@ const frogger: GameEngineFactory = ({
     updateCollectibles();
 
     if (
-      deathTimer > 0
+      deathTimer >
+      0
     ) {
       deathTimer--;
 
       if (
-        deathTimer <= 0
+        deathTimer <=
+        0
       ) {
         finishDeath();
       }
@@ -1698,12 +2043,14 @@ const frogger: GameEngineFactory = ({
     }
 
     if (
-      goalTimer > 0
+      goalTimer >
+      0
     ) {
       goalTimer--;
 
       if (
-        goalTimer <= 0
+        goalTimer <=
+        0
       ) {
         finishGoal();
       }
@@ -1713,13 +2060,17 @@ const frogger: GameEngineFactory = ({
 
     updateLanes();
 
-    if (frog.hopping) {
+    if (
+      frog.hopping
+    ) {
       updateHop();
     } else {
       updateRiding();
+
       collectIfNearby();
 
-      const row = frog.row;
+      const row =
+        frog.row;
 
       if (
         row >= 7 &&
@@ -1731,13 +2082,15 @@ const frogger: GameEngineFactory = ({
       if (
         row >= 1 &&
         row <= 5 &&
-        frog.riding === null
+        frog.riding ===
+          null
       ) {
         checkRiverSupport();
       }
     }
 
-    frog.squash *= 0.82;
+    frog.squash *=
+      0.82;
   }
 
   function drawGrid() {
@@ -1774,7 +2127,8 @@ const frogger: GameEngineFactory = ({
     ctx.fillStyle =
       weather === "night"
         ? "#0f172a"
-        : weather === "evening"
+        : weather ===
+            "evening"
           ? "#292524"
           : pal.bg;
 
@@ -1785,8 +2139,10 @@ const frogger: GameEngineFactory = ({
       height,
     );
 
+    // Goal
     ctx.fillStyle =
-      weather === "night"
+      weather ===
+      "night"
         ? "#166534"
         : "#15803d";
 
@@ -1797,6 +2153,7 @@ const frogger: GameEngineFactory = ({
       rh,
     );
 
+    // River
     ctx.fillStyle =
       "#155e75";
 
@@ -1807,6 +2164,7 @@ const frogger: GameEngineFactory = ({
       rh * 5,
     );
 
+    // Middle grass
     ctx.fillStyle =
       "#166534";
 
@@ -1817,6 +2175,7 @@ const frogger: GameEngineFactory = ({
       rh,
     );
 
+    // Road
     ctx.fillStyle =
       "#1f2937";
 
@@ -1827,6 +2186,7 @@ const frogger: GameEngineFactory = ({
       rh * 5,
     );
 
+    // Starting grass
     ctx.fillStyle =
       "#065f46";
 
@@ -1950,7 +2310,8 @@ const frogger: GameEngineFactory = ({
       rh * 0.28;
 
     const h =
-      object.kind === "bus"
+      object.kind ===
+      "bus"
         ? rh * 0.66
         : rh * 0.55;
 
@@ -2000,7 +2361,8 @@ const frogger: GameEngineFactory = ({
 
     ctx.arc(
       object.x +
-        object.width * 0.2,
+        object.width *
+          0.2,
       y + h,
       rh * 0.07,
       0,
@@ -2013,7 +2375,8 @@ const frogger: GameEngineFactory = ({
 
     ctx.arc(
       object.x +
-        object.width * 0.8,
+        object.width *
+          0.8,
       y + h,
       rh * 0.07,
       0,
@@ -2026,7 +2389,8 @@ const frogger: GameEngineFactory = ({
       "#fef3c7";
 
     if (
-      object.speed > 0
+      object.speed >
+      0
     ) {
       ctx.fillRect(
         object.x +
@@ -2050,112 +2414,442 @@ const frogger: GameEngineFactory = ({
     ctx.restore();
   }
 
-  function drawRiverObject(
+  /*
+   * Proper log rendering:
+   * body + bark bands + dark cut ends + growth rings +
+   * knots. This should read as a log rather than a
+   * smooth capsule.
+   */
+  function drawLog(
     object: LaneObject,
   ) {
     const y =
       rowY(
         object.laneRow,
-      ) -
-      rh * 0.25;
+      );
+
+    const h =
+      object.kind ===
+      "smallLog"
+        ? rh * 0.34
+        : rh * 0.48;
+
+    const bodyY =
+      y -
+      h / 2;
+
+    const left =
+      object.x;
+
+    const right =
+      object.x +
+      object.width;
 
     ctx.save();
 
-    if (
-      object.kind ===
-      "turtle"
-    ) {
-      ctx.fillStyle =
-        "#166534";
-
-      ctx.beginPath();
-
-      ctx.ellipse(
-        object.x +
-          object.width *
-            0.5,
-        y +
-          rh * 0.25,
-        object.width *
-          0.44,
-        rh * 0.2,
-        0,
-        0,
-        Math.PI * 2,
-      );
-
-      ctx.fill();
-
-      ctx.fillStyle =
-        "#15803d";
-
-      ctx.beginPath();
-
-      ctx.arc(
-        object.x +
-          object.width *
-            0.9,
-        y +
-          rh * 0.25,
-        rh * 0.09,
-        0,
-        Math.PI * 2,
-      );
-
-      ctx.fill();
-
-      ctx.restore();
-
-      return;
-    }
-
     ctx.fillStyle =
-      object.color;
+      "#6f4324";
 
     roundRect(
       ctx,
-      object.x,
-      y,
+      left,
+      bodyY,
       object.width,
-      rh * 0.5,
-      8,
+      h,
+      h * 0.28,
     );
 
     ctx.fill();
 
+    // Main bark strips.
     ctx.strokeStyle =
-      "rgba(255,255,255,0.14)";
+      "#4f2f1b";
 
-    ctx.lineWidth = 2;
+    ctx.lineWidth =
+      Math.max(
+        1,
+        h * 0.08,
+      );
+
+    for (
+      let i = 0;
+      i < 4;
+      i++
+    ) {
+      const px =
+        left +
+        object.width *
+          (0.18 +
+            i *
+              0.22);
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        px,
+        bodyY +
+          h * 0.12,
+      );
+
+      ctx.lineTo(
+        px -
+          h * 0.1,
+        bodyY +
+          h * 0.86,
+      );
+
+      ctx.stroke();
+    }
+
+    // Bark highlights.
+    ctx.strokeStyle =
+      "rgba(217,164,107,0.28)";
+
+    ctx.lineWidth = 1;
 
     for (
       let i = 0;
       i < 3;
       i++
     ) {
+      const px =
+        left +
+        object.width *
+          (0.25 +
+            i *
+              0.25);
+
       ctx.beginPath();
 
       ctx.moveTo(
-        object.x +
-          object.width *
-            (0.2 +
-              i * 0.28),
-        y + 4,
+        px,
+        bodyY +
+          h * 0.2,
       );
 
       ctx.lineTo(
-        object.x +
-          object.width *
-            (0.1 +
-              i * 0.28),
-        y +
-          rh * 0.45,
+        px +
+          h * 0.08,
+        bodyY +
+          h * 0.72,
+      );
+
+      ctx.stroke();
+    }
+
+    // Cut ends.
+    ctx.fillStyle =
+      "#a87543";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      left + h * 0.12,
+      y,
+      h * 0.16,
+      h * 0.43,
+      0,
+      0,
+      Math.PI * 2,
+    );
+
+    ctx.fill();
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      right - h * 0.12,
+      y,
+      h * 0.16,
+      h * 0.43,
+      0,
+      0,
+      Math.PI * 2,
+    );
+
+    ctx.fill();
+
+    // Growth rings on the ends.
+    ctx.strokeStyle =
+      "#81562f";
+
+    ctx.lineWidth = 1;
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      left + h * 0.12,
+      y,
+      h * 0.08,
+      h * 0.24,
+      0,
+      0,
+      Math.PI * 2,
+    );
+
+    ctx.stroke();
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      right - h * 0.12,
+      y,
+      h * 0.08,
+      h * 0.24,
+      0,
+      0,
+      Math.PI * 2,
+    );
+
+    ctx.stroke();
+
+    // Knots.
+    ctx.fillStyle =
+      "#4b2d18";
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      left +
+        object.width *
+          0.42,
+      y -
+        h * 0.03,
+      h * 0.06,
+      h * 0.1,
+      -0.25,
+      0,
+      Math.PI * 2,
+    );
+
+    ctx.fill();
+
+    ctx.beginPath();
+
+    ctx.ellipse(
+      left +
+        object.width *
+          0.74,
+      y +
+        h * 0.06,
+      h * 0.05,
+      h * 0.08,
+      0.2,
+      0,
+      Math.PI * 2,
+    );
+
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  /*
+   * Proper lily-pad rendering:
+   * circular leaf + notch + radial veins + inner shading.
+   */
+  function drawLily(
+    object: LaneObject,
+  ) {
+    const centerX =
+      object.x +
+      object.width /
+        2;
+
+    const centerY =
+      rowY(
+        object.laneRow,
+      );
+
+    const radius =
+      Math.min(
+        object.width *
+          0.42,
+        rh * 0.34,
+      );
+
+    const rotation =
+      object.rotation +
+      Math.sin(
+        object.variant * 1.7,
+      ) *
+        0.06;
+
+    ctx.save();
+
+    ctx.translate(
+      centerX,
+      centerY,
+    );
+
+    ctx.rotate(
+      rotation,
+    );
+
+    // Outer leaf.
+    ctx.fillStyle =
+      "#3f8f3f";
+
+    ctx.beginPath();
+
+    const segments = 20;
+
+    for (
+      let i = 0;
+      i <= segments;
+      i++
+    ) {
+      const angle =
+        (Math.PI * 2 * i) /
+        segments;
+
+      let localRadius =
+        radius;
+
+      // Slight irregularity.
+      localRadius *=
+        0.96 +
+        Math.sin(
+          i * 2.3 +
+            object.variant,
+        ) *
+          0.04;
+
+      let px =
+        Math.cos(angle) *
+        localRadius;
+
+      let py =
+        Math.sin(angle) *
+        localRadius;
+
+      // Create the characteristic lily-pad notch.
+      const notchAngle =
+        -Math.PI / 2;
+
+      const angleDifference =
+        Math.atan2(
+          Math.sin(
+            angle -
+              notchAngle,
+          ),
+          Math.cos(
+            angle -
+              notchAngle,
+          ),
+        );
+
+      if (
+        Math.abs(
+          angleDifference,
+        ) <
+        0.24
+      ) {
+        const notchFactor =
+          1 -
+          (0.24 -
+            Math.abs(
+              angleDifference,
+            )) /
+            0.24 *
+            0.72;
+
+        px *= notchFactor;
+        py *= notchFactor;
+      }
+
+      if (i === 0) {
+        ctx.moveTo(
+          px,
+          py,
+        );
+      } else {
+        ctx.lineTo(
+          px,
+          py,
+        );
+      }
+    }
+
+    ctx.closePath();
+    ctx.fill();
+
+    // Inner highlight.
+    ctx.fillStyle =
+      "rgba(134,239,135,0.18)";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      -radius * 0.1,
+      radius * 0.08,
+      radius * 0.62,
+      0,
+      Math.PI * 2,
+    );
+
+    ctx.fill();
+
+    // Veins.
+    ctx.strokeStyle =
+      "rgba(20,83,45,0.5)";
+
+    ctx.lineWidth = 1.3;
+
+    const veinStart =
+      -radius *
+      0.05;
+
+    for (
+      let i = 0;
+      i < 6;
+      i++
+    ) {
+      const angle =
+        -Math.PI / 2 +
+        i * (Math.PI / 3);
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        veinStart *
+          Math.cos(angle),
+        veinStart *
+          Math.sin(angle),
+      );
+
+      ctx.lineTo(
+        radius *
+          0.72 *
+          Math.cos(angle),
+        radius *
+          0.72 *
+          Math.sin(angle),
       );
 
       ctx.stroke();
     }
 
     ctx.restore();
+  }
+
+  function drawRiverObject(
+    object: LaneObject,
+  ) {
+    if (
+      object.kind ===
+        "log" ||
+      object.kind ===
+        "smallLog"
+    ) {
+      drawLog(
+        object,
+      );
+
+      return;
+    }
+
+    drawLily(object);
   }
 
   function drawFrog(
@@ -2238,7 +2932,10 @@ const frogger: GameEngineFactory = ({
       "#dcfce7";
 
     for (
-      const direction of [-1, 1]
+      const direction of [
+        -1,
+        1,
+      ]
     ) {
       ctx.beginPath();
 
@@ -2261,7 +2958,10 @@ const frogger: GameEngineFactory = ({
       "#052e16";
 
     for (
-      const direction of [-1, 1]
+      const direction of [
+        -1,
+        1,
+      ]
     ) {
       ctx.beginPath();
 
@@ -2440,7 +3140,8 @@ const frogger: GameEngineFactory = ({
 
     ctx.fill();
 
-    ctx.globalAlpha = 1;
+    ctx.globalAlpha =
+      1;
 
     ctx.fillStyle =
       "#ffffff";
@@ -2486,7 +3187,7 @@ const frogger: GameEngineFactory = ({
     drawBackground();
     drawGrid();
 
-    // Strong horizontal lane separators.
+    // Strong horizontal lane boundaries.
     ctx.save();
 
     ctx.strokeStyle =
@@ -2516,8 +3217,10 @@ const frogger: GameEngineFactory = ({
 
     ctx.restore();
 
-    // Current cell.
+    // Current frog cell.
     if (alive) {
+      syncFrogColumnFromWorld();
+
       ctx.save();
 
       ctx.strokeStyle =
@@ -2535,8 +3238,10 @@ const frogger: GameEngineFactory = ({
       ctx.restore();
     }
 
-    // Target cell.
-    if (frog.hopping) {
+    // Destination cell.
+    if (
+      frog.hopping
+    ) {
       const targetCol =
         clamp(
           Math.round(
@@ -2593,7 +3298,9 @@ const frogger: GameEngineFactory = ({
           lane.type ===
           "road"
         ) {
-          drawVehicle(object);
+          drawVehicle(
+            object,
+          );
         } else {
           drawRiverObject(
             object,
@@ -2649,7 +3356,7 @@ const frogger: GameEngineFactory = ({
       ctx.restore();
     }
 
-    // Top UI.
+    // HUD.
     ctx.save();
 
     ctx.fillStyle =
@@ -2704,7 +3411,9 @@ const frogger: GameEngineFactory = ({
       27,
     );
 
-    if (combo >= 2) {
+    if (
+      combo >= 2
+    ) {
       ctx.textAlign =
         "center";
 
@@ -2749,7 +3458,8 @@ const frogger: GameEngineFactory = ({
     }
 
     if (
-      scoreBoostTimer > 0
+      scoreBoostTimer >
+      0
     ) {
       effects.push(
         "2X",
@@ -2862,7 +3572,8 @@ const frogger: GameEngineFactory = ({
       ctx.fillText(
         "GAME OVER",
         width / 2,
-        height / 2 - 42,
+        height / 2 -
+          42,
       );
 
       ctx.fillStyle =
@@ -2874,19 +3585,22 @@ const frogger: GameEngineFactory = ({
       ctx.fillText(
         `Score ${score}`,
         width / 2,
-        height / 2 - 8,
+        height / 2 -
+          8,
       );
 
       ctx.fillText(
         `Crossing ${crossing}`,
         width / 2,
-        height / 2 + 16,
+        height / 2 +
+          16,
       );
 
       ctx.fillText(
         `Best flow x${bestCombo}`,
         width / 2,
-        height / 2 + 40,
+        height / 2 +
+          40,
       );
 
       ctx.fillStyle =
@@ -2898,13 +3612,16 @@ const frogger: GameEngineFactory = ({
       ctx.fillText(
         "Press SPACE or R to restart",
         width / 2,
-        height / 2 + 72,
+        height / 2 +
+          72,
       );
 
       ctx.restore();
     }
 
-    if (flash > 0) {
+    if (
+      flash > 0
+    ) {
       ctx.save();
 
       ctx.fillStyle =
@@ -2935,7 +3652,11 @@ const frogger: GameEngineFactory = ({
       key === "arrowup" ||
       key === "w"
     ) {
-      requestMove(0, -1);
+      requestMove(
+        0,
+        -1,
+      );
+
       event.preventDefault();
       return;
     }
@@ -2944,7 +3665,11 @@ const frogger: GameEngineFactory = ({
       key === "arrowdown" ||
       key === "s"
     ) {
-      requestMove(0, 1);
+      requestMove(
+        0,
+        1,
+      );
+
       event.preventDefault();
       return;
     }
@@ -2953,7 +3678,11 @@ const frogger: GameEngineFactory = ({
       key === "arrowleft" ||
       key === "a"
     ) {
-      requestMove(-1, 0);
+      requestMove(
+        -1,
+        0,
+      );
+
       event.preventDefault();
       return;
     }
@@ -2962,7 +3691,11 @@ const frogger: GameEngineFactory = ({
       key === "arrowright" ||
       key === "d"
     ) {
-      requestMove(1, 0);
+      requestMove(
+        1,
+        0,
+      );
+
       event.preventDefault();
       return;
     }
@@ -2980,7 +3713,6 @@ const frogger: GameEngineFactory = ({
       key === "r"
     ) {
       reset();
-      return;
     }
   };
 
