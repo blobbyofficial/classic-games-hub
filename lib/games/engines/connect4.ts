@@ -46,25 +46,35 @@ const connect4: GameEngineFactory = ({
 
   const boardW = cell * COLS;
   const boardH = cell * ROWS;
-  const ox = (width - boardW) / 2;
+
+  const ox =
+    (width - boardW) / 2;
+
   const oy =
     (height - boardH) / 2 +
     cell * 0.45;
 
-  const radius = cell * 0.4;
+  const radius =
+    cell * 0.4;
 
   const RED = "#f87171";
   const YELLOW = pal.gold;
 
   const isNet = Boolean(net);
+
   const me: 1 | 2 =
     net?.seat === 2 ? 2 : 1;
+
   const foe: 1 | 2 =
     me === 1 ? 2 : 1;
 
   let board: Cell[][] = [];
 
   let wins = 0;
+  let streak = 0;
+  let bestStreak = 0;
+
+  let level = 1;
 
   let over = false;
   let busy = false;
@@ -82,20 +92,20 @@ const connect4: GameEngineFactory = ({
     | null = null;
 
   let raf = 0;
-  let last = performance.now();
+  let last =
+    performance.now();
 
   let turn: 1 | 2 = 1;
 
   let difficulty: Difficulty =
     "normal";
 
-  let difficultyMenu = false;
+  let difficultyMenu =
+    false;
 
   let aiThinking = false;
-  let aiThinkingTimer = 0;
 
-  let streak = 0;
-  let bestStreak = 0;
+  let aiThinkingTimer = 0;
 
   let resultMessage = "";
 
@@ -103,7 +113,9 @@ const connect4: GameEngineFactory = ({
     return Array.from(
       { length: ROWS },
       () =>
-        Array<Cell>(COLS).fill(0),
+        Array<Cell>(COLS).fill(
+          0,
+        ),
     );
   }
 
@@ -146,6 +158,7 @@ const connect4: GameEngineFactory = ({
     over = false;
     busy = false;
     falling = null;
+
     winCells = null;
     winPulse = 0;
 
@@ -155,6 +168,8 @@ const connect4: GameEngineFactory = ({
     aiThinkingTimer = 0;
 
     resultMessage = "";
+
+    level = 1;
 
     if (isNet) {
       onScore(0);
@@ -260,6 +275,7 @@ const connect4: GameEngineFactory = ({
           ) {
             const nr =
               row + dr * k;
+
             const nc =
               col + dc * k;
 
@@ -295,9 +311,10 @@ const connect4: GameEngineFactory = ({
 
   function isFull(
     source: Cell[][],
-  ): boolean {
+  ) {
     return source[0].every(
-      (value) => value !== 0,
+      (value) =>
+        value !== 0,
     );
   }
 
@@ -305,7 +322,7 @@ const connect4: GameEngineFactory = ({
     source: Cell[][],
     col: number,
     player: 1 | 2,
-  ): Cell[][] {
+  ) {
     const row =
       landingRow(
         source,
@@ -325,121 +342,6 @@ const connect4: GameEngineFactory = ({
       player;
 
     return next;
-  }
-
-  function countDirection(
-    source: Cell[][],
-    row: number,
-    col: number,
-    dr: number,
-    dc: number,
-    player: 1 | 2,
-  ) {
-    let count = 0;
-
-    let r = row + dr;
-    let c = col + dc;
-
-    while (
-      r >= 0 &&
-      r < ROWS &&
-      c >= 0 &&
-      c < COLS &&
-      source[r][c] === player
-    ) {
-      count++;
-      r += dr;
-      c += dc;
-    }
-
-    return count;
-  }
-
-  function createsFour(
-    source: Cell[][],
-    col: number,
-    player: 1 | 2,
-  ) {
-    const next =
-      place(
-        source,
-        col,
-        player,
-      );
-
-    return Boolean(
-      winningCells(
-        next,
-        player,
-      ),
-    );
-  }
-
-  function getImmediateWins(
-    source: Cell[][],
-    player: 1 | 2,
-  ): number[] {
-    const moves: number[] =
-      [];
-
-    for (
-      let col = 0;
-      col < COLS;
-      col++
-    ) {
-      if (
-        landingRow(
-          source,
-          col,
-        ) < 0
-      ) {
-        continue;
-      }
-
-      if (
-        createsFour(
-          source,
-          col,
-          player,
-        )
-      ) {
-        moves.push(col);
-      }
-    }
-
-    return moves;
-  }
-
-  function countThreats(
-    source: Cell[][],
-    player: 1 | 2,
-  ) {
-    return getImmediateWins(
-      source,
-      player,
-    ).length;
-  }
-
-  function centerScore(
-    source: Cell[][],
-    player: 1 | 2,
-  ) {
-    let score = 0;
-
-    for (
-      let row = 0;
-      row < ROWS;
-      row++
-    ) {
-      if (
-        source[row][3] ===
-        player
-      ) {
-        score += 7;
-      }
-    }
-
-    return score;
   }
 
   function evaluateWindow(
@@ -509,9 +411,84 @@ const connect4: GameEngineFactory = ({
     return 0;
   }
 
+  function getImmediateWins(
+    source: Cell[][],
+    player: 1 | 2,
+  ) {
+    const winsFound: number[] =
+      [];
+
+    for (
+      let col = 0;
+      col < COLS;
+      col++
+    ) {
+      if (
+        landingRow(
+          source,
+          col,
+        ) < 0
+      ) {
+        continue;
+      }
+
+      const next =
+        place(
+          source,
+          col,
+          player,
+        );
+
+      if (
+        winningCells(
+          next,
+          player,
+        )
+      ) {
+        winsFound.push(
+          col,
+        );
+      }
+    }
+
+    return winsFound;
+  }
+
+  function countThreats(
+    source: Cell[][],
+    player: 1 | 2,
+  ) {
+    return getImmediateWins(
+      source,
+      player,
+    ).length;
+  }
+
+  function centerScore(
+    source: Cell[][],
+    player: 1 | 2,
+  ) {
+    let score = 0;
+
+    for (
+      let row = 0;
+      row < ROWS;
+      row++
+    ) {
+      if (
+        source[row][3] ===
+        player
+      ) {
+        score += 7;
+      }
+    }
+
+    return score;
+  }
+
   function evaluate(
     source: Cell[][],
-  ): number {
+  ) {
     let score = 0;
 
     score +=
@@ -547,11 +524,9 @@ const connect4: GameEngineFactory = ({
 
           if (
             endRow < 0 ||
-            endRow >=
-              ROWS ||
+            endRow >= ROWS ||
             endCol < 0 ||
-            endCol >=
-              COLS
+            endCol >= COLS
           ) {
             continue;
           }
@@ -581,7 +556,6 @@ const connect4: GameEngineFactory = ({
       }
     }
 
-    // Strong tactical awareness.
     const aiThreats =
       countThreats(
         source,
@@ -600,7 +574,6 @@ const connect4: GameEngineFactory = ({
     score -=
       humanThreats * 190;
 
-    // A double threat is extremely strong.
     if (
       aiThreats >= 2
     ) {
@@ -616,7 +589,7 @@ const connect4: GameEngineFactory = ({
     return score;
   }
 
-  function getSearchDepth(): number {
+  function getSearchDepth() {
     switch (
       difficulty
     ) {
@@ -694,8 +667,7 @@ const connect4: GameEngineFactory = ({
     );
 
     if (
-      columns.length ===
-      0
+      columns.length === 0
     ) {
       return 0;
     }
@@ -707,17 +679,14 @@ const connect4: GameEngineFactory = ({
       for (
         const col of columns
       ) {
-        const child =
-          place(
-            source,
-            col,
-            2,
-          );
-
         value = Math.max(
           value,
           minimax(
-            child,
+            place(
+              source,
+              col,
+              2,
+            ),
             depth - 1,
             alpha,
             beta,
@@ -746,17 +715,14 @@ const connect4: GameEngineFactory = ({
     for (
       const col of columns
     ) {
-      const child =
-        place(
-          source,
-          col,
-          1,
-        );
-
       value = Math.min(
         value,
         minimax(
-          child,
+          place(
+            source,
+            col,
+            1,
+          ),
           depth - 1,
           alpha,
           beta,
@@ -782,7 +748,7 @@ const connect4: GameEngineFactory = ({
   function orderMoves(
     source: Cell[][],
     player: 1 | 2,
-  ): number[] {
+  ) {
     const columns = [
       3,
       2,
@@ -799,51 +765,52 @@ const connect4: GameEngineFactory = ({
         ) >= 0,
     );
 
-    const scored = columns.map(
-      (col) => {
-        const next =
-          place(
-            source,
-            col,
-            player,
-          );
+    const scored =
+      columns.map(
+        (col) => {
+          const next =
+            place(
+              source,
+              col,
+              player,
+            );
 
-        let score =
-          0;
+          let score = 0;
 
-        if (
-          winningCells(
-            next,
-            player,
-          )
-        ) {
+          if (
+            winningCells(
+              next,
+              player,
+            )
+          ) {
+            score +=
+              100000;
+          }
+
           score +=
-            100000;
-        }
+            centerScore(
+              next,
+              player,
+            ) * 10;
 
-        score +=
-          centerScore(
-            next,
-            player,
-          ) * 10;
+          score +=
+            countThreats(
+              next,
+              player,
+            ) * 250;
 
-        score +=
-          countThreats(
-            next,
-            player,
-          ) * 250;
+          if (
+            col === 3
+          ) {
+            score += 50;
+          }
 
-        score +=
-          col === 3
-            ? 50
-            : 0;
-
-        return {
-          col,
-          score,
-        };
-      },
-    );
+          return {
+            col,
+            score,
+          };
+        },
+      );
 
     scored.sort(
       (a, b) =>
@@ -852,11 +819,12 @@ const connect4: GameEngineFactory = ({
     );
 
     return scored.map(
-      (item) => item.col,
+      (item) =>
+        item.col,
     );
   }
 
-  function bestAiCol(): number {
+  function bestAiCol() {
     const columns =
       orderMoves(
         board,
@@ -864,15 +832,11 @@ const connect4: GameEngineFactory = ({
       );
 
     if (
-      columns.length ===
-      0
+      columns.length === 0
     ) {
       return 3;
     }
 
-    // Easy AI intentionally makes occasional
-    // non-optimal choices while preserving
-    // competent-looking play.
     if (
       difficulty ===
         "easy" &&
@@ -896,7 +860,6 @@ const connect4: GameEngineFactory = ({
       ];
     }
 
-    // Always take immediate wins.
     const winning =
       getImmediateWins(
         board,
@@ -904,14 +867,12 @@ const connect4: GameEngineFactory = ({
       );
 
     if (
-      winning.length > 0
+      winning.length >
+      0
     ) {
-      return winning[
-        0
-      ];
+      return winning[0];
     }
 
-    // Always block immediate losses.
     const opponentWins =
       getImmediateWins(
         board,
@@ -922,9 +883,7 @@ const connect4: GameEngineFactory = ({
       opponentWins.length >
       0
     ) {
-      return opponentWins[
-        0
-      ];
+      return opponentWins[0];
     }
 
     const depth =
@@ -955,7 +914,6 @@ const connect4: GameEngineFactory = ({
           false,
         );
 
-      // Personality adjustments.
       if (
         difficulty ===
         "hard"
@@ -985,7 +943,8 @@ const connect4: GameEngineFactory = ({
       }
 
       if (
-        value > bestValue
+        value >
+        bestValue
       ) {
         bestValue =
           value;
@@ -996,6 +955,47 @@ const connect4: GameEngineFactory = ({
     }
 
     return bestCol;
+  }
+
+  function describeMove(
+    col: number,
+    player: 1 | 2,
+  ) {
+    const next =
+      place(
+        board,
+        col,
+        player,
+      );
+
+    if (
+      winningCells(
+        next,
+        player,
+      )
+    ) {
+      return "FOUR IN A ROW!";
+    }
+
+    if (
+      countThreats(
+        next,
+        player,
+      ) >= 2
+    ) {
+      return "DOUBLE THREAT!";
+    }
+
+    if (
+      countThreats(
+        next,
+        player,
+      ) >= 1
+    ) {
+      return "THREAT CREATED";
+    }
+
+    return "";
   }
 
   function startDrop(
@@ -1018,7 +1018,8 @@ const connect4: GameEngineFactory = ({
       col,
       row,
       player,
-      y: oy - cell,
+      y:
+        oy - cell,
       vy: 0,
     };
 
@@ -1030,63 +1031,6 @@ const connect4: GameEngineFactory = ({
     );
   }
 
-  function hasDoubleThreat(
-    source: Cell[][],
-    player: 1 | 2,
-  ) {
-    return (
-      getImmediateWins(
-        source,
-        player,
-      ).length >= 2
-    );
-  }
-
-  function describeMove(
-    col: number,
-    player: 1 | 2,
-  ) {
-    const next =
-      place(
-        board,
-        col,
-        player,
-      );
-
-    const ownThreats =
-      countThreats(
-        next,
-        player,
-      );
-
-    const double =
-      hasDoubleThreat(
-        next,
-        player,
-      );
-
-    if (
-      winningCells(
-        next,
-        player,
-      )
-    ) {
-      return "FOUR IN A ROW!";
-    }
-
-    if (double) {
-      return "DOUBLE THREAT!";
-    }
-
-    if (
-      ownThreats >= 1
-    ) {
-      return "THREAT CREATED";
-    }
-
-    return "";
-  }
-
   function finishWin(
     player: 1 | 2,
     cells: [
@@ -1095,12 +1039,10 @@ const connect4: GameEngineFactory = ({
     ][],
   ) {
     winCells = cells;
+
     over = true;
     busy = false;
     aiThinking = false;
-
-    const playerWon =
-      player === me;
 
     if (isNet) {
       const won =
@@ -1127,44 +1069,8 @@ const connect4: GameEngineFactory = ({
         won ? 100 : 0,
         0,
       );
-    } else {
-      if (
-        playerWon
-      ) {
-        wins++;
-        streak++;
-        bestStreak =
-          Math.max(
-            bestStreak,
-            streak,
-          );
 
-        const streakBonus =
-          Math.max(
-            0,
-            streak - 1,
-          ) * 50;
-
-        onScore(
-          wins * 100 +
-            streakBonus,
-        );
-
-        resultMessage =
-          "YOU WIN!";
-
-        onStatus?.(
-          streak >= 2
-            ? `Four in a row! ${streak} WIN STREAK 🎉`
-            : "Four in a row! 🎉",
-        );
-
-        onGameOver(
-          wins * 100 +
-            streakBonus,
-          streak,
-        );
-
+      if (won) {
         beep(
           660,
           0.08,
@@ -1179,30 +1085,89 @@ const connect4: GameEngineFactory = ({
           90,
         );
       } else {
-        streak = 0;
-
-        onScore(
-          wins * 100,
-        );
-
-        resultMessage =
-          "AI WINS";
-
-        onStatus?.(
-          "AI got four - tap to retry",
-        );
-
-        onGameOver(
-          0,
-          0,
-        );
-
         beep(
           150,
           0.25,
           "sawtooth",
         );
       }
+
+      return;
+    }
+
+    if (player === 1) {
+      wins++;
+      streak++;
+
+      bestStreak =
+        Math.max(
+          bestStreak,
+          streak,
+        );
+
+      const streakBonus =
+        Math.max(
+          0,
+          streak - 1,
+        ) * 50;
+
+      resultMessage =
+        "YOU WIN!";
+
+      onScore(
+        wins * 100 +
+          streakBonus,
+      );
+
+      onStatus?.(
+        streak >= 2
+          ? `Four in a row! ${streak} WIN STREAK 🎉`
+          : "Four in a row! 🎉",
+      );
+
+      onGameOver(
+        wins * 100 +
+          streakBonus,
+        streak,
+      );
+
+      beep(
+        660,
+        0.08,
+      );
+
+      setTimeout(
+        () =>
+          beep(
+            880,
+            0.12,
+          ),
+        90,
+      );
+    } else {
+      streak = 0;
+
+      resultMessage =
+        "AI WINS";
+
+      onScore(
+        wins * 100,
+      );
+
+      onStatus?.(
+        "AI got four - tap to retry",
+      );
+
+      onGameOver(
+        0,
+        0,
+      );
+
+      beep(
+        150,
+        0.25,
+        "sawtooth",
+      );
     }
   }
 
@@ -1284,6 +1249,7 @@ const connect4: GameEngineFactory = ({
           : 1;
 
       busy = false;
+
       turnStatus();
 
       return;
@@ -1293,6 +1259,7 @@ const connect4: GameEngineFactory = ({
       turn = 2;
 
       aiThinking = true;
+
       aiThinkingTimer =
         280 +
         Math.random() *
@@ -1350,12 +1317,12 @@ const connect4: GameEngineFactory = ({
     y: number,
     w: number,
     h: number,
-    radius: number,
+    r: number,
   ) {
     ctx.beginPath();
 
     ctx.moveTo(
-      x + radius,
+      x + r,
       y,
     );
 
@@ -1364,7 +1331,7 @@ const connect4: GameEngineFactory = ({
       y,
       x + w,
       y + h,
-      radius,
+      r,
     );
 
     ctx.arcTo(
@@ -1372,7 +1339,7 @@ const connect4: GameEngineFactory = ({
       y + h,
       x,
       y + h,
-      radius,
+      r,
     );
 
     ctx.arcTo(
@@ -1380,7 +1347,7 @@ const connect4: GameEngineFactory = ({
       y + h,
       x,
       y,
-      radius,
+      r,
     );
 
     ctx.arcTo(
@@ -1388,7 +1355,7 @@ const connect4: GameEngineFactory = ({
       y,
       x + w,
       y,
-      radius,
+      r,
     );
 
     ctx.closePath();
@@ -1564,9 +1531,7 @@ const connect4: GameEngineFactory = ({
           : pal.neon;
 
       ctx.lineWidth =
-        selected
-          ? 2
-          : 1.2;
+        selected ? 2 : 1.2;
 
       ctx.strokeRect(
         x,
@@ -1642,9 +1607,10 @@ const connect4: GameEngineFactory = ({
     reset();
 
     onStatus?.(
-      `${value[0].toUpperCase()}${value.slice(
-        1,
-      )} difficulty`,
+      `${
+        value[0].toUpperCase() +
+        value.slice(1)
+      } difficulty`,
     );
   }
 
@@ -1796,7 +1762,6 @@ const connect4: GameEngineFactory = ({
       height,
     );
 
-    // Background dots.
     ctx.save();
 
     ctx.fillStyle =
@@ -1854,14 +1819,13 @@ const connect4: GameEngineFactory = ({
         center.x,
         oy -
           cell / 2,
-        me === 2
-          ? 2
+        isNet
+          ? me
           : 1,
         0.4,
       );
     }
 
-    // Board body.
     ctx.fillStyle =
       "#3730a3";
 
@@ -1875,7 +1839,6 @@ const connect4: GameEngineFactory = ({
 
     ctx.fill();
 
-    // Board holes / pieces.
     for (
       let row = 0;
       row < ROWS;
@@ -1917,9 +1880,9 @@ const connect4: GameEngineFactory = ({
         if (
           value !== 0 &&
           winCells?.some(
-            ([winRow, winCol]) =>
-              winRow === row &&
-              winCol === col,
+            ([wr, wc]) =>
+              wr === row &&
+              wc === col,
           )
         ) {
           ctx.save();
@@ -1969,7 +1932,6 @@ const connect4: GameEngineFactory = ({
       );
     }
 
-    // Top labels.
     ctx.save();
 
     ctx.fillStyle =
@@ -2024,9 +1986,7 @@ const connect4: GameEngineFactory = ({
       ctx.restore();
     }
 
-    if (
-      over
-    ) {
+    if (over) {
       ctx.save();
 
       ctx.fillStyle =
@@ -2123,7 +2083,7 @@ const connect4: GameEngineFactory = ({
           height / 2 + 36,
         );
       }
-      
+
       ctx.restore();
     }
 
@@ -2203,9 +2163,7 @@ const connect4: GameEngineFactory = ({
       return;
     }
 
-    if (
-      over
-    ) {
+    if (over) {
       reset();
       return;
     }
@@ -2281,13 +2239,13 @@ const connect4: GameEngineFactory = ({
     ) {
       event.preventDefault();
 
-      const choices: Difficulty[] =
-        [
-          "easy",
-          "normal",
-          "hard",
-          "expert",
-        ];
+      const choices:
+        Difficulty[] = [
+        "easy",
+        "normal",
+        "hard",
+        "expert",
+      ];
 
       chooseDifficulty(
         choices[
@@ -2436,6 +2394,8 @@ const connect4: GameEngineFactory = ({
     restart: () => {
       wins = 0;
       streak = 0;
+      bestStreak = 0;
+      level = 1;
       difficultyMenu =
         false;
 
