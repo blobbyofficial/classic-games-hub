@@ -1366,23 +1366,84 @@ const frogger: GameEngineFactory = ({
           object.x >
           width + 50
         ) {
-          object.x =
-            -object.width -
-            randomRange(
-              20,
-              100,
-            );
+          if (
+            lane.type ===
+            "road"
+          ) {
+            /*
+             * Spawn behind the leftmost vehicle
+             * with enough room to guarantee no overlap.
+             */
+            const leftmost =
+              Math.min(
+                ...lane.objects
+                  .filter(
+                    (other) =>
+                      other !==
+                      object,
+                  )
+                  .map(
+                    (other) =>
+                      other.x,
+                  ),
+              );
+
+            object.x =
+              leftmost -
+              object.width -
+              Math.max(
+                cw * 0.75,
+                55,
+              );
+          } else {
+            object.x =
+              -object.width -
+              randomRange(
+                20,
+                100,
+              );
+          }
         } else if (
           object.x <
           -object.width -
             50
         ) {
-          object.x =
-            width +
-            randomRange(
-              20,
-              100,
-            );
+          if (
+            lane.type ===
+            "road"
+          ) {
+            /*
+             * Spawn behind the rightmost vehicle.
+             */
+            const rightmost =
+              Math.max(
+                ...lane.objects
+                  .filter(
+                    (other) =>
+                      other !==
+                      object,
+                  )
+                  .map(
+                    (other) =>
+                      other.x +
+                      other.width,
+                  ),
+              );
+
+            object.x =
+              rightmost +
+              Math.max(
+                cw * 0.75,
+                55,
+              );
+          } else {
+            object.x =
+              width +
+              randomRange(
+                20,
+                100,
+              );
+          }
         }
       }
     }
