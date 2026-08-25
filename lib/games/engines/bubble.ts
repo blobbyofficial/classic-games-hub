@@ -91,7 +91,8 @@ const bubble: GameEngineFactory = ({
   const ROW_H = R * 1.72;
   const BOARD_TOP = 10;
   const SHOOTER_Y = height - R - 16;
-  const DANGER_Y = height - Math.max(120, R * 3.5);
+  const DANGER_Y =
+    height - Math.max(120, R * 3.5);
   const SPEED = 11.5;
   const MAX_ROWS = 16;
 
@@ -123,10 +124,9 @@ const bubble: GameEngineFactory = ({
   let bestScore = 0;
   let shots = 0;
   let misses = 0;
-
   let level = 1;
-  let alive = true;
 
+  let alive = true;
   let aim = -Math.PI / 2;
   let bob = 0;
 
@@ -164,13 +164,42 @@ const bubble: GameEngineFactory = ({
     return randInt(getColorCount());
   }
 
-  function randomKind(forceNormal = false): BubbleKind {
+  function getRowLength(row: number) {
+    return COLS - (row % 2);
+  }
+
+  function createEmptyRow(row: number): GridCell[] {
+    const rowData: GridCell[] = [];
+
+    for (
+      let col = 0;
+      col < getRowLength(row);
+      col++
+    ) {
+      rowData.push(null);
+    }
+
+    return rowData;
+  }
+
+  function ensureRows(count: number) {
+    while (grid.length < count) {
+      grid.push(
+        createEmptyRow(grid.length),
+      );
+    }
+  }
+
+  function randomKind(
+    forceNormal = false,
+  ): BubbleKind {
     if (forceNormal) {
       return "normal";
     }
 
     const roll = Math.random();
-    const bonus = specialUpgrade * 0.01;
+    const bonus =
+      specialUpgrade * 0.01;
 
     if (roll < 0.025 + bonus) {
       return "rainbow";
@@ -184,7 +213,10 @@ const bubble: GameEngineFactory = ({
       return "lightning";
     }
 
-    if (level >= 4 && roll < 0.1 + bonus) {
+    if (
+      level >= 4 &&
+      roll < 0.1 + bonus
+    ) {
       return "stone";
     }
 
@@ -207,37 +239,42 @@ const bubble: GameEngineFactory = ({
     };
   }
 
-  function getRowLength(row: number) {
-    return COLS - (row % 2);
-  }
-
-  function ensureRows(count: number) {
-    while (grid.length < count) {
-      const row: GridCell[] = new Array<GridCell>(
-        getRowLength(grid.length),
-      ).fill(null);
-
-      grid.push(row);
-    }
-  }
-
-  function cellPos(row: number, col: number) {
-    const offset = (row % 2) * R;
+  function cellPos(
+    row: number,
+    col: number,
+  ) {
+    const offset =
+      (row % 2) * R;
 
     return {
-      x: offset + col * 2 * R + R,
-      y: BOARD_TOP + row * ROW_H + R,
+      x:
+        offset +
+        col * 2 * R +
+        R,
+      y:
+        BOARD_TOP +
+        row * ROW_H +
+        R,
     };
   }
 
-  function shade(hex: string, amount: number) {
+  function shade(
+    hex: string,
+    amount: number,
+  ) {
     const part = (index: number) => {
       const value = Math.round(
-        parseInt(hex.slice(index, index + 2), 16) *
+        parseInt(
+          hex.slice(index, index + 2),
+          16,
+        ) *
           (1 + amount),
       );
 
-      return Math.max(0, Math.min(255, value))
+      return Math.max(
+        0,
+        Math.min(255, value),
+      )
         .toString(16)
         .padStart(2, "0");
     };
@@ -245,13 +282,205 @@ const bubble: GameEngineFactory = ({
     return `#${part(1)}${part(3)}${part(5)}`;
   }
 
+  function choosePattern() {
+    const patterns = [
+      "classic",
+      "classic",
+      "checker",
+      "diamond",
+      "pyramid",
+      "arch",
+      "split",
+      "islands",
+    ];
+
+    return patterns[
+      randInt(patterns.length)
+    ];
+  }
+
+  function shouldPlace(
+    pattern: string,
+    row: number,
+    col: number,
+    rowCount: number,
+  ) {
+    const center =
+      (getRowLength(row) - 1) / 2;
+
+    switch (pattern) {
+      case "checker":
+        return (
+          (row + col) % 2 ===
+          0
+        );
+
+      case "diamond":
+        return (
+          Math.abs(
+            col - center,
+          ) +
+            Math.abs(
+              row -
+                (rowCount - 1) /
+                  2,
+            ) <
+          rowCount * 0.72
+        );
+
+      case "pyramid":
+        return (
+          Math.abs(
+            col - center,
+          ) <=
+          row + 0.8
+        );
+
+      case "arch":
+        return (
+          row < 2 ||
+          col === 0 ||
+          col ===
+            getRowLength(row) - 1 ||
+          row ===
+            rowCount - 1
+        );
+
+      case "split":
+        return (
+          col <= 2 ||
+          col >=
+            getRowLength(row) - 3 ||
+          row < 2
+        );
+
+      case "islands":
+        return (
+          (col <= 2 &&
+            row % 2 === 0) ||
+          (col >=
+            getRowLength(row) - 3 &&
+            row % 2 === 1) ||
+          row === 0 ||
+          row === 1
+        );
+
+      default:
+        return true;
+    }
+  }
+
+  function buildBoard() {
+    grid = [];
+
+    const rowCount = Math.min(
+      5 +
+        Math.floor(level / 2),
+      9,
+    );
+
+    boardPattern =
+      choosePattern();
+
+    for (
+      let row = 0;
+      row < rowCount;
+      row++
+    ) {
+      const rowData: GridCell[] =
+        [];
+
+      for (
+        let col = 0;
+        col < getRowLength(row);
+        col++
+      ) {
+        if (
+          !shouldPlace(
+            boardPattern,
+            row,
+            col,
+            rowCount,
+          )
+        ) {
+          rowData.push(null);
+          continue;
+        }
+
+        let color =
+          randomColor();
+
+        if (
+          row < 2 &&
+          col > 0 &&
+          Math.random() < 0.55
+        ) {
+          const previous =
+            rowData[col - 1];
+
+          if (
+            previous !== null &&
+            previous !== undefined
+          ) {
+            color = previous.color;
+          }
+        }
+
+        let kind: BubbleKind =
+          "normal";
+
+        if (
+          level >= 4 &&
+          Math.random() < 0.035
+        ) {
+          kind =
+            randomKind();
+        }
+
+        rowData.push({
+          color,
+          kind,
+        });
+      }
+
+      grid.push(rowData);
+    }
+
+    if (grid.length > 0) {
+      const firstRow = grid[0];
+
+      let hasBubble = false;
+
+      for (
+        const cell of firstRow
+      ) {
+        if (cell !== null) {
+          hasBubble = true;
+          break;
+        }
+      }
+
+      if (!hasBubble) {
+        const index =
+          randInt(
+            getRowLength(0),
+          );
+
+        firstRow[index] = {
+          color: randomColor(),
+          kind: "normal",
+        };
+      }
+    }
+  }
+
   function reset() {
     score = 0;
     shots = 0;
     misses = 0;
     level = 1;
-    alive = true;
 
+    alive = true;
     aim = -Math.PI / 2;
     bob = 0;
 
@@ -274,11 +503,10 @@ const bubble: GameEngineFactory = ({
     upgradeChoices = [];
 
     flying = null;
+
     pops = [];
     drops = [];
     floatingTexts = [];
-
-    boardPattern = "classic";
 
     buildBoard();
 
@@ -286,154 +514,22 @@ const bubble: GameEngineFactory = ({
     nextShot = randomShot();
 
     onScore(0);
-    onStatus?.("Match 3+ to pop");
-  }
-
-  function choosePattern() {
-    const patterns = [
-      "classic",
-      "classic",
-      "checker",
-      "diamond",
-      "pyramid",
-      "arch",
-      "split",
-      "islands",
-    ];
-
-    return patterns[randInt(patterns.length)];
-  }
-
-  function shouldPlace(
-    pattern: string,
-    row: number,
-    col: number,
-    rowCount: number,
-  ) {
-    const center = (getRowLength(row) - 1) / 2;
-
-    switch (pattern) {
-      case "checker":
-        return (row + col) % 2 === 0;
-
-      case "diamond":
-        return (
-          Math.abs(col - center) +
-            Math.abs(row - (rowCount - 1) / 2) <
-          rowCount * 0.72
-        );
-
-      case "pyramid":
-        return Math.abs(col - center) <= row + 0.8;
-
-      case "arch":
-        return (
-          row < 2 ||
-          col === 0 ||
-          col === getRowLength(row) - 1 ||
-          row === rowCount - 1
-        );
-
-      case "split":
-        return (
-          col <= 2 ||
-          col >= getRowLength(row) - 3 ||
-          row < 2
-        );
-
-      case "islands":
-        return (
-          (col <= 2 && row % 2 === 0) ||
-          (col >= getRowLength(row) - 3 && row % 2 === 1) ||
-          row === 0 ||
-          row === 1
-        );
-
-      default:
-        return true;
-    }
-  }
-
-  function buildBoard() {
-    grid = [];
-
-    const rowCount = Math.min(
-      5 + Math.floor(level / 2),
-      9,
+    onStatus?.(
+      "Match 3+ to pop",
     );
-
-    boardPattern = choosePattern();
-
-    for (let row = 0; row < rowCount; row++) {
-      const currentRow: GridCell[] = [];
-
-      for (
-        let col = 0;
-        col < getRowLength(row);
-        col++
-      ) {
-        if (
-          !shouldPlace(
-            boardPattern,
-            row,
-            col,
-            rowCount,
-          )
-        ) {
-          currentRow.push(null);
-          continue;
-        }
-
-        let color = randomColor();
-
-        if (row < 2 && col > 0) {
-          const previous = currentRow[col - 1];
-
-          if (
-            previous !== null &&
-            previous !== undefined &&
-            Math.random() < 0.55
-          ) {
-            color = previous.color;
-          }
-        }
-
-        let kind: BubbleKind = "normal";
-
-        if (
-          level >= 4 &&
-          Math.random() < 0.035
-        ) {
-          kind = randomKind();
-        }
-
-        currentRow.push({
-          color,
-          kind,
-        });
-      }
-
-      grid.push(currentRow);
-    }
-
-    if (
-      grid.length > 0 &&
-      grid[0].every((cell) => cell === null)
-    ) {
-      grid[0][randInt(getRowLength(0))] = {
-        color: randomColor(),
-        kind: "normal",
-      };
-    }
   }
 
   function neighbors(
     row: number,
     col: number,
   ): [number, number][] {
-    const even = row % 2 === 0;
+    const even =
+      row % 2 === 0;
 
-    const deltas: [number, number][] = even
+    const deltas: [
+      number,
+      number,
+    ][] = even
       ? [
           [0, -1],
           [0, 1],
@@ -454,14 +550,24 @@ const bubble: GameEngineFactory = ({
     return deltas
       .map(
         ([dr, dc]) =>
-          [row + dr, col + dc] as [number, number],
+          [
+            row + dr,
+            col + dc,
+          ] as [
+            number,
+            number,
+          ],
       )
       .filter(
         ([nextRow, nextCol]) =>
           nextRow >= 0 &&
-          nextRow < grid.length &&
+          nextRow <
+            grid.length &&
           nextCol >= 0 &&
-          nextCol < getRowLength(nextRow),
+          nextCol <
+            getRowLength(
+              nextRow,
+            ),
       );
   }
 
@@ -470,25 +576,45 @@ const bubble: GameEngineFactory = ({
     col: number,
     color: number,
   ): [number, number][] {
-    const seen = new Set<string>();
-    const stack: [number, number][] = [[row, col]];
-    const result: [number, number][] = [];
+    const seen =
+      new Set<string>();
 
-    while (stack.length > 0) {
-      const current = stack.pop()!;
+    const stack: [
+      number,
+      number,
+    ][] = [[row, col]];
 
-      const currentRow = current[0];
-      const currentCol = current[1];
+    const result: [
+      number,
+      number,
+    ][] = [];
+
+    while (
+      stack.length > 0
+    ) {
+      const current =
+        stack.pop()!;
+
+      const currentRow =
+        current[0];
+
+      const currentCol =
+        current[1];
 
       const key = `${currentRow},${currentCol}`;
 
-      if (seen.has(key)) {
+      if (
+        seen.has(key)
+      ) {
         continue;
       }
 
       seen.add(key);
 
-      const cell = grid[currentRow]?.[currentCol];
+      const cell =
+        grid[currentRow]?.[
+          currentCol
+        ];
 
       if (
         cell === null ||
@@ -498,13 +624,20 @@ const bubble: GameEngineFactory = ({
         continue;
       }
 
-      result.push([currentRow, currentCol]);
-
-      for (const neighbour of neighbors(
+      result.push([
         currentRow,
         currentCol,
-      )) {
-        stack.push(neighbour);
+      ]);
+
+      for (
+        const neighbour of neighbors(
+          currentRow,
+          currentCol,
+        )
+      ) {
+        stack.push(
+          neighbour,
+        );
       }
     }
 
@@ -515,7 +648,8 @@ const bubble: GameEngineFactory = ({
     row: number,
     col: number,
   ): [number, number][] {
-    const start = grid[row]?.[col];
+    const start =
+      grid[row]?.[col];
 
     if (
       start === null ||
@@ -524,78 +658,122 @@ const bubble: GameEngineFactory = ({
       return [];
     }
 
-    let targetColor: number | null = null;
+    let targetColor:
+      | number
+      | null = null;
 
-    for (const [nextRow, nextCol] of neighbors(
-      row,
-      col,
-    )) {
-      const cell = grid[nextRow]?.[nextCol];
+    for (
+      const [
+        nextRow,
+        nextCol,
+      ] of neighbors(
+        row,
+        col,
+      )
+    ) {
+      const cell =
+        grid[nextRow]?.[
+          nextCol
+        ];
 
       if (
         cell !== null &&
         cell !== undefined &&
-        cell.kind !== "rainbow"
+        cell.kind !==
+          "rainbow"
       ) {
-        targetColor = cell.color;
+        targetColor =
+          cell.color;
+
         break;
       }
     }
 
-    if (targetColor === null) {
-      return [[row, col]];
+    if (
+      targetColor === null
+    ) {
+      return [[
+        row,
+        col,
+      ]];
     }
 
-    const cluster = findColorCluster(
-      row,
-      col,
-      targetColor,
-    );
+    const cluster =
+      findColorCluster(
+        row,
+        col,
+        targetColor,
+      );
 
     if (
       !cluster.some(
-        ([r, c]) => r === row && c === col,
+        ([r, c]) =>
+          r === row &&
+          c === col,
       )
     ) {
-      cluster.unshift([row, col]);
+      cluster.unshift([
+        row,
+        col,
+      ]);
     }
 
     return cluster;
   }
 
   function findConnectedCells() {
-    const connected = new Set<string>();
-    const stack: [number, number][] = [];
+    const connected =
+      new Set<string>();
+
+    const stack: [
+      number,
+      number,
+    ][] = [];
 
     if (grid.length > 0) {
       for (
         let col = 0;
-        col < getRowLength(0);
+        col <
+        getRowLength(0);
         col++
       ) {
-        const cell = grid[0]?.[col];
+        const cell =
+          grid[0]?.[col];
 
         if (
           cell !== null &&
           cell !== undefined
         ) {
-          stack.push([0, col]);
+          stack.push([
+            0,
+            col,
+          ]);
         }
       }
     }
 
-    while (stack.length > 0) {
-      const current = stack.pop()!;
-      const row = current[0];
-      const col = current[1];
+    while (
+      stack.length > 0
+    ) {
+      const current =
+        stack.pop()!;
+
+      const row =
+        current[0];
+
+      const col =
+        current[1];
 
       const key = `${row},${col}`;
 
-      if (connected.has(key)) {
+      if (
+        connected.has(key)
+      ) {
         continue;
       }
 
-      const cell = grid[row]?.[col];
+      const cell =
+        grid[row]?.[col];
 
       if (
         cell === null ||
@@ -606,8 +784,15 @@ const bubble: GameEngineFactory = ({
 
       connected.add(key);
 
-      for (const neighbour of neighbors(row, col)) {
-        stack.push(neighbour);
+      for (
+        const neighbour of neighbors(
+          row,
+          col,
+        )
+      ) {
+        stack.push(
+          neighbour,
+        );
       }
     }
 
@@ -620,25 +805,41 @@ const bubble: GameEngineFactory = ({
     color: number,
     count = 8,
   ) {
-    for (let i = 0; i < count; i++) {
+    for (
+      let i = 0;
+      i < count;
+      i++
+    ) {
       const angle =
-        Math.random() * Math.PI * 2;
+        Math.random() *
+        Math.PI *
+        2;
 
       const speed =
-        1 + Math.random() * 3.6;
+        1 +
+        Math.random() *
+          3.6;
 
       pops.push({
         x,
         y,
-        vx: Math.cos(angle) * speed,
+        vx:
+          Math.cos(angle) *
+          speed,
         vy:
-          Math.sin(angle) * speed - 1,
+          Math.sin(angle) *
+            speed -
+          1,
         color,
         life:
-          0.8 + Math.random() * 0.3,
+          0.8 +
+          Math.random() *
+            0.3,
         maxLife: 1,
         size:
-          1.5 + Math.random() * 2.4,
+          1.5 +
+          Math.random() *
+            2.4,
       });
     }
   }
@@ -653,12 +854,15 @@ const bubble: GameEngineFactory = ({
       y,
       vy:
         -1 -
-        Math.random() * 1.5,
+        Math.random() *
+          1.5,
       color: cell.color,
       kind: cell.kind,
       life: 1,
       rotation:
-        Math.random() * Math.PI * 2,
+        Math.random() *
+        Math.PI *
+        2,
     });
   }
 
@@ -702,17 +906,25 @@ const bubble: GameEngineFactory = ({
     y?: number,
     label?: string,
   ) {
-    const amount = Math.max(
-      1,
-      Math.round(
-        base *
-          getScoreMultiplier() *
-          (1 + dropUpgrade * 0.08),
-      ),
-    );
+    const amount =
+      Math.max(
+        1,
+        Math.round(
+          base *
+            getScoreMultiplier() *
+            (1 +
+              dropUpgrade *
+                0.08),
+        ),
+      );
 
     score += amount;
-    bestScore = Math.max(bestScore, score);
+
+    bestScore =
+      Math.max(
+        bestScore,
+        score,
+      );
 
     onScore(score);
 
@@ -733,19 +945,25 @@ const bubble: GameEngineFactory = ({
 
   function beginCombo() {
     combo++;
-    comboTimer =
-      95 + comboUpgrade * 18;
 
-    maxCombo = Math.max(
-      maxCombo,
-      combo,
-    );
+    comboTimer =
+      95 +
+      comboUpgrade *
+        18;
+
+    maxCombo =
+      Math.max(
+        maxCombo,
+        combo,
+      );
 
     if (
       combo >= 10 &&
       !chainReaction
     ) {
-      chainReaction = true;
+      chainReaction =
+        true;
+
       chainTimer = 320;
 
       addFloatingText(
@@ -775,7 +993,8 @@ const bubble: GameEngineFactory = ({
     row: number,
     col: number,
   ) {
-    const cell = grid[row]?.[col];
+    const cell =
+      grid[row]?.[col];
 
     if (
       cell === null ||
@@ -784,7 +1003,11 @@ const bubble: GameEngineFactory = ({
       return;
     }
 
-    const position = cellPos(row, col);
+    const position =
+      cellPos(
+        row,
+        col,
+      );
 
     spawnPop(
       position.x,
@@ -800,7 +1023,8 @@ const bubble: GameEngineFactory = ({
     row: number,
     col: number,
   ) {
-    const cell = grid[row]?.[col];
+    const cell =
+      grid[row]?.[col];
 
     if (
       cell === null ||
@@ -809,15 +1033,30 @@ const bubble: GameEngineFactory = ({
       return;
     }
 
-    if (cell.kind === "bomb") {
-      const affected: [number, number][] = [
+    if (
+      cell.kind === "bomb"
+    ) {
+      const affected: [
+        number,
+        number,
+      ][] = [
         [row, col],
-        ...neighbors(row, col),
+        ...neighbors(
+          row,
+          col,
+        ),
       ];
 
-      for (const [affectedRow, affectedCol] of affected) {
+      for (
+        const [
+          affectedRow,
+          affectedCol,
+        ] of affected
+      ) {
         const target =
-          grid[affectedRow]?.[affectedCol];
+          grid[affectedRow]?.[
+            affectedCol
+          ];
 
         if (
           target === null ||
@@ -826,10 +1065,11 @@ const bubble: GameEngineFactory = ({
           continue;
         }
 
-        const position = cellPos(
-          affectedRow,
-          affectedCol,
-        );
+        const position =
+          cellPos(
+            affectedRow,
+            affectedCol,
+          );
 
         spawnPop(
           position.x,
@@ -838,7 +1078,9 @@ const bubble: GameEngineFactory = ({
           5,
         );
 
-        grid[affectedRow][affectedCol] = null;
+        grid[affectedRow][
+          affectedCol
+        ] = null;
 
         addScore(
           12,
@@ -848,27 +1090,40 @@ const bubble: GameEngineFactory = ({
       }
 
       addFloatingText(
-        cellPos(row, col).x,
-        cellPos(row, col).y,
+        cellPos(
+          row,
+          col,
+        ).x,
+        cellPos(
+          row,
+          col,
+        ).y,
         "BOMB",
         true,
       );
 
-      beep(240, 0.11);
+      beep(
+        240,
+        0.11,
+      );
+
       return;
     }
 
-    if (cell.kind === "lightning") {
-      const targetRow = row;
-
+    if (
+      cell.kind ===
+      "lightning"
+    ) {
       for (
         let currentCol = 0;
         currentCol <
-        getRowLength(targetRow);
+        getRowLength(row);
         currentCol++
       ) {
         const target =
-          grid[targetRow]?.[currentCol];
+          grid[row]?.[
+            currentCol
+          ];
 
         if (
           target === null ||
@@ -877,10 +1132,11 @@ const bubble: GameEngineFactory = ({
           continue;
         }
 
-        const position = cellPos(
-          targetRow,
-          currentCol,
-        );
+        const position =
+          cellPos(
+            row,
+            currentCol,
+          );
 
         spawnPop(
           position.x,
@@ -889,7 +1145,9 @@ const bubble: GameEngineFactory = ({
           4,
         );
 
-        grid[targetRow][currentCol] = null;
+        grid[row][
+          currentCol
+        ] = null;
 
         addScore(
           10,
@@ -899,21 +1157,39 @@ const bubble: GameEngineFactory = ({
       }
 
       addFloatingText(
-        cellPos(row, col).x,
-        cellPos(row, col).y,
+        cellPos(
+          row,
+          col,
+        ).x,
+        cellPos(
+          row,
+          col,
+        ).y,
         "ROW CLEAR",
         true,
       );
 
-      beep(760, 0.08);
+      beep(
+        760,
+        0.08,
+      );
     }
   }
 
   function resolveSpecialCluster(
-    cluster: [number, number][],
+    cluster: [
+      number,
+      number,
+    ][],
   ) {
-    for (const [row, col] of cluster) {
-      const cell = grid[row]?.[col];
+    for (
+      const [
+        row,
+        col,
+      ] of cluster
+    ) {
+      const cell =
+        grid[row]?.[col];
 
       if (
         cell === null ||
@@ -923,8 +1199,10 @@ const bubble: GameEngineFactory = ({
       }
 
       if (
-        cell.kind === "bomb" ||
-        cell.kind === "lightning"
+        cell.kind ===
+          "bomb" ||
+        cell.kind ===
+          "lightning"
       ) {
         triggerSpecial(
           row,
@@ -947,10 +1225,12 @@ const bubble: GameEngineFactory = ({
     ) {
       for (
         let col = 0;
-        col < getRowLength(row);
+        col <
+        getRowLength(row);
         col++
       ) {
-        const cell = grid[row]?.[col];
+        const cell =
+          grid[row]?.[col];
 
         if (
           cell === null ||
@@ -959,16 +1239,20 @@ const bubble: GameEngineFactory = ({
           continue;
         }
 
-        const key = `${row},${col}`;
+        const key =
+          `${row},${col}`;
 
-        if (connected.has(key)) {
+        if (
+          connected.has(key)
+        ) {
           continue;
         }
 
-        const position = cellPos(
-          row,
-          col,
-        );
+        const position =
+          cellPos(
+            row,
+            col,
+          );
 
         spawnDrop(
           position.x,
@@ -983,7 +1267,9 @@ const bubble: GameEngineFactory = ({
           3,
         );
 
-        grid[row][col] = null;
+        grid[row][col] =
+          null;
+
         dropped++;
       }
     }
@@ -992,7 +1278,7 @@ const bubble: GameEngineFactory = ({
       return;
     }
 
-    const dropBonus =
+    const bonus =
       dropped >= 20
         ? 300
         : dropped >= 12
@@ -1004,7 +1290,8 @@ const bubble: GameEngineFactory = ({
               : 0;
 
     addScore(
-      dropped * 20 + dropBonus,
+      dropped * 20 +
+        bonus,
       width / 2,
       height * 0.45,
       dropped >= 8
@@ -1020,11 +1307,14 @@ const bubble: GameEngineFactory = ({
         true,
       );
 
-      chainReaction = true;
-      chainTimer = Math.max(
-        chainTimer,
-        180,
-      );
+      chainReaction =
+        true;
+
+      chainTimer =
+        Math.max(
+          chainTimer,
+          180,
+        );
 
       beep(
         800,
@@ -1035,9 +1325,15 @@ const bubble: GameEngineFactory = ({
   }
 
   function checkBoardClear() {
-    for (const row of grid) {
-      for (const cell of row) {
-        if (cell !== null) {
+    for (
+      const row of grid
+    ) {
+      for (
+        const cell of row
+      ) {
+        if (
+          cell !== null
+        ) {
           return false;
         }
       }
@@ -1049,8 +1345,11 @@ const bubble: GameEngineFactory = ({
   function removeEmptyBottomRows() {
     while (
       grid.length > 0 &&
-      grid[grid.length - 1].every(
-        (cell) => cell === null,
+      grid[
+        grid.length - 1
+      ].every(
+        (cell) =>
+          cell === null,
       )
     ) {
       grid.pop();
@@ -1062,7 +1361,8 @@ const bubble: GameEngineFactory = ({
       (row, rowIndex) => {
         const hasBubble =
           row.some(
-            (cell) => cell !== null,
+            (cell) =>
+              cell !== null,
           );
 
         if (!hasBubble) {
@@ -1070,7 +1370,11 @@ const bubble: GameEngineFactory = ({
         }
 
         return (
-          cellPos(rowIndex, 0).y + R >=
+          cellPos(
+            rowIndex,
+            0,
+          ).y +
+            R >=
           DANGER_Y
         );
       },
@@ -1080,59 +1384,94 @@ const bubble: GameEngineFactory = ({
   function getMissThreshold() {
     return Math.max(
       4,
-      7 - Math.floor(level / 3),
+      7 -
+        Math.floor(
+          level / 3,
+        ),
     );
   }
 
   function createPenaltyRow() {
-    if (grid.length >= MAX_ROWS) {
+    if (
+      grid.length >= MAX_ROWS
+    ) {
       return;
     }
 
-    const newRow: GridCell[] = [];
+    const rowData: GridCell[] =
+      createEmptyRow(0);
 
     for (
       let col = 0;
-      col < getRowLength(0);
+      col <
+      rowData.length;
       col++
     ) {
-      let color = randomColor();
+      let color =
+        randomColor();
 
       if (
         col > 0 &&
-        newRow[col - 1] !== null &&
-        newRow[col - 1] !== undefined &&
-        Math.random() < 0.48
+        rowData[
+          col - 1
+        ] !== null &&
+        Math.random() <
+          0.48
       ) {
-        color = newRow[col - 1]!.color;
+        const previous =
+          rowData[
+            col - 1
+          ];
+
+        if (
+          previous !== null
+        ) {
+          color =
+            previous.color;
+        }
       }
 
-      let kind: BubbleKind = "normal";
+      let kind: BubbleKind =
+        "normal";
 
       if (
         level >= 4 &&
         Math.random() < 0.05
       ) {
-        kind = randomKind();
+        kind =
+          randomKind();
       }
 
-      newRow.push({
+      rowData[col] = {
         color,
         kind,
-      });
+      };
     }
 
-    grid.unshift(newRow);
+    grid.unshift(rowData);
+
     misses = 0;
 
-    for (let col = 0; col < newRow.length; col++) {
-      const cell = newRow[col];
+    for (
+      let col = 0;
+      col <
+      rowData.length;
+      col++
+    ) {
+      const cell =
+        rowData[col];
 
-      if (cell === null) {
+      if (
+        cell === null
+      ) {
         continue;
       }
 
-      const position = cellPos(0, col);
+      const position =
+        cellPos(
+          0,
+          col,
+        );
 
       spawnPop(
         position.x,
@@ -1157,18 +1496,6 @@ const bubble: GameEngineFactory = ({
     );
   }
 
-  function swapShotQueue() {
-    const current = shooter;
-    shooter = nextShot;
-
-    nextShot =
-      luckyUpgrade > 0 &&
-      Math.random() <
-        luckyUpgrade * 0.07
-        ? randomShot()
-        : current;
-  }
-
   function chooseSnapCell() {
     if (!flying) {
       return null;
@@ -1176,12 +1503,14 @@ const bubble: GameEngineFactory = ({
 
     let bestRow = 0;
     let bestCol = 0;
-    let bestDistance = Infinity;
+    let bestDistance =
+      Infinity;
 
-    const maxRows = Math.min(
-      MAX_ROWS,
-      grid.length + 2,
-    );
+    const maxRows =
+      Math.min(
+        MAX_ROWS,
+        grid.length + 2,
+      );
 
     for (
       let row = 0;
@@ -1190,10 +1519,12 @@ const bubble: GameEngineFactory = ({
     ) {
       for (
         let col = 0;
-        col < getRowLength(row);
+        col <
+        getRowLength(row);
         col++
       ) {
-        const existing = grid[row]?.[col];
+        const existing =
+          grid[row]?.[col];
 
         if (
           existing !== null &&
@@ -1202,18 +1533,27 @@ const bubble: GameEngineFactory = ({
           continue;
         }
 
-        const position = cellPos(
-          row,
-          col,
-        );
+        const position =
+          cellPos(
+            row,
+            col,
+          );
 
-        const distance = Math.hypot(
-          position.x - flying.x,
-          position.y - flying.y,
-        );
+        const distance =
+          Math.hypot(
+            position.x -
+              flying.x,
+            position.y -
+              flying.y,
+          );
 
-        if (distance < bestDistance) {
-          bestDistance = distance;
+        if (
+          distance <
+          bestDistance
+        ) {
+          bestDistance =
+            distance;
+
           bestRow = row;
           bestCol = col;
         }
@@ -1226,23 +1566,51 @@ const bubble: GameEngineFactory = ({
     };
   }
 
+  function swapShotQueue() {
+    const current =
+      shooter;
+
+    shooter =
+      nextShot;
+
+    if (
+      luckyUpgrade > 0 &&
+      Math.random() <
+        luckyUpgrade *
+          0.07
+    ) {
+      nextShot =
+        randomShot();
+    } else {
+      nextShot =
+        current;
+    }
+  }
+
   function snap() {
     if (!flying) {
       return;
     }
 
-    const shot = flying;
-    const target = chooseSnapCell();
+    const shot =
+      flying;
+
+    const target =
+      chooseSnapCell();
 
     if (!target) {
       flying = null;
       return;
     }
 
-    ensureRows(target.row + 1);
+    ensureRows(
+      target.row + 1,
+    );
 
     const targetCell =
-      grid[target.row]?.[target.col];
+      grid[target.row]?.[
+        target.col
+      ];
 
     if (
       targetCell !== null &&
@@ -1252,15 +1620,18 @@ const bubble: GameEngineFactory = ({
       return;
     }
 
-    grid[target.row][target.col] = {
+    grid[target.row][
+      target.col
+    ] = {
       color: shot.color,
       kind: shot.kind,
     };
 
-    const position = cellPos(
-      target.row,
-      target.col,
-    );
+    const position =
+      cellPos(
+        target.row,
+        target.col,
+      );
 
     if (shot.banked) {
       addScore(
@@ -1272,7 +1643,8 @@ const bubble: GameEngineFactory = ({
     }
 
     const cluster =
-      shot.kind === "rainbow"
+      shot.kind ===
+      "rainbow"
         ? findRainbowCluster(
             target.row,
             target.col,
@@ -1283,11 +1655,19 @@ const bubble: GameEngineFactory = ({
             shot.color,
           );
 
-    if (cluster.length >= 3) {
+    if (
+      cluster.length >= 3
+    ) {
       beginCombo();
 
-      for (const [row, col] of cluster) {
-        const cell = grid[row]?.[col];
+      for (
+        const [
+          row,
+          col,
+        ] of cluster
+      ) {
+        const cell =
+          grid[row]?.[col];
 
         if (
           cell === null ||
@@ -1296,10 +1676,11 @@ const bubble: GameEngineFactory = ({
           continue;
         }
 
-        const cellPosition = cellPos(
-          row,
-          col,
-        );
+        const cellPosition =
+          cellPos(
+            row,
+            col,
+          );
 
         spawnPop(
           cellPosition.x,
@@ -1307,7 +1688,8 @@ const bubble: GameEngineFactory = ({
           cell.color,
         );
 
-        grid[row][col] = null;
+        grid[row][col] =
+          null;
       }
 
       const clusterScore =
@@ -1326,7 +1708,9 @@ const bubble: GameEngineFactory = ({
           : undefined,
       );
 
-      if (cluster.length >= 5) {
+      if (
+        cluster.length >= 5
+      ) {
         addFloatingText(
           position.x,
           position.y - R,
@@ -1335,16 +1719,22 @@ const bubble: GameEngineFactory = ({
         );
       }
 
-      if (cluster.length >= 7) {
-        chainReaction = true;
-        chainTimer = Math.max(
-          chainTimer,
-          220,
-        );
+      if (
+        cluster.length >= 7
+      ) {
+        chainReaction =
+          true;
+
+        chainTimer =
+          Math.max(
+            chainTimer,
+            220,
+          );
 
         addFloatingText(
           position.x,
-          position.y - R * 2,
+          position.y -
+            R * 2,
           "MASSIVE!",
           true,
         );
@@ -1362,13 +1752,16 @@ const bubble: GameEngineFactory = ({
       );
 
       beep(
-        620 + cluster.length * 45,
+        620 +
+          cluster.length *
+            45,
         0.08,
         "sine",
         0.05,
       );
     } else {
       misses++;
+
       endCombo();
 
       addFloatingText(
@@ -1380,7 +1773,9 @@ const bubble: GameEngineFactory = ({
       );
 
       beep(
-        shot.banked ? 350 : 290,
+        shot.banked
+          ? 350
+          : 290,
         0.04,
         "triangle",
         0.04,
@@ -1392,9 +1787,12 @@ const bubble: GameEngineFactory = ({
 
     removeEmptyBottomRows();
 
-    if (checkBoardClear()) {
+    if (
+      checkBoardClear()
+    ) {
       addScore(
-        350 + level * 50,
+        350 +
+          level * 50,
         width / 2,
         height * 0.35,
         "CLEAR",
@@ -1407,32 +1805,46 @@ const bubble: GameEngineFactory = ({
         true,
       );
 
-      onStatus?.("Board cleared!");
-      onGameOver(score, shots);
-      alive = false;
-      return;
-    }
-
-    if (misses >= getMissThreshold()) {
-      createPenaltyRow();
-    }
-
-    if (isDangerReached()) {
       onStatus?.(
-        "Bubbles hit the line! Tap to retry",
+        "Board cleared!",
       );
 
-      onGameOver(score, shots);
       alive = false;
+
+      onGameOver(
+        score,
+        shots,
+      );
+
       return;
     }
 
     if (
-      grid.every((row) =>
-        row.every(
-          (cell) => cell === null,
-        ),
-      )
+      misses >=
+      getMissThreshold()
+    ) {
+      createPenaltyRow();
+    }
+
+    if (
+      isDangerReached()
+    ) {
+      onStatus?.(
+        "Bubbles hit the line! Tap to retry",
+      );
+
+      alive = false;
+
+      onGameOver(
+        score,
+        shots,
+      );
+
+      return;
+    }
+
+    if (
+      grid.length === 0
     ) {
       levelClearTimer = 50;
     }
@@ -1448,20 +1860,28 @@ const bubble: GameEngineFactory = ({
       return;
     }
 
+    const shot =
+      shooter;
+
     flying = {
       x: width / 2,
       y: SHOOTER_Y,
-      vx: Math.cos(aim) * SPEED,
-      vy: Math.sin(aim) * SPEED,
-      color: shooter.color,
-      kind: shooter.kind,
+      vx:
+        Math.cos(aim) *
+        SPEED,
+      vy:
+        Math.sin(aim) *
+        SPEED,
+      color: shot.color,
+      kind: shot.kind,
       banked: false,
     };
 
     swapShotQueue();
 
     beep(
-      shooter.kind === "normal"
+      shot.kind ===
+        "normal"
         ? 520
         : 700,
       0.05,
@@ -1470,379 +1890,46 @@ const bubble: GameEngineFactory = ({
     );
   }
 
-  function update(dt: number) {
-    bob += dt * 3.2;
-
-    if (comboTimer > 0) {
-      comboTimer -= dt * 60;
-
-      if (comboTimer <= 0) {
-        endCombo();
-      }
-    }
-
-    if (chainTimer > 0) {
-      chainTimer -= dt * 60;
-
-      if (chainTimer <= 0) {
-        chainReaction = false;
-      }
-    }
-
-    if (levelClearTimer > 0) {
-      levelClearTimer -= dt * 60;
-
-      if (levelClearTimer <= 0) {
-        level++;
-        buildBoard();
-
-        shooter = randomShot();
-        nextShot = randomShot();
-
-        onStatus?.(
-          `Level ${level} — ${boardPattern}`,
-        );
-      }
-    }
-
-    if (
-      flying !== null &&
-      alive &&
-      !upgradeSelection &&
-      levelClearTimer <= 0
-    ) {
-      for (
-        let step = 0;
-        step < 3 && flying !== null;
-        step++
-      ) {
-        flying.x += flying.vx / 3;
-        flying.y += flying.vy / 3;
-
-        if (flying.x < R) {
-          flying.x = R;
-          flying.vx = Math.abs(flying.vx);
-          flying.banked = true;
-        } else if (
-          flying.x >
-          width - R
-        ) {
-          flying.x = width - R;
-          flying.vx = -Math.abs(flying.vx);
-          flying.banked = true;
-        }
-
-        if (
-          flying.y <
-          BOARD_TOP + R
-        ) {
-          snap();
-          break;
-        }
-
-        let hit = false;
-
-        for (
-          let row = 0;
-          row < grid.length && !hit;
-          row++
-        ) {
-          for (
-            let col = 0;
-            col < getRowLength(row);
-            col++
-          ) {
-            const cell = grid[row]?.[col];
-
-            if (
-              cell === null ||
-              cell === undefined
-            ) {
-              continue;
-            }
-
-            const position = cellPos(
-              row,
-              col,
-            );
-
-            if (
-              Math.hypot(
-                position.x - flying.x,
-                position.y - flying.y,
-              ) <
-              R * 1.72
-            ) {
-              snap();
-              hit = true;
-              break;
-            }
-          }
-        }
-      }
-    }
-
-    pops = pops.filter((particle) => {
-      particle.x += particle.vx * dt * 60;
-      particle.y += particle.vy * dt * 60;
-      particle.vy += 0.2 * dt * 60;
-      particle.vx *= 0.985;
-      particle.life -= dt * 2.2;
-
-      return particle.life > 0;
-    });
-
-    drops = drops.filter((drop) => {
-      drop.vy += 0.5 * dt * 60;
-      drop.y += drop.vy * dt * 60;
-      drop.rotation += 0.08 * dt * 60;
-      drop.life -= dt * 0.45;
-
-      return (
-        drop.y < height + R &&
-        drop.life > 0
-      );
-    });
-
-    floatingTexts = floatingTexts.filter(
-      (item) => {
-        item.y -= 0.45 * dt * 60;
-        item.life -= dt * 1.6;
-
-        return item.life > 0;
-      },
-    );
-  }
-
-  function drawBubble(
-    x: number,
-    y: number,
-    color: number,
-    kind: BubbleKind,
-    radius = R - 1.5,
-    alpha = 1,
+  function simulateSnapTarget(
+    angle: number,
   ) {
-    ctx.save();
+    let x =
+      width / 2;
 
-    ctx.globalAlpha = alpha;
+    let y =
+      SHOOTER_Y;
 
-    const baseColor =
-      COLORS[
-        color %
-          COLORS.length
-      ];
+    let vx =
+      Math.cos(angle);
 
-    const gradient =
-      ctx.createRadialGradient(
-        x - radius * 0.35,
-        y - radius * 0.35,
-        radius * 0.1,
-        x,
-        y,
-        radius,
-      );
+    let vy =
+      Math.sin(angle);
 
-    gradient.addColorStop(
-      0,
-      "rgba(255,255,255,0.88)",
-    );
+    for (
+      let i = 0;
+      i < 500;
+      i++
+    ) {
+      x +=
+        vx *
+        (R * 0.7);
 
-    gradient.addColorStop(
-      0.23,
-      baseColor,
-    );
-
-    gradient.addColorStop(
-      1,
-      shade(baseColor, -0.35),
-    );
-
-    if (kind === "rainbow") {
-      gradient.addColorStop(
-        0.35,
-        "#f0abfc",
-      );
-      gradient.addColorStop(
-        0.7,
-        "#60a5fa",
-      );
-      gradient.addColorStop(
-        1,
-        "#4ade80",
-      );
-    }
-
-    if (kind === "bomb") {
-      gradient.addColorStop(
-        0.3,
-        "#fb923c",
-      );
-      gradient.addColorStop(
-        1,
-        "#dc2626",
-      );
-    }
-
-    if (kind === "lightning") {
-      gradient.addColorStop(
-        0.3,
-        "#fef08a",
-      );
-      gradient.addColorStop(
-        1,
-        "#f59e0b",
-      );
-    }
-
-    if (kind === "stone") {
-      gradient.addColorStop(
-        0.3,
-        "#e2e8f0",
-      );
-      gradient.addColorStop(
-        1,
-        "#64748b",
-      );
-    }
-
-    ctx.fillStyle = gradient;
-
-    ctx.beginPath();
-    ctx.arc(
-      x,
-      y,
-      radius,
-      0,
-      Math.PI * 2,
-    );
-    ctx.fill();
-
-    ctx.fillStyle =
-      "rgba(255,255,255,0.48)";
-
-    ctx.beginPath();
-    ctx.arc(
-      x - radius * 0.32,
-      y - radius * 0.32,
-      radius * 0.22,
-      0,
-      Math.PI * 2,
-    );
-    ctx.fill();
-
-    if (kind !== "normal") {
-      ctx.strokeStyle =
-        kind === "rainbow"
-          ? "#ffffff"
-          : kind === "bomb"
-            ? "#ef4444"
-            : kind === "lightning"
-              ? "#facc15"
-              : "#cbd5e1";
-
-      ctx.lineWidth = 1.5;
-      ctx.globalAlpha =
-        Math.min(1, alpha * 0.8);
-
-      if (kind === "bomb") {
-        ctx.beginPath();
-        ctx.arc(
-          x,
-          y,
-          radius * 0.48,
-          0,
-          Math.PI * 2,
-        );
-        ctx.stroke();
-
-        ctx.fillStyle = "#ffffff";
-        ctx.beginPath();
-        ctx.arc(
-          x,
-          y,
-          radius * 0.12,
-          0,
-          Math.PI * 2,
-        );
-        ctx.fill();
-      } else if (
-        kind === "lightning"
-      ) {
-        ctx.beginPath();
-        ctx.moveTo(
-          x - radius * 0.08,
-          y - radius * 0.48,
-        );
-        ctx.lineTo(
-          x - radius * 0.28,
-          y - radius * 0.02,
-        );
-        ctx.lineTo(
-          x + radius * 0.02,
-          y - radius * 0.02,
-        );
-        ctx.lineTo(
-          x - radius * 0.12,
-          y + radius * 0.48,
-        );
-        ctx.stroke();
-      } else if (
-        kind === "rainbow"
-      ) {
-        ctx.beginPath();
-        ctx.arc(
-          x,
-          y,
-          radius * 0.5,
-          0,
-          Math.PI * 1.5,
-        );
-        ctx.stroke();
-      } else {
-        ctx.beginPath();
-        ctx.moveTo(
-          x - radius * 0.32,
-          y - radius * 0.16,
-        );
-        ctx.lineTo(
-          x + radius * 0.32,
-          y + radius * 0.16,
-        );
-        ctx.moveTo(
-          x + radius * 0.32,
-          y - radius * 0.16,
-        );
-        ctx.lineTo(
-          x - radius * 0.32,
-          y + radius * 0.16,
-        );
-        ctx.stroke();
-      }
-    }
-
-    ctx.restore();
-  }
-
-  function simulateSnapTarget(angle: number) {
-    let x = width / 2;
-    let y = SHOOTER_Y;
-
-    let vx = Math.cos(angle);
-    let vy = Math.sin(angle);
-
-    for (let i = 0; i < 500; i++) {
-      x += vx * (R * 0.7);
-      y += vy * (R * 0.7);
+      y +=
+        vy *
+        (R * 0.7);
 
       if (x < R) {
         x = R;
-        vx = Math.abs(vx);
+        vx =
+          Math.abs(vx);
       } else if (
         x >
         width - R
       ) {
-        x = width - R;
-        vx = -Math.abs(vx);
+        x =
+          width - R;
+        vx =
+          -Math.abs(vx);
       }
 
       if (
@@ -1854,24 +1941,38 @@ const bubble: GameEngineFactory = ({
           col: Math.max(
             0,
             Math.min(
-              getRowLength(0) - 1,
-              Math.floor(x / (2 * R)),
+              getRowLength(
+                0,
+              ) - 1,
+              Math.floor(
+                x /
+                  (2 * R),
+              ),
             ),
           ),
         };
       }
 
+      let found = false;
+
       for (
         let row = 0;
-        row < grid.length;
+        row < grid.length &&
+        !found;
         row++
       ) {
         for (
           let col = 0;
-          col < getRowLength(row);
+          col <
+            getRowLength(
+              row,
+            );
           col++
         ) {
-          const cell = grid[row]?.[col];
+          const cell =
+            grid[row]?.[
+              col
+            ];
 
           if (
             cell === null ||
@@ -1880,10 +1981,11 @@ const bubble: GameEngineFactory = ({
             continue;
           }
 
-          const position = cellPos(
-            row,
-            col,
-          );
+          const position =
+            cellPos(
+              row,
+              col,
+            );
 
           if (
             Math.hypot(
@@ -1892,22 +1994,36 @@ const bubble: GameEngineFactory = ({
             ) <
             R * 1.7
           ) {
-            let bestRow = row;
-            let bestCol = col;
-            let bestDistance = Infinity;
+            let bestRow =
+              row;
 
-            for (const [
-              neighbourRow,
-              neighbourCol,
-            ] of neighbors(row, col)) {
+            let bestCol =
+              col;
+
+            let bestDistance =
+              Infinity;
+
+            for (
+              const [
+                neighbourRow,
+                neighbourCol,
+              ] of neighbors(
+                row,
+                col,
+              )
+            ) {
               const neighbourCell =
-                grid[neighbourRow]?.[
+                grid[
+                  neighbourRow
+                ]?.[
                   neighbourCol
                 ];
 
               if (
-                neighbourCell !== null &&
-                neighbourCell !== undefined
+                neighbourCell !==
+                  null &&
+                neighbourCell !==
+                  undefined
               ) {
                 continue;
               }
@@ -1920,16 +2036,24 @@ const bubble: GameEngineFactory = ({
 
               const distance =
                 Math.hypot(
-                  neighbourPosition.x - x,
-                  neighbourPosition.y - y,
+                  neighbourPosition.x -
+                    x,
+                  neighbourPosition.y -
+                    y,
                 );
 
               if (
-                distance < bestDistance
+                distance <
+                bestDistance
               ) {
-                bestDistance = distance;
-                bestRow = neighbourRow;
-                bestCol = neighbourCol;
+                bestDistance =
+                  distance;
+
+                bestRow =
+                  neighbourRow;
+
+                bestCol =
+                  neighbourCol;
               }
             }
 
@@ -1947,22 +2071,37 @@ const bubble: GameEngineFactory = ({
       col: Math.max(
         0,
         Math.min(
-          getRowLength(0) - 1,
-          Math.floor(x / (2 * R)),
+          getRowLength(0) -
+            1,
+          Math.floor(
+            x /
+              (2 * R),
+          ),
         ),
       ),
     };
   }
 
   function drawTrajectory() {
-    let x = width / 2;
-    let y = SHOOTER_Y;
+    let x =
+      width / 2;
 
-    let vx = Math.cos(aim);
-    let vy = Math.sin(aim);
+    let y =
+      SHOOTER_Y;
 
-    const step = R * 0.82;
-    const length = 48 + previewUpgrade * 14;
+    let vx =
+      Math.cos(aim);
+
+    let vy =
+      Math.sin(aim);
+
+    const step =
+      R * 0.82;
+
+    const length =
+      48 +
+      previewUpgrade *
+        14;
 
     ctx.fillStyle =
       "rgba(255,255,255,0.36)";
@@ -1972,14 +2111,19 @@ const bubble: GameEngineFactory = ({
       i < length;
       i++
     ) {
-      x += vx * step;
-      y += vy * step;
+      x +=
+        vx * step;
+
+      y +=
+        vy * step;
 
       if (
         x < R ||
-        x > width - R
+        x >
+          width - R
       ) {
         vx *= -1;
+
         x = Math.max(
           R,
           Math.min(
@@ -1996,19 +2140,27 @@ const bubble: GameEngineFactory = ({
         break;
       }
 
-      let blocked = false;
+      let blocked =
+        false;
 
       for (
         let row = 0;
-        row < grid.length && !blocked;
+        row < grid.length &&
+        !blocked;
         row++
       ) {
         for (
           let col = 0;
-          col < getRowLength(row);
+          col <
+            getRowLength(
+              row,
+            );
           col++
         ) {
-          const cell = grid[row]?.[col];
+          const cell =
+            grid[row]?.[
+              col
+            ];
 
           if (
             cell === null ||
@@ -2017,10 +2169,11 @@ const bubble: GameEngineFactory = ({
             continue;
           }
 
-          const position = cellPos(
-            row,
-            col,
-          );
+          const position =
+            cellPos(
+              row,
+              col,
+            );
 
           if (
             Math.hypot(
@@ -2029,7 +2182,8 @@ const bubble: GameEngineFactory = ({
             ) <
             R * 1.7
           ) {
-            blocked = true;
+            blocked =
+              true;
             break;
           }
         }
@@ -2039,8 +2193,11 @@ const bubble: GameEngineFactory = ({
         break;
       }
 
-      if (i % 2 === 0) {
+      if (
+        i % 2 === 0
+      ) {
         ctx.beginPath();
+
         ctx.arc(
           x,
           y,
@@ -2048,70 +2205,696 @@ const bubble: GameEngineFactory = ({
           0,
           Math.PI * 2,
         );
+
         ctx.fill();
       }
     }
 
-    if (previewUpgrade > 0) {
+    if (
+      previewUpgrade > 0
+    ) {
       const target =
-        simulateSnapTarget(aim);
+        simulateSnapTarget(
+          aim,
+        );
 
-      if (target) {
-        const position = cellPos(
+      const position =
+        cellPos(
           target.row,
           target.col,
         );
 
-        ctx.save();
+      ctx.save();
 
-        ctx.globalAlpha = 0.3;
-        ctx.strokeStyle = "#ffffff";
-        ctx.lineWidth = 1.5;
+      ctx.globalAlpha =
+        0.3;
 
-        ctx.beginPath();
-        ctx.arc(
-          position.x,
-          position.y,
-          R - 2,
-          0,
-          Math.PI * 2,
-        );
-        ctx.stroke();
+      ctx.strokeStyle =
+        "#ffffff";
 
-        ctx.restore();
-      }
+      ctx.lineWidth = 1.5;
+
+      ctx.beginPath();
+
+      ctx.arc(
+        position.x,
+        position.y,
+        R - 2,
+        0,
+        Math.PI * 2,
+      );
+
+      ctx.stroke();
+
+      ctx.restore();
     }
   }
 
-  function renderDangerLine() {
+  function update(dt: number) {
+    bob +=
+      dt * 3.2;
+
+    if (
+      comboTimer > 0
+    ) {
+      comboTimer -=
+        dt * 60;
+
+      if (
+        comboTimer <= 0
+      ) {
+        endCombo();
+      }
+    }
+
+    if (
+      chainTimer > 0
+    ) {
+      chainTimer -=
+        dt * 60;
+
+      if (
+        chainTimer <= 0
+      ) {
+        chainReaction =
+          false;
+      }
+    }
+
+    if (
+      levelClearTimer > 0
+    ) {
+      levelClearTimer -=
+        dt * 60;
+
+      if (
+        levelClearTimer <= 0
+      ) {
+        level++;
+
+        buildBoard();
+
+        shooter =
+          randomShot();
+
+        nextShot =
+          randomShot();
+
+        onStatus?.(
+          `Level ${level}`,
+        );
+      }
+    }
+
+    if (
+      flying !== null &&
+      alive &&
+      !upgradeSelection &&
+      levelClearTimer <= 0
+    ) {
+      for (
+        let step = 0;
+        step < 3 &&
+        flying !== null;
+        step++
+      ) {
+        flying.x +=
+          flying.vx / 3;
+
+        flying.y +=
+          flying.vy / 3;
+
+        if (
+          flying.x < R
+        ) {
+          flying.x = R;
+          flying.vx =
+            Math.abs(
+              flying.vx,
+            );
+
+          flying.banked =
+            true;
+        } else if (
+          flying.x >
+          width - R
+        ) {
+          flying.x =
+            width - R;
+
+          flying.vx =
+            -Math.abs(
+              flying.vx,
+            );
+
+          flying.banked =
+            true;
+        }
+
+        if (
+          flying.y <
+          BOARD_TOP + R
+        ) {
+          snap();
+          break;
+        }
+
+        let hit = false;
+
+        for (
+          let row = 0;
+          row < grid.length &&
+          !hit;
+          row++
+        ) {
+          for (
+            let col = 0;
+            col <
+              getRowLength(
+                row,
+              );
+            col++
+          ) {
+            const cell =
+              grid[row]?.[
+                col
+              ];
+
+            if (
+              cell === null ||
+              cell === undefined
+            ) {
+              continue;
+            }
+
+            const position =
+              cellPos(
+                row,
+                col,
+              );
+
+            if (
+              Math.hypot(
+                position.x -
+                  flying.x,
+                position.y -
+                  flying.y,
+              ) <
+              R * 1.72
+            ) {
+              snap();
+              hit = true;
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    pops =
+      pops.filter(
+        (
+          particle,
+        ) => {
+          particle.x +=
+            particle.vx *
+            dt *
+            60;
+
+          particle.y +=
+            particle.vy *
+            dt *
+            60;
+
+          particle.vy +=
+            0.2 *
+            dt *
+            60;
+
+          particle.vx *=
+            0.985;
+
+          particle.life -=
+            dt * 2.2;
+
+          return (
+            particle.life >
+            0
+          );
+        },
+      );
+
+    drops =
+      drops.filter(
+        (
+          drop,
+        ) => {
+          drop.vy +=
+            0.5 *
+            dt *
+            60;
+
+          drop.y +=
+            drop.vy *
+            dt *
+            60;
+
+          drop.rotation +=
+            0.08 *
+            dt *
+            60;
+
+          drop.life -=
+            dt * 0.45;
+
+          return (
+            drop.y <
+              height +
+                R &&
+            drop.life >
+              0
+          );
+        },
+      );
+
+    floatingTexts =
+      floatingTexts.filter(
+        (
+          item,
+        ) => {
+          item.y -=
+            0.45 *
+            dt *
+            60;
+
+          item.life -=
+            dt * 1.6;
+
+          return (
+            item.life >
+            0
+          );
+        },
+      );
+  }
+
+  function drawBubble(
+    x: number,
+    y: number,
+    color: number,
+    kind: BubbleKind,
+    radius = R - 1.5,
+    alpha = 1,
+  ) {
     ctx.save();
 
-    const danger = isDangerReached();
+    ctx.globalAlpha =
+      alpha;
 
-    ctx.strokeStyle = danger
-      ? "rgba(248,113,113,0.75)"
-      : "rgba(248,113,113,0.34)";
+    const baseColor =
+      COLORS[
+        color %
+          COLORS.length
+      ];
 
-    ctx.lineWidth = danger ? 3 : 2;
+    const gradient =
+      ctx.createRadialGradient(
+        x -
+          radius *
+            0.35,
+        y -
+          radius *
+            0.35,
+        radius *
+          0.1,
+        x,
+        y,
+        radius,
+      );
 
-    ctx.setLineDash([10, 8]);
+    gradient.addColorStop(
+      0,
+      "rgba(255,255,255,0.88)",
+    );
+
+    gradient.addColorStop(
+      0.23,
+      baseColor,
+    );
+
+    gradient.addColorStop(
+      1,
+      shade(
+        baseColor,
+        -0.35,
+      ),
+    );
+
+    if (
+      kind ===
+      "rainbow"
+    ) {
+      gradient.addColorStop(
+        0.35,
+        "#f0abfc",
+      );
+
+      gradient.addColorStop(
+        0.7,
+        "#60a5fa",
+      );
+
+      gradient.addColorStop(
+        1,
+        "#4ade80",
+      );
+    }
+
+    if (
+      kind === "bomb"
+    ) {
+      gradient.addColorStop(
+        0.3,
+        "#fb923c",
+      );
+
+      gradient.addColorStop(
+        1,
+        "#dc2626",
+      );
+    }
+
+    if (
+      kind ===
+      "lightning"
+    ) {
+      gradient.addColorStop(
+        0.3,
+        "#fef08a",
+      );
+
+      gradient.addColorStop(
+        1,
+        "#f59e0b",
+      );
+    }
+
+    if (
+      kind === "stone"
+    ) {
+      gradient.addColorStop(
+        0.3,
+        "#e2e8f0",
+      );
+
+      gradient.addColorStop(
+        1,
+        "#64748b",
+      );
+    }
+
+    ctx.fillStyle =
+      gradient;
 
     ctx.beginPath();
-    ctx.moveTo(0, DANGER_Y);
-    ctx.lineTo(width, DANGER_Y);
-    ctx.stroke();
 
-    ctx.setLineDash([]);
+    ctx.arc(
+      x,
+      y,
+      radius,
+      0,
+      Math.PI * 2,
+    );
+
+    ctx.fill();
+
+    ctx.fillStyle =
+      "rgba(255,255,255,0.48)";
+
+    ctx.beginPath();
+
+    ctx.arc(
+      x -
+        radius *
+          0.32,
+      y -
+        radius *
+          0.32,
+      radius *
+        0.22,
+      0,
+      Math.PI * 2,
+    );
+
+    ctx.fill();
+
+    if (
+      kind !==
+      "normal"
+    ) {
+      ctx.strokeStyle =
+        kind ===
+        "rainbow"
+          ? "#ffffff"
+          : kind ===
+              "bomb"
+            ? "#ef4444"
+            : kind ===
+                "lightning"
+              ? "#facc15"
+              : "#cbd5e1";
+
+      ctx.lineWidth =
+        1.5;
+
+      ctx.globalAlpha =
+        Math.min(
+          1,
+          alpha * 0.8,
+        );
+
+      if (
+        kind ===
+        "bomb"
+      ) {
+        ctx.beginPath();
+
+        ctx.arc(
+          x,
+          y,
+          radius *
+            0.48,
+          0,
+          Math.PI * 2,
+        );
+
+        ctx.stroke();
+
+        ctx.fillStyle =
+          "#ffffff";
+
+        ctx.beginPath();
+
+        ctx.arc(
+          x,
+          y,
+          radius *
+            0.12,
+          0,
+          Math.PI * 2,
+        );
+
+        ctx.fill();
+      } else if (
+        kind ===
+        "lightning"
+      ) {
+        ctx.beginPath();
+
+        ctx.moveTo(
+          x -
+            radius *
+              0.08,
+          y -
+            radius *
+              0.48,
+        );
+
+        ctx.lineTo(
+          x -
+            radius *
+              0.28,
+          y -
+            radius *
+              0.02,
+        );
+
+        ctx.lineTo(
+          x +
+            radius *
+              0.02,
+          y -
+            radius *
+              0.02,
+        );
+
+        ctx.lineTo(
+          x -
+            radius *
+              0.12,
+          y +
+            radius *
+              0.48,
+        );
+
+        ctx.stroke();
+      } else if (
+        kind ===
+        "rainbow"
+      ) {
+        ctx.beginPath();
+
+        ctx.arc(
+          x,
+          y,
+          radius *
+            0.5,
+          0,
+          Math.PI * 1.5,
+        );
+
+        ctx.stroke();
+      } else {
+        ctx.beginPath();
+
+        ctx.moveTo(
+          x -
+            radius *
+              0.32,
+          y -
+            radius *
+              0.16,
+        );
+
+        ctx.lineTo(
+          x +
+            radius *
+              0.32,
+          y +
+            radius *
+              0.16,
+        );
+
+        ctx.moveTo(
+          x +
+            radius *
+              0.32,
+          y -
+            radius *
+              0.16,
+        );
+
+        ctx.lineTo(
+          x -
+            radius *
+              0.32,
+          y +
+            radius *
+              0.16,
+        );
+
+        ctx.stroke();
+      }
+    }
 
     ctx.restore();
+  }
+
+  function renderShooter() {
+    const y =
+      SHOOTER_Y +
+      Math.sin(bob) * 1.5;
+
+    drawBubble(
+      width / 2,
+      y,
+      shooter.color,
+      shooter.kind,
+    );
+
+    ctx.fillStyle =
+      pal.muted;
+
+    ctx.font =
+      "600 11px system-ui";
+
+    ctx.textAlign =
+      "right";
+
+    ctx.fillText(
+      "NEXT",
+      width -
+        R * 2 -
+        10,
+      SHOOTER_Y - 2,
+    );
+
+    drawBubble(
+      width -
+        R -
+        8,
+      SHOOTER_Y,
+      nextShot.color,
+      nextShot.kind,
+      R * 0.72,
+    );
+
+    if (
+      shooter.kind !==
+      "normal"
+    ) {
+      const label =
+        shooter.kind ===
+        "rainbow"
+          ? "RAINBOW"
+          : shooter.kind ===
+              "bomb"
+            ? "BOMB"
+            : shooter.kind ===
+                "lightning"
+              ? "LIGHTNING"
+              : "STONE";
+
+      ctx.textAlign =
+        "center";
+
+      ctx.fillStyle =
+        "#ffffff";
+
+      ctx.font =
+        "bold 9px system-ui";
+
+      ctx.fillText(
+        label,
+        width / 2,
+        SHOOTER_Y +
+          R +
+          17,
+      );
+    }
   }
 
   function renderHud() {
     ctx.save();
 
-    ctx.fillStyle = pal.muted;
-    ctx.font = "600 13px system-ui";
-    ctx.textAlign = "left";
+    ctx.fillStyle =
+      pal.muted;
+
+    ctx.font =
+      "600 13px system-ui";
+
+    ctx.textAlign =
+      "left";
 
     ctx.fillText(
       `Level ${level}`,
@@ -2131,7 +2914,8 @@ const bubble: GameEngineFactory = ({
       62,
     );
 
-    ctx.textAlign = "right";
+    ctx.textAlign =
+      "right";
 
     ctx.fillText(
       `Best ${bestScore}`,
@@ -2139,9 +2923,9 @@ const bubble: GameEngineFactory = ({
       22,
     );
 
-    if (combo >= 2) {
-      ctx.textAlign = "center";
-
+    if (
+      combo >= 2
+    ) {
       const multiplier =
         combo >= 20
           ? 5
@@ -2153,8 +2937,14 @@ const bubble: GameEngineFactory = ({
                 ? 2
                 : 1;
 
-      ctx.fillStyle = pal.gold;
-      ctx.font = "bold 15px system-ui";
+      ctx.textAlign =
+        "center";
+
+      ctx.fillStyle =
+        pal.gold;
+
+      ctx.font =
+        "bold 15px system-ui";
 
       ctx.fillText(
         `COMBO x${multiplier}`,
@@ -2162,8 +2952,11 @@ const bubble: GameEngineFactory = ({
         22,
       );
 
-      ctx.fillStyle = pal.muted;
-      ctx.font = "10px system-ui";
+      ctx.fillStyle =
+        pal.muted;
+
+      ctx.font =
+        "10px system-ui";
 
       ctx.fillText(
         `${combo} hits`,
@@ -2172,10 +2965,17 @@ const bubble: GameEngineFactory = ({
       );
     }
 
-    if (chainReaction) {
-      ctx.textAlign = "center";
-      ctx.fillStyle = "#facc15";
-      ctx.font = "bold 16px system-ui";
+    if (
+      chainReaction
+    ) {
+      ctx.textAlign =
+        "center";
+
+      ctx.fillStyle =
+        "#facc15";
+
+      ctx.font =
+        "bold 16px system-ui";
 
       ctx.fillText(
         "CHAIN REACTION",
@@ -2187,63 +2987,10 @@ const bubble: GameEngineFactory = ({
     ctx.restore();
   }
 
-  function renderShooter() {
-    const y =
-      SHOOTER_Y +
-      Math.sin(bob) * 1.5;
-
-    drawBubble(
-      width / 2,
-      y,
-      shooter.color,
-      shooter.kind,
-    );
-
-    ctx.fillStyle = pal.muted;
-    ctx.font = "600 11px system-ui";
-    ctx.textAlign = "right";
-
-    ctx.fillText(
-      "NEXT",
-      width - R * 2 - 10,
-      SHOOTER_Y - 2,
-    );
-
-    drawBubble(
-      width - R - 8,
-      SHOOTER_Y,
-      nextShot.color,
-      nextShot.kind,
-      R * 0.72,
-    );
-
-    if (
-      shooter.kind !==
-      "normal"
-    ) {
-      ctx.textAlign = "center";
-      ctx.fillStyle = "#ffffff";
-      ctx.font = "bold 9px system-ui";
-
-      const label =
-        shooter.kind === "rainbow"
-          ? "RAINBOW"
-          : shooter.kind === "bomb"
-            ? "BOMB"
-            : shooter.kind === "lightning"
-              ? "LIGHTNING"
-              : "STONE";
-
-      ctx.fillText(
-        label,
-        width / 2,
-        SHOOTER_Y + R + 17,
-      );
-    }
-  }
-
   function renderUpgradeSelection() {
-    if (!upgradeSelection) {
+    if (
+      !upgradeSelection
+    ) {
       return;
     }
 
@@ -2259,10 +3006,14 @@ const bubble: GameEngineFactory = ({
       height,
     );
 
-    ctx.textAlign = "center";
+    ctx.textAlign =
+      "center";
 
-    ctx.fillStyle = pal.neon;
-    ctx.font = "bold 22px system-ui";
+    ctx.fillStyle =
+      pal.neon;
+
+    ctx.font =
+      "bold 22px system-ui";
 
     ctx.fillText(
       "CHOOSE AN UPGRADE",
@@ -2270,10 +3021,11 @@ const bubble: GameEngineFactory = ({
       58,
     );
 
-    const cardWidth = Math.min(
-      150,
-      width * 0.29,
-    );
+    const cardWidth =
+      Math.min(
+        150,
+        width * 0.29,
+      );
 
     const gap = 10;
 
@@ -2287,7 +3039,8 @@ const bubble: GameEngineFactory = ({
 
     for (
       let i = 0;
-      i < upgradeChoices.length;
+      i <
+      upgradeChoices.length;
       i++
     ) {
       const item =
@@ -2296,13 +3049,18 @@ const bubble: GameEngineFactory = ({
       const x =
         startX +
         i *
-          (cardWidth + gap);
+          (cardWidth +
+            gap);
 
       const y =
-        height / 2 - 58;
+        height / 2 -
+        58;
 
-      ctx.strokeStyle = pal.neon;
-      ctx.lineWidth = 1.5;
+      ctx.strokeStyle =
+        pal.neon;
+
+      ctx.lineWidth =
+        1.5;
 
       ctx.strokeRect(
         x,
@@ -2311,36 +3069,51 @@ const bubble: GameEngineFactory = ({
         118,
       );
 
-      ctx.fillStyle = pal.gold;
-      ctx.font = "bold 13px system-ui";
+      ctx.fillStyle =
+        pal.gold;
+
+      ctx.font =
+        "bold 13px system-ui";
 
       ctx.fillText(
         `${i + 1}`,
-        x + cardWidth / 2,
+        x +
+          cardWidth / 2,
         y + 22,
       );
 
-      ctx.fillStyle = pal.neon;
-      ctx.font = "bold 11px system-ui";
+      ctx.fillStyle =
+        pal.neon;
+
+      ctx.font =
+        "bold 11px system-ui";
 
       ctx.fillText(
         item.name,
-        x + cardWidth / 2,
+        x +
+          cardWidth / 2,
         y + 50,
       );
 
-      ctx.fillStyle = pal.muted;
-      ctx.font = "10px system-ui";
+      ctx.fillStyle =
+        pal.muted;
+
+      ctx.font =
+        "10px system-ui";
 
       ctx.fillText(
         item.description,
-        x + cardWidth / 2,
+        x +
+          cardWidth / 2,
         y + 78,
       );
     }
 
-    ctx.fillStyle = pal.muted;
-    ctx.font = "12px system-ui";
+    ctx.fillStyle =
+      pal.muted;
+
+    ctx.font =
+      "12px system-ui";
 
     ctx.fillText(
       "Press 1, 2 or 3",
@@ -2352,57 +3125,67 @@ const bubble: GameEngineFactory = ({
   }
 
   function chooseUpgrades() {
-    const pool: Upgrade[] = [
-      {
-        id: "combo",
-        name: "COMBO MASTER",
-        description:
-          "Combos last longer",
-      },
-      {
-        id: "lucky",
-        name: "LUCKY SHOTS",
-        description:
-          "More useful next bubbles",
-      },
-      {
-        id: "drop",
-        name: "DROP BONUS",
-        description:
-          "Detached bubbles score more",
-      },
-      {
-        id: "preview",
-        name: "SMART AIM",
-        description:
-          "Better trajectory preview",
-      },
-      {
-        id: "special",
-        name: "SPECIALIST",
-        description:
-          "Special bubbles appear more",
-      },
-    ];
+    const pool: Upgrade[] =
+      [
+        {
+          id: "combo",
+          name: "COMBO MASTER",
+          description:
+            "Combos last longer",
+        },
+        {
+          id: "lucky",
+          name: "LUCKY SHOTS",
+          description:
+            "More useful next bubbles",
+        },
+        {
+          id: "drop",
+          name: "DROP BONUS",
+          description:
+            "Detached bubbles score more",
+        },
+        {
+          id: "preview",
+          name: "SMART AIM",
+          description:
+            "Better trajectory preview",
+        },
+        {
+          id: "special",
+          name: "SPECIALIST",
+          description:
+            "Special bubbles appear more",
+        },
+      ];
 
     upgradeChoices = [];
 
     while (
-      upgradeChoices.length < 3 &&
+      upgradeChoices.length <
+        3 &&
       pool.length > 0
     ) {
-      const index = randInt(pool.length);
-      const selected = pool.splice(
-        index,
-        1,
-      )[0];
+      const index =
+        randInt(
+          pool.length,
+        );
+
+      const selected =
+        pool.splice(
+          index,
+          1,
+        )[0];
 
       if (selected) {
-        upgradeChoices.push(selected);
+        upgradeChoices.push(
+          selected,
+        );
       }
     }
 
-    upgradeSelection = true;
+    upgradeSelection =
+      true;
 
     onStatus?.(
       "Choose an upgrade",
@@ -2412,7 +3195,9 @@ const bubble: GameEngineFactory = ({
   function applyUpgrade(
     upgrade: Upgrade,
   ) {
-    switch (upgrade.id) {
+    switch (
+      upgrade.id
+    ) {
       case "combo":
         comboUpgrade++;
         break;
@@ -2434,8 +3219,11 @@ const bubble: GameEngineFactory = ({
         break;
     }
 
-    upgradeSelection = false;
+    upgradeSelection =
+      false;
+
     upgradeChoices = [];
+
     levelClearTimer = 45;
 
     onStatus?.(
@@ -2456,29 +3244,36 @@ const bubble: GameEngineFactory = ({
       canvas.getBoundingClientRect();
 
     const mouseX =
-      ((event.clientX - rect.left) /
+      ((event.clientX -
+        rect.left) /
         rect.width) *
       width;
 
     const mouseY =
-      ((event.clientY - rect.top) /
+      ((event.clientY -
+        rect.top) /
         rect.height) *
       height;
 
-    let nextAim = Math.atan2(
-      mouseY - SHOOTER_Y,
-      mouseX - width / 2,
-    );
+    let nextAim =
+      Math.atan2(
+        mouseY -
+          SHOOTER_Y,
+        mouseX -
+          width / 2,
+      );
 
-    nextAim = Math.max(
-      -Math.PI + 0.22,
-      Math.min(
-        -0.22,
-        nextAim,
-      ),
-    );
+    nextAim =
+      Math.max(
+        -Math.PI + 0.22,
+        Math.min(
+          -0.22,
+          nextAim,
+        ),
+      );
 
-    aim = nextAim;
+    aim =
+      nextAim;
   }
 
   function onDown(
@@ -2489,7 +3284,9 @@ const bubble: GameEngineFactory = ({
       return;
     }
 
-    if (upgradeSelection) {
+    if (
+      upgradeSelection
+    ) {
       return;
     }
 
@@ -2519,33 +3316,45 @@ const bubble: GameEngineFactory = ({
         ];
 
       if (choice) {
-        applyUpgrade(choice);
+        applyUpgrade(
+          choice,
+        );
       }
 
       return;
     }
 
-    if (key === "arrowleft") {
-      aim = Math.max(
-        -Math.PI + 0.22,
-        aim - 0.06,
-      );
+    if (
+      key ===
+      "arrowleft"
+    ) {
+      aim =
+        Math.max(
+          -Math.PI + 0.22,
+          aim - 0.06,
+        );
 
       event.preventDefault();
       return;
     }
 
-    if (key === "arrowright") {
-      aim = Math.min(
-        -0.22,
-        aim + 0.06,
-      );
+    if (
+      key ===
+      "arrowright"
+    ) {
+      aim =
+        Math.min(
+          -0.22,
+          aim + 0.06,
+        );
 
       event.preventDefault();
       return;
     }
 
-    if (key === " ") {
+    if (
+      key === " "
+    ) {
       event.preventDefault();
 
       if (!alive) {
@@ -2557,13 +3366,16 @@ const bubble: GameEngineFactory = ({
       return;
     }
 
-    if (key === "r") {
+    if (
+      key === "r"
+    ) {
       reset();
     }
   }
 
   function render() {
-    ctx.fillStyle = pal.bg;
+    ctx.fillStyle =
+      pal.bg;
 
     ctx.fillRect(
       0,
@@ -2572,12 +3384,48 @@ const bubble: GameEngineFactory = ({
       height,
     );
 
-    renderDangerLine();
+    ctx.save();
+
+    ctx.strokeStyle =
+      isDangerReached()
+        ? "rgba(248,113,113,0.75)"
+        : "rgba(248,113,113,0.34)";
+
+    ctx.lineWidth =
+      isDangerReached()
+        ? 3
+        : 2;
+
+    ctx.setLineDash([
+      10,
+      8,
+    ]);
+
+    ctx.beginPath();
+
+    ctx.moveTo(
+      0,
+      DANGER_Y,
+    );
+
+    ctx.lineTo(
+      width,
+      DANGER_Y,
+    );
+
+    ctx.stroke();
+
+    ctx.setLineDash([]);
+
+    ctx.restore();
 
     ctx.save();
 
-    ctx.fillStyle = pal.muted;
-    ctx.globalAlpha = 0.08;
+    ctx.fillStyle =
+      pal.muted;
+
+    ctx.globalAlpha =
+      0.08;
 
     for (
       let i = 0;
@@ -2585,11 +3433,13 @@ const bubble: GameEngineFactory = ({
       i++
     ) {
       const x =
-        (i * 73 + level * 13) %
+        (i * 73 +
+          level * 13) %
         width;
 
       const y =
-        (i * 47 + level * 19) %
+        (i * 47 +
+          level * 19) %
         height;
 
       ctx.fillRect(
@@ -2604,15 +3454,18 @@ const bubble: GameEngineFactory = ({
 
     for (
       let row = 0;
-      row < grid.length;
+      row <
+      grid.length;
       row++
     ) {
       for (
         let col = 0;
-        col < getRowLength(row);
+        col <
+        getRowLength(row);
         col++
       ) {
-        const cell = grid[row]?.[col];
+        const cell =
+          grid[row]?.[col];
 
         if (
           cell === null ||
@@ -2621,10 +3474,11 @@ const bubble: GameEngineFactory = ({
           continue;
         }
 
-        const position = cellPos(
-          row,
-          col,
-        );
+        const position =
+          cellPos(
+            row,
+            col,
+          );
 
         drawBubble(
           position.x,
@@ -2635,22 +3489,32 @@ const bubble: GameEngineFactory = ({
       }
     }
 
-    for (const drop of drops) {
+    for (
+      const drop of drops
+    ) {
       drawBubble(
         drop.x,
         drop.y,
         drop.color,
         drop.kind,
         R - 1.5,
-        Math.max(0, drop.life),
+        Math.max(
+          0,
+          drop.life,
+        ),
       );
     }
 
-    for (const pop of pops) {
+    for (
+      const pop of pops
+    ) {
       ctx.save();
 
       ctx.globalAlpha =
-        Math.max(0, pop.life);
+        Math.max(
+          0,
+          pop.life,
+        );
 
       ctx.fillStyle =
         COLORS[
@@ -2683,7 +3547,9 @@ const bubble: GameEngineFactory = ({
       drawTrajectory();
     }
 
-    if (flying !== null) {
+    if (
+      flying !== null
+    ) {
       drawBubble(
         flying.x,
         flying.y,
@@ -2692,24 +3558,30 @@ const bubble: GameEngineFactory = ({
       );
     }
 
-    for (const item of floatingTexts) {
+    for (
+      const item of floatingTexts
+    ) {
       ctx.save();
 
       ctx.globalAlpha =
         Math.max(
           0,
-          item.life / item.maxLife,
+          item.life /
+            item.maxLife,
         );
 
-      ctx.fillStyle = item.big
-        ? pal.gold
-        : pal.neon;
+      ctx.fillStyle =
+        item.big
+          ? pal.gold
+          : pal.neon;
 
-      ctx.font = item.big
-        ? "bold 16px system-ui"
-        : "600 11px system-ui";
+      ctx.font =
+        item.big
+          ? "bold 16px system-ui"
+          : "600 11px system-ui";
 
-      ctx.textAlign = "center";
+      ctx.textAlign =
+        "center";
 
       ctx.fillText(
         item.text,
@@ -2740,9 +3612,14 @@ const bubble: GameEngineFactory = ({
         height,
       );
 
-      ctx.textAlign = "center";
-      ctx.fillStyle = pal.gold;
-      ctx.font = "bold 24px system-ui";
+      ctx.textAlign =
+        "center";
+
+      ctx.fillStyle =
+        pal.gold;
+
+      ctx.font =
+        "bold 24px system-ui";
 
       ctx.fillText(
         "LEVEL CLEAR",
@@ -2750,8 +3627,11 @@ const bubble: GameEngineFactory = ({
         height / 2,
       );
 
-      ctx.fillStyle = pal.muted;
-      ctx.font = "12px system-ui";
+      ctx.fillStyle =
+        pal.muted;
+
+      ctx.font =
+        "12px system-ui";
 
       ctx.fillText(
         "Get ready...",
@@ -2775,10 +3655,14 @@ const bubble: GameEngineFactory = ({
         height,
       );
 
-      ctx.textAlign = "center";
+      ctx.textAlign =
+        "center";
 
-      ctx.fillStyle = pal.neon;
-      ctx.font = "bold 28px system-ui";
+      ctx.fillStyle =
+        pal.neon;
+
+      ctx.font =
+        "bold 28px system-ui";
 
       ctx.fillText(
         "GAME OVER",
@@ -2786,8 +3670,11 @@ const bubble: GameEngineFactory = ({
         height / 2 - 38,
       );
 
-      ctx.fillStyle = pal.muted;
-      ctx.font = "14px system-ui";
+      ctx.fillStyle =
+        pal.muted;
+
+      ctx.font =
+        "14px system-ui";
 
       ctx.fillText(
         `Score: ${score}`,
@@ -2807,8 +3694,11 @@ const bubble: GameEngineFactory = ({
         height / 2 + 41,
       );
 
-      ctx.fillStyle = pal.neon;
-      ctx.font = "12px system-ui";
+      ctx.fillStyle =
+        pal.neon;
+
+      ctx.font =
+        "12px system-ui";
 
       ctx.fillText(
         "Press SPACE or R to restart",
@@ -2837,17 +3727,21 @@ const bubble: GameEngineFactory = ({
 
   reset();
 
-  const loop = createLoop(
-    update,
-    render,
-  );
+  const loop =
+    createLoop(
+      update,
+      render,
+    );
 
   return {
-    pause: () => loop.pause(),
+    pause: () =>
+      loop.pause(),
 
-    resume: () => loop.resume(),
+    resume: () =>
+      loop.resume(),
 
-    restart: () => reset(),
+    restart: () =>
+      reset(),
 
     destroy: () => {
       loop.stop();
