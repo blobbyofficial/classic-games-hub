@@ -31,6 +31,7 @@ export const ENGINE_LOADERS: Record<string, () => Promise<{ default: GameEngineF
   racer: () => import("./engines/racer"),
   rubiks: () => import("./engines/rubiks"),
   maze3d: () => import("./engines/maze3d"),
+  slithery: () => import("./engines/slithery"),
 };
 
 export function hasEngine(id: string): boolean {

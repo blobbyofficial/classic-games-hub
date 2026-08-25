@@ -72,4 +72,5 @@ export const CONTROL_SCHEME: Record<string, ControlScheme> = {
   reversi: "none",
   whack: "none",
   lightsout: "none",
+  slithery: "none",
 };
