@@ -1,228 +1,903 @@
 import type { GameEngineFactory } from "@/types";
 import { beep, createLoop, palette } from "../helpers";
 
-interface Rock { x: number; y: number; vx: number; vy: number; r: number; verts: number[] }
-interface Bullet { x: number; y: number; vx: number; vy: number; life: number }
+interface Rock {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  r: number;
+  verts: number[];
+  rotation: number;
+  spin: number;
+  size: number;
+}
 
-const asteroids: GameEngineFactory = ({ canvas, width, height, onScore, onGameOver, onStatus }) => {
+interface Bullet {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+}
+
+interface Particle {
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  life: number;
+  maxLife: number;
+  size: number;
+}
+
+const asteroids: GameEngineFactory = ({
+  canvas,
+  width,
+  height,
+  onScore,
+  onGameOver,
+  onStatus,
+}) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
-  const ship = { x: width / 2, y: height / 2, angle: -Math.PI / 2, vx: 0, vy: 0, thrust: false };
+
+  const ship = {
+    x: width / 2,
+    y: height / 2,
+    angle: -Math.PI / 2,
+    vx: 0,
+    vy: 0,
+    thrust: false,
+  };
+
   let rocks: Rock[] = [];
   let bullets: Bullet[] = [];
+  let particles: Particle[] = [];
+
   let score = 0;
+  let bestScore = 0;
   let lives = 3;
+  let level = 1;
+
   let alive = true;
   let invuln = 0;
+  let fireCooldown = 0;
+  let nextWaveTimer = 0;
+
   const keys = new Set<string>();
 
-  function makeRock(x: number, y: number, r: number): Rock {
-    const verts = Array.from({ length: 10 }, () => 0.7 + Math.random() * 0.5);
-    const a = Math.random() * Math.PI * 2;
-    const s = (Math.random() * 1 + 0.5) * (60 / r);
-    return { x, y, vx: Math.cos(a) * s, vy: Math.sin(a) * s, r, verts };
-  }
+  const MAX_BULLETS = 6;
+  const BULLET_SPEED = 9;
+  const BULLET_LIFE = 55;
 
-  function spawnWave(n: number) {
-    for (let i = 0; i < n; i++) {
-      const edge = Math.random() < 0.5;
-      rocks.push(makeRock(edge ? 0 : width, Math.random() * height, 42));
+  function wrap(o: { x: number; y: number }, margin = 0) {
+    if (o.x < -margin) {
+      o.x = width + margin;
+    } else if (o.x > width + margin) {
+      o.x = -margin;
+    }
+
+    if (o.y < -margin) {
+      o.y = height + margin;
+    } else if (o.y > height + margin) {
+      o.y = -margin;
     }
   }
 
-  function reset() {
+  function distanceWrapped(
+    ax: number,
+    ay: number,
+    bx: number,
+    by: number,
+  ) {
+    let dx = Math.abs(ax - bx);
+    let dy = Math.abs(ay - by);
+
+    if (dx > width / 2) {
+      dx = width - dx;
+    }
+
+    if (dy > height / 2) {
+      dy = height - dy;
+    }
+
+    return Math.hypot(dx, dy);
+  }
+
+  function getRockRadius(size: number) {
+    if (size === 3) return 42;
+    if (size === 2) return 25;
+    return 14;
+  }
+
+  function createRock(
+    x: number,
+    y: number,
+    size: number,
+  ): Rock {
+    const r = getRockRadius(size);
+
+    const vertexCount =
+      size === 3 ? 11 :
+      size === 2 ? 10 :
+      9;
+
+    const verts = Array.from(
+      { length: vertexCount },
+      () => 0.75 + Math.random() * 0.4,
+    );
+
+    const angle = Math.random() * Math.PI * 2;
+
+    const baseSpeed =
+      size === 3 ? 0.7 :
+      size === 2 ? 1.25 :
+      2;
+
+    const speed =
+      baseSpeed +
+      Math.random() * 0.9 +
+      level * 0.03;
+
+    return {
+      x,
+      y,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed,
+      r,
+      verts,
+      rotation: Math.random() * Math.PI * 2,
+      spin: (Math.random() - 0.5) * 0.025,
+      size,
+    };
+  }
+
+  function spawnWave() {
+    rocks = [];
+
+    const count = Math.min(12, 3 + level);
+
+    for (let i = 0; i < count; i++) {
+      const side = Math.floor(Math.random() * 4);
+
+      let x = 0;
+      let y = 0;
+
+      if (side === 0) {
+        x = 0;
+        y = Math.random() * height;
+      } else if (side === 1) {
+        x = width;
+        y = Math.random() * height;
+      } else if (side === 2) {
+        x = Math.random() * width;
+        y = 0;
+      } else {
+        x = Math.random() * width;
+        y = height;
+      }
+
+      rocks.push(createRock(x, y, 3));
+    }
+
+    nextWaveTimer = 0;
+    onStatus?.(`Wave ${level}`);
+  }
+
+  function createExplosion(
+    x: number,
+    y: number,
+    amount: number,
+    strength = 1,
+  ) {
+    for (let i = 0; i < amount; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      const speed =
+        (0.5 + Math.random() * 2.5) * strength;
+
+      particles.push({
+        x,
+        y,
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: 20 + Math.random() * 25,
+        maxLife: 45,
+        size: 1 + Math.random() * 2,
+      });
+    }
+  }
+
+  function resetShip() {
     ship.x = width / 2;
     ship.y = height / 2;
     ship.vx = 0;
     ship.vy = 0;
     ship.angle = -Math.PI / 2;
+    ship.thrust = false;
+    invuln = 100;
+    fireCooldown = 0;
+  }
+
+  function reset() {
+    keys.clear();
+
     rocks = [];
     bullets = [];
+    particles = [];
+
     score = 0;
     lives = 3;
+    level = 1;
     alive = true;
-    invuln = 60;
-    spawnWave(4);
+    invuln = 100;
+    fireCooldown = 0;
+    nextWaveTimer = 0;
+
+    resetShip();
+    spawnWave();
+
     onScore(0);
     onStatus?.("");
   }
 
-  function wrap(o: { x: number; y: number }) {
-    if (o.x < 0) o.x += width;
-    if (o.x > width) o.x -= width;
-    if (o.y < 0) o.y += height;
-    if (o.y > height) o.y -= height;
+  function fire() {
+    if (!alive) return;
+    if (fireCooldown > 0) return;
+    if (bullets.length >= MAX_BULLETS) return;
+
+    const cos = Math.cos(ship.angle);
+    const sin = Math.sin(ship.angle);
+
+    bullets.push({
+      x: ship.x + cos * 15,
+      y: ship.y + sin * 15,
+      vx: cos * BULLET_SPEED + ship.vx * 0.35,
+      vy: sin * BULLET_SPEED + ship.vy * 0.35,
+      life: BULLET_LIFE,
+    });
+
+    fireCooldown = 7;
+
+    beep(880, 0.035);
   }
 
-  function fire() {
-    if (bullets.length > 5) return;
-    bullets.push({
-      x: ship.x + Math.cos(ship.angle) * 14,
-      y: ship.y + Math.sin(ship.angle) * 14,
-      vx: Math.cos(ship.angle) * 9 + ship.vx,
-      vy: Math.sin(ship.angle) * 9 + ship.vy,
-      life: 60,
-    });
-    beep(880, 0.04);
+  function destroyRock(index: number) {
+    const rock = rocks[index];
+
+    if (!rock) return;
+
+    rocks.splice(index, 1);
+
+    const points =
+      rock.size === 3 ? 20 :
+      rock.size === 2 ? 50 :
+      100;
+
+    score += points;
+    bestScore = Math.max(bestScore, score);
+
+    onScore(score);
+
+    createExplosion(
+      rock.x,
+      rock.y,
+      rock.size === 3 ? 12 : 8,
+      rock.size === 3 ? 1 : 0.8,
+    );
+
+    beep(
+      rock.size === 3 ? 260 :
+      rock.size === 2 ? 350 :
+      500,
+      0.05,
+      "sawtooth",
+    );
+
+    if (rock.size > 1) {
+      const childSize = rock.size - 1;
+
+      rocks.push(
+        createRock(rock.x, rock.y, childSize),
+        createRock(rock.x, rock.y, childSize),
+      );
+    }
+  }
+
+  function updateParticles() {
+    for (let i = particles.length - 1; i >= 0; i--) {
+      const p = particles[i];
+
+      p.x += p.vx;
+      p.y += p.vy;
+
+      p.vx *= 0.97;
+      p.vy *= 0.97;
+
+      p.life--;
+
+      wrap(p);
+
+      if (p.life <= 0) {
+        particles.splice(i, 1);
+      }
+    }
   }
 
   function update() {
+    updateParticles();
+
     if (!alive) return;
-    if (keys.has("arrowleft") || keys.has("a")) ship.angle -= 0.09;
-    if (keys.has("arrowright") || keys.has("d")) ship.angle += 0.09;
-    ship.thrust = keys.has("arrowup") || keys.has("w");
-    if (ship.thrust) {
-      ship.vx += Math.cos(ship.angle) * 0.18;
-      ship.vy += Math.sin(ship.angle) * 0.18;
+
+    if (keys.has("arrowleft") || keys.has("a")) {
+      ship.angle -= 0.085;
     }
-    ship.vx *= 0.99;
-    ship.vy *= 0.99;
+
+    if (keys.has("arrowright") || keys.has("d")) {
+      ship.angle += 0.085;
+    }
+
+    ship.thrust =
+      keys.has("arrowup") ||
+      keys.has("w");
+
+    if (ship.thrust) {
+      ship.vx += Math.cos(ship.angle) * 0.17;
+      ship.vy += Math.sin(ship.angle) * 0.17;
+    }
+
+    ship.vx *= 0.992;
+    ship.vy *= 0.992;
+
+    const shipSpeed = Math.hypot(
+      ship.vx,
+      ship.vy,
+    );
+
+    const maxSpeed = 6.5;
+
+    if (shipSpeed > maxSpeed) {
+      ship.vx =
+        (ship.vx / shipSpeed) * maxSpeed;
+
+      ship.vy =
+        (ship.vy / shipSpeed) * maxSpeed;
+    }
+
     ship.x += ship.vx;
     ship.y += ship.vy;
-    wrap(ship);
-    if (invuln > 0) invuln--;
 
-    bullets.forEach((b) => {
-      b.x += b.vx;
-      b.y += b.vy;
-      b.life--;
-      wrap(b);
-    });
-    bullets = bullets.filter((b) => b.life > 0);
+    wrap(ship, 8);
 
-    rocks.forEach((r) => {
-      r.x += r.vx;
-      r.y += r.vy;
-      wrap(r);
-    });
+    if (invuln > 0) {
+      invuln--;
+    }
 
-    // bullet-rock
-    for (let i = rocks.length - 1; i >= 0; i--) {
-      const r = rocks[i];
-      for (let j = bullets.length - 1; j >= 0; j--) {
-        const b = bullets[j];
-        if (Math.hypot(r.x - b.x, r.y - b.y) < r.r) {
-          bullets.splice(j, 1);
-          rocks.splice(i, 1);
-          score += Math.round(120 / r.r) * 10;
-          onScore(score);
-          beep(300, 0.06, "sawtooth");
-          if (r.r > 18) {
-            rocks.push(makeRock(r.x, r.y, r.r / 1.8), makeRock(r.x, r.y, r.r / 1.8));
-          }
-          break;
-        }
+    if (fireCooldown > 0) {
+      fireCooldown--;
+    }
+
+    // Update bullets
+    for (let i = bullets.length - 1; i >= 0; i--) {
+      const bullet = bullets[i];
+
+      bullet.x += bullet.vx;
+      bullet.y += bullet.vy;
+
+      bullet.life--;
+
+      wrap(bullet);
+
+      if (bullet.life <= 0) {
+        bullets.splice(i, 1);
       }
     }
 
-    // ship-rock
+    // Update rocks
+    for (const rock of rocks) {
+      rock.x += rock.vx;
+      rock.y += rock.vy;
+      rock.rotation += rock.spin;
+
+      wrap(rock, rock.r);
+    }
+
+    // Bullet -> asteroid collision
+    for (let i = rocks.length - 1; i >= 0; i--) {
+      const rock = rocks[i];
+
+      let hit = false;
+
+      for (
+        let j = bullets.length - 1;
+        j >= 0;
+        j--
+      ) {
+        const bullet = bullets[j];
+
+        if (
+          distanceWrapped(
+            rock.x,
+            rock.y,
+            bullet.x,
+            bullet.y,
+          ) < rock.r
+        ) {
+          bullets.splice(j, 1);
+          destroyRock(i);
+          hit = true;
+          break;
+        }
+      }
+
+      if (hit) continue;
+    }
+
+    // Ship -> asteroid collision
     if (invuln <= 0) {
-      for (const r of rocks) {
-        if (Math.hypot(r.x - ship.x, r.y - ship.y) < r.r + 8) {
+      for (const rock of rocks) {
+        const distance = distanceWrapped(
+          rock.x,
+          rock.y,
+          ship.x,
+          ship.y,
+        );
+
+        if (distance < rock.r + 9) {
           lives--;
-          invuln = 90;
-          beep(120, 0.3, "sawtooth");
-          ship.x = width / 2;
-          ship.y = height / 2;
-          ship.vx = 0;
-          ship.vy = 0;
+
+          createExplosion(
+            ship.x,
+            ship.y,
+            24,
+            1.6,
+          );
+
+          beep(120, 0.25, "sawtooth");
+
           if (lives <= 0) {
             alive = false;
+
+            bestScore = Math.max(
+              bestScore,
+              score,
+            );
+
             onStatus?.("Game over");
             onGameOver(score, 0);
+          } else {
+            resetShip();
+
+            onStatus?.(
+              `${lives} ${
+                lives === 1 ? "life" : "lives"
+              } remaining`,
+            );
           }
+
           break;
         }
       }
     }
 
-    if (rocks.length === 0) spawnWave(4 + Math.floor(score / 1000));
+    // Next wave
+    if (rocks.length === 0 && nextWaveTimer === 0) {
+      nextWaveTimer = 45;
+    }
+
+    if (nextWaveTimer > 0) {
+      nextWaveTimer--;
+
+      if (nextWaveTimer === 1) {
+        level++;
+        spawnWave();
+      }
+    }
+  }
+
+  function renderRock(rock: Rock) {
+    ctx.save();
+
+    ctx.translate(
+      rock.x,
+      rock.y,
+    );
+
+    ctx.rotate(rock.rotation);
+
+    ctx.strokeStyle = pal.neon;
+    ctx.lineWidth =
+      rock.size === 3 ? 1.6 : 1.3;
+
+    ctx.lineJoin = "round";
+
+    ctx.beginPath();
+
+    for (
+      let i = 0;
+      i < rock.verts.length;
+      i++
+    ) {
+      const angle =
+        (i / rock.verts.length) *
+        Math.PI *
+        2;
+
+      const px =
+        Math.cos(angle) *
+        rock.r *
+        rock.verts[i];
+
+      const py =
+        Math.sin(angle) *
+        rock.r *
+        rock.verts[i];
+
+      if (i === 0) {
+        ctx.moveTo(px, py);
+      } else {
+        ctx.lineTo(px, py);
+      }
+    }
+
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function renderShip() {
+    if (!alive) return;
+
+    const blinking =
+      invuln > 0 &&
+      Math.floor(invuln / 6) % 2 === 0;
+
+    if (blinking) return;
+
+    ctx.save();
+
+    ctx.translate(
+      ship.x,
+      ship.y,
+    );
+
+    ctx.rotate(ship.angle);
+
+    if (ship.thrust) {
+      ctx.strokeStyle = pal.gold;
+      ctx.lineWidth = 2;
+
+      const flameLength =
+        8 + Math.random() * 8;
+
+      ctx.beginPath();
+      ctx.moveTo(-6, 0);
+      ctx.lineTo(
+        -10 - flameLength,
+        0,
+      );
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = pal.neon;
+    ctx.lineWidth = 2;
+
+    ctx.beginPath();
+    ctx.moveTo(17, 0);
+    ctx.lineTo(-10, -10);
+    ctx.lineTo(-5, 0);
+    ctx.lineTo(-10, 10);
+    ctx.closePath();
+    ctx.stroke();
+
+    ctx.restore();
   }
 
   function render() {
     ctx.fillStyle = pal.bg;
-    ctx.fillRect(0, 0, width, height);
+    ctx.fillRect(
+      0,
+      0,
+      width,
+      height,
+    );
 
-    ctx.strokeStyle = "#cbd5e1";
-    ctx.lineWidth = 1.5;
-    rocks.forEach((r) => {
-      ctx.beginPath();
-      r.verts.forEach((v, k) => {
-        const a = (k / r.verts.length) * Math.PI * 2;
-        const px = r.x + Math.cos(a) * r.r * v;
-        const py = r.y + Math.sin(a) * r.r * v;
-        k === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
-      });
-      ctx.closePath();
-      ctx.stroke();
-    });
-
-    ctx.fillStyle = "#fff";
-    bullets.forEach((b) => {
-      ctx.beginPath();
-      ctx.arc(b.x, b.y, 2.5, 0, Math.PI * 2);
-      ctx.fill();
-    });
-
-    if (alive) {
-      ctx.save();
-      ctx.translate(ship.x, ship.y);
-      ctx.rotate(ship.angle);
-      ctx.globalAlpha = invuln > 0 && Math.floor(invuln / 5) % 2 ? 0.4 : 1;
-      ctx.strokeStyle = pal.neon;
-      ctx.lineWidth = 2;
-      ctx.beginPath();
-      ctx.moveTo(14, 0);
-      ctx.lineTo(-10, -9);
-      ctx.lineTo(-5, 0);
-      ctx.lineTo(-10, 9);
-      ctx.closePath();
-      ctx.stroke();
-      if (ship.thrust) {
-        ctx.strokeStyle = pal.gold;
-        ctx.beginPath();
-        ctx.moveTo(-5, 0);
-        ctx.lineTo(-14, 0);
-        ctx.stroke();
-      }
-      ctx.restore();
-      ctx.globalAlpha = 1;
-    }
+    // Background stars
+    ctx.save();
 
     ctx.fillStyle = pal.muted;
-    ctx.font = "14px system-ui";
+    ctx.globalAlpha = 0.18;
+
+    for (let i = 0; i < 30; i++) {
+      const x =
+        (i * 83 + level * 11) % width;
+
+      const y =
+        (i * 47 + level * 17) % height;
+
+      ctx.fillRect(
+        x,
+        y,
+        1,
+        1,
+      );
+    }
+
+    ctx.restore();
+
+    // Particles
+    for (const particle of particles) {
+      ctx.save();
+
+      ctx.globalAlpha =
+        Math.max(
+          0,
+          particle.life /
+            particle.maxLife,
+        );
+
+      ctx.fillStyle = pal.gold;
+
+      ctx.beginPath();
+
+      ctx.arc(
+        particle.x,
+        particle.y,
+        particle.size,
+        0,
+        Math.PI * 2,
+      );
+
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    // Asteroids
+    for (const rock of rocks) {
+      renderRock(rock);
+    }
+
+    // Bullets
+    for (const bullet of bullets) {
+      ctx.save();
+
+      ctx.globalAlpha =
+        Math.max(
+          0,
+          bullet.life / BULLET_LIFE,
+        );
+
+      ctx.fillStyle = "#ffffff";
+
+      ctx.beginPath();
+
+      ctx.arc(
+        bullet.x,
+        bullet.y,
+        2.4,
+        0,
+        Math.PI * 2,
+      );
+
+      ctx.fill();
+
+      ctx.restore();
+    }
+
+    renderShip();
+
+    // HUD
+    ctx.save();
+
+    ctx.fillStyle = pal.muted;
+    ctx.font = "13px system-ui";
+
     ctx.textAlign = "left";
-    ctx.fillText("▲".repeat(Math.max(0, lives)), 12, 22);
+
+    ctx.fillText(
+      `LIVES ${"▲".repeat(
+        Math.max(0, lives),
+      )}`,
+      12,
+      20,
+    );
+
+    ctx.fillText(
+      `WAVE ${level}`,
+      12,
+      39,
+    );
+
+    ctx.textAlign = "right";
+
+    ctx.fillText(
+      `SCORE ${score}`,
+      width - 12,
+      20,
+    );
+
+    ctx.fillText(
+      `BEST ${bestScore}`,
+      width - 12,
+      39,
+    );
+
+    // Wave transition
+    if (
+      alive &&
+      rocks.length === 0 &&
+      nextWaveTimer > 0
+    ) {
+      ctx.textAlign = "center";
+
+      ctx.fillStyle = pal.neon;
+      ctx.font = "bold 18px system-ui";
+
+      ctx.fillText(
+        `WAVE ${level} CLEAR`,
+        width / 2,
+        height / 2 - 8,
+      );
+
+      ctx.fillStyle = pal.muted;
+      ctx.font = "12px system-ui";
+
+      ctx.fillText(
+        "Get ready...",
+        width / 2,
+        height / 2 + 16,
+      );
+    }
+
+    // Game over
+    if (!alive) {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.6)";
+
+      ctx.fillRect(
+        0,
+        0,
+        width,
+        height,
+      );
+
+      ctx.textAlign = "center";
+
+      ctx.fillStyle = pal.neon;
+      ctx.font = "bold 28px system-ui";
+
+      ctx.fillText(
+        "GAME OVER",
+        width / 2,
+        height / 2 - 28,
+      );
+
+      ctx.fillStyle = pal.muted;
+      ctx.font = "14px system-ui";
+
+      ctx.fillText(
+        `Score: ${score}`,
+        width / 2,
+        height / 2 + 2,
+      );
+
+      ctx.fillText(
+        "Press SPACE or R to restart",
+        width / 2,
+        height / 2 + 28,
+      );
+    }
+
+    ctx.restore();
   }
 
-  const kd = (e: KeyboardEvent) => {
-    const k = e.key.toLowerCase();
-    if (k === " ") {
-      alive ? fire() : reset();
+  const keyDown = (e: KeyboardEvent) => {
+    const key = e.key.toLowerCase();
+
+    if (key === " ") {
       e.preventDefault();
+
+      if (e.repeat) return;
+
+      if (alive) {
+        fire();
+      } else {
+        reset();
+      }
+
       return;
     }
-    if (["arrowup", "arrowdown", "arrowleft", "arrowright", "w", "a", "s", "d"].includes(k)) {
-      keys.add(k);
+
+    if (
+      [
+        "arrowup",
+        "arrowdown",
+        "arrowleft",
+        "arrowright",
+        "w",
+        "a",
+        "s",
+        "d",
+      ].includes(key)
+    ) {
+      keys.add(key);
       e.preventDefault();
     }
-    if (k === "r" && !alive) reset();
-  };
-  const ku = (e: KeyboardEvent) => keys.delete(e.key.toLowerCase());
 
-  window.addEventListener("keydown", kd);
-  window.addEventListener("keyup", ku);
+    if (key === "r" && !alive) {
+      e.preventDefault();
+      reset();
+    }
+  };
+
+  const keyUp = (e: KeyboardEvent) => {
+    keys.delete(
+      e.key.toLowerCase(),
+    );
+  };
+
+  const clearKeys = () => {
+    keys.clear();
+  };
+
+  window.addEventListener(
+    "keydown",
+    keyDown,
+  );
+
+  window.addEventListener(
+    "keyup",
+    keyUp,
+  );
+
+  window.addEventListener(
+    "blur",
+    clearKeys,
+  );
+
   reset();
-  const loop = createLoop(update, render);
+
+  const loop = createLoop(
+    update,
+    render,
+  );
 
   return {
-    pause: () => loop.pause(),
-    resume: () => loop.resume(),
-    restart: () => reset(),
+    pause: () => {
+      clearKeys();
+      loop.pause();
+    },
+
+    resume: () => {
+      clearKeys();
+      loop.resume();
+    },
+
+    restart: () => {
+      clearKeys();
+      reset();
+    },
+
     destroy: () => {
+      clearKeys();
+
       loop.stop();
-      window.removeEventListener("keydown", kd);
-      window.removeEventListener("keyup", ku);
+
+      window.removeEventListener(
+        "keydown",
+        keyDown,
+      );
+
+      window.removeEventListener(
+        "keyup",
+        keyUp,
+      );
+
+      window.removeEventListener(
+        "blur",
+        clearKeys,
+      );
     },
   };
 };
