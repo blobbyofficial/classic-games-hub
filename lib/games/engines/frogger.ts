@@ -117,23 +117,22 @@ const frogger: GameEngineFactory = ({
   const rh = height / ROWS;
   const cw = width / COLS;
 
+  const frogSize =
+    Math.min(cw, rh) * 0.62;
+
+  const frogRadius =
+    frogSize * 0.42;
+
+  const HOP_FRAMES = 8;
+
   const PACE = tune(difficulty, {
     easy: 0.78,
     regular: 1,
     hard: 1.25,
   });
 
-  /*
-   * IMPORTANT:
-   * This game uses frame-based updates, matching the rest
-   * of the Classic Games Hub engine. Speeds below are pixels
-   * per update frame, not pixels per second.
-   */
-
-  const HOP_FRAMES = 8;
-
-  const frogRadius =
-    Math.min(cw, rh) * 0.27;
+  let particles: Particle[] = [];
+  let floatingTexts: FloatingText[] = [];
 
   let frog: Frog = {
     col: 6,
@@ -153,7 +152,6 @@ const frogger: GameEngineFactory = ({
 
   let score = 0;
   let lives = 3;
-
   let crossing = 1;
   let furthestRow = 12;
 
@@ -175,8 +173,8 @@ const frogger: GameEngineFactory = ({
   let fly: Fly | null = null;
   let powerUp: PowerUp | null = null;
 
-  let flyTimer = 280;
-  let powerTimer = 420;
+  let flyTimer = 300;
+  let powerTimer = 480;
 
   let shieldTimer = 0;
   let slowTimer = 0;
@@ -194,21 +192,14 @@ const frogger: GameEngineFactory = ({
   let specialEventTimer = 0;
 
   function rowY(row: number) {
-    return (
-      row * rh +
-      rh / 2
-    );
+    return row * rh + rh / 2;
   }
 
   function randomRange(
     min: number,
     max: number,
   ) {
-    return (
-      min +
-      Math.random() *
-        (max - min)
-    );
+    return min + Math.random() * (max - min);
   }
 
   function randomItem<T>(
@@ -216,8 +207,7 @@ const frogger: GameEngineFactory = ({
   ): T {
     return values[
       Math.floor(
-        Math.random() *
-          values.length,
+        Math.random() * values.length,
       )
     ];
   }
@@ -235,22 +225,20 @@ const frogger: GameEngineFactory = ({
 
   function zoneForRow(
     row: number,
-  ) {
+  ):
+    | "goal"
+    | "river"
+    | "road"
+    | "safe" {
     if (row === 0) {
       return "goal";
     }
 
-    if (
-      row >= 1 &&
-      row <= 5
-    ) {
+    if (row >= 1 && row <= 5) {
       return "river";
     }
 
-    if (
-      row >= 7 &&
-      row <= 11
-    ) {
+    if (row >= 7 && row <= 11) {
       return "road";
     }
 
@@ -263,16 +251,12 @@ const frogger: GameEngineFactory = ({
     switch (kind) {
       case "truck":
         return "#38bdf8";
-
       case "bus":
         return "#fbbf24";
-
       case "van":
         return "#a78bfa";
-
       case "sports":
         return "#f43f5e";
-
       default:
         return "#ef4444";
     }
@@ -314,31 +298,16 @@ const frogger: GameEngineFactory = ({
         2;
 
       const speed =
-        randomRange(
-          0.5,
-          2.8,
-        );
+        randomRange(0.5, 2.8);
 
       particles.push({
         x,
         y,
-        vx:
-          Math.cos(angle) *
-          speed,
-        vy:
-          Math.sin(angle) *
-          speed,
-        life:
-          randomRange(
-            15,
-            32,
-          ),
+        vx: Math.cos(angle) * speed,
+        vy: Math.sin(angle) * speed,
+        life: randomRange(15, 32),
         maxLife: 32,
-        size:
-          randomRange(
-            1,
-            3,
-          ),
+        size: randomRange(1, 3),
         color,
       });
     }
@@ -388,9 +357,7 @@ const frogger: GameEngineFactory = ({
           : 1;
 
     const scoreMultiplier =
-      scoreBoostTimer > 0
-        ? 2
-        : 1;
+      scoreBoostTimer > 0 ? 2 : 1;
 
     const value = Math.round(
       base *
@@ -419,14 +386,12 @@ const frogger: GameEngineFactory = ({
 
   function beginCombo() {
     combo++;
-    comboTimer =
-      100;
+    comboTimer = 100;
 
-    bestCombo =
-      Math.max(
-        bestCombo,
-        combo,
-      );
+    bestCombo = Math.max(
+      bestCombo,
+      combo,
+    );
 
     if (combo >= 4) {
       addFloatingText(
@@ -467,10 +432,7 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 190,
-        kinds: [
-          "car",
-          "sports",
-        ],
+        kinds: ["car", "sports"],
       },
       {
         row: 8,
@@ -479,10 +441,7 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 250,
-        kinds: [
-          "car",
-          "van",
-        ],
+        kinds: ["car", "van"],
       },
       {
         row: 9,
@@ -491,11 +450,7 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 300,
-        kinds: [
-          "truck",
-          "bus",
-          "van",
-        ],
+        kinds: ["truck", "bus", "van"],
       },
       {
         row: 10,
@@ -504,10 +459,7 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 215,
-        kinds: [
-          "sports",
-          "car",
-        ],
+        kinds: ["sports", "car"],
       },
       {
         row: 11,
@@ -516,11 +468,7 @@ const frogger: GameEngineFactory = ({
           PACE *
           crossingScale,
         spacing: 240,
-        kinds: [
-          "car",
-          "van",
-          "truck",
-        ],
+        kinds: ["car", "van", "truck"],
       },
     ];
 
@@ -532,8 +480,7 @@ const frogger: GameEngineFactory = ({
 
       const count =
         Math.ceil(
-          width /
-            config.spacing,
+          width / config.spacing,
         ) + 2;
 
       for (
@@ -550,51 +497,36 @@ const frogger: GameEngineFactory = ({
           kind === "truck"
             ? 1.7
             : kind === "bus"
-              ? 2.0
+              ? 2
               : kind === "van"
                 ? 1.35
-                : kind ===
-                    "sports"
+                : kind === "sports"
                   ? 0.78
                   : 1;
 
         objects.push({
           x:
-            i *
-              config.spacing +
-            randomRange(
-              -35,
-              35,
-            ),
+            i * config.spacing +
+            randomRange(-35, 35),
           speed:
             config.speed *
-            randomRange(
-              0.9,
-              1.1,
-            ),
-          width:
-            cw * multiplier,
+            randomRange(0.9, 1.1),
+          width: cw * multiplier,
           kind,
           color:
-            getVehicleColor(
-              kind,
-            ),
-          laneRow:
-            config.row,
+            getVehicleColor(kind),
+          laneRow: config.row,
           passed: false,
-          variant:
-            Math.floor(
-              Math.random() *
-                3,
-            ),
+          variant: Math.floor(
+            Math.random() * 3,
+          ),
         });
       }
 
       lanes.push({
         row: config.row,
         type: "road",
-        speed:
-          config.speed,
+        speed: config.speed,
         objects,
       });
     }
@@ -660,8 +592,7 @@ const frogger: GameEngineFactory = ({
 
       const count =
         Math.ceil(
-          width /
-            config.spacing,
+          width / config.spacing,
         ) + 2;
 
       for (
@@ -670,56 +601,39 @@ const frogger: GameEngineFactory = ({
         i++
       ) {
         const multiplier =
-          config.kind ===
-          "log"
+          config.kind === "log"
             ? 1.8
-            : config.kind ===
-                "smallLog"
+            : config.kind === "smallLog"
               ? 0.95
               : 1.35;
 
         objects.push({
           x:
-            i *
-              config.spacing +
-            randomRange(
-              -50,
-              50,
-            ),
+            i * config.spacing +
+            randomRange(-50, 50),
           speed:
             config.speed *
-            randomRange(
-              0.92,
-              1.08,
-            ),
-          width:
-            cw * multiplier,
-          kind:
-            config.kind,
+            randomRange(0.92, 1.08),
+          width: cw * multiplier,
+          kind: config.kind,
           color:
-            config.kind ===
-            "turtle"
+            config.kind === "turtle"
               ? "#15803d"
-              : config.kind ===
-                  "smallLog"
+              : config.kind === "smallLog"
                 ? "#92400e"
                 : "#a16207",
-          laneRow:
-            config.row,
+          laneRow: config.row,
           passed: false,
-          variant:
-            Math.floor(
-              Math.random() *
-                3,
-            ),
+          variant: Math.floor(
+            Math.random() * 3,
+          ),
         });
       }
 
       lanes.push({
         row: config.row,
         type: "river",
-        speed:
-          config.speed,
+        speed: config.speed,
         objects,
       });
     }
@@ -766,7 +680,6 @@ const frogger: GameEngineFactory = ({
     resetFrog();
 
     onScore(0);
-
     onStatus?.(
       "Use the arrow keys to cross",
     );
@@ -774,10 +687,6 @@ const frogger: GameEngineFactory = ({
 
   function reset() {
     resetRun();
-  }
-
-  function currentFrogRow() {
-    return frog.row;
   }
 
   function requestMove(
@@ -796,21 +705,14 @@ const frogger: GameEngineFactory = ({
     }
 
     if (frog.hopping) {
-      // Queue only one move. This makes controls
-      // responsive without allowing accidental
-      // multi-hop spam.
       queuedMove = {
         dc,
         dr,
       };
-
       return;
     }
 
-    startHop(
-      dc,
-      dr,
-    );
+    startHop(dc, dr);
   }
 
   function startHop(
@@ -818,38 +720,31 @@ const frogger: GameEngineFactory = ({
     dr: number,
   ) {
     const distance =
-      superHopTimer > 0
-        ? 2
-        : 1;
+      superHopTimer > 0 ? 2 : 1;
 
     const nextCol = clamp(
       frog.col +
-        dc *
-          distance,
+        dc * distance,
       0,
       COLS - 1,
     );
 
     const nextRow = clamp(
       frog.row +
-        dr *
-          distance,
+        dr * distance,
       0,
       ROWS - 1,
     );
 
     if (
-      nextCol ===
-        frog.col &&
-      nextRow ===
-        frog.row
+      nextCol === frog.col &&
+      nextRow === frog.row
     ) {
       return;
     }
 
     frog.targetX =
-      nextCol * cw +
-      cw / 2;
+      nextCol * cw + cw / 2;
 
     frog.targetY =
       rowY(nextRow);
@@ -858,103 +753,87 @@ const frogger: GameEngineFactory = ({
     frog.hopping = true;
     frog.riding = null;
 
-    frog.facing =
-      dc === 0
-        ? frog.facing
-        : dc > 0
-          ? 1
-          : -1;
+    if (dc !== 0) {
+      frog.facing =
+        dc > 0 ? 1 : -1;
+    }
 
-    beep(
-      540,
-      0.03,
-    );
+    beep(540, 0.03);
   }
 
   function updateHop() {
-    if (
-      !frog.hopping
-    ) {
+    if (!frog.hopping) {
       return;
     }
 
     frog.hopFrame++;
 
-    const p =
-      clamp(
-        frog.hopFrame /
-          HOP_FRAMES,
-        0,
-        1,
-      );
+    const progress = clamp(
+      frog.hopFrame /
+        HOP_FRAMES,
+      0,
+      1,
+    );
 
     const eased =
-      p < 0.5
-        ? 2 * p * p
+      progress < 0.5
+        ? 2 *
+          progress *
+          progress
         : 1 -
           Math.pow(
-            -2 * p + 2,
+            -2 * progress + 2,
             2,
           ) /
             2;
 
-    const startX =
-      frog.x;
-
-    const startY =
-      frog.y;
+    const startX = frog.x;
+    const startY = frog.y;
 
     frog.x =
       startX +
-      (frog.targetX -
-        startX) *
-        Math.min(
-          1,
-          eased * 1.8,
-        );
+      (frog.targetX - startX) *
+        Math.min(1, eased * 1.8);
 
     frog.y =
       startY +
-      (frog.targetY -
-        startY) *
+      (frog.targetY - startY) *
         eased;
 
     frog.squash =
       Math.sin(
-        p * Math.PI,
+        progress * Math.PI,
       );
 
     if (
       frog.hopFrame >=
       HOP_FRAMES
     ) {
-      frog.col =
+      frog.col = clamp(
         Math.round(
-          frog.targetX /
-            cw -
+          frog.targetX / cw -
             0.5,
-        );
+        ),
+        0,
+        COLS - 1,
+      );
 
-      frog.row =
-        clamp(
-          Math.round(
-            (frog.targetY -
-              rh / 2) /
-              rh,
-          ),
-          0,
-          ROWS - 1,
-        );
+      frog.row = clamp(
+        Math.round(
+          (frog.targetY -
+            rh / 2) /
+            rh,
+        ),
+        0,
+        ROWS - 1,
+      );
 
       frog.x =
         frog.targetX;
-
       frog.y =
         frog.targetY;
 
-      frog.hopping =
-        false;
-
+      frog.hopping = false;
       frog.squash = 1;
 
       onLanding();
@@ -962,54 +841,41 @@ const frogger: GameEngineFactory = ({
       if (
         queuedMove &&
         alive &&
-        deathTimer <=
-          0 &&
-        goalTimer <=
-          0
+        deathTimer <= 0 &&
+        goalTimer <= 0
       ) {
-        const next =
+        const move =
           queuedMove;
 
-        queuedMove =
-          null;
+        queuedMove = null;
 
         startHop(
-          next.dc,
-          next.dr,
+          move.dc,
+          move.dr,
         );
       }
     }
   }
 
   function onLanding() {
-    const row =
-      frog.row;
+    const row = frog.row;
 
-    if (
-      row <
-      furthestRow
-    ) {
+    if (row < furthestRow) {
       const distance =
-        furthestRow -
-        row;
+        furthestRow - row;
 
-      furthestRow =
-        row;
+      furthestRow = row;
 
       beginCombo();
 
       addScore(
-        10 +
-          distance * 5,
+        10 + distance * 5,
         frog.x,
-        frog.y -
-          rh * 0.55,
+        frog.y - rh * 0.55,
       );
     }
 
-    if (
-      row === 0
-    ) {
+    if (row === 0) {
       reachGoal();
       return;
     }
@@ -1034,8 +900,7 @@ const frogger: GameEngineFactory = ({
   function getCurrentLane() {
     return lanes.find(
       (lane) =>
-        lane.row ===
-        frog.row,
+        lane.row === frog.row,
     );
   }
 
@@ -1043,14 +908,12 @@ const frogger: GameEngineFactory = ({
     object: LaneObject,
   ) {
     const margin =
-      frogSize * 0.42;
+      frogRadius;
 
     return (
-      frog.x +
-        margin >
+      frog.x + margin >
         object.x &&
-      frog.x -
-        margin <
+      frog.x - margin <
         object.x +
           object.width
     );
@@ -1062,53 +925,48 @@ const frogger: GameEngineFactory = ({
 
     if (
       !lane ||
-      lane.type !==
-        "road"
+      lane.type !== "road"
     ) {
       return;
     }
+
+    const frogTop =
+      frog.y -
+      frogRadius;
+
+    const frogBottom =
+      frog.y +
+      frogRadius;
 
     for (
       const object of lane.objects
     ) {
       const objectTop =
-        rowY(
-          lane.row,
-        ) -
+        rowY(lane.row) -
         rh * 0.28;
 
       const objectBottom =
-        rowY(
-          lane.row,
-        ) +
+        rowY(lane.row) +
         rh * 0.28;
 
       const hit =
         frog.x +
-          frogSize *
-            0.35 >
+          frogRadius >
           object.x &&
         frog.x -
-          frogSize *
-            0.35 <
+          frogRadius <
           object.x +
             object.width &&
-        frog.y +
-          frogSize *
-            0.35 >
+        frogBottom >
           objectTop &&
-        frog.y -
-          frogSize *
-            0.35 <
+        frogTop <
           objectBottom;
 
       if (!hit) {
         continue;
       }
 
-      if (
-        shieldTimer > 0
-      ) {
+      if (shieldTimer > 0) {
         shieldTimer = 0;
 
         burst(
@@ -1120,15 +978,13 @@ const frogger: GameEngineFactory = ({
 
         addFloatingText(
           frog.x,
-          frog.y -
-            rh * 0.55,
+          frog.y - rh * 0.55,
           "SHIELD!",
           true,
         );
 
         object.x +=
-          object.speed >
-          0
+          object.speed > 0
             ? 55
             : -55;
 
@@ -1148,8 +1004,7 @@ const frogger: GameEngineFactory = ({
 
     if (
       !lane ||
-      lane.type !==
-        "river"
+      lane.type !== "river"
     ) {
       return;
     }
@@ -1157,18 +1012,11 @@ const frogger: GameEngineFactory = ({
     const support =
       lane.objects.find(
         (object) =>
-          isOnObject(
-            object,
-          ),
+          isOnObject(object),
       );
 
-    if (
-      support ===
-      undefined
-    ) {
-      if (
-        shieldTimer > 0
-      ) {
+    if (support === undefined) {
+      if (shieldTimer > 0) {
         shieldTimer = 0;
 
         burst(
@@ -1180,8 +1028,7 @@ const frogger: GameEngineFactory = ({
 
         addFloatingText(
           frog.x,
-          frog.y -
-            rh * 0.55,
+          frog.y - rh * 0.55,
           "SAVED!",
           true,
         );
@@ -1193,15 +1040,13 @@ const frogger: GameEngineFactory = ({
       return;
     }
 
-    frog.riding =
-      support;
+    frog.riding = support;
   }
 
   function updateRiding() {
     if (
       frog.hopping ||
-      frog.riding ===
-        null
+      frog.riding === null
     ) {
       return;
     }
@@ -1214,52 +1059,44 @@ const frogger: GameEngineFactory = ({
 
     if (
       !lane ||
-      lane.type !==
-        "river"
+      lane.type !== "river"
     ) {
-      frog.riding =
-        null;
-
+      frog.riding = null;
       return;
     }
 
-    const actualSpeed =
+    const speedMultiplier =
       slowTimer > 0
-        ? object.speed *
-          0.55
-        : object.speed;
+        ? 0.55
+        : 1;
 
     frog.x +=
-      actualSpeed;
+      object.speed *
+      speedMultiplier;
 
     if (
-      specialEvent ===
-      "FLOOD"
+      specialEvent === "FLOOD"
     ) {
       frog.x +=
-        actualSpeed *
+        object.speed *
         0.35;
     }
 
     if (
       frog.x <
-        -frogSize ||
+        -frogRadius ||
       frog.x >
         width +
-          frogSize
+          frogRadius
     ) {
-      die("water");
+      die("edge");
       return;
     }
 
     if (
-      !isOnObject(
-        object,
-      )
+      !isOnObject(object)
     ) {
-      frog.riding =
-        null;
-
+      frog.riding = null;
       checkRiverSupport();
     }
   }
@@ -1268,29 +1105,23 @@ const frogger: GameEngineFactory = ({
     for (
       const lane of lanes
     ) {
-      let speedMultiplier =
-        slowTimer > 0
-          ? 0.55
-          : 1;
+      let multiplier =
+        slowTimer > 0 ? 0.55 : 1;
 
       if (
         specialEvent ===
-        "RUSH HOUR" &&
-        lane.type ===
-          "road"
+          "RUSH HOUR" &&
+        lane.type === "road"
       ) {
-        speedMultiplier *=
-          1.35;
+        multiplier *= 1.35;
       }
 
       if (
         specialEvent ===
-        "FLOOD" &&
-        lane.type ===
-          "river"
+          "FLOOD" &&
+        lane.type === "river"
       ) {
-        speedMultiplier *=
-          1.35;
+        multiplier *= 1.35;
       }
 
       for (
@@ -1298,11 +1129,11 @@ const frogger: GameEngineFactory = ({
       ) {
         object.x +=
           object.speed *
-          speedMultiplier;
+          multiplier;
 
         if (
           object.x >
-          width + 40
+          width + 50
         ) {
           object.x =
             -object.width -
@@ -1310,13 +1141,9 @@ const frogger: GameEngineFactory = ({
               20,
               100,
             );
-
-          object.passed =
-            false;
         } else if (
           object.x <
-          -object.width -
-            40
+          -object.width - 50
         ) {
           object.x =
             width +
@@ -1324,9 +1151,6 @@ const frogger: GameEngineFactory = ({
               20,
               100,
             );
-
-          object.passed =
-            false;
         }
       }
     }
@@ -1356,10 +1180,7 @@ const frogger: GameEngineFactory = ({
     screenShake = 8;
     flash = 5;
 
-    if (
-      reason ===
-      "water"
-    ) {
+    if (reason === "water") {
       burst(
         frog.x,
         frog.y,
@@ -1405,9 +1226,7 @@ const frogger: GameEngineFactory = ({
   function finishDeath() {
     lives--;
 
-    if (
-      lives <= 0
-    ) {
+    if (lives <= 0) {
       alive = false;
       busy = false;
       deathTimer = 0;
@@ -1468,8 +1287,7 @@ const frogger: GameEngineFactory = ({
 
     addFloatingText(
       width / 2,
-      height *
-        0.18,
+      height * 0.18,
       "CROSSING COMPLETE!",
       true,
     );
@@ -1500,7 +1318,6 @@ const frogger: GameEngineFactory = ({
           : "day";
 
     resetFrog();
-
     buildLanes();
 
     fly = null;
@@ -1513,16 +1330,13 @@ const frogger: GameEngineFactory = ({
           crossing * 12,
       );
 
-    powerTimer =
-      420;
+    powerTimer = 420;
 
     specialEvent =
       getSpecialEvent();
 
     specialEventTimer =
-      specialEvent
-        ? 600
-        : 0;
+      specialEvent ? 600 : 0;
 
     busy = false;
     goalTimer = 0;
@@ -1536,10 +1350,8 @@ const frogger: GameEngineFactory = ({
 
   function getSpecialEvent() {
     if (
-      crossing <
-        3 ||
-      Math.random() >
-        0.38
+      crossing < 3 ||
+      Math.random() > 0.38
     ) {
       return "";
     }
@@ -1552,36 +1364,23 @@ const frogger: GameEngineFactory = ({
   }
 
   function updateCollectibles() {
-    if (
-      fly
-    ) {
+    if (fly) {
       fly.life--;
+      fly.pulse += 0.12;
 
-      fly.pulse +=
-        0.12;
-
-      if (
-        fly.life <=
-        0
-      ) {
+      if (fly.life <= 0) {
         fly = null;
       }
     }
 
-    if (
-      powerUp
-    ) {
+    if (powerUp) {
       powerUp.life--;
-
-      powerUp.pulse +=
-        0.1;
+      powerUp.pulse += 0.1;
 
       if (
-        powerUp.life <=
-        0
+        powerUp.life <= 0
       ) {
-        powerUp =
-          null;
+        powerUp = null;
       }
     }
 
@@ -1589,8 +1388,7 @@ const frogger: GameEngineFactory = ({
 
     if (
       flyTimer <= 0 &&
-      fly ===
-        null &&
+      fly === null &&
       crossing >= 2
     ) {
       spawnFly();
@@ -1600,8 +1398,7 @@ const frogger: GameEngineFactory = ({
 
     if (
       powerTimer <= 0 &&
-      powerUp ===
-        null &&
+      powerUp === null &&
       crossing >= 2
     ) {
       spawnPowerUp();
@@ -1678,13 +1475,10 @@ const frogger: GameEngineFactory = ({
     if (
       fly &&
       Math.hypot(
-        fly.x -
-          frog.x,
-        fly.y -
-          frog.y,
+        fly.x - frog.x,
+        fly.y - frog.y,
       ) <
-        frogSize *
-          1.2
+        frogSize
     ) {
       addScore(
         250,
@@ -1713,13 +1507,10 @@ const frogger: GameEngineFactory = ({
     if (
       powerUp &&
       Math.hypot(
-        powerUp.x -
-          frog.x,
-        powerUp.y -
-          frog.y,
+        powerUp.x - frog.x,
+        powerUp.y - frog.y,
       ) <
-        frogSize *
-          1.2
+        frogSize
     ) {
       collectPowerUp(
         powerUp,
@@ -1736,8 +1527,7 @@ const frogger: GameEngineFactory = ({
       pickup.type
     ) {
       case "shield":
-        shieldTimer =
-          720;
+        shieldTimer = 720;
 
         addFloatingText(
           pickup.x,
@@ -1745,12 +1535,10 @@ const frogger: GameEngineFactory = ({
           "SHIELD",
           true,
         );
-
         break;
 
       case "slow":
-        slowTimer =
-          420;
+        slowTimer = 420;
 
         addFloatingText(
           pickup.x,
@@ -1758,12 +1546,10 @@ const frogger: GameEngineFactory = ({
           "SLOW TIME",
           true,
         );
-
         break;
 
       case "superHop":
-        superHopTimer =
-          360;
+        superHopTimer = 360;
 
         addFloatingText(
           pickup.x,
@@ -1771,12 +1557,10 @@ const frogger: GameEngineFactory = ({
           "SUPER HOP",
           true,
         );
-
         break;
 
       case "score":
-        scoreBoostTimer =
-          360;
+        scoreBoostTimer = 360;
 
         addFloatingText(
           pickup.x,
@@ -1784,7 +1568,6 @@ const frogger: GameEngineFactory = ({
           "2X SCORE",
           true,
         );
-
         break;
     }
 
@@ -1808,41 +1591,26 @@ const frogger: GameEngineFactory = ({
       comboTimer--;
 
       if (
-        comboTimer <=
-        0
+        comboTimer <= 0
       ) {
         resetCombo();
       }
     }
 
-    if (
-      shieldTimer > 0
-    ) {
+    if (shieldTimer > 0)
       shieldTimer--;
-    }
 
-    if (
-      slowTimer > 0
-    ) {
+    if (slowTimer > 0)
       slowTimer--;
-    }
 
-    if (
-      superHopTimer > 0
-    ) {
+    if (superHopTimer > 0)
       superHopTimer--;
-    }
 
-    if (
-      scoreBoostTimer >
-      0
-    ) {
+    if (scoreBoostTimer > 0)
       scoreBoostTimer--;
-    }
 
     if (
-      specialEventTimer >
-      0
+      specialEventTimer > 0
     ) {
       specialEventTimer--;
 
@@ -1857,40 +1625,34 @@ const frogger: GameEngineFactory = ({
     if (
       screenShake > 0
     ) {
-      screenShake *=
-        0.85;
+      screenShake *= 0.85;
 
       if (
-        screenShake <
-        0.2
+        screenShake < 0.2
       ) {
         screenShake = 0;
       }
     }
 
-    if (
-      flash > 0
-    ) {
+    if (flash > 0)
       flash--;
-    }
 
-    for (
-      const particle of particles
-    ) {
-      particle.x +=
-        particle.vx;
+    particles.forEach(
+      (particle) => {
+        particle.x +=
+          particle.vx;
 
-      particle.y +=
-        particle.vy;
+        particle.y +=
+          particle.vy;
 
-      particle.vy +=
-        0.025;
+        particle.vy +=
+          0.025;
 
-      particle.vx *=
-        0.98;
+        particle.vx *= 0.98;
 
-      particle.life--;
-    }
+        particle.life--;
+      },
+    );
 
     particles =
       particles.filter(
@@ -1898,14 +1660,12 @@ const frogger: GameEngineFactory = ({
           particle.life > 0,
       );
 
-    for (
-      const item of floatingTexts
-    ) {
-      item.y -=
-        0.35;
-
-      item.life--;
-    }
+    floatingTexts.forEach(
+      (item) => {
+        item.y -= 0.35;
+        item.life--;
+      },
+    );
 
     floatingTexts =
       floatingTexts.filter(
@@ -1915,12 +1675,12 @@ const frogger: GameEngineFactory = ({
   }
 
   function update() {
+    updateEffects();
+
     if (!alive) {
-      updateEffects();
       return;
     }
 
-    updateEffects();
     updateCollectibles();
 
     if (
@@ -1929,8 +1689,7 @@ const frogger: GameEngineFactory = ({
       deathTimer--;
 
       if (
-        deathTimer <=
-        0
+        deathTimer <= 0
       ) {
         finishDeath();
       }
@@ -1944,8 +1703,7 @@ const frogger: GameEngineFactory = ({
       goalTimer--;
 
       if (
-        goalTimer <=
-        0
+        goalTimer <= 0
       ) {
         finishGoal();
       }
@@ -1955,16 +1713,13 @@ const frogger: GameEngineFactory = ({
 
     updateLanes();
 
-    if (
-      frog.hopping
-    ) {
+    if (frog.hopping) {
       updateHop();
     } else {
       updateRiding();
       collectIfNearby();
 
-      const row =
-        currentFrogRow();
+      const row = frog.row;
 
       if (
         row >= 7 &&
@@ -1976,15 +1731,13 @@ const frogger: GameEngineFactory = ({
       if (
         row >= 1 &&
         row <= 5 &&
-        frog.riding ===
-          null
+        frog.riding === null
       ) {
         checkRiverSupport();
       }
     }
 
-    frog.squash *=
-      0.82;
+    frog.squash *= 0.82;
   }
 
   function drawGrid() {
@@ -2017,44 +1770,11 @@ const frogger: GameEngineFactory = ({
     ctx.restore();
   }
 
-  function drawLaneSeparators() {
-    ctx.save();
-
-    ctx.strokeStyle =
-      "rgba(255,255,255,0.16)";
-
-    ctx.lineWidth = 2;
-
-    for (
-      let row = 0;
-      row <= ROWS;
-      row++
-    ) {
-      ctx.beginPath();
-
-      ctx.moveTo(
-        0,
-        row * rh,
-      );
-
-      ctx.lineTo(
-        width,
-        row * rh,
-      );
-
-      ctx.stroke();
-    }
-
-    ctx.restore();
-  }
-
   function drawBackground() {
     ctx.fillStyle =
-      weather ===
-      "night"
+      weather === "night"
         ? "#0f172a"
-        : weather ===
-            "evening"
+        : weather === "evening"
           ? "#292524"
           : pal.bg;
 
@@ -2065,10 +1785,8 @@ const frogger: GameEngineFactory = ({
       height,
     );
 
-    // Goal
     ctx.fillStyle =
-      weather ===
-      "night"
+      weather === "night"
         ? "#166534"
         : "#15803d";
 
@@ -2079,7 +1797,6 @@ const frogger: GameEngineFactory = ({
       rh,
     );
 
-    // River
     ctx.fillStyle =
       "#155e75";
 
@@ -2090,7 +1807,6 @@ const frogger: GameEngineFactory = ({
       rh * 5,
     );
 
-    // Safe centre
     ctx.fillStyle =
       "#166534";
 
@@ -2101,7 +1817,6 @@ const frogger: GameEngineFactory = ({
       rh,
     );
 
-    // Road
     ctx.fillStyle =
       "#1f2937";
 
@@ -2112,7 +1827,6 @@ const frogger: GameEngineFactory = ({
       rh * 5,
     );
 
-    // Start
     ctx.fillStyle =
       "#065f46";
 
@@ -2140,7 +1854,7 @@ const frogger: GameEngineFactory = ({
       row <= 5;
       row++
     ) {
-      const baseY =
+      const y =
         row * rh;
 
       for (
@@ -2152,22 +1866,19 @@ const frogger: GameEngineFactory = ({
           ((i * 145 +
             row * 50 +
             crossing * 18) %
-            (width +
-              160)) -
+            (width + 160)) -
           80;
 
         ctx.beginPath();
 
         ctx.moveTo(
           x,
-          baseY +
-            rh * 0.3,
+          y + rh * 0.3,
         );
 
         ctx.lineTo(
           x + 50,
-          baseY +
-            rh * 0.3,
+          y + rh * 0.3,
         );
 
         ctx.stroke();
@@ -2176,14 +1887,12 @@ const frogger: GameEngineFactory = ({
 
         ctx.moveTo(
           x + 25,
-          baseY +
-            rh * 0.7,
+          y + rh * 0.7,
         );
 
         ctx.lineTo(
           x + 80,
-          baseY +
-            rh * 0.7,
+          y + rh * 0.7,
         );
 
         ctx.stroke();
@@ -2241,8 +1950,7 @@ const frogger: GameEngineFactory = ({
       rh * 0.28;
 
     const h =
-      object.kind ===
-      "bus"
+      object.kind === "bus"
         ? rh * 0.66
         : rh * 0.55;
 
@@ -2262,7 +1970,6 @@ const frogger: GameEngineFactory = ({
 
     ctx.fill();
 
-    // Windows
     if (
       object.kind !==
       "truck"
@@ -2286,7 +1993,6 @@ const frogger: GameEngineFactory = ({
       ctx.fill();
     }
 
-    // Wheels
     ctx.fillStyle =
       "#111827";
 
@@ -2294,8 +2000,7 @@ const frogger: GameEngineFactory = ({
 
     ctx.arc(
       object.x +
-        object.width *
-          0.2,
+        object.width * 0.2,
       y + h,
       rh * 0.07,
       0,
@@ -2308,8 +2013,7 @@ const frogger: GameEngineFactory = ({
 
     ctx.arc(
       object.x +
-        object.width *
-          0.8,
+        object.width * 0.8,
       y + h,
       rh * 0.07,
       0,
@@ -2318,13 +2022,11 @@ const frogger: GameEngineFactory = ({
 
     ctx.fill();
 
-    // Headlights
     ctx.fillStyle =
       "#fef3c7";
 
     if (
-      object.speed >
-      0
+      object.speed > 0
     ) {
       ctx.fillRect(
         object.x +
@@ -2437,8 +2139,7 @@ const frogger: GameEngineFactory = ({
         object.x +
           object.width *
             (0.2 +
-              i *
-                0.28),
+              i * 0.28),
         y + 4,
       );
 
@@ -2446,11 +2147,9 @@ const frogger: GameEngineFactory = ({
         object.x +
           object.width *
             (0.1 +
-              i *
-                0.28),
+              i * 0.28),
         y +
-          rh *
-            0.45,
+          rh * 0.45,
       );
 
       ctx.stroke();
@@ -2473,12 +2172,10 @@ const frogger: GameEngineFactory = ({
           0.28
         : 0;
 
-    const squash =
+    const scale =
       frog.hopping
-        ? 1
-        : 0.92 +
-          frog.squash *
-            0.08;
+        ? 0.9
+        : 1;
 
     ctx.save();
 
@@ -2492,9 +2189,8 @@ const frogger: GameEngineFactory = ({
     );
 
     ctx.scale(
-      squash,
-      1 /
-        squash,
+      scale,
+      1 / scale,
     );
 
     ctx.fillStyle =
@@ -2542,10 +2238,7 @@ const frogger: GameEngineFactory = ({
       "#dcfce7";
 
     for (
-      const direction of [
-        -1,
-        1,
-      ]
+      const direction of [-1, 1]
     ) {
       ctx.beginPath();
 
@@ -2568,10 +2261,7 @@ const frogger: GameEngineFactory = ({
       "#052e16";
 
     for (
-      const direction of [
-        -1,
-        1,
-      ]
+      const direction of [-1, 1]
     ) {
       ctx.beginPath();
 
@@ -2672,13 +2362,10 @@ const frogger: GameEngineFactory = ({
     switch (type) {
       case "shield":
         return "#7dd3fc";
-
       case "slow":
         return "#c084fc";
-
       case "superHop":
         return "#facc15";
-
       case "score":
         return "#4ade80";
     }
@@ -2690,13 +2377,10 @@ const frogger: GameEngineFactory = ({
     switch (type) {
       case "shield":
         return "S";
-
       case "slow":
         return "T";
-
       case "superHop":
         return "H";
-
       case "score":
         return "2X";
     }
@@ -2725,9 +2409,6 @@ const frogger: GameEngineFactory = ({
       color;
 
     ctx.lineWidth = 2;
-
-    ctx.globalAlpha =
-      0.9;
 
     ctx.beginPath();
 
@@ -2759,8 +2440,7 @@ const frogger: GameEngineFactory = ({
 
     ctx.fill();
 
-    ctx.globalAlpha =
-      1;
+    ctx.globalAlpha = 1;
 
     ctx.fillStyle =
       "#ffffff";
@@ -2804,46 +2484,44 @@ const frogger: GameEngineFactory = ({
     }
 
     drawBackground();
-
     drawGrid();
 
-    drawLaneSeparators();
-
-    // Goal row hint.
+    // Strong horizontal lane separators.
     ctx.save();
 
-    ctx.fillStyle =
-      "rgba(255,255,255,0.08)";
+    ctx.strokeStyle =
+      "rgba(255,255,255,0.14)";
 
-    ctx.font =
-      "bold 10px system-ui";
+    ctx.lineWidth = 2;
 
-    ctx.textAlign =
-      "center";
+    for (
+      let row = 0;
+      row <= ROWS;
+      row++
+    ) {
+      ctx.beginPath();
 
-    ctx.fillText(
-      "GOAL",
-      width / 2,
-      rh * 0.72,
-    );
+      ctx.moveTo(
+        0,
+        row * rh,
+      );
 
-    ctx.fillText(
-      "START",
-      width / 2,
-      height -
-        rh * 0.22,
-    );
+      ctx.lineTo(
+        width,
+        row * rh,
+      );
+
+      ctx.stroke();
+    }
 
     ctx.restore();
 
-    // Highlight the frog's current cell.
-    if (
-      alive
-    ) {
+    // Current cell.
+    if (alive) {
       ctx.save();
 
       ctx.strokeStyle =
-        "rgba(255,255,255,0.17)";
+        "rgba(255,255,255,0.18)";
 
       ctx.lineWidth = 2;
 
@@ -2857,10 +2535,8 @@ const frogger: GameEngineFactory = ({
       ctx.restore();
     }
 
-    // Highlight the target cell while hopping.
-    if (
-      frog.hopping
-    ) {
+    // Target cell.
+    if (frog.hopping) {
       const targetCol =
         clamp(
           Math.round(
@@ -2886,7 +2562,7 @@ const frogger: GameEngineFactory = ({
       ctx.save();
 
       ctx.strokeStyle =
-        "rgba(250,204,21,0.65)";
+        "rgba(250,204,21,0.7)";
 
       ctx.lineWidth = 2;
 
@@ -2917,9 +2593,7 @@ const frogger: GameEngineFactory = ({
           lane.type ===
           "road"
         ) {
-          drawVehicle(
-            object,
-          );
+          drawVehicle(object);
         } else {
           drawRiverObject(
             object,
@@ -2937,8 +2611,7 @@ const frogger: GameEngineFactory = ({
       drawFrog(
         Math.max(
           0,
-          deathTimer /
-            34,
+          deathTimer / 34,
         ),
       );
     } else {
@@ -2976,18 +2649,18 @@ const frogger: GameEngineFactory = ({
       ctx.restore();
     }
 
-    // HUD
+    // Top UI.
     ctx.save();
 
     ctx.fillStyle =
-      "rgba(0,0,0,0.36)";
+      "rgba(0,0,0,0.38)";
 
     roundRect(
       ctx,
       8,
       8,
       Math.min(
-        205,
+        210,
         width - 16,
       ),
       58,
@@ -3031,9 +2704,7 @@ const frogger: GameEngineFactory = ({
       27,
     );
 
-    if (
-      combo >= 2
-    ) {
+    if (combo >= 2) {
       ctx.textAlign =
         "center";
 
@@ -3166,9 +2837,7 @@ const frogger: GameEngineFactory = ({
       ctx.restore();
     }
 
-    if (
-      !alive
-    ) {
+    if (!alive) {
       ctx.save();
 
       ctx.fillStyle =
@@ -3193,8 +2862,7 @@ const frogger: GameEngineFactory = ({
       ctx.fillText(
         "GAME OVER",
         width / 2,
-        height / 2 -
-          42,
+        height / 2 - 42,
       );
 
       ctx.fillStyle =
@@ -3206,22 +2874,19 @@ const frogger: GameEngineFactory = ({
       ctx.fillText(
         `Score ${score}`,
         width / 2,
-        height / 2 -
-          8,
+        height / 2 - 8,
       );
 
       ctx.fillText(
         `Crossing ${crossing}`,
         width / 2,
-        height / 2 +
-          16,
+        height / 2 + 16,
       );
 
       ctx.fillText(
         `Best flow x${bestCombo}`,
         width / 2,
-        height / 2 +
-          40,
+        height / 2 + 40,
       );
 
       ctx.fillStyle =
@@ -3233,16 +2898,13 @@ const frogger: GameEngineFactory = ({
       ctx.fillText(
         "Press SPACE or R to restart",
         width / 2,
-        height / 2 +
-          72,
+        height / 2 + 72,
       );
 
       ctx.restore();
     }
 
-    if (
-      flash > 0
-    ) {
+    if (flash > 0) {
       ctx.save();
 
       ctx.fillStyle =
@@ -3273,11 +2935,7 @@ const frogger: GameEngineFactory = ({
       key === "arrowup" ||
       key === "w"
     ) {
-      requestMove(
-        0,
-        -1,
-      );
-
+      requestMove(0, -1);
       event.preventDefault();
       return;
     }
@@ -3286,11 +2944,7 @@ const frogger: GameEngineFactory = ({
       key === "arrowdown" ||
       key === "s"
     ) {
-      requestMove(
-        0,
-        1,
-      );
-
+      requestMove(0, 1);
       event.preventDefault();
       return;
     }
@@ -3299,11 +2953,7 @@ const frogger: GameEngineFactory = ({
       key === "arrowleft" ||
       key === "a"
     ) {
-      requestMove(
-        -1,
-        0,
-      );
-
+      requestMove(-1, 0);
       event.preventDefault();
       return;
     }
@@ -3312,11 +2962,7 @@ const frogger: GameEngineFactory = ({
       key === "arrowright" ||
       key === "d"
     ) {
-      requestMove(
-        1,
-        0,
-      );
-
+      requestMove(1, 0);
       event.preventDefault();
       return;
     }
