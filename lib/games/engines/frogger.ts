@@ -282,15 +282,8 @@ const frogger: GameEngineFactory = ({
   }
 
   /*
-   * IMPORTANT FIX:
-   *
    * When the frog is riding a moving river object,
-   * the frog's actual X position is authoritative.
-   * Its grid column is continuously derived from X.
-   *
-   * This prevents the old bug where the frog looked like
-   * it moved several squares with a log, but the next hop
-   * still started from its old logical column.
+   * its real X position is authoritative.
    */
   function syncFrogColumnFromWorld() {
     const estimatedCol =
@@ -456,8 +449,7 @@ const frogger: GameEngineFactory = ({
       1 +
       Math.min(
         0.28,
-        (crossing - 1) *
-          0.035,
+        (crossing - 1) * 0.035,
       );
 
     const roadConfigs: {
@@ -540,8 +532,19 @@ const frogger: GameEngineFactory = ({
         Math.ceil(
           width /
             config.spacing,
-        ) + 2;
+        ) + 3;
 
+      /*
+       * Vehicles are initially placed into a proper
+       * traffic queue, completely outside/alongside
+       * the road rather than randomly inside it.
+       *
+       * Positive speed:
+       *   spawn from the LEFT.
+       *
+       * Negative speed:
+       *   spawn from the RIGHT.
+       */
       for (
         let i = 0;
         i < count;
@@ -564,22 +567,38 @@ const frogger: GameEngineFactory = ({
                   ? 0.78
                   : 1;
 
-        objects.push({
-          x:
+        const objectWidth =
+          cw * multiplier;
+
+        let x: number;
+
+        if (
+          config.speed > 0
+        ) {
+          x =
+            -objectWidth -
+            40 +
             i *
-              config.spacing +
-            randomRange(
-              -35,
-              35,
-            ),
+              config.spacing;
+        } else {
+          x =
+            width +
+            40 -
+            objectWidth -
+            i *
+              config.spacing;
+        }
+
+        objects.push({
+          x,
           speed:
             config.speed *
             randomRange(
-              0.9,
-              1.1,
+              0.96,
+              1.04,
             ),
           width:
-            cw * multiplier,
+            objectWidth,
           kind,
           color:
             getVehicleColor(
@@ -606,11 +625,6 @@ const frogger: GameEngineFactory = ({
       });
     }
 
-    /*
-     * River layouts deliberately alternate logs and lily pads.
-     * Lily pads are now a real object type rather than
-     * reusing turtle-style graphics.
-     */
     const riverConfigs: {
       row: number;
       speed: number;
@@ -830,12 +844,6 @@ const frogger: GameEngineFactory = ({
         ? 2
         : 1;
 
-    /*
-     * IMPORTANT FIX:
-     * Never use frog.col as the starting position
-     * while riding a moving object. Calculate the
-     * current grid column from the frog's REAL X.
-     */
     if (!frog.hopping) {
       syncFrogColumnFromWorld();
 
@@ -929,8 +937,7 @@ const frogger: GameEngineFactory = ({
       );
 
     const eased =
-      progress <
-      0.5
+      progress < 0.5
         ? 2 *
           progress *
           progress
@@ -1084,11 +1091,6 @@ const frogger: GameEngineFactory = ({
   function isOnObject(
     object: LaneObject,
   ) {
-    /*
-     * Slightly generous collision width:
-     * the frog can sit on the object without
-     * needing pixel-perfect alignment.
-     */
     const margin =
       frogRadius;
 
@@ -1296,10 +1298,6 @@ const frogger: GameEngineFactory = ({
         0.35;
     }
 
-    /*
-     * Keep logical grid position synced to
-     * the actual platform movement.
-     */
     syncFrogColumnFromWorld();
 
     if (
@@ -1362,88 +1360,141 @@ const frogger: GameEngineFactory = ({
           object.speed *
           multiplier;
 
+        /*
+         * ROAD VEHICLE SPAWNING
+         *
+         * Vehicles only respawn after actually leaving
+         * the screen. They are placed behind the traffic
+         * queue rather than at a random point.
+         */
+        if (
+          lane.type ===
+          "road"
+        ) {
+          const gap =
+            Math.max(
+              cw * 0.9,
+              60,
+            );
+
+          // Moving RIGHT: recycle from the LEFT.
+          if (
+            object.speed > 0 &&
+            object.x >
+              width +
+                object.width +
+                30
+          ) {
+            let leftmost =
+              Infinity;
+
+            for (
+              const other of lane.objects
+            ) {
+              if (
+                other ===
+                object
+              ) {
+                continue;
+              }
+
+              leftmost =
+                Math.min(
+                  leftmost,
+                  other.x,
+                );
+            }
+
+            if (
+              leftmost !==
+              Infinity
+            ) {
+              object.x =
+                leftmost -
+                object.width -
+                gap;
+            } else {
+              object.x =
+                -object.width -
+                gap;
+            }
+
+            object.passed =
+              false;
+          }
+
+          // Moving LEFT: recycle from the RIGHT.
+          else if (
+            object.speed < 0 &&
+            object.x +
+              object.width <
+              -30
+          ) {
+            let rightmost =
+              -Infinity;
+
+            for (
+              const other of lane.objects
+            ) {
+              if (
+                other ===
+                object
+              ) {
+                continue;
+              }
+
+              rightmost =
+                Math.max(
+                  rightmost,
+                  other.x +
+                    other.width,
+                );
+            }
+
+            if (
+              rightmost !==
+              -Infinity
+            ) {
+              object.x =
+                rightmost +
+                gap;
+            } else {
+              object.x =
+                width +
+                gap;
+            }
+
+            object.passed =
+              false;
+          }
+
+          continue;
+        }
+
+        /*
+         * RIVER OBJECT WRAPPING
+         */
         if (
           object.x >
           width + 50
         ) {
-          if (
-            lane.type ===
-            "road"
-          ) {
-            /*
-             * Spawn behind the leftmost vehicle
-             * with enough room to guarantee no overlap.
-             */
-            const leftmost =
-              Math.min(
-                ...lane.objects
-                  .filter(
-                    (other) =>
-                      other !==
-                      object,
-                  )
-                  .map(
-                    (other) =>
-                      other.x,
-                  ),
-              );
-
-            object.x =
-              leftmost -
-              object.width -
-              Math.max(
-                cw * 0.75,
-                55,
-              );
-          } else {
-            object.x =
-              -object.width -
-              randomRange(
-                20,
-                100,
-              );
-          }
+          object.x =
+            -object.width -
+            randomRange(
+              20,
+              100,
+            );
         } else if (
           object.x <
           -object.width -
             50
         ) {
-          if (
-            lane.type ===
-            "road"
-          ) {
-            /*
-             * Spawn behind the rightmost vehicle.
-             */
-            const rightmost =
-              Math.max(
-                ...lane.objects
-                  .filter(
-                    (other) =>
-                      other !==
-                      object,
-                  )
-                  .map(
-                    (other) =>
-                      other.x +
-                      other.width,
-                  ),
-              );
-
-            object.x =
-              rightmost +
-              Math.max(
-                cw * 0.75,
-                55,
-              );
-          } else {
-            object.x =
-              width +
-              randomRange(
-                20,
-                100,
-              );
-          }
+          object.x =
+            width +
+            randomRange(
+              20,
+              100,
+            );
         }
       }
     }
@@ -2200,7 +2251,6 @@ const frogger: GameEngineFactory = ({
       height,
     );
 
-    // Goal
     ctx.fillStyle =
       weather ===
       "night"
@@ -2214,7 +2264,6 @@ const frogger: GameEngineFactory = ({
       rh,
     );
 
-    // River
     ctx.fillStyle =
       "#155e75";
 
@@ -2225,7 +2274,6 @@ const frogger: GameEngineFactory = ({
       rh * 5,
     );
 
-    // Middle grass
     ctx.fillStyle =
       "#166534";
 
@@ -2236,7 +2284,6 @@ const frogger: GameEngineFactory = ({
       rh,
     );
 
-    // Road
     ctx.fillStyle =
       "#1f2937";
 
@@ -2247,7 +2294,6 @@ const frogger: GameEngineFactory = ({
       rh * 5,
     );
 
-    // Starting grass
     ctx.fillStyle =
       "#065f46";
 
@@ -2475,12 +2521,6 @@ const frogger: GameEngineFactory = ({
     ctx.restore();
   }
 
-  /*
-   * Proper log rendering:
-   * body + bark bands + dark cut ends + growth rings +
-   * knots. This should read as a log rather than a
-   * smooth capsule.
-   */
   function drawLog(
     object: LaneObject,
   ) {
@@ -2522,7 +2562,6 @@ const frogger: GameEngineFactory = ({
 
     ctx.fill();
 
-    // Main bark strips.
     ctx.strokeStyle =
       "#4f2f1b";
 
@@ -2562,7 +2601,6 @@ const frogger: GameEngineFactory = ({
       ctx.stroke();
     }
 
-    // Bark highlights.
     ctx.strokeStyle =
       "rgba(217,164,107,0.28)";
 
@@ -2598,7 +2636,6 @@ const frogger: GameEngineFactory = ({
       ctx.stroke();
     }
 
-    // Cut ends.
     ctx.fillStyle =
       "#a87543";
 
@@ -2630,7 +2667,6 @@ const frogger: GameEngineFactory = ({
 
     ctx.fill();
 
-    // Growth rings on the ends.
     ctx.strokeStyle =
       "#81562f";
 
@@ -2664,7 +2700,6 @@ const frogger: GameEngineFactory = ({
 
     ctx.stroke();
 
-    // Knots.
     ctx.fillStyle =
       "#4b2d18";
 
@@ -2705,10 +2740,6 @@ const frogger: GameEngineFactory = ({
     ctx.restore();
   }
 
-  /*
-   * Proper lily-pad rendering:
-   * circular leaf + notch + radial veins + inner shading.
-   */
   function drawLily(
     object: LaneObject,
   ) {
@@ -2747,7 +2778,6 @@ const frogger: GameEngineFactory = ({
       rotation,
     );
 
-    // Outer leaf.
     ctx.fillStyle =
       "#3f8f3f";
 
@@ -2767,7 +2797,6 @@ const frogger: GameEngineFactory = ({
       let localRadius =
         radius;
 
-      // Slight irregularity.
       localRadius *=
         0.96 +
         Math.sin(
@@ -2784,7 +2813,6 @@ const frogger: GameEngineFactory = ({
         Math.sin(angle) *
         localRadius;
 
-      // Create the characteristic lily-pad notch.
       const notchAngle =
         -Math.PI / 2;
 
@@ -2815,8 +2843,11 @@ const frogger: GameEngineFactory = ({
             0.24 *
             0.72;
 
-        px *= notchFactor;
-        py *= notchFactor;
+        px *=
+          notchFactor;
+
+        py *=
+          notchFactor;
       }
 
       if (i === 0) {
@@ -2835,7 +2866,6 @@ const frogger: GameEngineFactory = ({
     ctx.closePath();
     ctx.fill();
 
-    // Inner highlight.
     ctx.fillStyle =
       "rgba(134,239,135,0.18)";
 
@@ -2851,7 +2881,6 @@ const frogger: GameEngineFactory = ({
 
     ctx.fill();
 
-    // Veins.
     ctx.strokeStyle =
       "rgba(20,83,45,0.5)";
 
@@ -3248,7 +3277,6 @@ const frogger: GameEngineFactory = ({
     drawBackground();
     drawGrid();
 
-    // Strong horizontal lane boundaries.
     ctx.save();
 
     ctx.strokeStyle =
@@ -3278,7 +3306,6 @@ const frogger: GameEngineFactory = ({
 
     ctx.restore();
 
-    // Current frog cell.
     if (alive) {
       syncFrogColumnFromWorld();
 
@@ -3299,7 +3326,6 @@ const frogger: GameEngineFactory = ({
       ctx.restore();
     }
 
-    // Destination cell.
     if (
       frog.hopping
     ) {
@@ -3417,7 +3443,6 @@ const frogger: GameEngineFactory = ({
       ctx.restore();
     }
 
-    // HUD.
     ctx.save();
 
     ctx.fillStyle =
