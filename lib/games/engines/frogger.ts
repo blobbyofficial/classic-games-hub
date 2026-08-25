@@ -47,9 +47,6 @@ interface LaneObject {
   color: string;
   laneRow: number;
 
-  /*
-   * Traffic/platform generation data.
-   */
   minGap: number;
   variant: number;
   rotation: number;
@@ -141,14 +138,9 @@ const frogger: GameEngineFactory = ({
   const pal = palette();
 
   const COLS = 13;
+  const VISIBLE_ROWS = 13;
 
-  /*
-   * The visible board is no longer the world.
-   *
-   * The world itself is effectively infinite and rows are
-   * generated as the frog progresses.
-   */
-  const rh = height / 13;
+  const rh = height / VISIBLE_ROWS;
   const cw = width / COLS;
 
   const frogSize =
@@ -159,57 +151,30 @@ const frogger: GameEngineFactory = ({
 
   const HOP_FRAMES = 8;
 
-  const CAMERA_LEAD_ROWS = 5.8;
-  const WORLD_BUFFER = 36;
-  const WORLD_RETENTION = 14;
-
-  const AREA_LENGTH = 22;
-
   const PACE = tune(difficulty, {
     easy: 0.78,
     regular: 1,
     hard: 1.25,
   });
 
+  /*
+   * Infinite-world settings.
+   */
+  const WORLD_AHEAD = 35;
+  const WORLD_BEHIND = 12;
+  const AREA_LENGTH = 24;
+
+  /*
+   * All mutable game state lives inside the engine closure.
+   */
   let particles: Particle[] = [];
   let floatingTexts: FloatingText[] = [];
 
-  /*
-   * World rows.
-   *
-   * Only a small section around the frog is kept active,
-   * but new rows are generated forever.
-   */
-  let worldRows = new Map<number, WorldRow>();
-  let lanes = new Map<number, Lane>();
+  let worldRows =
+    new Map<number, WorldRow>();
 
-  /*
-   * Camera is expressed in world-row coordinates.
-   */
-  let cameraRow = 0;
-  let cameraTargetRow = 0;
-
-  let frog: Frog = {
-    col: 6,
-    row: 0,
-
-    x: cw * 6.5,
-    y: 0,
-
-    targetX: cw * 6.5,
-    targetY: 0,
-
-    startX: cw * 6.5,
-    startY: 0,
-
-    hopFrame: HOP_FRAMES,
-    hopping: false,
-
-    facing: -1,
-    squash: 0,
-
-    riding: null,
-  };
+  let lanes =
+    new Map<number, Lane>();
 
   let score = 0;
   let lives = 3;
@@ -251,9 +216,9 @@ const frogger: GameEngineFactory = ({
   let specialEvent = "";
   let specialEventTimer = 0;
 
-  /*
-   * Used to stop the map from becoming visually repetitive.
-   */
+  let cameraRow = 0;
+  let cameraTargetRow = 0;
+
   let lastGeneratedType:
     | "road"
     | "river"
@@ -262,13 +227,27 @@ const frogger: GameEngineFactory = ({
 
   let consecutiveDangerRows = 0;
 
-  function rowY(row: number) {
-    return (
-      (row - cameraRow) *
-        rh +
-      rh / 2
-    );
-  }
+  let frog: Frog = {
+    col: 6,
+    row: 0,
+
+    x: cw * 6.5,
+    y: 0,
+
+    targetX: cw * 6.5,
+    targetY: 0,
+
+    startX: cw * 6.5,
+    startY: 0,
+
+    hopFrame: HOP_FRAMES,
+    hopping: false,
+
+    facing: -1,
+    squash: 0,
+
+    riding: null,
+  };
 
   function randomRange(
     min: number,
@@ -311,10 +290,20 @@ const frogger: GameEngineFactory = ({
   ) {
     return Math.max(
       min,
-      Math.min(
-        max,
-        value,
-      ),
+      Math.min(max, value),
+    );
+  }
+
+  /*
+   * Converts a world row to screen Y.
+   */
+  function worldToScreenY(
+    row: number,
+  ) {
+    return (
+      (row - cameraRow) *
+        rh +
+      rh / 2
     );
   }
 
@@ -327,10 +316,6 @@ const frogger: GameEngineFactory = ({
           AREA_LENGTH,
       );
 
-    /*
-     * Areas deliberately have different identities rather
-     * than simply becoming progressively faster.
-     */
     const themes: AreaTheme[] = [
       "meadow",
       "suburb",
@@ -380,46 +365,36 @@ const frogger: GameEngineFactory = ({
       case "meadow":
         return {
           safe: "#166534",
-          safe2: "#15803d",
           road: "#263238",
           river: "#155e75",
-          goal: "#15803d",
         };
 
       case "suburb":
         return {
           safe: "#3f6212",
-          safe2: "#4d7c0f",
           road: "#374151",
           river: "#155e75",
-          goal: "#3f6212",
         };
 
       case "wetland":
         return {
           safe: "#14532d",
-          safe2: "#166534",
           road: "#29333a",
           river: "#075985",
-          goal: "#14532d",
         };
 
       case "city":
         return {
           safe: "#365314",
-          safe2: "#4d7c0f",
           road: "#18181b",
           river: "#164e63",
-          goal: "#365314",
         };
 
       case "night":
         return {
           safe: "#052e16",
-          safe2: "#14532d",
           road: "#111827",
           river: "#0c4a6e",
-          goal: "#14532d",
         };
     }
   }
@@ -447,2282 +422,86 @@ const frogger: GameEngineFactory = ({
 
   /*
    * ---------------------------------------------------------
-   * WORLD GENERATION
-   * ---------------------------------------------------------
-   */
-
-  function chooseRowType(
-    row: number,
-  ):
-    | "road"
-    | "river"
-    | "safe" {
-    /*
-     * Every area gets its own traffic/water character.
-     */
-    const theme =
-      areaForRow(row);
-
-    /*
-     * Area transition rows are deliberately safer.
-     */
-    if (
-      row % AREA_LENGTH ===
-        0 ||
-      row % AREA_LENGTH ===
-        1
-    ) {
-      return "safe";
-    }
-
-    /*
-     * Prevent long stretches of dangerous rows.
-     */
-    if (
-      consecutiveDangerRows >=
-      5
-    ) {
-      consecutiveDangerRows = 0;
-      return "safe";
-    }
-
-    const roll =
-      Math.random();
-
-    let type:
-      | "road"
-      | "river"
-      | "safe";
-
-    switch (theme) {
-      case "meadow":
-        type =
-          roll < 0.52
-            ? "road"
-            : roll < 0.77
-              ? "river"
-              : "safe";
-        break;
-
-      case "suburb":
-        type =
-          roll < 0.64
-            ? "road"
-            : roll < 0.80
-              ? "safe"
-              : "river";
-        break;
-
-      case "wetland":
-        type =
-          roll < 0.34
-            ? "road"
-            : roll < 0.76
-              ? "river"
-              : "safe";
-        break;
-
-      case "city":
-        type =
-          roll < 0.72
-            ? "road"
-            : roll < 0.84
-              ? "safe"
-              : "river";
-        break;
-
-      case "night":
-        type =
-          roll < 0.55
-            ? "road"
-            : roll < 0.80
-              ? "river"
-              : "safe";
-        break;
-    }
-
-    /*
-     * Don't generate a single isolated safe strip in a way
-     * that makes the terrain look artificial.
-     */
-    if (
-      lastGeneratedType ===
-        "safe" &&
-      type === "safe" &&
-      Math.random() <
-        0.7
-    ) {
-      type =
-        Math.random() <
-        0.6
-          ? "road"
-          : "river";
-    }
-
-    if (
-      type === "safe"
-    ) {
-      consecutiveDangerRows = 0;
-    } else {
-      consecutiveDangerRows++;
-    }
-
-    lastGeneratedType =
-      type;
-
-    return type;
-  }
-
-  function createRoadLane(
-    row: number,
-    theme: AreaTheme,
-  ) {
-    const areaIndex =
-      Math.floor(
-        row /
-          AREA_LENGTH,
-      );
-
-    const direction =
-      Math.random() <
-      0.5
-        ? -1
-        : 1;
-
-    /*
-     * Speed variation gets wider later, but never causes
-     * ridiculous speeds.
-     */
-    const baseSpeeds =
-      theme === "city"
-        ? [
-            1.55,
-            1.9,
-            2.25,
-            2.65,
-          ]
-        : theme === "night"
-          ? [
-              1.45,
-              1.8,
-              2.15,
-              2.5,
-            ]
-          : [
-              1.2,
-              1.55,
-              1.9,
-              2.25,
-            ];
-
-    const baseSpeed =
-      randomItem(
-        baseSpeeds,
-      ) *
-      PACE *
-      (1 +
-        Math.min(
-          0.25,
-          areaIndex *
-            0.015,
-        )) *
-      direction;
-
-    /*
-     * IMPORTANT:
-     *
-     * The number of vehicles is explicitly bounded.
-     * We never add vehicles during gameplay.
-     */
-    const vehicleCount =
-      randomInt(
-        2,
-        theme === "city"
-          ? 4
-          : 3,
-      );
-
-    const kinds =
-      theme === "city"
-        ? [
-            "car",
-            "van",
-            "sports",
-            "bus",
-          ]
-        : [
-            "car",
-            "van",
-            "truck",
-            "sports",
-          ];
-
-    const objects:
-      LaneObject[] = [];
-
-    /*
-     * Random lane density.
-     */
-    const density =
-      randomRange(
-        0.82,
-        1.18,
-      );
-
-    /*
-     * Large random initial gaps.
-     *
-     * Vehicles are generated as a queue beyond the screen,
-     * not in arbitrary visible positions.
-     */
-    const startingGap =
-      randomRange(
-        55,
-        150,
-      );
-
-    let cursor =
-      direction > 0
-        ? -80
-        : width + 80;
-
-    for (
-      let i = 0;
-      i < vehicleCount;
-      i++
-    ) {
-      const kind =
-        randomItem(kinds) as VehicleKind;
-
-      const multiplier =
-        kind === "truck"
-          ? 1.65
-          : kind === "bus"
-            ? 1.9
-            : kind === "van"
-              ? 1.3
-              : kind === "sports"
-                ? 0.78
-                : 1;
-
-      const vehicleWidth =
-        cw *
-        multiplier *
-        randomRange(
-          0.92,
-          1.08,
-        );
-
-      const gap =
-        Math.max(
-          46,
-          cw *
-            randomRange(
-              0.65,
-              1.4,
-            ) *
-            density,
-        );
-
-      if (
-        direction > 0
-      ) {
-        cursor -=
-          i === 0
-            ? randomRange(
-                0,
-                80,
-              )
-            : vehicleWidth +
-              gap +
-              randomRange(
-                0,
-                startingGap,
-              );
-
-        objects.push({
-          x: cursor,
-          speed:
-            baseSpeed *
-            randomRange(
-              0.82,
-              1.18,
-            ),
-          width:
-            vehicleWidth,
-          kind,
-          color:
-            getVehicleColor(
-              kind,
-            ),
-          laneRow: row,
-          minGap: gap,
-          variant:
-            randomInt(
-              0,
-              2,
-            ),
-          rotation:
-            0,
-          passed: false,
-        });
-      } else {
-        cursor +=
-          i === 0
-            ? randomRange(
-                0,
-                80,
-              )
-            : vehicleWidth +
-              gap +
-              randomRange(
-                0,
-                startingGap,
-              );
-
-        objects.push({
-          x:
-            cursor -
-            vehicleWidth,
-          speed:
-            baseSpeed *
-            randomRange(
-              0.82,
-              1.18,
-            ),
-          width:
-            vehicleWidth,
-          kind,
-          color:
-            getVehicleColor(
-              kind,
-            ),
-          laneRow: row,
-          minGap: gap,
-          variant:
-            randomInt(
-              0,
-              2,
-            ),
-          rotation:
-            0,
-          passed: false,
-        });
-      }
-    }
-
-    return {
-      row,
-      type: "road",
-      speed: baseSpeed,
-      objects,
-      density,
-    };
-  }
-
-  function createRiverLane(
-    row: number,
-    theme: AreaTheme,
-  ) {
-    const direction =
-      Math.random() <
-      0.5
-        ? -1
-        : 1;
-
-    const baseSpeed =
-      randomRange(
-        1.0,
-        1.85,
-      ) *
-      PACE *
-      direction;
-
-    /*
-     * A river lane uses ONLY ONE platform type.
-     *
-     * This is intentional: the previous mixed layouts could
-     * cause visually overlapping logs/lily pads.
-     */
-    const kind: WaterKind =
-      Math.random() <
-      0.6
-        ? "log"
-        : Math.random() <
-            0.5
-          ? "smallLog"
-          : "lily";
-
-    const count =
-      kind === "log"
-        ? randomInt(2, 4)
-        : randomInt(3, 5);
-
-    const objects:
-      LaneObject[] = [];
-
-    const multiplier =
-      kind === "log"
-        ? 1.8
-        : kind === "smallLog"
-          ? 0.95
-          : 1.25;
-
-    /*
-     * The platform track is generated with a guaranteed
-     * minimum gap. This prevents horizontal overlap.
-     */
-    const minimumGap =
-      Math.max(
-        cw * 0.75,
-        45,
-      );
-
-    let cursor =
-      direction > 0
-        ? -80
-        : width + 80;
-
-    for (
-      let i = 0;
-      i < count;
-      i++
-    ) {
-      const objectWidth =
-        cw *
-        multiplier *
-        randomRange(
-          0.9,
-          1.1,
-        );
-
-      const gap =
-        Math.max(
-          minimumGap,
-          randomRange(
-            cw * 0.6,
-            cw * 1.6,
-          ),
-        );
-
-      if (
-        direction > 0
-      ) {
-        cursor +=
-          i === 0
-            ? randomRange(
-                -50,
-                50,
-              )
-            : gap;
-
-        const object =
-          {
-            x:
-              cursor,
-            speed:
-              baseSpeed *
-              randomRange(
-                0.9,
-                1.1,
-              ),
-            width:
-              objectWidth,
-            kind,
-            color:
-              kind === "lily"
-                ? "#3f8f3f"
-                : kind ===
-                    "smallLog"
-                  ? "#8b5a2b"
-                  : "#8f5a2a",
-            laneRow: row,
-            minGap: gap,
-            variant:
-              randomInt(
-                0,
-                2,
-              ),
-            rotation:
-              randomRange(
-                -0.08,
-                0.08,
-              ),
-            passed: false,
-          };
-
-        objects.push(
-          object,
-        );
-
-        cursor +=
-          objectWidth;
-      } else {
-        cursor -=
-          i === 0
-            ? randomRange(
-                0,
-                50,
-              )
-            : gap;
-
-        const object =
-          {
-            x:
-              cursor -
-              objectWidth,
-            speed:
-              baseSpeed *
-              randomRange(
-                0.9,
-                1.1,
-              ),
-            width:
-              objectWidth,
-            kind,
-            color:
-              kind === "lily"
-                ? "#3f8f3f"
-                : kind ===
-                    "smallLog"
-                  ? "#8b5a2b"
-                  : "#8f5a2a",
-            laneRow: row,
-            minGap: gap,
-            variant:
-              randomInt(
-                0,
-                2,
-              ),
-            rotation:
-              randomRange(
-                -0.08,
-                0.08,
-              ),
-            passed: false,
-          };
-
-        objects.push(
-          object,
-        );
-
-        cursor -=
-          objectWidth;
-      }
-    }
-
-    return {
-      row,
-      type: "river",
-      speed: baseSpeed,
-      objects,
-      density:
-        randomRange(
-          0.85,
-          1.15,
-        ),
-    };
-  }
-
-  function generateRow(
-    row: number,
-  ) {
-    if (
-      worldRows.has(row)
-    ) {
-      return;
-    }
-
-    const theme =
-      areaForRow(row);
-
-    /*
-     * First row is always safe.
-     */
-    const type =
-      row === 0
-        ? "safe"
-        : chooseRowType(row);
-
-    const worldRow: WorldRow =
-      {
-        row,
-        type,
-        theme,
-        variation:
-          randomInt(
-            0,
-            4,
-          ),
-      };
-
-    worldRows.set(
-      row,
-      worldRow,
-    );
-
-    if (
-      type === "road"
-    ) {
-      lanes.set(
-        row,
-        createRoadLane(
-          row,
-          theme,
-        ),
-      );
-    } else if (
-      type === "river"
-    ) {
-      lanes.set(
-        row,
-        createRiverLane(
-          row,
-          theme,
-        ),
-      );
-    }
-  }
-
-  function ensureWorldAhead() {
-    const start =
-      Math.max(
-        0,
-        Math.floor(
-          frog.row -
-            4,
-        ),
-      );
-
-    const end =
-      Math.floor(
-        frog.row +
-          WORLD_BUFFER,
-      );
-
-    for (
-      let row = start;
-      row <= end;
-      row++
-    ) {
-      generateRow(row);
-    }
-
-    /*
-     * Remove ancient terrain behind the player.
-     *
-     * This is what makes the world effectively infinite
-     * without allowing memory usage to grow forever.
-     */
-    const pruneBefore =
-      Math.floor(
-        frog.row -
-          WORLD_RETENTION,
-      );
-
-    for (
-      const row of worldRows.keys()
-    ) {
-      if (
-        row < pruneBefore
-      ) {
-        worldRows.delete(row);
-        lanes.delete(row);
-      }
-    }
-  }
-
-  function resetFrog() {
-    frog = {
-      col: 6,
-      row: Math.max(
-        0,
-        furthestRow,
-      ),
-
-      x: cw * 6.5,
-      y: Math.max(
-        0,
-        furthestRow,
-      ),
-
-      targetX: cw * 6.5,
-      targetY: Math.max(
-        0,
-        furthestRow,
-      ),
-
-      startX: cw * 6.5,
-      startY: Math.max(
-        0,
-        furthestRow,
-      ),
-
-      hopFrame: HOP_FRAMES,
-      hopping: false,
-
-      facing: -1,
-      squash: 0,
-
-      riding: null,
-    };
-
-    queuedMove = null;
-
-    cameraTargetRow =
-      Math.max(
-        0,
-        frog.row -
-          CAMERA_LEAD_ROWS,
-      );
-
-    cameraRow =
-      cameraTargetRow;
-  }
-
-  /*
-   * ---------------------------------------------------------
-   * MOVEMENT
-   * ---------------------------------------------------------
-   */
-
-  function syncFrogColumnFromWorld() {
-    frog.col = clamp(
-      Math.floor(
-        frog.x / cw,
-      ),
-      0,
-      COLS - 1,
-    );
-  }
-
-  function requestMove(
-    dc: number,
-    dr: number,
-  ) {
-    if (!alive) {
-      return;
-    }
-
-    if (
-      deathTimer > 0 ||
-      busy
-    ) {
-      return;
-    }
-
-    if (frog.hopping) {
-      queuedMove = {
-        dc,
-        dr,
-      };
-
-      return;
-    }
-
-    startHop(
-      dc,
-      dr,
-    );
-  }
-
-  function startHop(
-    dc: number,
-    dr: number,
-  ) {
-    const distance =
-      superHopTimer > 0
-        ? 2
-        : 1;
-
-    syncFrogColumnFromWorld();
-
-    /*
-     * The frog's world row is authoritative.
-     */
-    const nextCol =
-      clamp(
-        frog.col +
-          dc *
-            distance,
-        0,
-        COLS - 1,
-      );
-
-    const nextRow =
-      clamp(
-        Math.round(
-          frog.row +
-            dr *
-              distance,
-        ),
-        0,
-        Number.MAX_SAFE_INTEGER,
-      );
-
-    if (
-      nextCol ===
-        frog.col &&
-      nextRow ===
-        frog.row
-    ) {
-      return;
-    }
-
-    /*
-     * Generate the destination immediately.
-     */
-    generateRow(
-      nextRow,
-    );
-
-    frog.startX =
-      frog.x;
-
-    frog.startY =
-      frog.y;
-
-    frog.targetX =
-      nextCol * cw +
-      cw / 2;
-
-    frog.targetY =
-      nextRow;
-
-    frog.hopFrame = 0;
-    frog.hopping = true;
-
-    frog.riding = null;
-
-    if (dc !== 0) {
-      frog.facing =
-        dc > 0
-          ? 1
-          : -1;
-    }
-
-    beep(
-      540,
-      0.03,
-    );
-  }
-
-  function worldToScreenY(
-    worldY: number,
-  ) {
-    return (
-      (worldY -
-        cameraRow) *
-        rh +
-      rh / 2
-    );
-  }
-
-  function updateCamera() {
-    cameraTargetRow =
-      Math.max(
-        0,
-        frog.row -
-          CAMERA_LEAD_ROWS,
-      );
-
-    /*
-     * Gentle follow rather than a rigid snap.
-     */
-    cameraRow +=
-      (cameraTargetRow -
-        cameraRow) *
-      0.12;
-
-    if (
-      Math.abs(
-        cameraTargetRow -
-          cameraRow,
-      ) <
-      0.01
-    ) {
-      cameraRow =
-        cameraTargetRow;
-    }
-  }
-
-  function updateHop() {
-    if (
-      !frog.hopping
-    ) {
-      return;
-    }
-
-    frog.hopFrame++;
-
-    const progress =
-      clamp(
-        frog.hopFrame /
-          HOP_FRAMES,
-        0,
-        1,
-      );
-
-    const eased =
-      progress <
-      0.5
-        ? 2 *
-          progress *
-          progress
-        : 1 -
-          Math.pow(
-            -2 *
-              progress +
-              2,
-            2,
-          ) /
-            2;
-
-    frog.x =
-      frog.startX +
-      (frog.targetX -
-        frog.startX) *
-        eased;
-
-    frog.y =
-      frog.startY +
-      (frog.targetY -
-        frog.startY) *
-        eased;
-
-    frog.squash =
-      Math.sin(
-        progress *
-          Math.PI,
-      );
-
-    /*
-     * Begin generating the world before the frog gets there.
-     */
-    ensureWorldAhead();
-
-    if (
-      frog.hopFrame >=
-      HOP_FRAMES
-    ) {
-      frog.col =
-        clamp(
-          Math.round(
-            frog.targetX /
-              cw -
-              0.5,
-          ),
-          0,
-          COLS - 1,
-        );
-
-      frog.row =
-        Math.max(
-          0,
-          Math.round(
-            frog.targetY,
-          ),
-        );
-
-      frog.x =
-        frog.targetX;
-
-      frog.y =
-        frog.targetY;
-
-      frog.hopping =
-        false;
-
-      frog.squash =
-        1;
-
-      onLanding();
-
-      if (
-        queuedMove &&
-        alive &&
-        deathTimer <=
-          0
-      ) {
-        const move =
-          queuedMove;
-
-        queuedMove =
-          null;
-
-        startHop(
-          move.dc,
-          move.dr,
-        );
-      }
-    }
-  }
-
-  function onLanding() {
-    const row =
-      frog.row;
-
-    if (
-      row >
-      furthestRow
-    ) {
-      const distance =
-        row -
-        furthestRow;
-
-      furthestRow =
-        row;
-
-      beginCombo();
-
-      addScore(
-        10 +
-          Math.min(
-            distance * 5,
-            30,
-          ),
-        frog.x,
-        worldToScreenY(
-          frog.y,
-        ) -
-          rh * 0.55,
-      );
-
-      updateAreaStatus();
-    }
-
-    collectIfNearby();
-
-    const current =
-      worldRows.get(
-        frog.row,
-      );
-
-    if (
-      !current
-    ) {
-      return;
-    }
-
-    if (
-      current.type ===
-      "road"
-    ) {
-      checkRoadCollision();
-    } else if (
-      current.type ===
-      "river"
-    ) {
-      checkRiverSupport();
-    }
-  }
-
-  function updateAreaStatus() {
-    const theme =
-      areaForRow(
-        frog.row,
-      );
-
-    if (
-      frog.row % AREA_LENGTH <
-      2
-    ) {
-      onStatus?.(
-        `Area ${areaNumber(
-          frog.row,
-        )}: ${areaName(theme)}`,
-      );
-
-      weather =
-        theme === "night"
-          ? "night"
-          : frog.row %
-                AREA_LENGTH >
-              14
-            ? "evening"
-            : "day";
-    }
-  }
-
-  function currentLane() {
-    return lanes.get(
-      frog.row,
-    );
-  }
-
-  function isOnObject(
-    object: LaneObject,
-  ) {
-    const margin =
-      frogRadius *
-      0.85;
-
-    return (
-      frog.x + margin >
-        object.x &&
-      frog.x - margin <
-        object.x +
-          object.width
-    );
-  }
-
-  /*
-   * ---------------------------------------------------------
-   * ROAD COLLISION
-   * ---------------------------------------------------------
-   */
-
-  function checkRoadCollision() {
-    const lane =
-      currentLane();
-
-    if (
-      !lane ||
-      lane.type !==
-        "road"
-    ) {
-      return;
-    }
-
-    const screenY =
-      worldToScreenY(
-        frog.y,
-      );
-
-    const top =
-      screenY -
-      frogRadius;
-
-    const bottom =
-      screenY +
-      frogRadius;
-
-    for (
-      const object of lane.objects
-    ) {
-      const objectCenter =
-        worldToScreenY(
-          object.laneRow,
-        );
-
-      const objectTop =
-        objectCenter -
-        rh * 0.28;
-
-      const objectBottom =
-        objectCenter +
-        rh * 0.28;
-
-      const hit =
-        frog.x +
-          frogRadius >
-          object.x &&
-        frog.x -
-          frogRadius <
-          object.x +
-            object.width &&
-        bottom >
-          objectTop &&
-        top <
-          objectBottom;
-
-      if (!hit) {
-        continue;
-      }
-
-      if (
-        shieldTimer >
-        0
-      ) {
-        shieldTimer =
-          0;
-
-        burst(
-          frog.x,
-          screenY,
-          "#7dd3fc",
-          18,
-        );
-
-        addFloatingText(
-          frog.x,
-          screenY -
-            rh * 0.55,
-          "SHIELD!",
-          true,
-        );
-
-        /*
-         * Push the vehicle away rather than teleporting it.
-         */
-        object.x +=
-          object.speed >
-          0
-            ? 55
-            : -55;
-
-        screenShake = 5;
-
-        return;
-      }
-
-      die("car");
-      return;
-    }
-  }
-
-  /*
-   * ---------------------------------------------------------
-   * RIVER COLLISION
-   * ---------------------------------------------------------
-   */
-
-  function checkRiverSupport() {
-    const lane =
-      currentLane();
-
-    if (
-      !lane ||
-      lane.type !==
-        "river"
-    ) {
-      return;
-    }
-
-    const support =
-      lane.objects.find(
-        (
-          object,
-        ) =>
-          isOnObject(
-            object,
-          ),
-      );
-
-    if (
-      support ===
-      undefined
-    ) {
-      if (
-        shieldTimer >
-        0
-      ) {
-        shieldTimer =
-          0;
-
-        const screenY =
-          worldToScreenY(
-            frog.y,
-          );
-
-        burst(
-          frog.x,
-          screenY,
-          "#7dd3fc",
-          20,
-        );
-
-        addFloatingText(
-          frog.x,
-          screenY -
-            rh * 0.55,
-          "SAVED!",
-          true,
-        );
-
-        return;
-      }
-
-      die("water");
-      return;
-    }
-
-    frog.riding =
-      support;
-
-    syncFrogColumnFromWorld();
-  }
-
-  function updateRiding() {
-    if (
-      frog.hopping ||
-      frog.riding ===
-        null
-    ) {
-      return;
-    }
-
-    const object =
-      frog.riding;
-
-    const lane =
-      currentLane();
-
-    if (
-      !lane ||
-      lane.type !==
-        "river" ||
-      !lane.objects.includes(
-        object,
-      )
-    ) {
-      frog.riding =
-        null;
-
-      checkRiverSupport();
-
-      return;
-    }
-
-    const multiplier =
-      slowTimer > 0
-        ? 0.55
-        : 1;
-
-    frog.x +=
-      object.speed *
-      multiplier;
-
-    if (
-      specialEvent ===
-      "FLOOD"
-    ) {
-      frog.x +=
-        object.speed *
-        0.25;
-    }
-
-    syncFrogColumnFromWorld();
-
-    if (
-      frog.x <
-        -frogRadius ||
-      frog.x >
-        width +
-          frogRadius
-    ) {
-      die("edge");
-      return;
-    }
-
-    if (
-      !isOnObject(
-        object,
-      )
-    ) {
-      frog.riding =
-        null;
-
-      checkRiverSupport();
-    }
-  }
-
-  /*
-   * ---------------------------------------------------------
-   * TRAFFIC / PLATFORM UPDATE
-   * ---------------------------------------------------------
-   */
-
-  function respawnVehicle(
-    lane: Lane,
-    object: LaneObject,
-  ) {
-    const gap =
-      Math.max(
-        object.minGap,
-        randomRange(
-          cw * 0.65,
-          cw * 1.5,
-        ),
-      );
-
-    /*
-     * Find the vehicle that is currently furthest behind
-     * the incoming edge.
-     *
-     * Crucially, the new X coordinate is always outside
-     * the screen.
-     */
-    if (
-      object.speed > 0
-    ) {
-      let leftmost =
-        Infinity;
-
-      for (
-        const other of lane.objects
-      ) {
-        if (
-          other ===
-          object
-        ) {
-          continue;
-        }
-
-        leftmost =
-          Math.min(
-            leftmost,
-            other.x,
-          );
-      }
-
-      /*
-       * ALWAYS outside the left edge first.
-       *
-       * We then check whether the nearest vehicle requires
-       * an even larger gap.
-       */
-      let spawnX =
-        -object.width -
-        randomRange(
-          30,
-          110,
-        );
-
-      if (
-        leftmost !==
-          Infinity &&
-        spawnX +
-          object.width +
-          gap >
-          leftmost
-      ) {
-        spawnX =
-          leftmost -
-          object.width -
-          gap -
-          randomRange(
-            10,
-            45,
-          );
-      }
-
-      /*
-       * Never allow the recycling logic to accidentally place
-       * a car inside the visible road.
-       */
-      spawnX =
-        Math.min(
-          spawnX,
-          -object.width -
-            8,
-        );
-
-      object.x =
-        spawnX;
-    } else {
-      let rightmost =
-        -Infinity;
-
-      for (
-        const other of lane.objects
-      ) {
-        if (
-          other ===
-          object
-        ) {
-          continue;
-        }
-
-        rightmost =
-          Math.max(
-            rightmost,
-            other.x +
-              other.width,
-          );
-      }
-
-      let spawnX =
-        width +
-        randomRange(
-          30,
-          110,
-        );
-
-      if (
-        rightmost !==
-          -Infinity &&
-        spawnX -
-          gap <
-          rightmost
-      ) {
-        spawnX =
-          rightmost +
-          gap +
-          randomRange(
-            10,
-            45,
-          );
-      }
-
-      /*
-       * Never allow the recycling logic to accidentally place
-       * a car inside the visible road.
-       */
-      spawnX =
-        Math.max(
-          spawnX,
-          width + 8,
-        );
-
-      object.x =
-        spawnX -
-        object.width;
-    }
-
-    /*
-     * Small random changes prevent repeated patterns.
-     */
-    object.speed *=
-      randomRange(
-        0.94,
-        1.06,
-      );
-
-    object.minGap =
-      randomRange(
-        cw * 0.65,
-        cw * 1.5,
-      );
-
-    object.variant =
-      randomInt(
-        0,
-        2,
-      );
-
-    object.passed =
-      false;
-  }
-
-  function updateLanes() {
-    const activeMin =
-      Math.floor(
-        frog.row -
-          WORLD_RETENTION,
-      );
-
-    const activeMax =
-      Math.floor(
-        frog.row +
-          WORLD_BUFFER,
-      );
-
-    for (
-      const lane of lanes.values()
-    ) {
-      if (
-        lane.row <
-          activeMin ||
-        lane.row >
-          activeMax
-      ) {
-        continue;
-      }
-
-      let multiplier =
-        slowTimer > 0
-          ? 0.55
-          : 1;
-
-      if (
-        specialEvent ===
-          "RUSH HOUR" &&
-        lane.type ===
-          "road"
-      ) {
-        multiplier *= 1.18;
-      }
-
-      if (
-        specialEvent ===
-          "FLOOD" &&
-        lane.type ===
-          "river"
-      ) {
-        multiplier *= 1.25;
-      }
-
-      /*
-       * Prevent any accidental creation of additional
-       * vehicles/platforms.
-       */
-      for (
-        const object of lane.objects
-      ) {
-        object.x +=
-          object.speed *
-          multiplier;
-
-        if (
-          lane.type ===
-          "road"
-        ) {
-          /*
-           * A road vehicle is considered gone only after
-           * its entire body is outside the screen.
-           */
-          if (
-            object.speed > 0 &&
-            object.x >
-              width +
-                object.width +
-                20
-          ) {
-            respawnVehicle(
-              lane,
-              object,
-            );
-          } else if (
-            object.speed < 0 &&
-            object.x <
-              -object.width -
-                20
-          ) {
-            respawnVehicle(
-              lane,
-              object,
-            );
-          }
-        } else {
-          /*
-           * River platforms.
-           *
-           * Unlike the old version, there is no possibility
-           * of turning a river platform into a random object
-           * in another lane.
-           */
-          if (
-            object.speed > 0 &&
-            object.x >
-              width + 60
-          ) {
-            object.x =
-              -object.width -
-              randomRange(
-                30,
-                100,
-              );
-          } else if (
-            object.speed < 0 &&
-            object.x <
-              -object.width -
-                60
-          ) {
-            object.x =
-              width +
-              randomRange(
-                30,
-                100,
-              );
-          }
-        }
-      }
-    }
-  }
-
-  /*
-   * ---------------------------------------------------------
-   * DEATH / SCORING
-   * ---------------------------------------------------------
-   */
-
-  function beginCombo() {
-    combo++;
-    comboTimer = 100;
-
-    bestCombo =
-      Math.max(
-        bestCombo,
-        combo,
-      );
-
-    if (
-      combo >= 4
-    ) {
-      const screenY =
-        worldToScreenY(
-          frog.y,
-        );
-
-      addFloatingText(
-        frog.x,
-        screenY -
-          rh * 0.7,
-        `FLOW x${combo}`,
-        true,
-      );
-    }
-  }
-
-  function resetCombo() {
-    combo = 0;
-    comboTimer = 0;
-  }
-
-  function addScore(
-    base: number,
-    x?: number,
-    y?: number,
-    label?: string,
-  ) {
-    const comboMultiplier =
-      combo >= 8
-        ? 3
-        : combo >= 5
-          ? 2
-          : 1;
-
-    const scoreMultiplier =
-      scoreBoostTimer > 0
-        ? 2
-        : 1;
-
-    const value =
-      Math.round(
-        base *
-          comboMultiplier *
-          scoreMultiplier,
-      );
-
-    score +=
-      value;
-
-    onScore(score);
-
-    if (
-      x !== undefined &&
-      y !== undefined
-    ) {
-      addFloatingText(
-        x,
-        y,
-        label
-          ? `${label} +${value}`
-          : `+${value}`,
-        value >= 100,
-      );
-    }
-  }
-
-  function die(
-    reason:
-      | "car"
-      | "water"
-      | "edge",
-  ) {
-    if (
-      deathTimer > 0 ||
-      !alive
-    ) {
-      return;
-    }
-
-    busy = true;
-
-    deathTimer =
-      34;
-
-    queuedMove =
-      null;
-
-    frog.riding =
-      null;
-
-    resetCombo();
-
-    screenShake =
-      8;
-
-    flash = 5;
-
-    const screenY =
-      worldToScreenY(
-        frog.y,
-      );
-
-    if (
-      reason ===
-      "water"
-    ) {
-      burst(
-        frog.x,
-        screenY,
-        "#60a5fa",
-        24,
-      );
-
-      addFloatingText(
-        frog.x,
-        screenY,
-        "SPLASH!",
-        true,
-      );
-
-      beep(
-        180,
-        0.18,
-        "sawtooth",
-      );
-    } else {
-      burst(
-        frog.x,
-        screenY,
-        "#f87171",
-        22,
-      );
-
-      addFloatingText(
-        frog.x,
-        screenY,
-        "SMASH!",
-        true,
-      );
-
-      beep(
-        120,
-        0.22,
-        "sawtooth",
-      );
-    }
-  }
-
-  function finishDeath() {
-    lives--;
-
-    if (
-      lives <= 0
-    ) {
-      alive = false;
-      busy = false;
-      deathTimer = 0;
-
-      onStatus?.(
-        "Game over",
-      );
-
-      onGameOver(
-        score,
-        areaNumber(
-          furthestRow,
-        ),
-      );
-
-      return;
-    }
-
-    /*
-     * Respawn at the furthest safe row reached.
-     */
-    const respawnRow =
-      Math.max(
-        0,
-        Math.min(
-          furthestRow,
-          frog.row,
-        ),
-      );
-
-    generateRow(
-      respawnRow,
-    );
-
-    frog = {
-      col: 6,
-      row: respawnRow,
-
-      x: cw * 6.5,
-      y: respawnRow,
-
-      targetX: cw * 6.5,
-      targetY: respawnRow,
-
-      startX: cw * 6.5,
-      startY: respawnRow,
-
-      hopFrame: HOP_FRAMES,
-      hopping: false,
-
-      facing: -1,
-      squash: 0,
-
-      riding: null,
-    };
-
-    busy = false;
-    deathTimer = 0;
-
-    updateCamera();
-
-    onStatus?.(
-      `${lives} ${
-        lives === 1
-          ? "life"
-          : "lives"
-      } remaining`,
-    );
-  }
-
-  /*
-   * ---------------------------------------------------------
-   * COLLECTIBLES
-   * ---------------------------------------------------------
-   */
-
-  function spawnFly() {
-    const minRow =
-      Math.max(
-        1,
-        Math.floor(
-          frog.row,
-        ),
-      );
-
-    const maxRow =
-      Math.floor(
-        frog.row +
-          12,
-      );
-
-    let row =
-      randomInt(
-        minRow,
-        maxRow,
-      );
-
-    /*
-     * Avoid putting collectibles in impossible
-     * deep-water locations too often.
-     */
-    const terrain =
-      worldRows.get(
-        row,
-      );
-
-    if (
-      terrain?.type ===
-      "safe"
-    ) {
-      row =
-        clamp(
-          row + 1,
-          1,
-          maxRow,
-        );
-      generateRow(
-        row,
-      );
-    }
-
-    fly = {
-      x: randomRange(
-        cw,
-        width -
-          cw,
-      ),
-      row,
-      life: 260,
-      pulse: 0,
-    };
-
-    flyTimer =
-      randomRange(
-        360,
-        620,
-      );
-  }
-
-  function spawnPowerUp() {
-    const row =
-      randomInt(
-        Math.max(
-          1,
-          frog.row,
-        ),
-        Math.floor(
-          frog.row +
-            10,
-        ),
-      );
-
-    generateRow(
-      row,
-    );
-
-    powerUp = {
-      x: randomRange(
-        cw,
-        width -
-          cw,
-      ),
-      row,
-      type: randomItem([
-        "shield",
-        "slow",
-        "superHop",
-        "score",
-      ]),
-      life: 420,
-      pulse: 0,
-    };
-
-    powerTimer =
-      randomRange(
-        500,
-        780,
-      );
-  }
-
-  function updateCollectibles() {
-    if (fly) {
-      fly.life--;
-      fly.pulse +=
-        0.12;
-
-      if (
-        fly.life <=
-        0 ||
-        fly.row <
-          frog.row -
-            6
-      ) {
-        fly =
-          null;
-      }
-    }
-
-    if (
-      powerUp
-    ) {
-      powerUp.life--;
-      powerUp.pulse +=
-        0.1;
-
-      if (
-        powerUp.life <=
-          0 ||
-        powerUp.row <
-          frog.row -
-            6
-      ) {
-        powerUp =
-          null;
-      }
-    }
-
-    flyTimer--;
-
-    if (
-      flyTimer <= 0 &&
-      fly ===
-        null &&
-      frog.row >= 4
-    ) {
-      spawnFly();
-    }
-
-    powerTimer--;
-
-    if (
-      powerTimer <=
-        0 &&
-      powerUp ===
-        null &&
-      frog.row >= 6
-    ) {
-      spawnPowerUp();
-    }
-  }
-
-  function collectIfNearby() {
-    const frogScreenY =
-      worldToScreenY(
-        frog.y,
-      );
-
-    if (
-      fly &&
-      Math.hypot(
-        fly.x -
-          frog.x,
-        worldToScreenY(
-          fly.row,
-        ) -
-          frogScreenY,
-      ) <
-        frogSize
-    ) {
-      addScore(
-        250,
-        fly.x,
-        worldToScreenY(
-          fly.row,
-        ),
-        "FLY",
-      );
-
-      beginCombo();
-
-      burst(
-        fly.x,
-        worldToScreenY(
-          fly.row,
-        ),
-        "#facc15",
-        18,
-      );
-
-      beep(
-        900,
-        0.06,
-      );
-
-      fly = null;
-    }
-
-    if (
-      powerUp &&
-      Math.hypot(
-        powerUp.x -
-          frog.x,
-        worldToScreenY(
-          powerUp.row,
-        ) -
-          frogScreenY,
-      ) <
-        frogSize
-    ) {
-      collectPowerUp(
-        powerUp,
-      );
-
-      powerUp = null;
-    }
-  }
-
-  function powerColor(
-    type: PowerUpType,
-  ) {
-    switch (type) {
-      case "shield":
-        return "#7dd3fc";
-
-      case "slow":
-        return "#c084fc";
-
-      case "superHop":
-        return "#facc15";
-
-      case "score":
-        return "#4ade80";
-    }
-  }
-
-  function powerLabel(
-    type: PowerUpType,
-  ) {
-    switch (type) {
-      case "shield":
-        return "S";
-
-      case "slow":
-        return "T";
-
-      case "superHop":
-        return "H";
-
-      case "score":
-        return "2X";
-    }
-  }
-
-  function collectPowerUp(
-    pickup: PowerUp,
-  ) {
-    switch (
-      pickup.type
-    ) {
-      case "shield":
-        shieldTimer =
-          720;
-
-        addFloatingText(
-          pickup.x,
-          worldToScreenY(
-            pickup.row,
-          ),
-          "SHIELD",
-          true,
-        );
-
-        break;
-
-      case "slow":
-        slowTimer =
-          420;
-
-        addFloatingText(
-          pickup.x,
-          worldToScreenY(
-            pickup.row,
-          ),
-          "SLOW TIME",
-          true,
-        );
-
-        break;
-
-      case "superHop":
-        superHopTimer =
-          360;
-
-        addFloatingText(
-          pickup.x,
-          worldToScreenY(
-            pickup.row,
-          ),
-          "SUPER HOP",
-          true,
-        );
-
-        break;
-
-      case "score":
-        scoreBoostTimer =
-          360;
-
-        addFloatingText(
-          pickup.x,
-          worldToScreenY(
-            pickup.row,
-          ),
-          "2X SCORE",
-          true,
-        );
-
-        break;
-    }
-
-    burst(
-      pickup.x,
-      worldToScreenY(
-        pickup.row,
-      ),
-      "#ffffff",
-      18,
-    );
-
-    beep(
-      760,
-      0.08,
-    );
-  }
-
-  /*
-   * ---------------------------------------------------------
    * EFFECTS
    * ---------------------------------------------------------
    */
+
+  function createParticle(
+    x: number,
+    y: number,
+    color: string,
+    amount = 1,
+  ) {
+    for (
+      let i = 0;
+      i < amount;
+      i++
+    ) {
+      const angle =
+        Math.random() *
+        Math.PI *
+        2;
+
+      const speed =
+        randomRange(
+          0.5,
+          2.8,
+        );
+
+      particles.push({
+        x,
+        y,
+        vx:
+          Math.cos(angle) *
+          speed,
+        vy:
+          Math.sin(angle) *
+          speed,
+        life:
+          randomRange(
+            15,
+            32,
+          ),
+        maxLife: 32,
+        size:
+          randomRange(
+            1,
+            3,
+          ),
+        color,
+      });
+    }
+  }
+
+  function burst(
+    x: number,
+    y: number,
+    color: string,
+    count = 12,
+  ) {
+    createParticle(
+      x,
+      y,
+      color,
+      count,
+    );
+  }
+
+  function addFloatingText(
+    x: number,
+    y: number,
+    text: string,
+    big = false,
+  ) {
+    floatingTexts.push({
+      x,
+      y,
+      text,
+      life: big ? 40 : 28,
+      maxLife: big ? 40 : 28,
+      big,
+    });
+  }
 
   function updateEffects() {
     if (
@@ -2847,6 +626,2116 @@ const frogger: GameEngineFactory = ({
       );
   }
 
+  function addScore(
+    base: number,
+    x?: number,
+    y?: number,
+    label?: string,
+  ) {
+    const comboMultiplier =
+      combo >= 8
+        ? 3
+        : combo >= 5
+          ? 2
+          : 1;
+
+    const scoreMultiplier =
+      scoreBoostTimer > 0
+        ? 2
+        : 1;
+
+    const value =
+      Math.round(
+        base *
+          comboMultiplier *
+          scoreMultiplier,
+      );
+
+    score += value;
+
+    onScore(score);
+
+    if (
+      x !== undefined &&
+      y !== undefined
+    ) {
+      addFloatingText(
+        x,
+        y,
+        label
+          ? `${label} +${value}`
+          : `+${value}`,
+        value >= 100,
+      );
+    }
+  }
+
+  function beginCombo() {
+    combo++;
+    comboTimer = 100;
+
+    bestCombo =
+      Math.max(
+        bestCombo,
+        combo,
+      );
+
+    if (
+      combo >= 4
+    ) {
+      addFloatingText(
+        frog.x,
+        worldToScreenY(
+          frog.row,
+        ) -
+          rh * 0.7,
+        `FLOW x${combo}`,
+        true,
+      );
+    }
+  }
+
+  function resetCombo() {
+    combo = 0;
+    comboTimer = 0;
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * WORLD GENERATION
+   * ---------------------------------------------------------
+   */
+
+  function chooseRowType(
+    row: number,
+  ): "road" | "river" | "safe" {
+    if (
+      row === 0
+    ) {
+      return "safe";
+    }
+
+    if (
+      row %
+        AREA_LENGTH ===
+        0 ||
+      row %
+        AREA_LENGTH ===
+        1
+    ) {
+      return "safe";
+    }
+
+    if (
+      consecutiveDangerRows >=
+      5
+    ) {
+      consecutiveDangerRows = 0;
+      return "safe";
+    }
+
+    const theme =
+      areaForRow(row);
+
+    const roll =
+      Math.random();
+
+    let type:
+      | "road"
+      | "river"
+      | "safe";
+
+    switch (theme) {
+      case "meadow":
+        type =
+          roll < 0.5
+            ? "road"
+            : roll < 0.77
+              ? "river"
+              : "safe";
+        break;
+
+      case "suburb":
+        type =
+          roll < 0.64
+            ? "road"
+            : roll < 0.8
+              ? "safe"
+              : "river";
+        break;
+
+      case "wetland":
+        type =
+          roll < 0.33
+            ? "road"
+            : roll < 0.76
+              ? "river"
+              : "safe";
+        break;
+
+      case "city":
+        type =
+          roll < 0.72
+            ? "road"
+            : roll < 0.85
+              ? "safe"
+              : "river";
+        break;
+
+      case "night":
+        type =
+          roll < 0.55
+            ? "road"
+            : roll < 0.8
+              ? "river"
+              : "safe";
+        break;
+    }
+
+    if (
+      lastGeneratedType ===
+        "safe" &&
+      type ===
+        "safe" &&
+      Math.random() <
+        0.65
+    ) {
+      type =
+        Math.random() <
+        0.55
+          ? "road"
+          : "river";
+    }
+
+    if (
+      type ===
+      "safe"
+    ) {
+      consecutiveDangerRows = 0;
+    } else {
+      consecutiveDangerRows++;
+    }
+
+    lastGeneratedType =
+      type;
+
+    return type;
+  }
+
+  function createRoadLane(
+    row: number,
+    theme: AreaTheme,
+  ): Lane {
+    const direction =
+      Math.random() <
+      0.5
+        ? -1
+        : 1;
+
+    const areaIndex =
+      Math.floor(
+        row /
+          AREA_LENGTH,
+      );
+
+    const baseSpeeds =
+      theme === "city"
+        ? [
+            1.5,
+            1.75,
+            2.1,
+            2.45,
+          ]
+        : theme === "night"
+          ? [
+              1.35,
+              1.65,
+              1.95,
+              2.3,
+            ]
+          : [
+              1.15,
+              1.4,
+              1.7,
+              2.05,
+            ];
+
+    const baseSpeed =
+      randomItem(
+        baseSpeeds,
+      ) *
+      PACE *
+      (
+        1 +
+        Math.min(
+          0.22,
+          areaIndex *
+            0.012,
+        )
+      ) *
+      direction;
+
+    /*
+     * Only 2–4 actual vehicles per lane.
+     * They are never duplicated.
+     */
+    const vehicleCount =
+      randomInt(
+        2,
+        theme === "city"
+          ? 4
+          : 3,
+      );
+
+    const kinds: VehicleKind[] =
+      theme === "city"
+        ? [
+            "car",
+            "van",
+            "sports",
+            "bus",
+          ]
+        : [
+            "car",
+            "van",
+            "truck",
+            "sports",
+          ];
+
+    const objects: LaneObject[] =
+      [];
+
+    let cursor =
+      direction > 0
+        ? -80
+        : width + 80;
+
+    for (
+      let i = 0;
+      i < vehicleCount;
+      i++
+    ) {
+      const kind =
+        randomItem(
+          kinds,
+        );
+
+      const multiplier =
+        kind === "truck"
+          ? 1.65
+          : kind === "bus"
+            ? 1.9
+            : kind === "van"
+              ? 1.3
+              : kind === "sports"
+                ? 0.78
+                : 1;
+
+      const vehicleWidth =
+        cw *
+        multiplier *
+        randomRange(
+          0.9,
+          1.08,
+        );
+
+      const gap =
+        Math.max(
+          cw * 0.65,
+          randomRange(
+            44,
+            cw * 1.45,
+          ),
+        );
+
+      const speed =
+        baseSpeed *
+        randomRange(
+          0.84,
+          1.16,
+        );
+
+      if (
+        direction > 0
+      ) {
+        if (
+          i === 0
+        ) {
+          cursor =
+            -vehicleWidth -
+            randomRange(
+              20,
+              90,
+            );
+        } else {
+          cursor +=
+            gap;
+        }
+
+        objects.push({
+          x: cursor,
+          speed,
+          width:
+            vehicleWidth,
+          kind,
+          color:
+            getVehicleColor(
+              kind,
+            ),
+          laneRow: row,
+          minGap:
+            gap,
+          variant:
+            randomInt(
+              0,
+              2,
+            ),
+          rotation: 0,
+          passed: false,
+        });
+
+        cursor +=
+          vehicleWidth;
+      } else {
+        if (
+          i === 0
+        ) {
+          cursor =
+            width +
+            randomRange(
+              20,
+              90,
+            );
+        } else {
+          cursor -=
+            gap;
+        }
+
+        const x =
+          cursor -
+          vehicleWidth;
+
+        objects.push({
+          x,
+          speed,
+          width:
+            vehicleWidth,
+          kind,
+          color:
+            getVehicleColor(
+              kind,
+            ),
+          laneRow: row,
+          minGap:
+            gap,
+          variant:
+            randomInt(
+              0,
+              2,
+            ),
+          rotation: 0,
+          passed: false,
+        });
+
+        cursor =
+          x;
+      }
+    }
+
+    return {
+      row,
+      type: "road",
+      speed: baseSpeed,
+      objects,
+      density:
+        randomRange(
+          0.85,
+          1.15,
+        ),
+    };
+  }
+
+  function createRiverLane(
+    row: number,
+    _theme: AreaTheme,
+  ): Lane {
+    const direction =
+      Math.random() <
+      0.5
+        ? -1
+        : 1;
+
+    const baseSpeed =
+      randomRange(
+        1.0,
+        1.85,
+      ) *
+      PACE *
+      direction;
+
+    /*
+     * One river row uses one platform type.
+     *
+     * This completely avoids log/lily cross-over.
+     */
+    const kind: WaterKind =
+      randomItem([
+        "log",
+        "log",
+        "smallLog",
+        "lily",
+      ]);
+
+    const count =
+      kind === "log"
+        ? randomInt(2, 4)
+        : randomInt(3, 5);
+
+    const objects: LaneObject[] =
+      [];
+
+    const multiplier =
+      kind === "log"
+        ? 1.8
+        : kind === "smallLog"
+          ? 0.95
+          : 1.25;
+
+    let cursor =
+      direction > 0
+        ? -70
+        : width + 70;
+
+    for (
+      let i = 0;
+      i < count;
+      i++
+    ) {
+      const objectWidth =
+        cw *
+        multiplier *
+        randomRange(
+          0.9,
+          1.08,
+        );
+
+      const gap =
+        Math.max(
+          cw * 0.65,
+          randomRange(
+            45,
+            cw * 1.5,
+          ),
+        );
+
+      if (
+        direction > 0
+      ) {
+        if (
+          i === 0
+        ) {
+          cursor =
+            -objectWidth -
+            randomRange(
+              20,
+              70,
+            );
+        } else {
+          cursor +=
+            gap;
+        }
+
+        objects.push({
+          x: cursor,
+          speed:
+            baseSpeed *
+            randomRange(
+              0.92,
+              1.08,
+            ),
+          width:
+            objectWidth,
+          kind,
+          color:
+            kind === "lily"
+              ? "#3f8f3f"
+              : kind ===
+                  "smallLog"
+                ? "#8b5a2b"
+                : "#8f5a2a",
+          laneRow: row,
+          minGap:
+            gap,
+          variant:
+            randomInt(
+              0,
+              2,
+            ),
+          rotation:
+            randomRange(
+              -0.08,
+              0.08,
+            ),
+          passed: false,
+        });
+
+        cursor +=
+          objectWidth;
+      } else {
+        if (
+          i === 0
+        ) {
+          cursor =
+            width +
+            randomRange(
+              20,
+              70,
+            );
+        } else {
+          cursor -=
+            gap;
+        }
+
+        const x =
+          cursor -
+          objectWidth;
+
+        objects.push({
+          x,
+          speed:
+            baseSpeed *
+            randomRange(
+              0.92,
+              1.08,
+            ),
+          width:
+            objectWidth,
+          kind,
+          color:
+            kind === "lily"
+              ? "#3f8f3f"
+              : kind ===
+                  "smallLog"
+                ? "#8b5a2b"
+                : "#8f5a2a",
+          laneRow: row,
+          minGap:
+            gap,
+          variant:
+            randomInt(
+              0,
+              2,
+            ),
+          rotation:
+            randomRange(
+              -0.08,
+              0.08,
+            ),
+          passed: false,
+        });
+
+        cursor =
+          x;
+      }
+    }
+
+    return {
+      row,
+      type: "river",
+      speed: baseSpeed,
+      objects,
+      density:
+        randomRange(
+          0.85,
+          1.15,
+        ),
+    };
+  }
+
+  function generateRow(
+    row: number,
+  ) {
+    if (
+      row < 0 ||
+      worldRows.has(row)
+    ) {
+      return;
+    }
+
+    const theme =
+      areaForRow(row);
+
+    const type =
+      chooseRowType(row);
+
+    worldRows.set(
+      row,
+      {
+        row,
+        type,
+        theme,
+        variation:
+          randomInt(
+            0,
+            4,
+          ),
+      },
+    );
+
+    if (
+      type === "road"
+    ) {
+      lanes.set(
+        row,
+        createRoadLane(
+          row,
+          theme,
+        ),
+      );
+    } else if (
+      type === "river"
+    ) {
+      lanes.set(
+        row,
+        createRiverLane(
+          row,
+          theme,
+        ),
+      );
+    }
+  }
+
+  function ensureWorldAhead() {
+    const start =
+      Math.max(
+        0,
+        frog.row -
+          WORLD_BEHIND,
+      );
+
+    const end =
+      frog.row +
+      WORLD_AHEAD;
+
+    for (
+      let row = start;
+      row <= end;
+      row++
+    ) {
+      generateRow(row);
+    }
+
+    const pruneBefore =
+      Math.max(
+        0,
+        frog.row -
+          WORLD_BEHIND,
+      );
+
+    for (
+      const row of worldRows.keys()
+    ) {
+      if (
+        row <
+        pruneBefore
+      ) {
+        worldRows.delete(row);
+        lanes.delete(row);
+      }
+    }
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * FROG / MOVEMENT
+   * ---------------------------------------------------------
+   */
+
+  function syncFrogColumnFromWorld() {
+    frog.col = clamp(
+      Math.floor(
+        frog.x / cw,
+      ),
+      0,
+      COLS - 1,
+    );
+  }
+
+  function updateCamera() {
+    cameraTargetRow =
+      Math.max(
+        0,
+        frog.row - 4.4,
+      );
+
+    cameraRow +=
+      (
+        cameraTargetRow -
+        cameraRow
+      ) *
+      0.12;
+  }
+
+  function resetFrog() {
+    frog = {
+      col: 6,
+      row: furthestRow,
+
+      x: cw * 6.5,
+      y: furthestRow,
+
+      targetX: cw * 6.5,
+      targetY: furthestRow,
+
+      startX: cw * 6.5,
+      startY: furthestRow,
+
+      hopFrame: HOP_FRAMES,
+      hopping: false,
+
+      facing: -1,
+      squash: 0,
+
+      riding: null,
+    };
+
+    queuedMove = null;
+
+    updateCamera();
+  }
+
+  function requestMove(
+    dc: number,
+    dr: number,
+  ) {
+    if (
+      !alive ||
+      busy ||
+      deathTimer > 0
+    ) {
+      return;
+    }
+
+    if (
+      frog.hopping
+    ) {
+      queuedMove = {
+        dc,
+        dr,
+      };
+      return;
+    }
+
+    startHop(
+      dc,
+      dr,
+    );
+  }
+
+  function startHop(
+    dc: number,
+    dr: number,
+  ) {
+    const distance =
+      superHopTimer >
+      0
+        ? 2
+        : 1;
+
+    syncFrogColumnFromWorld();
+
+    const nextCol =
+      clamp(
+        frog.col +
+          dc *
+            distance,
+        0,
+        COLS - 1,
+      );
+
+    const nextRow =
+      Math.max(
+        0,
+        frog.row +
+          dr *
+            distance,
+      );
+
+    if (
+      nextCol ===
+        frog.col &&
+      nextRow ===
+        frog.row
+    ) {
+      return;
+    }
+
+    generateRow(
+      nextRow,
+    );
+
+    frog.startX =
+      frog.x;
+
+    frog.startY =
+      frog.y;
+
+    frog.targetX =
+      nextCol * cw +
+      cw / 2;
+
+    frog.targetY =
+      nextRow;
+
+    frog.hopFrame = 0;
+    frog.hopping = true;
+    frog.riding = null;
+
+    if (
+      dc !== 0
+    ) {
+      frog.facing =
+        dc > 0
+          ? 1
+          : -1;
+    }
+
+    beep(
+      540,
+      0.03,
+    );
+  }
+
+  function updateHop() {
+    if (
+      !frog.hopping
+    ) {
+      return;
+    }
+
+    frog.hopFrame++;
+
+    const progress =
+      clamp(
+        frog.hopFrame /
+          HOP_FRAMES,
+        0,
+        1,
+      );
+
+    const eased =
+      progress < 0.5
+        ? 2 *
+          progress *
+          progress
+        : 1 -
+          Math.pow(
+            -2 *
+              progress +
+              2,
+            2,
+          ) /
+            2;
+
+    frog.x =
+      frog.startX +
+      (
+        frog.targetX -
+        frog.startX
+      ) *
+        eased;
+
+    frog.y =
+      frog.startY +
+      (
+        frog.targetY -
+        frog.startY
+      ) *
+        eased;
+
+    frog.squash =
+      Math.sin(
+        progress *
+          Math.PI,
+      );
+
+    if (
+      frog.hopFrame >=
+      HOP_FRAMES
+    ) {
+      frog.col =
+        clamp(
+          Math.round(
+            frog.targetX /
+              cw -
+              0.5,
+          ),
+          0,
+          COLS - 1,
+        );
+
+      frog.row =
+        Math.max(
+          0,
+          Math.round(
+            frog.targetY,
+          ),
+        );
+
+      frog.x =
+        frog.targetX;
+
+      frog.y =
+        frog.targetY;
+
+      frog.hopping = false;
+      frog.squash = 1;
+
+      onLanding();
+
+      if (
+        queuedMove &&
+        alive &&
+        deathTimer <=
+          0
+      ) {
+        const move =
+          queuedMove;
+
+        queuedMove = null;
+
+        startHop(
+          move.dc,
+          move.dr,
+        );
+      }
+    }
+  }
+
+  function onLanding() {
+    const row =
+      frog.row;
+
+    if (
+      row >
+      furthestRow
+    ) {
+      const distance =
+        row -
+        furthestRow;
+
+      furthestRow =
+        row;
+
+      beginCombo();
+
+      addScore(
+        10 +
+          Math.min(
+            distance * 5,
+            30,
+          ),
+        frog.x,
+        worldToScreenY(
+          row,
+        ) -
+          rh * 0.55,
+      );
+
+      const currentArea =
+        areaNumber(
+          row,
+        );
+
+      const previousArea =
+        areaNumber(
+          row - 1,
+        );
+
+      if (
+        currentArea !==
+        previousArea
+      ) {
+        updateAreaStatus();
+      }
+    }
+
+    collectIfNearby();
+
+    const rowData =
+      worldRows.get(
+        row,
+      );
+
+    if (
+      rowData?.type ===
+      "road"
+    ) {
+      checkRoadCollision();
+    } else if (
+      rowData?.type ===
+      "river"
+    ) {
+      checkRiverSupport();
+    }
+  }
+
+  function updateAreaStatus() {
+    const theme =
+      areaForRow(
+        frog.row,
+      );
+
+    weather =
+      theme === "night"
+        ? "night"
+        : frog.row %
+              AREA_LENGTH >
+            AREA_LENGTH *
+              0.55
+          ? "evening"
+          : "day";
+
+    onStatus?.(
+      `Area ${areaNumber(
+        frog.row,
+      )}: ${areaName(theme)}`,
+    );
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * ROAD / RIVER
+   * ---------------------------------------------------------
+   */
+
+  function getCurrentLane() {
+    return lanes.get(
+      frog.row,
+    );
+  }
+
+  function isOnObject(
+    object: LaneObject,
+  ) {
+    const margin =
+      frogRadius *
+      0.9;
+
+    return (
+      frog.x + margin >
+        object.x &&
+      frog.x - margin <
+        object.x +
+          object.width
+    );
+  }
+
+  function checkRoadCollision() {
+    const lane =
+      getCurrentLane();
+
+    if (
+      !lane ||
+      lane.type !==
+        "road"
+    ) {
+      return;
+    }
+
+    const frogY =
+      worldToScreenY(
+        frog.row,
+      );
+
+    const top =
+      frogY -
+      frogRadius;
+
+    const bottom =
+      frogY +
+      frogRadius;
+
+    for (
+      const object of lane.objects
+    ) {
+      const objectY =
+        worldToScreenY(
+          object.laneRow,
+        );
+
+      const objectTop =
+        objectY -
+        rh * 0.28;
+
+      const objectBottom =
+        objectY +
+        rh * 0.28;
+
+      const hit =
+        frog.x +
+          frogRadius >
+          object.x &&
+        frog.x -
+          frogRadius <
+          object.x +
+            object.width &&
+        bottom >
+          objectTop &&
+        top <
+          objectBottom;
+
+      if (!hit) {
+        continue;
+      }
+
+      if (
+        shieldTimer >
+        0
+      ) {
+        shieldTimer = 0;
+
+        burst(
+          frog.x,
+          frogY,
+          "#7dd3fc",
+          18,
+        );
+
+        addFloatingText(
+          frog.x,
+          frogY -
+            rh * 0.55,
+          "SHIELD!",
+          true,
+        );
+
+        object.x +=
+          object.speed >
+          0
+            ? 55
+            : -55;
+
+        screenShake = 5;
+
+        return;
+      }
+
+      die("car");
+      return;
+    }
+  }
+
+  function checkRiverSupport() {
+    const lane =
+      getCurrentLane();
+
+    if (
+      !lane ||
+      lane.type !==
+        "river"
+    ) {
+      return;
+    }
+
+    const support =
+      lane.objects.find(
+        (object) =>
+          isOnObject(
+            object,
+          ),
+      );
+
+    if (
+      !support
+    ) {
+      if (
+        shieldTimer >
+        0
+      ) {
+        shieldTimer = 0;
+
+        const frogY =
+          worldToScreenY(
+            frog.row,
+          );
+
+        burst(
+          frog.x,
+          frogY,
+          "#7dd3fc",
+          20,
+        );
+
+        addFloatingText(
+          frog.x,
+          frogY -
+            rh * 0.55,
+          "SAVED!",
+          true,
+        );
+
+        return;
+      }
+
+      die("water");
+      return;
+    }
+
+    frog.riding =
+      support;
+
+    syncFrogColumnFromWorld();
+  }
+
+  function updateRiding() {
+    if (
+      frog.hopping ||
+      !frog.riding
+    ) {
+      return;
+    }
+
+    const lane =
+      getCurrentLane();
+
+    if (
+      !lane ||
+      lane.type !==
+        "river"
+    ) {
+      frog.riding = null;
+      return;
+    }
+
+    const object =
+      frog.riding;
+
+    if (
+      !lane.objects.includes(
+        object,
+      )
+    ) {
+      frog.riding = null;
+      checkRiverSupport();
+      return;
+    }
+
+    const multiplier =
+      slowTimer > 0
+        ? 0.55
+        : 1;
+
+    frog.x +=
+      object.speed *
+      multiplier;
+
+    if (
+      specialEvent ===
+      "FLOOD"
+    ) {
+      frog.x +=
+        object.speed *
+        0.25;
+    }
+
+    syncFrogColumnFromWorld();
+
+    if (
+      frog.x <
+        -frogRadius ||
+      frog.x >
+        width +
+          frogRadius
+    ) {
+      die("edge");
+      return;
+    }
+
+    if (
+      !isOnObject(
+        object,
+      )
+    ) {
+      frog.riding = null;
+      checkRiverSupport();
+    }
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * TRAFFIC UPDATE
+   * ---------------------------------------------------------
+   */
+
+  function respawnVehicle(
+    lane: Lane,
+    object: LaneObject,
+  ) {
+    const gap =
+      Math.max(
+        44,
+        randomRange(
+          cw * 0.6,
+          cw * 1.5,
+        ),
+        object.minGap,
+      );
+
+    if (
+      object.speed >
+      0
+    ) {
+      let leftmost =
+        Infinity;
+
+      for (
+        const other of lane.objects
+      ) {
+        if (
+          other ===
+          object
+        ) {
+          continue;
+        }
+
+        leftmost =
+          Math.min(
+            leftmost,
+            other.x,
+          );
+      }
+
+      /*
+       * IMPORTANT:
+       *
+       * The initial spawn point is always off-screen.
+       * If another vehicle is further left, we move farther
+       * left instead of putting this vehicle in the middle.
+       */
+      let spawnX =
+        -object.width -
+        randomRange(
+          30,
+          100,
+        );
+
+      if (
+        leftmost !==
+          Infinity &&
+        spawnX +
+          object.width +
+          gap >
+          leftmost
+      ) {
+        spawnX =
+          leftmost -
+          object.width -
+          gap -
+          randomRange(
+            10,
+            35,
+          );
+      }
+
+      object.x =
+        Math.min(
+          spawnX,
+          -object.width -
+            8,
+        );
+    } else {
+      let rightmost =
+        -Infinity;
+
+      for (
+        const other of lane.objects
+      ) {
+        if (
+          other ===
+          object
+        ) {
+          continue;
+        }
+
+        rightmost =
+          Math.max(
+            rightmost,
+            other.x +
+              other.width,
+          );
+      }
+
+      let spawnX =
+        width +
+        randomRange(
+          30,
+          100,
+        );
+
+      if (
+        rightmost !==
+          -Infinity &&
+        spawnX -
+          gap <
+          rightmost
+      ) {
+        spawnX =
+          rightmost +
+          gap +
+          randomRange(
+            10,
+            35,
+          );
+      }
+
+      spawnX =
+        Math.max(
+          spawnX,
+          width + 8,
+        );
+
+      object.x =
+        spawnX -
+        object.width;
+    }
+
+    object.speed *=
+      randomRange(
+        0.93,
+        1.07,
+      );
+
+    object.minGap =
+      randomRange(
+        cw * 0.6,
+        cw * 1.5,
+      );
+
+    object.variant =
+      randomInt(
+        0,
+        2,
+      );
+
+    object.passed =
+      false;
+  }
+
+  function updateLanes() {
+    const minRow =
+      Math.max(
+        0,
+        frog.row -
+          WORLD_BEHIND,
+      );
+
+    const maxRow =
+      frog.row +
+      WORLD_AHEAD;
+
+    for (
+      const lane of lanes.values()
+    ) {
+      if (
+        lane.row <
+          minRow ||
+        lane.row >
+          maxRow
+      ) {
+        continue;
+      }
+
+      let multiplier =
+        slowTimer > 0
+          ? 0.55
+          : 1;
+
+      if (
+        specialEvent ===
+          "RUSH HOUR" &&
+        lane.type ===
+          "road"
+      ) {
+        multiplier *=
+          1.18;
+      }
+
+      if (
+        specialEvent ===
+          "FLOOD" &&
+        lane.type ===
+          "river"
+      ) {
+        multiplier *=
+          1.25;
+      }
+
+      for (
+        const object of lane.objects
+      ) {
+        object.x +=
+          object.speed *
+          multiplier;
+
+        if (
+          lane.type ===
+          "road"
+        ) {
+          if (
+            object.speed > 0 &&
+            object.x >
+              width +
+                object.width +
+                25
+          ) {
+            respawnVehicle(
+              lane,
+              object,
+            );
+          } else if (
+            object.speed < 0 &&
+            object.x <
+              -object.width -
+                25
+          ) {
+            respawnVehicle(
+              lane,
+              object,
+            );
+          }
+        } else {
+          /*
+           * River platforms wrap only after they completely
+           * leave the screen.
+           *
+           * Their spacing is preserved because each platform
+           * is moved to the outside of the river, not randomly
+           * dropped into it.
+           */
+          if (
+            object.speed > 0 &&
+            object.x >
+              width + 60
+          ) {
+            let leftmost =
+              Infinity;
+
+            for (
+              const other of lane.objects
+            ) {
+              if (
+                other ===
+                object
+              ) {
+                continue;
+              }
+
+              leftmost =
+                Math.min(
+                  leftmost,
+                  other.x,
+                );
+            }
+
+            object.x =
+              Math.min(
+                -object.width -
+                  randomRange(
+                    20,
+                    80,
+                  ),
+                leftmost -
+                  object.width -
+                  object.minGap,
+              );
+          } else if (
+            object.speed < 0 &&
+            object.x <
+              -object.width -
+                60
+          ) {
+            let rightmost =
+              -Infinity;
+
+            for (
+              const other of lane.objects
+            ) {
+              if (
+                other ===
+                object
+              ) {
+                continue;
+              }
+
+              rightmost =
+                Math.max(
+                  rightmost,
+                  other.x +
+                    other.width,
+                );
+            }
+
+            object.x =
+              Math.max(
+                width +
+                  randomRange(
+                    20,
+                    80,
+                  ),
+                rightmost +
+                  object.minGap,
+              ) -
+              object.width;
+          }
+        }
+      }
+    }
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * DEATH / RESET
+   * ---------------------------------------------------------
+   */
+
+  function die(
+    reason:
+      | "car"
+      | "water"
+      | "edge",
+  ) {
+    if (
+      deathTimer > 0 ||
+      !alive
+    ) {
+      return;
+    }
+
+    busy = true;
+    deathTimer = 34;
+
+    queuedMove = null;
+    frog.riding = null;
+
+    resetCombo();
+
+    screenShake = 8;
+    flash = 5;
+
+    const screenY =
+      worldToScreenY(
+        frog.row,
+      );
+
+    if (
+      reason ===
+      "water"
+    ) {
+      burst(
+        frog.x,
+        screenY,
+        "#60a5fa",
+        24,
+      );
+
+      addFloatingText(
+        frog.x,
+        screenY,
+        "SPLASH!",
+        true,
+      );
+
+      beep(
+        180,
+        0.18,
+        "sawtooth",
+      );
+    } else {
+      burst(
+        frog.x,
+        screenY,
+        "#f87171",
+        22,
+      );
+
+      addFloatingText(
+        frog.x,
+        screenY,
+        "SMASH!",
+        true,
+      );
+
+      beep(
+        120,
+        0.22,
+        "sawtooth",
+      );
+    }
+  }
+
+  function finishDeath() {
+    lives--;
+
+    if (
+      lives <=
+      0
+    ) {
+      alive = false;
+      busy = false;
+      deathTimer = 0;
+
+      onStatus?.(
+        "Game over",
+      );
+
+      onGameOver(
+        score,
+        areaNumber(
+          furthestRow,
+        ),
+      );
+
+      return;
+    }
+
+    frog = {
+      col: 6,
+      row: furthestRow,
+
+      x: cw * 6.5,
+      y: furthestRow,
+
+      targetX: cw * 6.5,
+      targetY: furthestRow,
+
+      startX: cw * 6.5,
+      startY: furthestRow,
+
+      hopFrame: HOP_FRAMES,
+      hopping: false,
+
+      facing: -1,
+      squash: 0,
+
+      riding: null,
+    };
+
+    busy = false;
+    deathTimer = 0;
+
+    updateCamera();
+
+    onStatus?.(
+      `${lives} ${
+        lives ===
+        1
+          ? "life"
+          : "lives"
+      } remaining`,
+    );
+  }
+
+  /*
+   * ---------------------------------------------------------
+   * COLLECTIBLES
+   * ---------------------------------------------------------
+   */
+
+  function spawnFly() {
+    const row =
+      randomInt(
+        Math.max(
+          1,
+          frog.row,
+        ),
+        frog.row + 10,
+      );
+
+    generateRow(
+      row,
+    );
+
+    fly = {
+      x: randomRange(
+        cw,
+        width -
+          cw,
+      ),
+      row,
+      life: 260,
+      pulse: 0,
+    };
+
+    flyTimer =
+      randomRange(
+        360,
+        620,
+      );
+  }
+
+  function spawnPowerUp() {
+    const row =
+      randomInt(
+        Math.max(
+          1,
+          frog.row,
+        ),
+        frog.row + 9,
+      );
+
+    generateRow(
+      row,
+    );
+
+    powerUp = {
+      x: randomRange(
+        cw,
+        width -
+          cw,
+      ),
+      row,
+      type: randomItem([
+        "shield",
+        "slow",
+        "superHop",
+        "score",
+      ]),
+      life: 420,
+      pulse: 0,
+    };
+
+    powerTimer =
+      randomRange(
+        500,
+        780,
+      );
+  }
+
+  function updateCollectibles() {
+    if (fly) {
+      fly.life--;
+      fly.pulse +=
+        0.12;
+
+      if (
+        fly.life <=
+        0 ||
+        fly.row <
+          frog.row - 8
+      ) {
+        fly = null;
+      }
+    }
+
+    if (
+      powerUp
+    ) {
+      powerUp.life--;
+      powerUp.pulse +=
+        0.1;
+
+      if (
+        powerUp.life <=
+          0 ||
+        powerUp.row <
+          frog.row - 8
+      ) {
+        powerUp = null;
+      }
+    }
+
+    flyTimer--;
+
+    if (
+      flyTimer <=
+        0 &&
+      fly === null &&
+      frog.row >= 4
+    ) {
+      spawnFly();
+    }
+
+    powerTimer--;
+
+    if (
+      powerTimer <=
+        0 &&
+      powerUp ===
+        null &&
+      frog.row >= 6
+    ) {
+      spawnPowerUp();
+    }
+  }
+
+  function collectIfNearby() {
+    const frogY =
+      worldToScreenY(
+        frog.row,
+      );
+
+    if (
+      fly &&
+      Math.hypot(
+        fly.x -
+          frog.x,
+        worldToScreenY(
+          fly.row,
+        ) -
+          frogY,
+      ) <
+        frogSize
+    ) {
+      addScore(
+        250,
+        fly.x,
+        worldToScreenY(
+          fly.row,
+        ),
+        "FLY",
+      );
+
+      beginCombo();
+
+      burst(
+        fly.x,
+        worldToScreenY(
+          fly.row,
+        ),
+        "#facc15",
+        18,
+      );
+
+      beep(
+        900,
+        0.06,
+      );
+
+      fly = null;
+    }
+
+    if (
+      powerUp &&
+      Math.hypot(
+        powerUp.x -
+          frog.x,
+        worldToScreenY(
+          powerUp.row,
+        ) -
+          frogY,
+      ) <
+        frogSize
+    ) {
+      collectPowerUp(
+        powerUp,
+      );
+
+      powerUp = null;
+    }
+  }
+
+  function powerColor(
+    type: PowerUpType,
+  ) {
+    switch (type) {
+      case "shield":
+        return "#7dd3fc";
+      case "slow":
+        return "#c084fc";
+      case "superHop":
+        return "#facc15";
+      case "score":
+        return "#4ade80";
+    }
+  }
+
+  function powerLabel(
+    type: PowerUpType,
+  ) {
+    switch (type) {
+      case "shield":
+        return "S";
+      case "slow":
+        return "T";
+      case "superHop":
+        return "H";
+      case "score":
+        return "2X";
+    }
+  }
+
+  function collectPowerUp(
+    pickup: PowerUp,
+  ) {
+    const screenY =
+      worldToScreenY(
+        pickup.row,
+      );
+
+    switch (
+      pickup.type
+    ) {
+      case "shield":
+        shieldTimer = 720;
+
+        addFloatingText(
+          pickup.x,
+          screenY,
+          "SHIELD",
+          true,
+        );
+        break;
+
+      case "slow":
+        slowTimer = 420;
+
+        addFloatingText(
+          pickup.x,
+          screenY,
+          "SLOW TIME",
+          true,
+        );
+        break;
+
+      case "superHop":
+        superHopTimer =
+          360;
+
+        addFloatingText(
+          pickup.x,
+          screenY,
+          "SUPER HOP",
+          true,
+        );
+        break;
+
+      case "score":
+        scoreBoostTimer =
+          360;
+
+        addFloatingText(
+          pickup.x,
+          screenY,
+          "2X SCORE",
+          true,
+        );
+        break;
+    }
+
+    burst(
+      pickup.x,
+      screenY,
+      "#ffffff",
+      18,
+    );
+
+    beep(
+      760,
+      0.08,
+    );
+  }
+
   /*
    * ---------------------------------------------------------
    * SPECIAL EVENTS
@@ -2854,13 +2743,9 @@ const frogger: GameEngineFactory = ({
    */
 
   function getSpecialEvent() {
-    /*
-     * Events become less common so the infinite world doesn't
-     * feel like it is constantly throwing modifiers at the
-     * player.
-     */
     if (
-      frog.row < 20 ||
+      frog.row <
+        20 ||
       Math.random() >
         0.22
     ) {
@@ -2905,10 +2790,6 @@ const frogger: GameEngineFactory = ({
       return;
     }
 
-    /*
-     * Generate considerably farther ahead of the player
-     * than the camera can see.
-     */
     ensureWorldAhead();
 
     if (
@@ -2920,20 +2801,18 @@ const frogger: GameEngineFactory = ({
 
       collectIfNearby();
 
-      const current =
+      const rowData =
         worldRows.get(
           frog.row,
         );
 
       if (
-        current?.type ===
+        rowData?.type ===
         "road"
       ) {
         checkRoadCollision();
-      }
-
-      if (
-        current?.type ===
+      } else if (
+        rowData?.type ===
           "river" &&
         frog.riding ===
           null
@@ -2949,14 +2828,13 @@ const frogger: GameEngineFactory = ({
       0.82;
 
     /*
-     * Occasionally introduce an event.
+     * Trigger occasional special events.
      */
     if (
       !specialEvent &&
-      frog.row >
-        25 &&
+      frog.row > 30 &&
       frog.row %
-          40 ===
+          45 ===
         0
     ) {
       specialEvent =
@@ -2966,6 +2844,14 @@ const frogger: GameEngineFactory = ({
         specialEvent
           ? 600
           : 0;
+
+      if (
+        specialEvent
+      ) {
+        onStatus?.(
+          `${specialEvent}!`,
+        );
+      }
     }
   }
 
@@ -2974,82 +2860,6 @@ const frogger: GameEngineFactory = ({
    * BACKGROUND
    * ---------------------------------------------------------
    */
-
-  function drawGrid() {
-    /*
-     * Crossy Road-style terrain doesn't have to expose a
-     * perfectly uniform grid. Very subtle row divisions are
-     * enough to communicate the tiles.
-     */
-    ctx.save();
-
-    ctx.strokeStyle =
-      "rgba(255,255,255,0.035)";
-
-    ctx.lineWidth = 1;
-
-    const firstRow =
-      Math.floor(
-        cameraRow,
-      ) - 1;
-
-    const lastRow =
-      Math.ceil(
-        cameraRow +
-          height / rh,
-      ) + 1;
-
-    for (
-      let row =
-        firstRow;
-      row <=
-      lastRow;
-      row++
-    ) {
-      const y =
-        worldToScreenY(
-          row,
-        );
-
-      ctx.beginPath();
-
-      ctx.moveTo(
-        0,
-        y -
-          rh / 2,
-      );
-
-      ctx.lineTo(
-        width,
-        y -
-          rh / 2,
-      );
-
-      ctx.stroke();
-    }
-
-    for (
-      let col = 0;
-      col <= COLS;
-      col++
-    ) {
-      ctx.beginPath();
-
-      ctx.moveTo(
-        col * cw,
-        0,
-      );
-
-      ctx.lineTo(
-        col * cw,
-        height,
-      );
-
-      ctx.stroke();
-    }
-
-    ctx.restore();
-  }
 
   function drawRowBackground(
     rowData: WorldRow,
@@ -3079,35 +2889,6 @@ const frogger: GameEngineFactory = ({
         rh,
       );
 
-      /*
-       * Random subtle road surface variation.
-       */
-      ctx.fillStyle =
-        "rgba(255,255,255,0.025)";
-
-      if (
-        rowData.variation %
-          2 ===
-        0
-      ) {
-        for (
-          let x = 0;
-          x < width;
-          x += 70
-        ) {
-          ctx.fillRect(
-            x +
-              rowData.variation *
-                9,
-            y +
-              rh *
-                0.25,
-            28,
-            2,
-          );
-        }
-      }
-
       ctx.strokeStyle =
         "rgba(255,255,255,0.11)";
 
@@ -3134,9 +2915,7 @@ const frogger: GameEngineFactory = ({
 
       ctx.stroke();
 
-      ctx.setLineDash(
-        [],
-      );
+      ctx.setLineDash([]);
 
       return;
     }
@@ -3155,51 +2934,39 @@ const frogger: GameEngineFactory = ({
         rh,
       );
 
-      /*
-       * Water currents are varied by row so adjacent water
-       * lanes don't look synchronized.
-       */
       ctx.strokeStyle =
-        "rgba(125,211,252,0.12)";
+        "rgba(125,211,252,0.11)";
 
       ctx.lineWidth = 1;
 
-      const drift =
-        rowData.row % 2 ===
-        0
-          ? 1
-          : -1;
+      const offset =
+        (
+          rowData.row *
+            41 +
+          rowData.variation *
+            23
+        ) %
+        100;
 
       for (
         let x =
-          -80;
+          -100 +
+          offset;
         x <
         width + 100;
-        x +=
-          100
+        x += 110
       ) {
-        const offset =
-          ((x +
-            rowData.row *
-              31 +
-            drift *
-              Date.now() *
-              0.00003) %
-            (width + 180)) -
-          80;
-
         ctx.beginPath();
 
         ctx.moveTo(
-          offset,
+          x,
           y +
             rh *
               0.3,
         );
 
         ctx.lineTo(
-          offset +
-            40,
+          x + 42,
           y +
             rh *
               0.3,
@@ -3210,19 +2977,17 @@ const frogger: GameEngineFactory = ({
         ctx.beginPath();
 
         ctx.moveTo(
-          offset +
-            25,
+          x + 27,
           y +
             rh *
-              0.72,
+              0.7,
         );
 
         ctx.lineTo(
-          offset +
-            75,
+          x + 72,
           y +
             rh *
-              0.72,
+              0.7,
         );
 
         ctx.stroke();
@@ -3231,9 +2996,6 @@ const frogger: GameEngineFactory = ({
       return;
     }
 
-    /*
-     * Safe grass.
-     */
     ctx.fillStyle =
       colors.safe;
 
@@ -3244,9 +3006,6 @@ const frogger: GameEngineFactory = ({
       rh,
     );
 
-    /*
-     * Random grass details.
-     */
     ctx.fillStyle =
       "rgba(255,255,255,0.035)";
 
@@ -3256,10 +3015,12 @@ const frogger: GameEngineFactory = ({
       i++
     ) {
       const x =
-        ((i * 127 +
+        (
           rowData.row *
-            43) %
-          width);
+            29 +
+          i * 137
+        ) %
+        width;
 
       ctx.fillRect(
         x,
@@ -3268,7 +3029,7 @@ const frogger: GameEngineFactory = ({
             (0.2 +
               (i %
                 3) *
-                0.22),
+                0.2),
         3,
         3,
       );
@@ -3277,8 +3038,7 @@ const frogger: GameEngineFactory = ({
 
   function drawBackground() {
     ctx.fillStyle =
-      weather ===
-      "night"
+      weather === "night"
         ? "#0f172a"
         : weather ===
             "evening"
@@ -3300,8 +3060,7 @@ const frogger: GameEngineFactory = ({
     const lastRow =
       Math.ceil(
         cameraRow +
-          height /
-            rh,
+          VISIBLE_ROWS,
       ) + 2;
 
     for (
@@ -3311,35 +3070,69 @@ const frogger: GameEngineFactory = ({
       lastRow;
       row++
     ) {
-      const data =
+      const rowData =
         worldRows.get(
           row,
         );
 
       if (
-        data
+        rowData
       ) {
         drawRowBackground(
-          data,
-        );
-      } else {
-        /*
-         * Fallback while the next chunk is being generated.
-         */
-        ctx.fillStyle =
-          "#166534";
-
-        ctx.fillRect(
-          0,
-          worldToScreenY(
-            row,
-          ) -
-            rh / 2,
-          width,
-          rh,
+          rowData,
         );
       }
     }
+  }
+
+  function drawGrid() {
+    ctx.save();
+
+    ctx.strokeStyle =
+      "rgba(255,255,255,0.035)";
+
+    ctx.lineWidth = 1;
+
+    const firstRow =
+      Math.floor(
+        cameraRow,
+      ) - 1;
+
+    const lastRow =
+      Math.ceil(
+        cameraRow +
+          VISIBLE_ROWS,
+      ) + 1;
+
+    for (
+      let row =
+        firstRow;
+      row <=
+      lastRow;
+      row++
+    ) {
+      const y =
+        worldToScreenY(
+          row,
+        ) -
+        rh / 2;
+
+      ctx.beginPath();
+
+      ctx.moveTo(
+        0,
+        y,
+      );
+
+      ctx.lineTo(
+        width,
+        y,
+      );
+
+      ctx.stroke();
+    }
+
+    ctx.restore();
   }
 
   /*
@@ -3364,25 +3157,6 @@ const frogger: GameEngineFactory = ({
         : rh * 0.55;
 
     ctx.save();
-
-    /*
-     * Small variant differences stop every car from looking
-     * identical.
-     */
-    const bob =
-      object.variant ===
-      1
-        ? Math.sin(
-            object.x *
-              0.02,
-          ) *
-          0.4
-        : 0;
-
-    ctx.translate(
-      0,
-      bob,
-    );
 
     ctx.fillStyle =
       object.color;
@@ -3415,24 +3189,6 @@ const frogger: GameEngineFactory = ({
         object.width *
           0.58,
         h * 0.28,
-        3,
-      );
-
-      ctx.fill();
-    } else {
-      ctx.fillStyle =
-        "rgba(147,197,253,0.42)";
-
-      roundRect(
-        ctx,
-        object.x +
-          object.width *
-            0.56,
-        y +
-          h * 0.15,
-        object.width *
-            0.22,
-        h * 0.25,
         3,
       );
 
@@ -3470,9 +3226,6 @@ const frogger: GameEngineFactory = ({
 
     ctx.fill();
 
-    /*
-     * Front lights.
-     */
     ctx.fillStyle =
       "#fef3c7";
 
@@ -3588,44 +3341,6 @@ const frogger: GameEngineFactory = ({
       ctx.stroke();
     }
 
-    ctx.strokeStyle =
-      "rgba(217,164,107,0.28)";
-
-    ctx.lineWidth = 1;
-
-    for (
-      let i = 0;
-      i < 3;
-      i++
-    ) {
-      const px =
-        left +
-        object.width *
-          (0.25 +
-            i *
-              0.25);
-
-      ctx.beginPath();
-
-      ctx.moveTo(
-        px,
-        bodyY +
-          h * 0.2,
-      );
-
-      ctx.lineTo(
-        px +
-          h * 0.08,
-        bodyY +
-          h * 0.72,
-      );
-
-      ctx.stroke();
-    }
-
-    /*
-     * Cut ends.
-     */
     ctx.fillStyle =
       "#a87543";
 
@@ -3661,9 +3376,6 @@ const frogger: GameEngineFactory = ({
 
     ctx.fill();
 
-    /*
-     * Growth rings.
-     */
     ctx.strokeStyle =
       "#81562f";
 
@@ -3701,9 +3413,6 @@ const frogger: GameEngineFactory = ({
 
     ctx.stroke();
 
-    /*
-     * Knots.
-     */
     ctx.fillStyle =
       "#4b2d18";
 
@@ -3746,7 +3455,7 @@ const frogger: GameEngineFactory = ({
 
   /*
    * ---------------------------------------------------------
-   * LILY PADS
+   * LILY
    * ---------------------------------------------------------
    */
 
@@ -3770,11 +3479,6 @@ const frogger: GameEngineFactory = ({
         rh * 0.34,
       );
 
-    const rotation =
-      object.rotation +
-      object.variant *
-        0.02;
-
     ctx.save();
 
     ctx.translate(
@@ -3783,7 +3487,7 @@ const frogger: GameEngineFactory = ({
     );
 
     ctx.rotate(
-      rotation,
+      object.rotation,
     );
 
     ctx.fillStyle =
@@ -3803,24 +3507,24 @@ const frogger: GameEngineFactory = ({
         (Math.PI * 2 * i) /
         segments;
 
-      let localRadius =
-        radius;
-
-      localRadius *=
-        0.96 +
-        Math.sin(
-          i * 2.3 +
-            object.variant,
-        ) *
-          0.04;
+      let r =
+        radius *
+        (
+          0.96 +
+          Math.sin(
+            i * 2.3 +
+              object.variant,
+          ) *
+            0.04
+        );
 
       let px =
         Math.cos(angle) *
-        localRadius;
+        r;
 
       let py =
         Math.sin(angle) *
-        localRadius;
+        r;
 
       const notchAngle =
         -Math.PI / 2;
@@ -3845,10 +3549,12 @@ const frogger: GameEngineFactory = ({
       ) {
         const notchFactor =
           1 -
-          (0.24 -
+          (
+            0.24 -
             Math.abs(
               angleDifference,
-            )) /
+            )
+          ) /
             0.24 *
             0.72;
 
@@ -3898,10 +3604,6 @@ const frogger: GameEngineFactory = ({
     ctx.lineWidth =
       1.3;
 
-    const veinStart =
-      -radius *
-      0.05;
-
     for (
       let i = 0;
       i < 6;
@@ -3915,14 +3617,8 @@ const frogger: GameEngineFactory = ({
       ctx.beginPath();
 
       ctx.moveTo(
-        veinStart *
-          Math.cos(
-            angle,
-          ),
-        veinStart *
-          Math.sin(
-            angle,
-          ),
+        0,
+        0,
       );
 
       ctx.lineTo(
@@ -3975,8 +3671,10 @@ const frogger: GameEngineFactory = ({
     const jumpArc =
       frog.hopping
         ? Math.sin(
-            (frog.hopFrame /
-              HOP_FRAMES) *
+            (
+              frog.hopFrame /
+              HOP_FRAMES
+            ) *
               Math.PI,
           ) *
           rh *
@@ -3988,15 +3686,15 @@ const frogger: GameEngineFactory = ({
         ? 0.9
         : 1;
 
-    ctx.save();
-
-    ctx.globalAlpha =
-      alpha;
-
     const screenY =
       worldToScreenY(
         frog.y,
       );
+
+    ctx.save();
+
+    ctx.globalAlpha =
+      alpha;
 
     ctx.translate(
       frog.x,
@@ -4105,12 +3803,6 @@ const frogger: GameEngineFactory = ({
     ctx.restore();
   }
 
-  /*
-   * ---------------------------------------------------------
-   * COLLECTIBLES DRAWING
-   * ---------------------------------------------------------
-   */
-
   function drawFly() {
     if (!fly) {
       return;
@@ -4187,7 +3879,9 @@ const frogger: GameEngineFactory = ({
   }
 
   function drawPowerUp() {
-    if (!powerUp) {
+    if (
+      !powerUp
+    ) {
       return;
     }
 
@@ -4273,94 +3967,7 @@ const frogger: GameEngineFactory = ({
 
   /*
    * ---------------------------------------------------------
-   * PARTICLES
-   * ---------------------------------------------------------
-   */
-
-  function createParticle(
-    x: number,
-    y: number,
-    color: string,
-    amount = 1,
-  ) {
-    for (
-      let i = 0;
-      i < amount;
-      i++
-    ) {
-      const angle =
-        Math.random() *
-        Math.PI *
-        2;
-
-      const speed =
-        randomRange(
-          0.5,
-          2.8,
-        );
-
-      particles.push({
-        x,
-        y,
-        vx:
-          Math.cos(angle) *
-          speed,
-        vy:
-          Math.sin(angle) *
-          speed,
-        life:
-          randomRange(
-            15,
-            32,
-          ),
-        maxLife: 32,
-        size:
-          randomRange(
-            1,
-            3,
-          ),
-        color,
-      });
-    }
-  }
-
-  function burst(
-    x: number,
-    y: number,
-    color: string,
-    count = 12,
-  ) {
-    createParticle(
-      x,
-      y,
-      color,
-      count,
-    );
-  }
-
-  function addFloatingText(
-    x: number,
-    y: number,
-    text: string,
-    big = false,
-  ) {
-    floatingTexts.push({
-      x,
-      y,
-      text,
-      life: big
-        ? 40
-        : 28,
-      maxLife: big
-        ? 40
-        : 28,
-      big,
-    });
-  }
-
-  /*
-   * ---------------------------------------------------------
-   * HUD / RENDER
+   * RENDER
    * ---------------------------------------------------------
    */
 
@@ -4386,7 +3993,7 @@ const frogger: GameEngineFactory = ({
     drawGrid();
 
     /*
-     * Current cell.
+     * Current frog cell.
      */
     if (alive) {
       syncFrogColumnFromWorld();
@@ -4416,7 +4023,7 @@ const frogger: GameEngineFactory = ({
     }
 
     /*
-     * Destination cell while hopping.
+     * Destination cell.
      */
     if (
       frog.hopping
@@ -4458,16 +4065,11 @@ const frogger: GameEngineFactory = ({
         rh - 8,
       );
 
-      ctx.setLineDash(
-        [],
-      );
+      ctx.setLineDash([]);
 
       ctx.restore();
     }
 
-    /*
-     * Objects.
-     */
     const firstRow =
       Math.floor(
         cameraRow,
@@ -4476,10 +4078,12 @@ const frogger: GameEngineFactory = ({
     const lastRow =
       Math.ceil(
         cameraRow +
-          height /
-            rh,
+          VISIBLE_ROWS,
       ) + 2;
 
+    /*
+     * Draw roads/water objects.
+     */
     for (
       let row =
         firstRow;
@@ -4518,7 +4122,8 @@ const frogger: GameEngineFactory = ({
     drawPowerUp();
 
     if (
-      deathTimer > 0
+      deathTimer >
+      0
     ) {
       drawFrog(
         Math.max(
@@ -4649,33 +4254,12 @@ const frogger: GameEngineFactory = ({
       );
     }
 
-    /*
-     * Current area name.
-     */
-    ctx.textAlign =
-      "center";
-
-    ctx.fillStyle =
-      "rgba(255,255,255,0.75)";
-
-    ctx.font =
-      "600 10px system-ui";
-
-    ctx.fillText(
-      areaName(
-        areaForRow(
-          frog.row,
-        ),
-      ),
-      width / 2,
-      height - 28,
-    );
-
     const effects:
       string[] = [];
 
     if (
-      shieldTimer > 0
+      shieldTimer >
+      0
     ) {
       effects.push(
         "SHIELD",
@@ -4683,7 +4267,8 @@ const frogger: GameEngineFactory = ({
     }
 
     if (
-      slowTimer > 0
+      slowTimer >
+      0
     ) {
       effects.push(
         "SLOW",
@@ -4691,7 +4276,8 @@ const frogger: GameEngineFactory = ({
     }
 
     if (
-      superHopTimer > 0
+      superHopTimer >
+      0
     ) {
       effects.push(
         "2-HOP",
@@ -4708,7 +4294,8 @@ const frogger: GameEngineFactory = ({
     }
 
     if (
-      effects.length > 0
+      effects.length >
+      0
     ) {
       ctx.textAlign =
         "center";
@@ -4727,6 +4314,32 @@ const frogger: GameEngineFactory = ({
         38,
       );
     }
+
+    ctx.restore();
+
+    /*
+     * Area label.
+     */
+    ctx.save();
+
+    ctx.textAlign =
+      "center";
+
+    ctx.fillStyle =
+      "rgba(255,255,255,0.75)";
+
+    ctx.font =
+      "600 10px system-ui";
+
+    ctx.fillText(
+      areaName(
+        areaForRow(
+          frog.row,
+        ),
+      ),
+      width / 2,
+      height - 28,
+    );
 
     ctx.restore();
 
@@ -4823,7 +4436,7 @@ const frogger: GameEngineFactory = ({
         "GAME OVER",
         width / 2,
         height / 2 -
-          52,
+          55,
       );
 
       ctx.fillStyle =
@@ -4836,34 +4449,30 @@ const frogger: GameEngineFactory = ({
         `Score ${score}`,
         width / 2,
         height / 2 -
-          18,
+          20,
       );
 
       ctx.fillText(
         `Distance ${furthestRow}`,
         width / 2,
         height / 2 +
-          6,
+          4,
       );
 
       ctx.fillText(
         `Area ${areaNumber(
           furthestRow,
-        )}: ${areaName(
-          areaForRow(
-            furthestRow,
-          ),
         )}`,
         width / 2,
         height / 2 +
-          30,
+          28,
       );
 
       ctx.fillText(
         `Best flow x${bestCombo}`,
         width / 2,
         height / 2 +
-          54,
+          52,
       );
 
       ctx.fillStyle =
@@ -4876,7 +4485,7 @@ const frogger: GameEngineFactory = ({
         "Press SPACE or R to restart",
         width / 2,
         height / 2 +
-          86,
+          84,
       );
 
       ctx.restore();
@@ -4946,8 +4555,6 @@ const frogger: GameEngineFactory = ({
     particles = [];
     floatingTexts = [];
 
-    weather = "day";
-
     worldRows =
       new Map();
 
@@ -4960,20 +4567,8 @@ const frogger: GameEngineFactory = ({
     consecutiveDangerRows =
       0;
 
-    /*
-     * Generate a large initial buffer so there is never an
-     * empty area while the camera begins moving.
-     */
-    for (
-      let row = 0;
-      row <=
-      WORLD_BUFFER;
-      row++
-    ) {
-      generateRow(
-        row,
-      );
-    }
+    cameraRow = 0;
+    cameraTargetRow = 0;
 
     frog = {
       col: 6,
@@ -4997,8 +4592,19 @@ const frogger: GameEngineFactory = ({
       riding: null,
     };
 
-    cameraRow = 0;
-    cameraTargetRow = 0;
+    /*
+     * Initial world.
+     */
+    for (
+      let row = 0;
+      row <=
+      WORLD_AHEAD;
+      row++
+    ) {
+      generateRow(
+        row,
+      );
+    }
 
     updateAreaStatus();
 
@@ -5015,7 +4621,7 @@ const frogger: GameEngineFactory = ({
 
   /*
    * ---------------------------------------------------------
-   * KEYBOARD
+   * INPUT
    * ---------------------------------------------------------
    */
 
@@ -5025,9 +4631,14 @@ const frogger: GameEngineFactory = ({
     const key =
       event.key.toLowerCase();
 
+    /*
+     * In this infinite version:
+     *
+     * UP = forward
+     * DOWN = backward
+     */
     if (
-      key ===
-        "arrowup" ||
+      key === "arrowup" ||
       key === "w"
     ) {
       requestMove(
@@ -5036,7 +4647,6 @@ const frogger: GameEngineFactory = ({
       );
 
       event.preventDefault();
-
       return;
     }
 
@@ -5051,7 +4661,6 @@ const frogger: GameEngineFactory = ({
       );
 
       event.preventDefault();
-
       return;
     }
 
@@ -5066,7 +4675,6 @@ const frogger: GameEngineFactory = ({
       );
 
       event.preventDefault();
-
       return;
     }
 
@@ -5081,7 +4689,6 @@ const frogger: GameEngineFactory = ({
       );
 
       event.preventDefault();
-
       return;
     }
 
@@ -5092,7 +4699,6 @@ const frogger: GameEngineFactory = ({
       event.preventDefault();
 
       reset();
-
       return;
     }
 
