@@ -56,9 +56,11 @@ export async function updateProfile(input: {
   const parsed = profileUpdateSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid profile." };
   // Only write fields explicitly provided. Partial edits must not erase other fields.
-  const patch = Object.fromEntries(
-    Object.entries(parsed.data).map(([key, value]) => [key, value === "" ? null : value]),
-  );
+  const patch: { display_name?: string | null; bio?: string | null; pronouns?: string | null; status_text?: string | null; favourite_game_slug?: string | null } = {};
+  for (const key of ["display_name", "bio", "pronouns", "status_text", "favourite_game_slug"] as const) {
+    const value = parsed.data[key];
+    if (value !== undefined) patch[key] = value === "" ? null : value;
+  }
   if (!Object.keys(patch).length) return { ok: true };
   const auth = await authenticated();
   if (!auth) return { ok: false, error: AUTH_ERROR };
@@ -80,7 +82,11 @@ async function updateEquipped(field: "name_style" | "banner", value: string | nu
   if (current !== null && (typeof current !== "object" || Array.isArray(current))) {
     return { ok: false, error: "Your equipment data is invalid. Contact support." };
   }
-  const equipped: Record<string, unknown> = { ...((current ?? {}) as Record<string, unknown>) };
+  const equipped: Record<string, string> = {};
+  for (const [key, entry] of Object.entries((current ?? {}) as Record<string, unknown>)) {
+    if (typeof entry !== "string") return { ok: false, error: "Your equipment data is invalid. Contact support." };
+    equipped[key] = entry;
+  }
   if (value === null) delete equipped[field];
   else equipped[field] = value;
   const { error } = await auth.supabase.from("profiles")
@@ -199,7 +205,7 @@ async function setMediaUrl(field: "avatar_url" | "banner_url", url: string | nul
   if (!auth) return { ok: false, error: AUTH_ERROR };
   // IMPORTANT: URL syntax is not proof of ownership. Prefer an upload ID +
   // server-side ownership check; see migration notes accompanying this file.
-  const { error } = await auth.supabase.from("profiles").update({ [field]: url }).eq("id", auth.user.id);
+  const { error } = await auth.supabase.from("profiles").update(field === "avatar_url" ? { avatar_url: url } : { banner_url: url }).eq("id", auth.user.id);
   if (error) { logFailure("setMediaUrl", error); return { ok: false, error: SAVE_ERROR }; }
   refreshProfile();
   return { ok: true };
@@ -247,7 +253,7 @@ export async function uploadUserMedia(bucket: "avatars" | "banners", file: File)
 
   const { data } = storage.getPublicUrl(path);
   const field = bucket === "avatars" ? "avatar_url" : "banner_url";
-  const { error } = await supabase.from("profiles").update({ [field]: data.publicUrl }).eq("id", user.id);
+  const { error } = await supabase.from("profiles").update(field === "avatar_url" ? { avatar_url: data.publicUrl } : { banner_url: data.publicUrl }).eq("id", user.id);
   if (error) {
     logFailure("saveUploadedMedia", error);
     const { error: cleanupError } = await storage.remove([path]);

@@ -67,23 +67,25 @@ function parseRpcResponse(data: unknown, operation: string): RpcEnvelope {
   return { ok: false };
 }
 
-async function staffRpc(
-  procedure: "status_incident_open" | "status_incident_post" | "status_component_pin",
-  parameters: Record<string, unknown>,
+async function callStatusRpc(
+  operation: string,
+  invoke: (supabase: Awaited<ReturnType<typeof createClient>>) => Promise<{
+    data: unknown;
+    error: { code?: string } | null;
+  }>,
 ): Promise<RpcEnvelope> {
-  // Every call checks staff access before invoking the database operation.
+  // Always authorize before invoking a status mutation.
   await requireStaff();
-  const supabase = await createClient();
   try {
-    // These RPC names are fixed, not derived from user input.
-    const { data, error } = await supabase.rpc(procedure, parameters);
+    const supabase = await createClient();
+    const { data, error } = await invoke(supabase);
     if (error) {
-      console.error(`[status] ${procedure} failed`, { code: error.code });
+      console.error(`[status] ${operation} failed`, { code: error.code });
       return { ok: false };
     }
-    return parseRpcResponse(data, procedure);
+    return parseRpcResponse(data, operation);
   } catch (error) {
-    console.error(`[status] ${procedure} unexpected failure`, error);
+    console.error(`[status] ${operation} unexpected failure`, error);
     return { ok: false };
   }
 }
@@ -162,16 +164,18 @@ export async function openIncident(input: unknown): Promise<RpcResult & { ref?: 
   const parsed = incidentSchema.safeParse(input);
   if (!parsed.success) return validationError(parsed.error);
   const value = parsed.data;
-  const result = await staffRpc("status_incident_open", {
-    p_title: value.title,
-    p_body: value.body,
-    p_impact: value.impact,
-    p_kind: value.kind,
-    p_status: value.status ?? null,
-    p_components: value.components,
-    p_scheduled_for: asTimestamp(value.scheduled_for),
-    p_scheduled_until: asTimestamp(value.scheduled_until),
-  });
+  const result = await callStatusRpc("status_incident_open", (supabase) =>
+    supabase.rpc("status_incident_open", {
+      p_title: value.title,
+      p_body: value.body,
+      p_impact: value.impact,
+      p_kind: value.kind,
+      p_status: value.status ?? null,
+      p_components: value.components,
+      p_scheduled_for: asTimestamp(value.scheduled_for),
+      p_scheduled_until: asTimestamp(value.scheduled_until),
+    }),
+  );
   if (!result.ok) return { ok: false, error: staffError(result.error) };
   invalidateStatus();
   return { ok: true, ref: result.ref };
@@ -187,11 +191,13 @@ export async function postIncidentUpdate(input: unknown): Promise<RpcResult> {
   await requireStaff();
   const parsed = updateSchema.safeParse(input);
   if (!parsed.success) return validationError(parsed.error);
-  const result = await staffRpc("status_incident_post", {
-    p_id: parsed.data.id,
-    p_status: parsed.data.status as IncidentStatus,
-    p_body: parsed.data.body,
-  });
+  const result = await callStatusRpc("status_incident_post", (supabase) =>
+    supabase.rpc("status_incident_post", {
+      p_id: parsed.data.id,
+      p_status: parsed.data.status as IncidentStatus,
+      p_body: parsed.data.body,
+    }),
+  );
   if (!result.ok) return { ok: false, error: staffError(result.error) };
   invalidateStatus();
   return { ok: true };
@@ -212,11 +218,13 @@ export async function pinComponent(input: unknown): Promise<RpcResult> {
   await requireStaff();
   const parsed = pinSchema.safeParse(input);
   if (!parsed.success) return validationError(parsed.error);
-  const result = await staffRpc("status_component_pin", {
-    p_slug: parsed.data.slug,
-    p_status: (parsed.data.status as ComponentStatus | null) ?? null,
-    p_reason: parsed.data.reason || null,
-  });
+  const result = await callStatusRpc("status_component_pin", (supabase) =>
+    supabase.rpc("status_component_pin", {
+      p_slug: parsed.data.slug,
+      p_status: (parsed.data.status as ComponentStatus | null) ?? null,
+      p_reason: parsed.data.reason || null,
+    }),
+  );
   if (!result.ok) return { ok: false, error: staffError(result.error) };
   invalidateStatus();
   return { ok: true };

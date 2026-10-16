@@ -32,7 +32,7 @@ async function authenticated(): Promise<AuthContext | null> {
   return { supabase, userId: data.user.id };
 }
 
-function validationError(result: z.SafeParseReturnType<unknown, unknown>): RpcResult {
+function validationError(result: { success: true } | { success: false; error: z.ZodError }): RpcResult {
   return { ok: false, error: result.success ? "Invalid input" : result.error.issues[0]?.message ?? "Invalid input" };
 }
 
