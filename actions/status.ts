@@ -69,7 +69,7 @@ function parseRpcResponse(data: unknown, operation: string): RpcEnvelope {
 
 async function callStatusRpc(
   operation: string,
-  invoke: (supabase: Awaited<ReturnType<typeof createClient>>) => Promise<{
+  invoke: (supabase: Awaited<ReturnType<typeof createClient>>) => PromiseLike<{
     data: unknown;
     error: { code?: string } | null;
   }>,
