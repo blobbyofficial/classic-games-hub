@@ -23,3 +23,17 @@ Specify whether a claim is **present in source**, **merged**, **deployed**, **ve
 - Check all migration filenames and links, and refresh README counts after confirming deployed game availability.
 - Compare the full first-parent Git log with the `LANDED` index, extending beyond the current 100-result retrieval.
 - Check tags and GitHub Releases, production Vercel SHA and cron job output to verify deployment claims.
+
+## Release verification checklist
+
+- Confirm the deployed Vercel commit SHA, build status, and environment-specific configuration.
+- Check applied Supabase migrations and record results without exposing secrets.
+- Verify GitHub tags/releases independently of `CHANGELOG.md` headings.
+- Compare `lib/update-log.ts` `LANDED`/`UNASSIGNED` against a complete first-parent Git export.
+- Run lint, typecheck, build, and future automated unit/integration/browser suites before publishing.
+- Verify that status probes have recent database samples, not merely that a cron migration exists.
+- Update this index, README, affected feature guides and release notes together.
+
+## Current evidence boundary
+
+This audit cannot independently inspect Vercel deployment history or live Supabase job tables through the connected GitHub repository. It must not present source code as proof that those services ran successfully. The [history audit](repository-history.md) indexes the 100 most recent retrieved commits, not every historical commit. Completion of a truly exhaustive audit requires a full Git log export and deployment access.
