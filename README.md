@@ -37,7 +37,7 @@ features/            self-contained feature modules (auth, social, economy, …)
 hooks/               shared React hooks
 lib/
   supabase/          browser + server clients, auth proxy, cached queries
-  games/             canvas engine framework, registry, 23 engines
+  games/             canvas engine framework, registry, rebuild-stage engines
   stores/            Zustand stores (session, ui)
   utils.ts           formatting, level math, helpers
 services/            server-only data fetchers (cached with React cache)
@@ -52,10 +52,10 @@ styles/              Tailwind theme + global CSS
 
 - **Server-authoritative economy.** All credit/XP mutations happen inside
   `SECURITY DEFINER` Postgres functions (`submit_score`, `claim_daily_reward`,
-  `purchase_shop_item`, …). The client can never mint currency - `EXECUTE` on
+  `purchase_shop_item`, …). The browser must not be able to mint currency via privileged RPCs - `EXECUTE` on
   the internal reward helpers is revoked from `anon`/`authenticated`
-  (migration `0006`). Scores are clamped and rate-limited server-side.
-- **Row Level Security everywhere.** Every table has RLS enabled; players only
+  (migration `0006`; verify later effective grants). Scores have server-side limits and rate-limits; this alone is not proof that the submitted run occurred.
+- **Row Level Security.** The intended policy is to protect private data and grant only scoped access; periodically audit every table and function. Players should only
   read/write their own private rows, public data is explicitly opened up.
 - **Thin client, typed server actions.** UI calls typed Server Actions that
   validate with Zod and delegate to RPCs, then `revalidatePath`.
@@ -135,13 +135,10 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
 
 ## Features
 
-- **24 playable games** - Snake, Tetris, 2048, Breakout, Pong, Asteroids, Space
-  Invaders, Frogger, Neon Runner, Slithery, Target Rush, Gem Cascade, Bubble Pop,
-  Minesweeper, Memory, 15 Puzzle, Mastermind, Hangman, Simon, Noughts and Crosses,
-  Connect Four, Reversi, Whack-a-Mole, Lights Out - plus **Turbo Horizon**, an
-  OutRun-style pseudo-3D racer. Each is a self-contained, code-split canvas
-  engine with keyboard + touch controls; Noughts and Crosses includes local
-  pass-and-play.
+This section describes **implemented source capabilities**, not a guarantee every feature is enabled for every user on the public deployment. For confirmed live availability, check the deployed app and its feature flags.
+
+
+- **Browser game library** - includes Snake, Tetris, 2048, Breakout, Pong, Asteroids, Space Invaders, Frogger, Neon Runner, Slithery, Target Rush, Gem Cascade, Bubble Pop, Minesweeper, Memory, 15 Puzzle, Mastermind, Hangman, Simon, Noughts and Crosses, Connect Four, Reversi, Whack-a-Mole, Lights Out and Turbo Horizon, among others. These are code-split engines; consult the live games catalogue and per-game development flags for current public availability.
 - **Accounts** - email/username + password and OAuth (Discord/Google/GitHub/
   Microsoft); profiles with avatars, tiered banners, bios, pronouns, a status
   line, levels, XP, credits, badges, achievements and inventory.
@@ -159,8 +156,6 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
   **gifting** at 75% of list price. No pay-to-win.
 - **Store & inventory** - live cosmetic previews, apply-from-shop, and an
   inventory with search, filters and live boost timers.
-- **Optional rewarded ads** - an opt-in "2× credits" setting, fully removable
-  via an admin flag; never intrusive.
 - **Discord bot** - serverless slash commands (economy, profiles, `/rank`
   levels, role sync, moderation) served by the site itself, secure account
   linking from Settings → Connections, an Arcane-replacing level system and
@@ -180,10 +175,17 @@ Game thumbnails are generated art: `node scripts/generate-thumbnails.mjs`.
 - Column-level grants so players can't edit credits/xp/level/role/username.
 - `EXECUTE` revoked on internal reward functions.
 - Server Actions validate all input with Zod; scoring is server-authoritative
-  and rate-limited.
+  and rate-limited; score authenticity still needs verification.
 - Security headers (`X-Frame-Options`, `nosniff`, referrer policy, permissions
   policy) set in `next.config.ts`.
 - Open-redirect-safe auth callback.
+
+## Release evidence and operational caveats
+
+- Source version (`package.json`: `2.0.0`) differs from the curated release ledger (`lib/update-log.ts`, latest described `v1.5.12`). This is an unresolved metadata mismatch, not evidence v2 shipped.
+- Uptime history requires scheduled probes and production Vault configuration; see [cron documentation](docs/cron-jobs.md).
+- CI lint, types and build are not substitutes for browser and database tests.
+- See [repository history](docs/repository-history.md) for chronology, observed commits and unresolved deployment evidence.
 
 ## Roadmap
 
