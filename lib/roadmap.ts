@@ -68,6 +68,62 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
  */
 export const ROADMAP: RoadmapRelease[] = [
   {
+    version: "v1.6.1",
+    codename: "Reliability First",
+    status: "next",
+    timeframe: "After the shared game foundation; before public game waves",
+    summary:
+      "Stop adding surface area until the machinery underneath it can be trusted. This is a verified engineering audit and hardening release, not another feature launch: test the actual game and economy rules, fix status monitoring visibility, establish measurable performance baselines, and make account, multiplayer and deployment failure modes observable. Findings below are audit tasks or confirmed limitations, not claims that every suspected vulnerability is exploitable.",
+    groups: [
+      {
+        heading: "Real tests, not just successful builds",
+        icon: "ShieldCheck",
+        items: [
+          { title: "Build automated test infrastructure", description: "Current package scripts and .github/workflows/ci.yml run lint, typecheck and builds but have no test job. Add unit tests for pure game rules, integration tests for actions and database RPCs, browser end-to-end tests for sign-in, purchases and play, and a separate Discord worker test gate. Wire all suites into CI.", status: "next" },
+          { title: "Exercise money and identity invariants", description: "Test that credits and XP cannot be minted by callers, duplicate reward requests are idempotent, shop transactions remain atomic under concurrency, RLS blocks cross-user reads and writes, and MFA gates privileged operations. Verify against a disposable database with migrations applied, not a mocked Supabase client.", status: "next" },
+          { title: "Test game lifecycle on real devices", description: "Cover pause/resume, restart, destroy/listener cleanup, rapid sequential keys, touch gestures, orientation changes, reduced motion, and mobile-browser viewport changes. Add focused canvas visual regression tests and real device acceptance checks.", status: "next" },
+        ],
+      },
+      {
+        heading: "Honest scores and multiplayer trust",
+        icon: "Shield",
+        items: [
+          { title: "Audit the score trust boundary", description: "actions/games.ts accepts browser-submitted score and duration and validates their shape before the submit_score RPC. Inspect the effective 0067/0069/0070 SQL body and deployed grants; test caps, durations, replay/double-submission and reward abuse. Browser values alone cannot prove a run happened, even when they are within limits.", status: "next" },
+          { title: "Prototype deterministic run verification", description: "Try seeded deterministic input replays for one suitable game; validate on a trusted server and compare cost, latency and fairness before rolling it out. Do not treat Rust or WebAssembly on a player's own device as anti-cheat protection.", status: "later" },
+          { title: "Validate party events, not just party IDs", description: "Audit Supabase Realtime private-channel policies and subscription membership. Reject invalid senders, out-of-turn moves, impossible score progress, stale match IDs and duplicate events; test reconnection, leader departure and desynchronisation.", status: "next" },
+        ],
+      },
+      {
+        heading: "Monitoring that really runs",
+        icon: "Activity",
+        items: [
+          { title: "Repair status-probe data collection", description: "The status-probe route exists, and 0075_scheduled_jobs.sql configures pg_cron; deployment is a separate step. Verify that migrations 0071 and 0075 are applied, the Vault cron_secret exists and matches CRON_SECRET, jobs are active, net.http_get responses succeed, and status_record_checks writes rows. Use admin_cron_status and cron.job_run_details; do not assume missing uptime means everything is healthy.", status: "next" },
+          { title: "Show freshness and missing data explicitly", description: "Expose last successful check, overdue probe, last scheduler attempt, failures, missing secret and unknown uptime separately from operational or maintenance. Add alerts when samples stop, without fabricating historical uptime.", status: "next" },
+          { title: "Make optional Discord components truthful", description: "Distinguish a gateway worker intentionally not deployed from a failed worker, and document the actual setup path. Verify heartbeat and slash-command endpoints independently rather than treating the entire bot as one status.", status: "next" },
+        ],
+      },
+      {
+        heading: "Security and operations quality gates",
+        icon: "LockKeyhole",
+        items: [
+          { title: "Finish CSP enforcement safely", description: "proxy.ts currently sends Content-Security-Policy-Report-Only. Capture real violations, address next-themes nonce and allowed destinations, test login and messaging, then introduce enforcing CSP without breaking legitimate functionality.", status: "next" },
+          { title: "Audit all privileged database functions", description: "Review effective grants after later migrations, security-definer search_path, RLS, user-supplied IDs, cron_call privileges and sensitive API authorisation. Add role-based regression tests; document any findings before calling them vulnerabilities.", status: "next" },
+          { title: "Automate safe dependency and deployment checks", description: "Add dependency vulnerability review, secret scanning, migration verification and an environment configuration check that never prints credentials. Keep the two daily Vercel cron entries unless the deployment plan changes; sub-daily jobs belong to pg_cron.", status: "next" },
+        ],
+      },
+      {
+        heading: "Performance, documentation and simplification",
+        icon: "Gauge",
+        items: [
+          { title: "Set a measured performance baseline", description: "Capture client JS, hydration, LCP, INP, CLS, network and 60 FPS frame-time data on representative low-end phones. Then reduce unnecessary client boundaries, duplicate reads and subscriptions only where measurements show a payoff.", status: "next" },
+          { title: "Repair conflicting release documentation", description: "package.json declares 2.0.0 while CLAUDE.md and the public roadmap explicitly reserve no v2 release. README.md also contains stale counts, roadmap dates and removed dependencies/features. Reconcile actual shipped version, generated release log, manifests and docs from one source of truth; don't claim a release shipped by renumbering it.", status: "next" },
+          { title: "Delete obsolete paths, not working features", description: "Search for dead imports, duplicate solo/party game shells, old assets, unreachable code and unused dependencies. Confirm actual usage and migration history before deleting; old migrations remain append-only and simulated ads already removed by 0042 must not be reintroduced.", status: "next" },
+          { title: "Avoid language rewrites without evidence", description: "Keep Next.js and account UI in TypeScript, transactional rules in SQL/PLpgSQL, and add no Python or Go services merely for variety. Compare one optional Rust/Wasm pure game-simulation prototype against TypeScript on load size, frame time, maintenance and trusted replay support before considering broader adoption.", status: "later" },
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.6.0",
     codename: "Ground Up",
     status: "in-progress",
@@ -280,7 +336,7 @@ export const ROADMAP: RoadmapRelease[] = [
     ],
   },
   {
-    version: "v1.6.1",
+    version: "v1.6.2",
     codename: "Arcade Reborn",
     status: "next",
     timeframe: "After v1.6.0",
@@ -502,10 +558,10 @@ export const ROADMAP: RoadmapRelease[] = [
     ],
   },
   {
-    version: "v1.6.2",
+    version: "v1.6.3",
     codename: "Puzzle Reborn",
     status: "later",
-    timeframe: "After v1.6.1",
+    timeframe: "After v1.6.2",
     summary:
       "The eleven puzzle games, which between them contain both the best-built engine on the site and the thinnest. Four of them currently do not animate their core state change at all - tiles and cards simply teleport - so this wave is where the new animation layer earns its keep.",
     groups: [
@@ -804,10 +860,10 @@ export const ROADMAP: RoadmapRelease[] = [
     ],
   },
   {
-    version: "v1.6.3",
+    version: "v1.6.4",
     codename: "Sharp Shooters",
     status: "later",
-    timeframe: "After v1.6.2",
+    timeframe: "After v1.6.3",
     summary:
       "The last seven - three shooters and four strategy games - and the arcade is whole again. The strategy games are the ones hiding the most: three of them have opponents far better than anything the interface admits to, and none of them exposes a difficulty setting at all.",
     groups: [
@@ -1387,4 +1443,7 @@ export const DEFINITION_OF_DONE: string[] = [
   "Linting passes",
   "The project builds successfully",
   "Both mobile and desktop are verified working",
+  "Automated tests and security regression checks pass",
+  "Monitoring, rollout and rollback are verified for operational changes",
+  "Game input, pause, resize and reduced-motion checks pass where relevant",
 ];
