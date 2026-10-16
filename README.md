@@ -1,9 +1,8 @@
 # Classic Games Hub
 
-A modern, production-ready arcade platform - 23 playable classics wrapped in a
-full community layer: accounts, friends, real-time chat, a virtual credits
-economy, achievements, leaderboards, daily challenges, cosmetics, and an admin
-dashboard. Rebuilt from the ground up for 2026.
+**Documentation:** [Start here](docs/documentation-index.md) · [Release and commit audit](docs/repository-history.md) · [Changelog](CHANGELOG.md) · [Roadmap](lib/roadmap.ts).
+
+A Next.js and Supabase browser arcade with games and community features: accounts, friends, chat, credits, achievements, leaderboards, challenges, cosmetics and administration. The game library is in a staged rebuild; an engine present in source is not necessarily publicly playable.
 
 > Founder: [BlobbyOfficial](https://www.blobbyofficial.com) ·
 > Community: [Discord](https://discord.gg/A8PThHqedD)
