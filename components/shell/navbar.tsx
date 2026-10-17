@@ -19,7 +19,7 @@ export function Navbar() {
   const userId = useSessionStore((s) => s.userId);
 
   return (
-    <header className="halloween-navigation sticky top-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl backdrop-saturate-150">
+    <header className="halloween-navigation sticky top-0 z-40 border-b border-border/60 bg-background/95 backdrop-blur-md">
       <div className="mx-auto flex h-16 w-full max-w-[1600px] min-w-0 items-center gap-1.5 px-2 min-[380px]:gap-2 min-[380px]:px-3 sm:gap-3 sm:px-6">
         <MobileMenu />
         <Logo className="min-w-0 shrink-0 [&>span:last-child]:hidden sm:[&>span:last-child]:inline lg:w-52" />
@@ -27,7 +27,7 @@ export function Navbar() {
 
         <button
           onClick={() => setCommandOpen(true)}
-          className="halloween-search group ml-auto flex h-10 min-w-0 max-w-md flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-muted/40 px-2 text-sm text-muted-foreground transition-[background-color,border-color] duration-200 hover:border-primary/30 hover:bg-muted/70 min-[380px]:justify-start sm:gap-2.5 sm:px-3 lg:ml-0"
+          className="halloween-search group ml-auto flex h-11 min-w-0 max-w-md flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-muted/40 px-2 text-sm text-muted-foreground transition-[background-color,border-color] duration-200 hover:border-primary/30 hover:bg-muted/70 min-[380px]:justify-start sm:gap-2.5 sm:px-3 lg:ml-0"
           aria-keyshortcuts="Meta+K Control+K"
         >
           <Search className="size-4 shrink-0 transition-transform duration-200 motion-safe:group-hover:scale-110" />
