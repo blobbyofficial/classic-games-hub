@@ -55,15 +55,21 @@ export function roundRect(
 
 /** A short beep using the Web Audio API (best-effort, silent on failure). */
 let audioCtx: AudioContext | null = null;
+let soundEffectsLevel = 1;
+/** Apply a saved 0–100 sound-effects setting to all game sounds. */
+export function setGameSoundEffectsVolume(value: number): void {
+  soundEffectsLevel = Number.isFinite(value) ? Math.max(0, Math.min(100, value)) / 100 : 1;
+}
+export function getGameSoundEffectsVolume(): number { return soundEffectsLevel; }
 export function beep(freq = 440, duration = 0.08, type: OscillatorType = "square", volume = 0.04) {
-  if (typeof window === "undefined") return;
+  if (typeof window === "undefined" || soundEffectsLevel === 0) return;
   try {
     audioCtx ??= new (window.AudioContext || (window as unknown as { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
     const osc = audioCtx.createOscillator();
     const gain = audioCtx.createGain();
     osc.type = type;
     osc.frequency.value = freq;
-    gain.gain.value = volume;
+    gain.gain.value = Math.max(0.0001, Math.min(1, volume * soundEffectsLevel));
     osc.connect(gain);
     gain.connect(audioCtx.destination);
     osc.start();
