@@ -34,9 +34,10 @@ export function GameCard({
       <Link
         href={`/games/${game.slug}`}
         className={cn(
-          "hover-lift block overflow-hidden rounded-2xl border border-border bg-card shadow-sm",
+          "hover-lift block overflow-hidden rounded-2xl border border-border bg-card shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
           comingSoon && "opacity-80",
         )}
+        aria-label={`${game.title} — ${comingSoon ? "Coming soon" : inDevelopment ? "In development" : earlyAccess ? "Early access" : "View game"}`}
       >
         <div className="relative aspect-[8/5] overflow-hidden bg-muted">
           <Image
@@ -59,7 +60,7 @@ export function GameCard({
               already has a gradient over it, so raising the opacity gets the
               same legibility for nothing. */}
           <div className="absolute left-2.5 top-2.5 flex gap-1.5">
-            {game.featured && !comingSoon && (
+            {game.featured && !comingSoon && !inDevelopment && (
               <Badge variant="gold" className="border-transparent bg-black/70 text-gold">
                 <Star className="fill-current" /> Featured
               </Badge>
@@ -74,7 +75,7 @@ export function GameCard({
                 <Wrench className="size-3" /> In development
               </Badge>
             )}
-            {earlyAccess && !comingSoon && (
+            {earlyAccess && !comingSoon && !inDevelopment && (
               <Badge className="border-none bg-[#f47fff] text-white">
                 <Lock className="size-3" /> Early access
               </Badge>
