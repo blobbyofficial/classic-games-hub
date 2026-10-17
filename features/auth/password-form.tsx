@@ -64,12 +64,12 @@ export function PasswordForm({ mode, next }: { mode: "login" | "register"; next?
             autoComplete={mode === "login" ? "current-password" : "new-password"}
             placeholder={mode === "register" ? "At least 8 characters" : "••••••••"}
             required
-            className="pr-10"
+            className="pr-12"
           />
           <button
             type="button"
             onClick={() => setShow((s) => !s)}
-            className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+            className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-lg text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-primary"
             aria-label={show ? "Hide password" : "Show password"}
           >
             {show ? <EyeOff className="size-4" /> : <Eye className="size-4" />}
@@ -78,12 +78,12 @@ export function PasswordForm({ mode, next }: { mode: "login" | "register"; next?
       </div>
 
       {state?.error && (
-        <p className="flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
+        <p role="alert" className="flex items-center gap-2 rounded-lg bg-destructive/10 px-3 py-2 text-sm text-destructive">
           <AlertCircle className="size-4 shrink-0" /> {state.error}
         </p>
       )}
       {state?.message && (
-        <p className="flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2 text-sm text-success">
+        <p role="status" className="flex items-center gap-2 rounded-lg bg-success/10 px-3 py-2 text-sm text-success">
           <CheckCircle2 className="size-4 shrink-0" /> {state.message}
         </p>
       )}
