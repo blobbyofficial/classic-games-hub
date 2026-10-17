@@ -15,6 +15,7 @@ interface SessionState {
     settings: UserSettings | null;
   }) => void;
   patchProfile: (patch: Partial<Profile>) => void;
+  patchSettings: (patch: Partial<UserSettings>) => void;
   setCredits: (credits: number) => void;
   setUnread: (n: number) => void;
   setPendingRequests: (n: number) => void;
@@ -34,6 +35,8 @@ export const useSessionStore = create<SessionState>((set) => ({
   setSession: ({ userId, profile, settings }) => set({ userId, profile, settings }),
   patchProfile: (patch) =>
     set((s) => (s.profile ? { profile: { ...s.profile, ...patch } } : {})),
+  patchSettings: (patch) =>
+    set((s) => (s.settings ? { settings: { ...s.settings, ...patch } } : {})),
   setCredits: (credits) => set((s) => (s.profile ? { profile: { ...s.profile, credits } } : {})),
   setUnread: (unreadNotifications) => set({ unreadNotifications }),
   setPendingRequests: (pendingFriendRequests) => set({ pendingFriendRequests }),
