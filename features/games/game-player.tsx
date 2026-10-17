@@ -35,6 +35,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<GameEngineHandle | null>(null);
+  const engineGeneration = useRef(0);
   const startTimeRef = useRef(0);
   const submittingRef = useRef(false);
   const { resolvedTheme } = useTheme();
@@ -125,7 +126,9 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   const buildEngine = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const generation = ++engineGeneration.current;
     handleRef.current?.destroy();
+    handleRef.current = null;
     setLoadingEngine(true);
     setGameOver(false);
     setResult(null);
@@ -142,7 +145,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     }
 
     loader().then(({ default: factory }) => {
-      if (!canvasRef.current) return;
+      if (generation !== engineGeneration.current || !canvasRef.current) return;
       const reduced =
         typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       syncCanvasResolution();
@@ -162,12 +165,20 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       // is a new run - the score resets and the clock restarts - so the theme
       // and difficulty rebuilds firing this is correct rather than a leak.
       gameStart(slug, difficulty);
+    }).catch(() => {
+      if (generation !== engineGeneration.current) return;
+      setStatus("Could not load this game. Please retry.");
+      setLoadingEngine(false);
     });
   }, [engineId, w, h, difficulty, handleGameOver, syncCanvasResolution, slug]);
 
   useEffect(() => {
     buildEngine();
-    return () => handleRef.current?.destroy();
+    return () => {
+      engineGeneration.current += 1;
+      handleRef.current?.destroy();
+      handleRef.current = null;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engineId, resolvedTheme, difficulty]);
 
