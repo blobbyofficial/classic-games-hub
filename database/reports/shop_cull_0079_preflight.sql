@@ -14,10 +14,6 @@ with ranked as (
   select t.id, t.user_id, -t.amount as paid
   from public.credit_transactions t join retired r on r.slug = t.ref_id
   where t.reason = 'shop_purchase' and t.ref_type = 'shop_item' and t.amount < 0
-    and not exists (
-      select 1 from public.shop_catalogue_refunds rf
-      where rf.purchase_transaction_id = t.id
-    )
 )
 select
   (select count(*) from ranked) as eligible_regular_items,
