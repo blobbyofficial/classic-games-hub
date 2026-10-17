@@ -111,6 +111,31 @@ export function ReportChart({
         </div>
       </div>
 
+      <details className="rounded-lg border border-border/70 p-3 text-xs">
+        <summary className="cursor-pointer font-medium text-foreground">
+          View report counts as text
+        </summary>
+        <div className="mt-3 max-h-48 overflow-y-auto">
+          {buckets.length === 0 ? (
+            <p className="text-muted-foreground">No report history recorded.</p>
+          ) : (
+            <table className="w-full text-left">
+              <thead>
+                <tr><th scope="col" className="pb-2">Time</th><th scope="col" className="pb-2 text-right">Reports</th></tr>
+              </thead>
+              <tbody>
+                {buckets.map((bucket) => (
+                  <tr key={bucket.at} className="border-t border-border/50">
+                    <th scope="row" className="py-1 font-normal">{new Date(bucket.at).toLocaleString("en-GB")}</th>
+                    <td className="py-1 text-right tabular-nums">{bucket.reports}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </div>
+      </details>
+
       <div className="flex justify-between text-[10px] text-muted-foreground">
         <span>{buckets[0] ? timeLabel(buckets[0].at) : ""}</span>
         <span>{buckets[Math.floor(buckets.length / 2)] ? timeLabel(buckets[Math.floor(buckets.length / 2)].at) : ""}</span>
