@@ -31,6 +31,9 @@ jobs:
       - name: Typecheck
         run: npm run typecheck
 
+      - name: Game loop lifecycle test
+        run: node scripts/test-game-loop.cjs
+
       - name: Build
         run: npm run build
         env:
