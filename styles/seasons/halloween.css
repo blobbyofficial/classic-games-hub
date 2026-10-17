@@ -180,3 +180,5 @@ html[data-season="halloween"] .halloween-normal-heading {display:none}
 html[data-season="halloween"] .halloween-season-heading {display:inline;color:#ebd6ac}
 html[data-season="halloween"] .halloween-hero .halloween-season-heading:last-child {color:#f29b51}
 @media(max-width:640px) {html[data-season="halloween"] .halloween-player-shell {padding:5px}html[data-season="halloween"] .halloween-player-stage {border-width:3px}}
+
+html[data-season='halloween'] .halloween-scene { background-image: url('/seasons/halloween/arcade.svg'); background-size: cover; background-position: right center; }
