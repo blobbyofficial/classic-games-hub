@@ -68,6 +68,7 @@ const slithery: GameEngineFactory = ({
 }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
+  let elapsedSeconds = 0;
 
   const WORLD_SIZE = tune(difficulty, {
     easy: 5200,
@@ -419,6 +420,7 @@ const slithery: GameEngineFactory = ({
     boosting = false;
     started = false;
     alive = true;
+    elapsedSeconds = 0;
 
     pellets = [];
     particles = [];
@@ -1332,10 +1334,7 @@ const slithery: GameEngineFactory = ({
 
     onGameOver(
       Math.floor(playerScore),
-      Math.max(
-        1,
-        Math.round(playerLength),
-      ),
+      Math.max(1, Math.round(elapsedSeconds)),
     );
   }
 
@@ -1451,6 +1450,7 @@ const slithery: GameEngineFactory = ({
       return;
     }
 
+    elapsedSeconds += dt;
     updatePlayer(dt);
 
     if (!alive) {
@@ -2263,6 +2263,7 @@ const slithery: GameEngineFactory = ({
   function onTouchStart(e: TouchEvent) {
     const touch =
       e.touches[0];
+    if (!touch) return;
 
     mouseWorld =
       canvasToWorld(
@@ -2279,6 +2280,7 @@ const slithery: GameEngineFactory = ({
   function onTouchMove(e: TouchEvent) {
     const touch =
       e.touches[0];
+    if (!touch) return;
 
     mouseWorld =
       canvasToWorld(
@@ -2292,6 +2294,10 @@ const slithery: GameEngineFactory = ({
   }
 
   function onTouchEnd() {
+    boosting = false;
+  }
+
+  function onTouchCancel() {
     boosting = false;
   }
 
@@ -2439,6 +2445,8 @@ const slithery: GameEngineFactory = ({
     onTouchEnd,
   );
 
+  canvas.addEventListener("touchcancel", onTouchCancel);
+
   window.addEventListener(
     "keydown",
     onKeyDown,
@@ -2509,6 +2517,8 @@ const slithery: GameEngineFactory = ({
         "touchend",
         onTouchEnd,
       );
+
+      canvas.removeEventListener("touchcancel", onTouchCancel);
 
       window.removeEventListener(
         "keydown",
