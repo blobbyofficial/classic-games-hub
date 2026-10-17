@@ -133,6 +133,16 @@ export const ROADMAP: RoadmapRelease[] = [
           { title: "Track fixes against a real acceptance checklist", description: "For each issue record reproduction steps, affected routes, severity, PR, deployed commit and device verification. Keep unverified risks distinct from confirmed defects.", status: "in-progress" },
         ],
       },
+      {
+        heading: "Player experience intelligence — Phase 7",
+        icon: "BarChart3",
+        blurb: "Privacy-first usability evidence, with strict safeguards for younger players. Collection remains disabled until legal and consent requirements are approved.",
+        items: [
+          { title: "Design privacy and consent before collection", description: "Complete UK Children's Code, UK GDPR and PECR assessment; minimize metrics, set retention and deletion policies and ensure optional analytics is off until legally configured.", status: "in-progress" },
+          { title: "Build device, usability and performance aggregates", description: "Plan broad screen/input capability buckets, game-start failures, rendering performance, accessibility friction and sparse-count suppression. Exclude browser fingerprints, raw chat, search phrases and exact ages.", status: "in-progress" },
+          { title: "Optional player feedback and aggregate cohorts", description: "Design a voluntary child-appropriate feedback flow, optional broad age groups, retention cohort counts and actionable dashboard with minimum-size privacy protections.", status: "idea" },
+        ],
+      },
     ],
   },
 
