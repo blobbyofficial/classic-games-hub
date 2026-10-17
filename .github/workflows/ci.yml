@@ -80,3 +80,37 @@ jobs:
 
       - name: Build
         run: npm run build
+
+  staging-read-only:
+    name: Staging database and two-account acceptance (opt-in)
+    if: ${{ vars.V16_STAGING_READ_ONLY_ENABLED == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      STAGING_ISOLATED_CONFIRMED: yes
+      STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+      STAGING_SITE_URL: ${{ secrets.STAGING_SITE_URL }}
+      STAGING_PLAYER_A_EMAIL: ${{ secrets.STAGING_PLAYER_A_EMAIL }}
+      STAGING_PLAYER_A_PASSWORD: ${{ secrets.STAGING_PLAYER_A_PASSWORD }}
+      STAGING_PLAYER_B_EMAIL: ${{ secrets.STAGING_PLAYER_B_EMAIL }}
+      STAGING_PLAYER_B_PASSWORD: ${{ secrets.STAGING_PLAYER_B_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - name: Refuse known production database and site endpoints
+        run: |
+          STAGING_KIND=database STAGING_TARGET_URL="$STAGING_DATABASE_URL" node scripts/assert-isolated-staging.cjs
+          STAGING_KIND=website STAGING_TARGET_URL="$STAGING_SITE_URL" node scripts/assert-isolated-staging.cjs
+      - run: npm ci
+      - name: Check schema RPCs and RLS on disposable staging
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y postgresql-client
+          psql -X -v ON_ERROR_STOP=1 "$STAGING_DATABASE_URL" -f database/tests/001_security_contracts.sql
+          psql -X -v ON_ERROR_STOP=1 "$STAGING_DATABASE_URL" -f database/tests/phase3_role_contracts.sql
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Check isolated login and private routes for two synthetic users
+        run: node --test scripts/test-staging-accounts.cjs
