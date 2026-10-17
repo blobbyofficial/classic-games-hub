@@ -26,20 +26,27 @@ begin
   lock table public.shop_items in share row exclusive mode;
   lock table public.credit_transactions in share row exclusive mode;
 
-  -- Keep the strongest ~20% *in each cosmetic kind*, so categories aren't
-  -- accidentally wiped out. Do not rely on static slugs that may have changed.
+  -- Human-curated permanent catalogue. This selection is deliberate, not
+  -- calculated from rank or price; edits to sort weights cannot change it.
+  -- Seasonal, staff-only, zero-price and boost items remain outside the cull.
   create temporary table _retired_shop_items on commit drop as
-  with ranked as (
-    select id, slug, kind, price,
-      row_number() over (partition by kind order by sort_weight desc, price desc, slug) as rank_in_kind,
-      count(*) over (partition by kind) as kind_count
-    from public.shop_items
-    where available = true and staff_only = false
-      and seasonal = false and price > 0
-      and kind not in ('xp_boost', 'credit_boost')
-  )
-  select id, slug, kind, price from ranked
-  where rank_in_kind > greatest(1, ceil(kind_count * 0.20)::integer);
+  select id, slug, kind, price from public.shop_items
+  where available = true and staff_only = false
+    and seasonal = false and price > 0
+    and kind not in ('xp_boost', 'credit_boost')
+    and slug not in (
+      'frame-neon-ring','frame-violet-pulse',
+      'badge-champion',
+      'banner-nebula',
+      'trail-comet',
+      'deco-crown','deco-headphones',
+      'effect-matrix','effect-fireflies',
+      'entrance-glitch',
+      'nameplate-cyber',
+      'pframe-obsidian','pframe-prism',
+      'theme-deep-space',
+      'track-neon-drift'
+    );
 
   select count(*) into v_retired from _retired_shop_items;
 
