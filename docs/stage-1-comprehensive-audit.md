@@ -93,6 +93,12 @@ GitHub text search also found **more than 40** page/default-route modules, multi
 
 Recommended screenshot baseline: **360, 390, 768, 1024 and 1440 px** in both light and dark, plus keyboard focus, loading, empty, error, and authenticated states. This is a **test specification, not a claim of screenshots taken**.
 
+## Final live retrieval attempt — 17 October 2026
+
+A fresh retrieval was attempted for the project's documented public hostname at `/`, `/games`, `/status` and `/roadmap`. The only homepage content returned was a **six-month-old cached static edition** describing a 22-game brochure; each of the three Next.js routes returned **cache miss**, not a confirmed 404 or an application error. This provides **no trustworthy screenshot, deployed SHA, timing trace or present-day site-state evidence**. It must not be represented as successful live verification. Follow-up requires access to an actual browser session on the active deployment.
+
+The codebase and product audit documentation has reached its **source-review deliverable**, but the originally promised cross-device, authenticated and production validation is **still open**. No change of percentage can substitute for those checks.
+
 ## Evidence to mark Stage 1 fully complete
 
 - [x] Repository architecture and major feature families enumerated
