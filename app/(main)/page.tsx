@@ -136,21 +136,22 @@ function Hero({
     /* The ambient glow is painted as a background gradient rather than two
        blurred divs - same look, no filter for the compositor to maintain, which
        is what kept this section janky while scrolling on low-end phones. */
-    <section className="relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid" />
+    <section className="halloween-hero relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
+      <div aria-hidden className="halloween-scene pointer-events-none absolute inset-0 bg-grid" />
       <div className="relative max-w-2xl motion-safe:animate-rise">
+        <p className="halloween-eyebrow mb-4 hidden text-xs font-semibold [[data-season=halloween]_&]:block">October at the arcade // 2026</p>
         <h1 className="text-display font-black">
           {displayName ? (
             <>
               Welcome back,
               <br />
-              <span className="text-gradient">{displayName}</span>
+              <span className="text-gradient halloween-highlight">{displayName}</span>
             </>
           ) : (
             <>
               Your arcade,
               <br />
-              <span className="text-gradient">reimagined.</span>
+              <span className="text-gradient halloween-highlight">reimagined.</span>
             </>
           )}
         </h1>
@@ -158,19 +159,20 @@ function Hero({
           Play {gameCount} timeless games, earn credits and XP, unlock achievements, climb the
           leaderboards and hang out with friends. No pay-to-win - just the classics, done right.
         </p>
+        <p className="mt-4 hidden text-sm font-medium text-[#dfb883] [[data-season=halloween]_&]:block">The arcade is open after dark. Dare to play one more round?</p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <Button size="lg" variant="gradient" asChild>
+          <Button size="lg" variant="gradient" className="halloween-cta" asChild>
             <Link href="/games">
               <Gamepad2 /> Browse games
             </Link>
           </Button>
           {!isAuthed && (
-            <Button size="lg" variant="glass" asChild>
+            <Button size="lg" variant="glass" className="halloween-secondary" asChild>
               <Link href="/register">Create free account</Link>
             </Button>
           )}
         </div>
-        <dl className="mt-9 flex flex-wrap gap-x-8 gap-y-3 text-sm">
+        <dl className="halloween-stats mt-9 flex flex-wrap gap-x-8 gap-y-3 pt-4 text-sm">
           <Stat icon={Gamepad2} label="Games" value={gameCount.toString()} />
           <Stat icon={Users} label="Plays" value={compactNumber(totalPlays)} />
           <Stat icon={Star} label="Free forever" value="100%" />
