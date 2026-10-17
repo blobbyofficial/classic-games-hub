@@ -9,219 +9,36 @@ import { submitReport } from "@/lib/status-report";
 import type { ComponentStatus, IncidentStatus, ReportSignal } from "@/lib/status";
 import type { RpcResult } from "@/types";
 
-/**
- * Writes behind the status page.
- *
- * Two audiences with two very different permission stories, deliberately in one
- * file because they are the same feature: anyone at all can report a problem,
- * and only staff can say anything about one. The database enforces both - these
- * translate `{ok, error}` envelopes into sentences, they do not decide.
- */
-
 const PROBLEMS = [
-  "cannot_load",
-  "slow",
-  "login",
-  "gameplay",
-  "scores",
-  "purchases",
-  "social",
-  "discord",
-  "other",
+  "cannot_load", "slow", "login", "gameplay", "scores",
+  "purchases", "social", "discord", "other",
 ] as const;
 
+const componentStatusSchema = z.enum([
+  "operational", "degraded_performance", "partial_outage",
+  "major_outage", "under_maintenance",
+]);
+const incidentStatusSchema = z.enum([
+  "investigating", "identified", "monitoring", "resolved",
+  "scheduled", "in_progress", "verifying", "completed",
+]);
+const slugSchema = z.string().trim().min(1).max(64).regex(/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/, "Invalid component slug.");
 const reportSchema = z.object({
-  slug: z.string().trim().max(64).nullish(),
+  slug: slugSchema.nullish(),
   problem: z.enum(PROBLEMS),
-  note: z.string().trim().max(200).optional().or(z.literal("")),
+  note: z.string().trim().max(200).nullish(),
 });
 
 export interface ReportResult extends RpcResult {
   signal?: ReportSignal;
 }
 
-/**
- * Record a "this is broken for me" report.
- *
- * No sign-in required, and that is the point: someone who cannot sign in is
- * precisely the person with something to report. A signed-in visitor gets their
- * id attached, which only widens the rate limit's view of them - it never
- * unlocks anything.
- */
-export async function reportProblem(input: unknown): Promise<ReportResult> {
-  const parsed = reportSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
-
-  const supabase = await createClient();
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  const result = await submitReport({
-    slug: parsed.data.slug ?? null,
-    problem: parsed.data.problem,
-    note: parsed.data.note || null,
-    userId: user?.id ?? null,
-    headers: await headers(),
-  });
-
-  if (!result.ok) return { ok: false, error: result.error ?? "Could not record that report." };
-
-  revalidatePath("/status");
-  return { ok: true, signal: result.signal };
-}
-
-// ── staff ───────────────────────────────────────────────────────────────────
-
-const incidentSchema = z.object({
-  title: z.string().trim().min(3, "Give the incident a title").max(120),
-  body: z.string().trim().min(3, "Say what is happening").max(2000),
-  impact: z.enum(["none", "minor", "major", "critical", "maintenance"]).default("minor"),
-  kind: z.enum(["incident", "maintenance"]).default("incident"),
-  status: z
-    .enum([
-      "investigating",
-      "identified",
-      "monitoring",
-      "resolved",
-      "scheduled",
-      "in_progress",
-      "verifying",
-      "completed",
-    ])
-    .optional(),
-  components: z
-    .array(
-      z.object({
-        slug: z.string().trim().min(1),
-        status: z.enum([
-          "operational",
-          "degraded_performance",
-          "partial_outage",
-          "major_outage",
-          "under_maintenance",
-        ]),
-      }),
-    )
-    .default([]),
-  scheduled_for: z.string().trim().optional().or(z.literal("")),
-  scheduled_until: z.string().trim().optional().or(z.literal("")),
-});
-
-/** ISO or nothing - an empty datetime-local field must not become epoch zero. */
-const asTimestamp = (value: string | undefined) => {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date.toISOString();
-};
-
-export async function openIncident(input: unknown): Promise<RpcResult & { ref?: number }> {
-  await requireStaff();
-  const parsed = incidentSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("status_incident_open", {
-    p_title: parsed.data.title,
-    p_body: parsed.data.body,
-    p_impact: parsed.data.impact,
-    p_kind: parsed.data.kind,
-    p_status: parsed.data.status ?? null,
-    p_components: parsed.data.components,
-    p_scheduled_for: asTimestamp(parsed.data.scheduled_for),
-    p_scheduled_until: asTimestamp(parsed.data.scheduled_until),
-  });
-  if (error) return { ok: false, error: error.message };
-
-  const result = data as unknown as { ok: boolean; error?: string; ref?: number };
-  if (!result?.ok) return { ok: false, error: staffError(result?.error) };
-
-  revalidatePath("/status");
-  revalidatePath("/admin/status");
-  return { ok: true, ref: result.ref };
-}
-
-const updateSchema = z.object({
-  id: z.string().uuid(),
-  status: z.enum([
-    "investigating",
-    "identified",
-    "monitoring",
-    "resolved",
-    "scheduled",
-    "in_progress",
-    "verifying",
-    "completed",
-  ]),
-  body: z.string().trim().min(3, "Say what has changed").max(2000),
-});
-
-/**
- * Post an update, which is also how an incident is closed - `resolved` or
- * `completed` sets the resolved timestamp and releases the components. There is
- * no separate close action, so a resolved incident can never have a timeline
- * that stops mid-sentence.
- */
-export async function postIncidentUpdate(input: unknown): Promise<RpcResult> {
-  await requireStaff();
-  const parsed = updateSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("status_incident_post", {
-    p_id: parsed.data.id,
-    p_status: parsed.data.status as IncidentStatus,
-    p_body: parsed.data.body,
-  });
-  if (error) return { ok: false, error: error.message };
-
-  const result = data as unknown as { ok: boolean; error?: string };
-  if (!result?.ok) return { ok: false, error: staffError(result?.error) };
-
-  revalidatePath("/status");
-  revalidatePath("/admin/status");
-  return { ok: true };
-}
-
-const pinSchema = z.object({
-  slug: z.string().trim().min(1),
-  status: z
-    .enum([
-      "operational",
-      "degraded_performance",
-      "partial_outage",
-      "major_outage",
-      "under_maintenance",
-    ])
-    .nullish(),
-  reason: z.string().trim().max(200).optional().or(z.literal("")),
-});
-
-/**
- * Pin a component's status, overriding the probes, or clear the pin by passing
- * a null status. The only control here that can make the board look *better*
- * than the evidence, which is why the reason is recorded with it.
- */
-export async function pinComponent(input: unknown): Promise<RpcResult> {
-  await requireStaff();
-  const parsed = pinSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
-
-  const supabase = await createClient();
-  const { data, error } = await supabase.rpc("status_component_pin", {
-    p_slug: parsed.data.slug,
-    p_status: (parsed.data.status as ComponentStatus | null) ?? null,
-    p_reason: parsed.data.reason || null,
-  });
-  if (error) return { ok: false, error: error.message };
-
-  const result = data as unknown as { ok: boolean; error?: string };
-  if (!result?.ok) return { ok: false, error: staffError(result?.error) };
-
-  revalidatePath("/status");
-  revalidatePath("/admin/status");
-  return { ok: true };
-}
+type RpcEnvelope = { ok: boolean; error?: string; ref?: number };
+const rpcEnvelopeSchema = z.object({
+  ok: z.boolean(),
+  error: z.string().optional(),
+  ref: z.number().int().positive().optional(),
+}).passthrough();
 
 const STAFF_ERRORS: Record<string, string> = {
   forbidden: "You do not have permission to do that.",
@@ -233,5 +50,182 @@ const STAFF_ERRORS: Record<string, string> = {
 };
 
 function staffError(code: string | undefined): string {
-  return (code && STAFF_ERRORS[code]) || "Something went wrong. Try again.";
+  return (code && Object.prototype.hasOwnProperty.call(STAFF_ERRORS, code))
+    ? STAFF_ERRORS[code]
+    : "Something went wrong. Try again.";
+}
+
+function validationError(error: z.ZodError): RpcResult {
+  const issue = error.issues[0];
+  return { ok: false, error: issue ? `${issue.path.join(".") || "Input"}: ${issue.message}` : "Invalid input." };
+}
+
+function parseRpcResponse(data: unknown, operation: string): RpcEnvelope {
+  const parsed = rpcEnvelopeSchema.safeParse(data);
+  if (parsed.success) return parsed.data;
+  console.error(`[status] ${operation}: invalid RPC response envelope`);
+  return { ok: false };
+}
+
+async function callStatusRpc(
+  operation: string,
+  invoke: (supabase: Awaited<ReturnType<typeof createClient>>) => PromiseLike<{
+    data: unknown;
+    error: { code?: string } | null;
+  }>,
+): Promise<RpcEnvelope> {
+  // Always authorize before invoking a status mutation.
+  await requireStaff();
+  try {
+    const supabase = await createClient();
+    const { data, error } = await invoke(supabase);
+    if (error) {
+      console.error(`[status] ${operation} failed`, { code: error.code });
+      return { ok: false };
+    }
+    return parseRpcResponse(data, operation);
+  } catch (error) {
+    console.error(`[status] ${operation} unexpected failure`, error);
+    return { ok: false };
+  }
+}
+
+function invalidateStatus(): void {
+  revalidatePath("/status");
+  revalidatePath("/admin/status");
+}
+
+/** Public outage reports are accepted without requiring a working login. */
+export async function reportProblem(input: unknown): Promise<ReportResult> {
+  const parsed = reportSchema.safeParse(input);
+  if (!parsed.success) return validationError(parsed.error);
+
+  try {
+    const supabase = await createClient();
+    // A user lookup may fail during the very outage being reported: remain anonymous.
+    const { data, error } = await supabase.auth.getUser();
+    const userId = error ? null : (data.user?.id ?? null);
+    const result = await submitReport({
+      slug: parsed.data.slug ?? null,
+      problem: parsed.data.problem,
+      note: parsed.data.note || null,
+      userId,
+      headers: await headers(),
+    });
+    if (!result.ok) {
+      // Preserve the public rate-limit/validation messages from status-report.
+      return { ok: false, error: result.error ?? "Could not record that report." };
+    }
+    revalidatePath("/status");
+    return { ok: true, signal: result.signal };
+  } catch (error) {
+    console.error("[status] reportProblem failed", error);
+    return { ok: false, error: "Could not record that report. Please try again." };
+  }
+}
+
+const timestampSchema = z.union([
+  z.literal(""),
+  z.string().trim().max(40).refine((value) => Number.isFinite(Date.parse(value)), "Enter a valid date and time."),
+]).optional();
+
+const incidentSchema = z.object({
+  title: z.string().trim().min(3, "Give the incident a title").max(120),
+  body: z.string().trim().min(3, "Say what is happening").max(2000),
+  impact: z.enum(["none", "minor", "major", "critical", "maintenance"]).default("minor"),
+  kind: z.enum(["incident", "maintenance"]).default("incident"),
+  status: incidentStatusSchema.optional(),
+  components: z.array(z.object({
+    slug: slugSchema,
+    status: componentStatusSchema,
+  })).max(100).default([]).refine(
+    (items) => new Set(items.map((item) => item.slug)).size === items.length,
+    "Each component may only appear once.",
+  ),
+  scheduled_for: timestampSchema,
+  scheduled_until: timestampSchema,
+}).superRefine((value, ctx) => {
+  const start = value.scheduled_for ? Date.parse(value.scheduled_for) : null;
+  const end = value.scheduled_until ? Date.parse(value.scheduled_until) : null;
+  if (end !== null && start === null) {
+    ctx.addIssue({ code: "custom", path: ["scheduled_until"], message: "Provide a start time first." });
+  }
+  if (start !== null && end !== null && end <= start) {
+    ctx.addIssue({ code: "custom", path: ["scheduled_until"], message: "End time must be after start time." });
+  }
+});
+
+function asTimestamp(value: string | undefined): string | null {
+  return value ? new Date(value).toISOString() : null;
+}
+
+export async function openIncident(input: unknown): Promise<RpcResult & { ref?: number }> {
+  await requireStaff();
+  const parsed = incidentSchema.safeParse(input);
+  if (!parsed.success) return validationError(parsed.error);
+  const value = parsed.data;
+  const result = await callStatusRpc("status_incident_open", (supabase) =>
+    supabase.rpc("status_incident_open", {
+      p_title: value.title,
+      p_body: value.body,
+      p_impact: value.impact,
+      p_kind: value.kind,
+      p_status: value.status ?? null,
+      p_components: value.components,
+      p_scheduled_for: asTimestamp(value.scheduled_for),
+      p_scheduled_until: asTimestamp(value.scheduled_until),
+    }),
+  );
+  if (!result.ok) return { ok: false, error: staffError(result.error) };
+  invalidateStatus();
+  return { ok: true, ref: result.ref };
+}
+
+const updateSchema = z.object({
+  id: z.string().uuid(),
+  status: incidentStatusSchema,
+  body: z.string().trim().min(3, "Say what has changed").max(2000),
+});
+
+export async function postIncidentUpdate(input: unknown): Promise<RpcResult> {
+  await requireStaff();
+  const parsed = updateSchema.safeParse(input);
+  if (!parsed.success) return validationError(parsed.error);
+  const result = await callStatusRpc("status_incident_post", (supabase) =>
+    supabase.rpc("status_incident_post", {
+      p_id: parsed.data.id,
+      p_status: parsed.data.status as IncidentStatus,
+      p_body: parsed.data.body,
+    }),
+  );
+  if (!result.ok) return { ok: false, error: staffError(result.error) };
+  invalidateStatus();
+  return { ok: true };
+}
+
+const pinSchema = z.object({
+  slug: slugSchema,
+  status: componentStatusSchema.nullish(),
+  reason: z.string().trim().max(200).optional(),
+}).superRefine((value, ctx) => {
+  // Explicit reasons make manual overrides auditable.
+  if (value.status !== null && value.status !== undefined && !value.reason?.length) {
+    ctx.addIssue({ code: "custom", path: ["reason"], message: "Give a reason for this status override." });
+  }
+});
+
+export async function pinComponent(input: unknown): Promise<RpcResult> {
+  await requireStaff();
+  const parsed = pinSchema.safeParse(input);
+  if (!parsed.success) return validationError(parsed.error);
+  const result = await callStatusRpc("status_component_pin", (supabase) =>
+    supabase.rpc("status_component_pin", {
+      p_slug: parsed.data.slug,
+      p_status: (parsed.data.status as ComponentStatus | null) ?? null,
+      p_reason: parsed.data.reason || null,
+    }),
+  );
+  if (!result.ok) return { ok: false, error: staffError(result.error) };
+  invalidateStatus();
+  return { ok: true };
 }

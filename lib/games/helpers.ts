@@ -83,13 +83,11 @@ export function createLoop(update: (dt: number) => void, render: () => void, ste
   let last = performance.now();
   let acc = 0;
   let running = true;
+  let stopped = false;
 
   const frame = (now: number) => {
+    if (stopped || !running) return;
     raf = requestAnimationFrame(frame);
-    if (!running) {
-      last = now;
-      return;
-    }
     let delta = (now - last) / 1000;
     last = now;
     if (delta > 0.25) delta = 0.25; // avoid spiral of death after tab-away
@@ -104,14 +102,23 @@ export function createLoop(update: (dt: number) => void, render: () => void, ste
 
   return {
     pause() {
+      if (!running || stopped) return;
       running = false;
+      cancelAnimationFrame(raf);
+      raf = 0;
+      acc = 0;
     },
     resume() {
+      if (running || stopped) return;
       running = true;
       last = performance.now();
+      raf = requestAnimationFrame(frame);
     },
     stop() {
+      stopped = true;
+      running = false;
       cancelAnimationFrame(raf);
+      raf = 0;
     },
     get running() {
       return running;

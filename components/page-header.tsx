@@ -30,7 +30,7 @@ export function PageHeader({
               block - otherwise a two-line description drags it out of alignment. */}
           <div className="flex items-center gap-3">
             {Icon && (
-              <span className="hidden size-10 shrink-0 place-items-center rounded-xl bg-primary/10 text-primary ring-1 ring-primary/15 sm:grid">
+              <span className="hidden size-9 shrink-0 place-items-center text-muted-foreground sm:grid">
                 <Icon className="size-5" />
               </span>
             )}
