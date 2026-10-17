@@ -9,6 +9,7 @@ on:
       - 'scripts/test-staging-economy.cjs'
       - 'scripts/test-local-supabase-rls.cjs'
       - 'scripts/test-local-score-concurrency.cjs'
+      - 'scripts/test-staging-accounts.cjs'
       - '.github/workflows/local-supabase-acceptance.yml'
   workflow_dispatch:
 jobs:
@@ -49,6 +50,26 @@ jobs:
         run: node --test scripts/test-staging-economy.cjs
       - name: Verify actual concurrent score grants stop at thirty
         run: node --test scripts/test-local-score-concurrency.cjs
+      - name: Install Chromium for locally authenticated browser tests
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Build Next.js against disposable LOCAL Supabase
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ env.STAGING_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.STAGING_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      - name: Test two synthetic accounts in real local login, friends and notifications
+        env:
+          STAGING_SITE_URL: http://127.0.0.1:3000
+        run: |
+          npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/next-local-supabase.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:3000/login >/dev/null; then break; fi
+            sleep 2
+          done
+          node --test scripts/test-staging-accounts.cjs
       - name: Local-only diagnostics on failure
         if: failure()
         run: docker ps -a --format 'table {{.Names}}\t{{.Status}}' || true
