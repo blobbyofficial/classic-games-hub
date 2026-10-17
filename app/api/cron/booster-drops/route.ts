@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logOperation } from "@/lib/observability/operation-log";
 import { discordEnv } from "@/lib/discord/env";
 import { createAdminClient } from "@/lib/supabase/server";
 
@@ -27,13 +28,16 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 async function run(request: Request) {
+  const started = Date.now();
   const auth = request.headers.get("authorization");
   if (!discordEnv.cronSecret || auth !== `Bearer ${discordEnv.cronSecret}`) {
+    logOperation({ operation: "cron_auth_rejected", outcome: "denied", severity: "warn" });
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const supabase = createAdminClient();
   if (!supabase) {
+    logOperation({ operation: "booster_drops", outcome: "failed", severity: "error", durationMs: Date.now() - started });
     return NextResponse.json({ error: "service key not configured" }, { status: 500 });
   }
 
@@ -44,8 +48,11 @@ async function run(request: Request) {
     supabase.rpc("grant_booster_drops"),
     supabase.rpc("grant_gift_tokens"),
   ]);
-  if (drops.error) return NextResponse.json({ error: drops.error.message }, { status: 500 });
-  if (tokens.error) return NextResponse.json({ error: tokens.error.message }, { status: 500 });
+  if (drops.error || tokens.error) {
+    logOperation({ operation: "booster_drops", outcome: "failed", severity: "error", durationMs: Date.now() - started });
+    return NextResponse.json({ error: "booster_grant_failed" }, { status: 500 });
+  }
+  logOperation({ operation: "booster_drops", outcome: "ok", severity: "info", durationMs: Date.now() - started });
   return NextResponse.json({ drops: drops.data, gift_tokens: tokens.data });
 }
 

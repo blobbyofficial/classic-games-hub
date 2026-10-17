@@ -68,6 +68,32 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
  */
 export const ROADMAP: RoadmapRelease[] = [
   {
+    version: "Analytics & Observability (unversioned)",
+    codename: "Platform Intelligence",
+    status: "in-progress",
+    timeframe: "In development — PR #68",
+    summary: "Expand the admin analytics dashboard and operational diagnostics. This work has no final numbered release assignment yet; the existing v1.7.0 Ground Up plan is not silently replaced.",
+    groups: [
+      {
+        heading: "Dashboard metrics",
+        icon: "Activity",
+        items: [
+          { title: "Existing-data analytics overview", description: "Implemented in the development PR: active-account estimates, play and signup trends, economy rewards, achievements, reports, friendships, favourites, inventory, rating totals, most played games and audit-action categories.", status: "in-progress" },
+          { title: "Trustworthy long-range statistics", description: "Move capped queries into database-side aggregate functions, distinguish missing information from zero and show trend comparisons and sample sizes.", status: "next" },
+        ],
+      },
+      {
+        heading: "Operational diagnostics and privacy",
+        icon: "Shield",
+        items: [
+          { title: "Structured server logging", description: "Initial bounded outcome/duration logging added to Discord audit cron; continue integrating all scheduled jobs, worker health and API failure classes without private contents or credentials.", status: "in-progress" },
+          { title: "Opt-in device and reliability aggregates", description: "Subject to privacy approval, add coarse device/input categories, gameplay failure rates, latency buckets, low-count suppression, withdrawal and deletion controls.", status: "next" },
+          { title: "Release acceptance", description: "Require consent review, full RLS tests, complete retention handling, CI and mobile verification before merging or enabling new collection.", status: "next" },
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.6.0-maintenance",
     codename: "Site Reliability & Bug Verification",
     status: "in-progress",

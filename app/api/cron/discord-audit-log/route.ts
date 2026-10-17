@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { discordEnv } from "@/lib/discord/env";
 import { pollAuditLog } from "@/lib/discord/audit-log";
+import { logOperation } from "@/lib/observability/operation-log";
 
 /**
  * Server logging on free infrastructure - the gateway worker's stand-in.
@@ -31,12 +32,21 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 async function run(request: Request) {
+  const started = Date.now();
   const auth = request.headers.get("authorization");
   if (!discordEnv.cronSecret || auth !== `Bearer ${discordEnv.cronSecret}`) {
+    logOperation({ operation: "cron_auth_rejected", outcome: "denied", severity: "warn" });
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
-  const result = await pollAuditLog();
+  let result: Awaited<ReturnType<typeof pollAuditLog>>;
+  try {
+    result = await pollAuditLog();
+  } catch {
+    logOperation({ operation: "cron_failed", outcome: "failed", severity: "error", durationMs: Date.now() - started });
+    return NextResponse.json({ error: "audit_poll_failed" }, { status: 500 });
+  }
+  logOperation({ operation: "discord_audit_poll", outcome: result.ok ? "ok" : "failed", severity: result.ok ? "info" : "error", durationMs: Date.now() - started });
   // A missing permission is the one failure worth an HTTP status of its own:
   // it will not fix itself, and a scheduler's failure count is where somebody
   // will actually notice it.

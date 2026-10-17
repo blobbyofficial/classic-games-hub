@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logOperation } from "@/lib/observability/operation-log";
 import { syncAllMembers } from "@/lib/discord/role-sync";
 import { discordEnv } from "@/lib/discord/env";
 
@@ -26,11 +27,18 @@ export const runtime = "nodejs";
 export const maxDuration = 300;
 
 export async function GET(request: Request) {
+  const started = Date.now();
   const auth = request.headers.get("authorization");
   if (!discordEnv.cronSecret || auth !== `Bearer ${discordEnv.cronSecret}`) {
+    logOperation({ operation: "cron_auth_rejected", outcome: "denied", severity: "warn" });
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
-  const result = await syncAllMembers(500);
-  console.log(`[discord] role sync: ${JSON.stringify(result)}`);
-  return NextResponse.json({ ok: true, ...result });
+  try {
+    const result = await syncAllMembers(500);
+    logOperation({ operation: "discord_role_sync", outcome: "ok", severity: "info", durationMs: Date.now() - started });
+    return NextResponse.json({ ok: true, ...result });
+  } catch {
+    logOperation({ operation: "discord_role_sync", outcome: "failed", severity: "error", durationMs: Date.now() - started });
+    return NextResponse.json({ error: "role_sync_failed" }, { status: 500 });
+  }
 }
