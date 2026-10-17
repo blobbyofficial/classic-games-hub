@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { ENGINE_LOADERS } from "@/lib/games/registry";
 import { canvasFor, CONTROL_SCHEME, SWIPE_GAMES } from "@/lib/games/config";
+import { setGameSoundEffectsVolume } from "@/lib/games/helpers";
 import { cappedCanvasSize, renderingBudget, type QualityPreset } from "@/lib/games/render-quality";
 import { submitScore } from "@/actions/games";
 import { gameStart, gameEnd } from "@/lib/analytics";
@@ -66,6 +67,11 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
 
   const { w, h } = canvasFor(engineId);
   const scheme = CONTROL_SCHEME[engineId] ?? "none";
+
+  useEffect(() => {
+    setGameSoundEffectsVolume(settings?.sound_volume ?? 100);
+    return () => setGameSoundEffectsVolume(100);
+  }, [settings?.sound_volume]);
 
   const handleGameOver = useCallback(
     async (finalScore: number, durationHint: number) => {
