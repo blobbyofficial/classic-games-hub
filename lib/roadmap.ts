@@ -1120,6 +1120,41 @@ export const ROADMAP: RoadmapRelease[] = [
     ],
   },
   {
+    version: "v1.7.1",
+    codename: "Arcade on Your Desktop",
+    status: "later",
+    timeframe: "After the v1.7.0 relaunch; prototype may begin earlier",
+    summary: "A Windows-first desktop app that genuinely improves keyboard, mouse, controller and fullscreen play without forking the web game engines. Prototype Tauri against Electron before choosing a runtime. Desktop ships only after cross-device web play and shared game foundations are reliable.",
+    groups: [
+      {
+        heading: "Desktop app proof of concept",
+        icon: "Monitor",
+        items: [
+          { title: "Validate Tauri vs Electron", description: "Build small Windows prototypes using the existing Next.js site and shared engines; measure startup, memory, frame pacing, update size, WebView/Chromium compatibility, auth sessions and secure integration. Choose based on evidence, not framework popularity.", status: "later" },
+          { title: "Secure web and native boundary", description: "Keep backend credentials and scoring validation server-side, disallow arbitrary navigation in the app, expose minimal allowlisted native APIs, and design secure account sign-in with browser handoff or an appropriate callback. Establish signing, release integrity and vulnerability update procedures.", status: "later" },
+        ],
+      },
+      {
+        heading: "Windows desktop beta",
+        icon: "Gamepad2",
+        items: [
+          { title: "Dedicated launcher and focus mode", description: "Create a desktop-first library, Continue Playing, clear game status, distraction-free player, windowed/borderless/fullscreen controls and dependable keyboard focus. Reuse the site's accounts, games, scores, cosmetics and achievements.", status: "later" },
+          { title: "Remappable keyboard, mouse and controller inputs", description: "Use the common semantic action system established in v1.6.0; support game-specific keymaps, correct gamepad disconnect behaviour, focus loss, pause and accessibility, without separate engine forks.", status: "later" },
+          { title: "Native desktop conveniences, opt-in", description: "Offer optional system notifications, shortcuts and app updates, sensible resource use, no forced launch-at-startup or idle background service. Build privacy-friendly diagnostics and an uninstall path.", status: "later" },
+          { title: "Offline single-player feasibility", description: "Investigate packaging eligible games/assets for optional offline sessions while isolating local scores from ranked or reward-bearing submissions until robust server validation is available. Do not promise offline purchases, social features or competitive ranking.", status: "later" },
+        ],
+      },
+      {
+        heading: "Release and platform expansion",
+        icon: "ShieldCheck",
+        items: [
+          { title: "Evidence-based Windows release gate", description: "Test installation, updates, sign-in/out, renderer crashes, network interruptions, game lifecycle, accessibility, input lag and low-end hardware. Publish only if performance and gameplay show real improvements over the website.", status: "later" },
+          { title: "Evaluate macOS and Linux after Windows", description: "Assess signing/notarisation, packages, WebView parity, updater behaviour, support burden and player demand before scheduling additional platforms.", status: "idea" },
+        ],
+      },
+    ],
+  },
+  {
     version: "v1.8.0",
     codename: "Head to Head",
     status: "later",
