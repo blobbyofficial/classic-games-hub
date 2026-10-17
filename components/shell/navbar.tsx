@@ -34,7 +34,7 @@ export function Navbar() {
           <Search className="size-4 shrink-0 transition-transform duration-200 motion-safe:group-hover:scale-110" />
           <span className="hidden truncate sm:inline">Search games</span>
           <span className="hidden truncate min-[380px]:inline sm:hidden">Search</span>
-          <kbd className="ml-auto hidden shrink-0 items-center rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[10px] font-medium sm:flex">
+          <kbd aria-hidden="true" className="ml-auto hidden shrink-0 items-center rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[10px] font-medium sm:flex">
             ⌘K
           </kbd>
         </button>
