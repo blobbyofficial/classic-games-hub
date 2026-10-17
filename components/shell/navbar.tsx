@@ -28,12 +28,12 @@ export function Navbar() {
         <button
           onClick={() => setCommandOpen(true)}
           className="halloween-search group ml-auto flex h-10 min-w-0 max-w-md flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-muted/40 px-2 text-sm text-muted-foreground transition-[background-color,border-color] duration-200 hover:border-primary/30 hover:bg-muted/70 min-[380px]:justify-start sm:gap-2.5 sm:px-3 lg:ml-0"
-          aria-label="Search games, players, ⌘K"
           aria-keyshortcuts="Meta+K Control+K"
         >
           <Search className="size-4 shrink-0 transition-transform duration-200 motion-safe:group-hover:scale-110" />
-          <span className="hidden truncate sm:inline">Search games</span>
-          <span className="hidden truncate min-[380px]:inline sm:hidden">Search</span>
+          <span className="sr-only">Search games and players</span>
+          <span aria-hidden="true" className="hidden truncate sm:inline">Search games</span>
+          <span aria-hidden="true" className="hidden truncate min-[380px]:inline sm:hidden">Search</span>
           <kbd aria-hidden="true" className="ml-auto hidden shrink-0 items-center rounded border border-border bg-background px-1.5 py-0.5 font-mono text-[10px] font-medium sm:flex">
             ⌘K
           </kbd>
