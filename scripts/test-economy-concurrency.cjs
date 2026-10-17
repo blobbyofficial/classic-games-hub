@@ -40,3 +40,15 @@ test("concurrent duplicate cosmetic purchases recheck ownership after wallet loc
   assert.ok(lock >= 0 && recheck > lock && debit > recheck, "Ownership must be rechecked under lock before any debit");
   assert.ok(purchase.slice(recheck, debit).includes("if not v_boost and exists (") && purchase.slice(recheck, debit).includes("from public.inventory_items"));
 });
+
+test("same-sender gift retries recheck recipient ownership after locking the sender wallet", () => {
+  const gift = source.slice(source.indexOf("function public.gift_item"));
+  const lock = gift.indexOf("select credits into v_bal from public.profiles where id = v_me for update");
+  const recheck = gift.indexOf("if exists (", lock);
+  const debit = gift.indexOf("perform public.award_credits", lock);
+  assert.ok(lock >= 0 && recheck > lock && debit > recheck,
+    "Gift ownership recheck must occur under sender wallet lock before charging");
+  assert.ok(gift.slice(recheck, debit).includes("from public.inventory_items where user_id = p_to"));
+  assert.ok(gift.slice(debit).includes("on conflict do nothing"),
+    "Different-sender races need database-enforced unique inventory ownership");
+});
