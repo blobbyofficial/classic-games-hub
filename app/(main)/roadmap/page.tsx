@@ -48,6 +48,7 @@ export const metadata: Metadata = {
   description: "What's shipped, what's next and what we're exploring for Classic Games Hub.",
 };
 
+// Explicitly map named roadmap icons; unknown administrator values still use Sparkles.
 const ICONS: Record<string, LucideIcon> = {
   Activity,
   Shield,
