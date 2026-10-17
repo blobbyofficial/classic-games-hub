@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Pause, Play, RotateCcw, Maximize2, Minimize2, Loader2, Trophy } from "lucide-react";
+import { Pause, Play, RotateCcw, Maximize2, Minimize2, Trophy } from "lucide-react";
 import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { ENGINE_LOADERS } from "@/lib/games/registry";
@@ -12,6 +12,7 @@ import { useSessionStore } from "@/lib/stores/session-store";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
 import { TouchControls } from "./touch-controls";
+import { GameLoadingMark } from "@/components/games/game-loading-mark";
 import { RewardOverlay } from "./reward-overlay";
 import type { GameEngineHandle, PlayDifficulty, ScoreResult } from "@/types";
 
@@ -374,7 +375,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
 
         {loadingEngine && (
           <div className="absolute inset-0 grid place-items-center bg-card">
-            <Loader2 className="size-8 animate-spin text-primary" />
+            <GameLoadingMark />
           </div>
         )}
 
