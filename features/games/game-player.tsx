@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { ENGINE_LOADERS } from "@/lib/games/registry";
 import { canvasFor, CONTROL_SCHEME, SWIPE_GAMES } from "@/lib/games/config";
-import { effectivePixelRatio, type QualityPreset } from "@/lib/games/render-quality";
+import { cappedCanvasSize, type QualityPreset } from "@/lib/games/render-quality";
 import { submitScore } from "@/actions/games";
 import { gameStart, gameEnd } from "@/lib/analytics";
 import { useSessionStore } from "@/lib/stores/session-store";
@@ -111,9 +111,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     const rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     // Capped at 2×: past that the pixels are invisible and the fill rate is not.
-    const dpr = effectivePixelRatio(window.devicePixelRatio || 1, quality);
-    const bw = Math.round(rect.width * dpr);
-    const bh = Math.round(rect.height * dpr);
+    const { width: bw, height: bh } = cappedCanvasSize(rect.width, rect.height, window.devicePixelRatio || 1, quality);
     // Assigning width/height clears the canvas even when the value is unchanged,
     // so a ResizeObserver that fires on every layout pass would strobe.
     if (canvas.width === bw && canvas.height === bh) return;
