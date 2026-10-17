@@ -8,6 +8,7 @@ on:
       - 'scripts/seed-local-supabase-acceptance.cjs'
       - 'scripts/test-staging-economy.cjs'
       - 'scripts/test-local-supabase-rls.cjs'
+      - 'scripts/test-local-score-concurrency.cjs'
       - '.github/workflows/local-supabase-acceptance.yml'
   workflow_dispatch:
 jobs:
@@ -46,6 +47,8 @@ jobs:
         run: node --test scripts/test-local-supabase-rls.cjs
       - name: Exercise real concurrent purchase against disposable local Supabase
         run: node --test scripts/test-staging-economy.cjs
+      - name: Verify actual concurrent score grants stop at thirty
+        run: node --test scripts/test-local-score-concurrency.cjs
       - name: Local-only diagnostics on failure
         if: failure()
         run: docker ps -a --format 'table {{.Names}}\t{{.Status}}' || true
