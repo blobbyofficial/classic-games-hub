@@ -2,6 +2,7 @@ import { ImageResponse } from "next/og";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { SITE } from "@/lib/constants";
+import { createAdminClient, createPublicClient } from "@/lib/supabase/server";
 
 /**
  * Site-wide social preview. Deliberately mirrors the actual dark arcade UI:
@@ -12,8 +13,10 @@ import { SITE } from "@/lib/constants";
  * itself as animated: that is not supported consistently by share platforms.
  */
 export const runtime = "nodejs";
+// Regenerate the image hourly; social platforms may cache it longer.
+export const revalidate = 3600;
 export const alt =
-  "Classic Games Hub — pick a game, start playing. 26 games in the library, free browser play, leaderboards and achievements.";
+  "Classic Games Hub — pick a game and start playing free browser games with leaderboards and achievements.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -31,6 +34,37 @@ async function brandArtwork(): Promise<string | null> {
       return null;
     }
   }
+}
+
+type PreviewStats = { games: number | null; players: number | null; plays: number | null };
+
+/** Counts match the public games library. Admin access is used only to obtain
+ * the aggregate number of registered profiles, never any individual data. */
+async function previewStats(): Promise<PreviewStats> {
+  const stats: PreviewStats = { games: null, players: null, plays: null };
+  try {
+    const publicDb = createPublicClient();
+    const adminDb = createAdminClient();
+    const [gamesCount, playRows, profilesCount] = await Promise.all([
+      publicDb.from("games").select("id", { count: "exact", head: true })
+        .in("status", ["published", "coming_soon", "in_development"]),
+      publicDb.from("games").select("play_count")
+        .in("status", ["published", "coming_soon", "in_development"]),
+      adminDb
+        ? adminDb.from("profiles").select("id", { count: "exact", head: true })
+        : Promise.resolve(null),
+    ]);
+    if (!gamesCount.error && gamesCount.count !== null) stats.games = gamesCount.count;
+    if (!playRows.error && playRows.data) {
+      stats.plays = playRows.data.reduce((total, game) => total + (game.play_count ?? 0), 0);
+    }
+    if (profilesCount && !profilesCount.error && profilesCount.count !== null) {
+      stats.players = profilesCount.count;
+    }
+  } catch {
+    // Missing credentials or temporary DB failure must not break link sharing.
+  }
+  return stats;
 }
 
 function MiniStat({ value, label }: { value: string; label: string }) {
@@ -55,7 +89,8 @@ function MiniStat({ value, label }: { value: string; label: string }) {
 }
 
 export default async function OpengraphImage() {
-  const artwork = await brandArtwork();
+  const [artwork, stats] = await Promise.all([brandArtwork(), previewStats()]);
+  const formatCount = (count: number | null) => count === null ? null : count.toLocaleString("en-GB");
 
   return new ImageResponse(
     (
@@ -216,15 +251,16 @@ export default async function OpengraphImage() {
             borderRadius: 18,
           }}
         >
-          <div style={{ display: "flex", flexDirection: "column", padding: "0 32px", width: 272 }}>
-            <div style={{ display: "flex", fontSize: 31, fontWeight: 800, letterSpacing: -1.2 }}>26</div>
-            <div style={{ display: "flex", marginTop: 5, fontSize: 17, color: "#a9a5b3" }}>Games in the library</div>
+          <div style={{ display: "flex", flexDirection: "column", padding: "0 30px", width: 295 }}>
+            <div style={{ display: "flex", fontSize: 31, fontWeight: 800, letterSpacing: -1.2 }}>
+              {formatCount(stats.games) ?? "Explore"}
+            </div>
+            <div style={{ display: "flex", marginTop: 5, fontSize: 17, color: "#a9a5b3" }}>
+              {stats.games === null ? "Classic games" : "Games in the library"}
+            </div>
           </div>
-          <MiniStat value="100%" label="Free to play" />
-          <MiniStat value="XP + rewards" label="Progress as you play" />
-          <div style={{ display: "flex", marginLeft: "auto", paddingRight: 30, fontSize: 19, color: "#a78bfa", fontWeight: 700 }}>
-            classic-games-hub.blobbyofficial.com
-          </div>
+          <MiniStat value={formatCount(stats.players) ?? "Community"} label={stats.players === null ? "Join the players" : "Registered players"} />
+          <MiniStat value={formatCount(stats.plays) ?? "High scores"} label={stats.plays === null ? "Compete with friends" : "Games played"} />
         </div>
       </div>
     ),
