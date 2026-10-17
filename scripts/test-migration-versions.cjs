@@ -1,6 +1,6 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { readdirSync } = require("node:fs");
+const { readdirSync, readFileSync } = require("node:fs");
 const { join } = require("node:path");
 
 /** Supabase migration versions must be unique; duplicate prefixes can reorder schema changes. */
@@ -16,4 +16,7 @@ test("SQL migrations use unique monotonically sortable version identifiers", () 
     seen.set(version, file);
   }
   assert.ok(seen.size > 0, "No SQL migrations found");
+  const latest = [...seen.keys()].sort((a, b) => Number(a) - Number(b)).at(-1);
+  const version = readFileSync(join(__dirname, "../lib/version.ts"), "utf8");
+  assert.match(version, new RegExp(`export const EXPECTED_SCHEMA = ["\u0027]${latest}["\u0027]`), "Expected schema version must match latest SQL migration");
 });
