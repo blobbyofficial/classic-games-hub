@@ -44,7 +44,7 @@ export function MobileMenu() {
 
           <div className="flex items-center justify-between px-4 py-3.5">
             <Logo />
-            <Dialog.Close className="focus-visible-ring grid size-9 place-items-center rounded-lg text-muted-foreground hover:bg-accent/60 hover:text-foreground">
+            <Dialog.Close aria-label="Close navigation menu" className="focus-visible-ring grid size-11 place-items-center rounded-lg text-muted-foreground hover:bg-accent/60 hover:text-foreground">
               <X className="size-5" />
             </Dialog.Close>
           </div>
@@ -114,7 +114,7 @@ export function MobileMenu() {
               <Link
                 href="/settings"
                 onClick={close}
-                className="flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
+                className="flex min-h-11 items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
               >
                 <Settings className="size-[18px]" /> Settings
               </Link>
@@ -163,7 +163,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function DrawerLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
   const pathname = usePathname();
-  const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+  const active = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`);
   const badge = useSessionStore((s) =>
     item.badgeKey === "notifications"
       ? s.unreadNotifications
@@ -177,6 +177,7 @@ function DrawerLink({ item, onNavigate }: { item: NavItem; onNavigate: () => voi
       href={item.href}
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
+      aria-label={badge > 0 ? `${item.label}, ${badge} unread` : item.label}
       className={cn(
         "relative flex min-h-11 items-center gap-3 rounded-xl py-2.5 pl-3.5 pr-3 text-sm font-medium transition-colors",
         active
@@ -193,7 +194,7 @@ function DrawerLink({ item, onNavigate }: { item: NavItem; onNavigate: () => voi
       <item.icon className="size-[18px] shrink-0" />
       <span className="truncate">{item.label}</span>
       {badge > 0 && (
-        <span className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold tnum text-white">
+        <span aria-hidden="true" className="ml-auto flex h-5 min-w-5 items-center justify-center rounded-full bg-destructive px-1.5 text-[10px] font-bold tnum text-white">
           {badge > 9 ? "9+" : badge}
         </span>
       )}

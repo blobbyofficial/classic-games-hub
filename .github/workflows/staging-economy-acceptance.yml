@@ -1,0 +1,37 @@
+name: Staging economy concurrency acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      disposable_staging_confirmed:
+        description: "Isolated synthetic Supabase project, account and expendable item"
+        type: choice
+        required: true
+        options:
+          - "no"
+          - "yes"
+jobs:
+  concurrent-purchase:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      STAGING_ISOLATED_CONFIRMED: ${{ inputs.disposable_staging_confirmed }}
+      STAGING_ECONOMY_WRITES_CONFIRMED: ${{ inputs.disposable_staging_confirmed }}
+      STAGING_SUPABASE_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+      STAGING_SUPABASE_ANON_KEY: ${{ secrets.STAGING_SUPABASE_ANON_KEY }}
+      STAGING_PLAYER_A_EMAIL: ${{ secrets.STAGING_PLAYER_A_EMAIL }}
+      STAGING_PLAYER_A_PASSWORD: ${{ secrets.STAGING_PLAYER_A_PASSWORD }}
+      STAGING_ECONOMY_ITEM_SLUG: ${{ vars.STAGING_ECONOMY_ITEM_SLUG }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Refuse live Supabase project
+        env:
+          STAGING_KIND: website
+          STAGING_TARGET_URL: ${{ secrets.STAGING_SUPABASE_URL }}
+        run: node scripts/assert-isolated-staging.cjs
+      - name: Test two simultaneous real purchases and wallet/inventory invariants
+        run: node --test scripts/test-staging-economy.cjs

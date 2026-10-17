@@ -1,0 +1,47 @@
+name: Mobile acceptance
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'components/shell/**'
+      - 'features/games/**'
+      - 'scripts/test-mobile-browser.cjs'
+      - '.github/workflows/mobile-acceptance.yml'
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://isgqukmmhuzhpalbruwt.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_K6DD29odFaDeNTYozEsifQ_rD1ThsG5' }}
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      - name: Test phone views and navigation
+        run: |
+          npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/next-mobile.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then break; fi
+            sleep 2
+          done
+          SCREENSHOT_DIR=artifacts/mobile BASE_URL=http://127.0.0.1:3000 node --test scripts/test-mobile-browser.cjs
+      - name: Preserve screenshots for release review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-acceptance-screenshots
+          path: artifacts/mobile/
+          if-no-files-found: ignore
+          retention-days: 14
+      - name: Show server logs on failure
+        if: failure()
+        run: tail -n 120 /tmp/next-mobile.log || true

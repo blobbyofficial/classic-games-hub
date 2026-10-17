@@ -10,6 +10,7 @@ import {
   RotateCcw,
   ChevronsDown,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import type { ControlScheme } from "@/lib/games/config";
 
 /** Dispatch a synthetic key event to the window so engines react uniformly. */
@@ -30,20 +31,74 @@ function Pad({
   big?: boolean;
   tap?: boolean;
 }) {
+  const activePointer = useRef<number | null>(null);
+  const keyboardHeld = useRef(false);
+  useEffect(() => {
+    const clearHeld = () => {
+      if ((activePointer.current !== null || keyboardHeld.current) && !tap) key(k, "keyup");
+      activePointer.current = null;
+      keyboardHeld.current = false;
+    };
+    const onVisibility = () => { if (document.hidden) clearHeld(); };
+    window.addEventListener("blur", clearHeld);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      clearHeld();
+      window.removeEventListener("blur", clearHeld);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
+  }, [k, tap]);
+  const release = (pointerId: number) => {
+    if (activePointer.current !== pointerId) return;
+    activePointer.current = null;
+    if (!tap) key(k, "keyup");
+  };
   return (
     <button
+      type="button"
       aria-label={label}
-      onPointerDown={(e) => {
+      onKeyDown={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
         e.preventDefault();
+        if (keyboardHeld.current || e.repeat) return;
+        keyboardHeld.current = true;
         key(k, "keydown");
         if (tap) key(k, "keyup");
       }}
-      onPointerUp={() => !tap && key(k, "keyup")}
-      onPointerLeave={() => !tap && key(k, "keyup")}
+      onKeyUp={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        if (!keyboardHeld.current) return;
+        keyboardHeld.current = false;
+        if (!tap) key(k, "keyup");
+      }}
+      onBlur={() => {
+        if (!keyboardHeld.current) return;
+        keyboardHeld.current = false;
+        if (!tap) key(k, "keyup");
+      }}
+      onPointerDown={(e) => {
+        e.preventDefault();
+        if (activePointer.current !== null) return;
+        activePointer.current = e.pointerId;
+        e.currentTarget.setPointerCapture(e.pointerId);
+        key(k, "keydown");
+        if (tap) key(k, "keyup");
+      }}
+      onPointerUp={(e) => release(e.pointerId)}
+      onPointerCancel={(e) => release(e.pointerId)}
+      onLostPointerCapture={(e) => release(e.pointerId)}
+      onClick={(e) => {
+        // Assistive technology can activate a native button with a virtual click
+        // but without pointer or keyboard events. Do not double-activate taps.
+        if (e.detail !== 0) return;
+        key(k, "keydown");
+        key(k, "keyup");
+      }}
       onContextMenu={(e) => e.preventDefault()}
       className={`grid ${
         big ? "size-16" : "size-14"
-      } touch-none select-none place-items-center rounded-xl border border-border bg-card/80 text-foreground shadow-sm active:scale-95 active:bg-accent [&_svg]:size-6`}
+      } touch-none select-none place-items-center rounded-xl border border-border bg-card/80 text-foreground shadow-sm motion-safe:active:scale-95 active:bg-accent [&_svg]:size-6`}
     >
       {children}
     </button>
@@ -173,18 +228,9 @@ export function TouchControls({ scheme }: { scheme: ControlScheme }) {
       )}
 
       {scheme === "flap" && (
-        <button
-          aria-label="Jump"
-          onPointerDown={(e) => {
-            e.preventDefault();
-            key(" ");
-          }}
-          onPointerUp={() => key(" ", "keyup")}
-          onContextMenu={(e) => e.preventDefault()}
-          className="h-16 flex-1 touch-none select-none rounded-2xl border border-border bg-primary/15 text-lg font-semibold text-primary active:scale-95"
-        >
-          Tap to jump
-        </button>
+        <div className="w-full flex justify-center">
+          <Pad k=" " label="Jump" tap big><span className="text-sm font-semibold">Tap to jump</span></Pad>
+        </div>
       )}
     </div>
   );

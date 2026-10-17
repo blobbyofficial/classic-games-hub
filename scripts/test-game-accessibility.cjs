@@ -1,0 +1,43 @@
+const { test } = require("node:test");
+const assert = require("node:assert/strict");
+const fs = require("node:fs");
+const player = fs.readFileSync("features/games/game-player.tsx", "utf8");
+test("game display has a meaningful name and controls description", () => {
+  assert.match(player, /role="img" aria-label=\{\x60\$\{title\} game display\x60\}/);
+  assert.match(player, /aria-describedby="game-controls-description"/);
+  assert.match(player, /id="game-controls-description"/);
+});
+test("game actions and overlays have readable names", () => {
+  assert.match(player, /aria-label="Game actions"/);
+  assert.match(player, /aria-label=\{paused \? "Resume" : "Pause"\}/);
+  assert.match(player, /aria-label="Restart"/);
+  assert.match(player, /aria-label="Resume paused game"/);
+});
+
+test("game loader failure is announced and can be retried without hiding gameplay UI", () => {
+  assert.match(player, /role="alert"/);
+  assert.match(player, /onClick=\{replay\}>Try loading again/);
+  assert.match(player, /setEngineError\(null\)/);
+  assert.match(player, /generation !== engineGeneration\.current/);
+});
+
+test("touch pads support keyboard control and release held keys on blur or hidden tab", () => {
+  const touch = fs.readFileSync("features/games/touch-controls.tsx", "utf8");
+  assert.match(touch, /onKeyDown=\{\(e\) =>/);
+  assert.match(touch, /onKeyUp=\{\(e\) =>/);
+  assert.match(touch, /window\.addEventListener\("blur", clearHeld\)/);
+  assert.match(touch, /visibilitychange/);
+  assert.match(touch, /<Pad k=" " label="Jump" tap big>/);
+  assert.match(touch, /e\.detail !== 0/);
+});
+
+test("score submission resets busy flags even after an action rejection", () => {
+  const begin = player.indexOf("setSubmitting(true);");
+  const end = player.indexOf("},", begin);
+  const section = player.slice(begin, end + 2);
+  assert.match(section, /try \{/);
+  assert.match(section, /catch \{/);
+  assert.match(section, /finally \{/);
+  assert.match(section, /setSubmitting\(false\)/);
+  assert.match(section, /submittingRef\.current = false/);
+});

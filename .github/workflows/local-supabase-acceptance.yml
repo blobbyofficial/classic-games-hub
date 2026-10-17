@@ -1,0 +1,85 @@
+name: Disposable local Supabase migration acceptance
+on:
+  pull_request:
+    paths:
+      - 'database/migrations/**'
+      - 'database/tests/**'
+      - 'scripts/prepare-local-supabase-migrations.cjs'
+      - 'scripts/seed-local-supabase-acceptance.cjs'
+      - 'scripts/test-staging-economy.cjs'
+      - 'scripts/test-local-supabase-rls.cjs'
+      - 'scripts/test-local-score-concurrency.cjs'
+      - 'scripts/test-local-social-boundaries.cjs'
+      - 'scripts/test-local-gift-concurrency.cjs'
+      - 'scripts/test-staging-accounts.cjs'
+      - '.github/workflows/local-supabase-acceptance.yml'
+  workflow_dispatch:
+jobs:
+  migration-chain:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Initialize LOCAL-only Supabase project
+        run: npx --yes supabase@latest init
+      - name: Copy complete numbered SQL chain into disposable workspace
+        run: node scripts/prepare-local-supabase-migrations.cjs
+      - name: Start LOCAL Docker Supabase and apply all migrations
+        run: npx --yes supabase@latest start
+      - name: Verify migrated RLS and RPC privileges using LOCAL PostgreSQL
+        env:
+          PGPASSWORD: postgres
+        run: |
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 54322 -U postgres -d postgres -f database/tests/001_security_contracts.sql
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 54322 -U postgres -d postgres -f database/tests/phase3_role_contracts.sql
+      - name: Install isolated account test dependencies
+        run: npm ci
+      - name: Obtain only the disposable local Supabase keys and create synthetic fixture
+        env:
+          LOCAL_SUPABASE_DEV_CONFIRM: yes
+        run: |
+          npx --yes supabase@latest status -o env > /tmp/cgh-local-supabase.env
+          set -a
+          source /tmp/cgh-local-supabase.env
+          set +a
+          node scripts/seed-local-supabase-acceptance.cjs
+      - name: Verify distinct real JWT roles, cross-account privacy and economic write rejection
+        run: node --test scripts/test-local-supabase-rls.cjs
+      - name: Exercise real concurrent purchase against disposable local Supabase
+        run: node --test scripts/test-staging-economy.cjs
+      - name: Verify actual concurrent score grants stop at thirty
+        run: node --test scripts/test-local-score-concurrency.cjs
+      - name: Verify duplicate gifts debit once and deliver only one cosmetic
+        run: node --test scripts/test-local-gift-concurrency.cjs
+      - name: Verify real friend requests, accepted friendship, block and DM rejection
+        run: node --test scripts/test-local-social-boundaries.cjs
+      - name: Install Chromium for locally authenticated browser tests
+        run: |
+          npm install --no-save --package-lock=false playwright
+          npx playwright install --with-deps chromium
+      - name: Build Next.js against disposable LOCAL Supabase
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ env.STAGING_SUPABASE_URL }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ env.STAGING_SUPABASE_ANON_KEY }}
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      - name: Test two synthetic accounts in real local login, friends and notifications
+        env:
+          STAGING_SITE_URL: http://127.0.0.1:3000
+        run: |
+          NEXT_PUBLIC_SUPABASE_URL="$STAGING_SUPABASE_URL" NEXT_PUBLIC_SUPABASE_ANON_KEY="$STAGING_SUPABASE_ANON_KEY" NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000 npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/next-local-supabase.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:3000/login >/dev/null; then break; fi
+            sleep 2
+          done
+          node --test scripts/test-staging-accounts.cjs
+          BASE_URL=http://127.0.0.1:3000 node --test scripts/test-http-smoke.cjs
+      - name: Local-only diagnostics on failure
+        if: failure()
+        run: docker ps -a --format 'table {{.Names}}\t{{.Status}}' || true
+      - name: Stop local Supabase
+        if: always()
+        run: npx --yes supabase@latest stop --no-backup || true

@@ -807,3 +807,29 @@ html[data-site-theme="aurora"] {
 /* Static artwork for users who disable motion in site settings. */
 html[data-reduced-motion="true"] .game-loading-animated { display: none; }
 html[data-reduced-motion="true"] .game-loading-static { display: block; }
+
+/* Avoid focus-triggered iOS viewport zoom in auth, search and social forms.
+   Desktop font sizes and user zoom preferences remain unchanged. */
+@media (max-width: 639px) {
+  input:not([type="checkbox"]):not([type="radio"]):not([type="range"]),
+  textarea,
+  select {
+    font-size: max(16px, 1em);
+  }
+}
+
+/* Keep fixed overlays and mobile controls inside notches and gesture bars. */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .game-shell-fs {
+    padding-top: max(12px, env(safe-area-inset-top));
+    padding-bottom: max(12px, env(safe-area-inset-bottom));
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+}
+
+/* Touch-enabled Chromebooks have fine primary pointers; show game controls
+   when ANY pointer can be coarse without moving the stage after hydration. */
+@media (any-pointer: coarse) {
+  .hybrid-touch-controls { display: block; }
+}

@@ -225,7 +225,7 @@ export default async function RoadmapPage() {
 
       <p className="pb-4 text-center text-xs text-muted-foreground">
         This roadmap is a plan, not a guarantee. Want to shape it?{" "}
-        <Link href="/challenges" className="text-primary hover:underline">
+        <Link href="/challenges" className="text-primary underline underline-offset-2 hover:decoration-2">
           Play, earn, and let us know what you&apos;d love to see.
         </Link>
       </p>

@@ -1,0 +1,28 @@
+name: Preview deployment smoke acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      preview_url:
+        description: "HTTPS URL of the deployed nonproduction preview (not the public live site)"
+        required: true
+        type: string
+jobs:
+  preview-smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 8
+    env:
+      BASE_URL: ${{ inputs.preview_url }}
+      STAGING_TARGET_URL: ${{ inputs.preview_url }}
+      STAGING_ISOLATED_CONFIRMED: yes
+      STAGING_KIND: website
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Reject known production site
+        run: node scripts/assert-isolated-staging.cjs
+      - name: Verify public preview routes and anonymous cron rejection
+        run: node --test scripts/test-http-smoke.cjs
+      - name: Capture anonymous preview status responses
+        run: node scripts/check-public-deployment.mjs "$BASE_URL"

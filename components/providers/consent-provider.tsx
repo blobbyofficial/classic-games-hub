@@ -60,12 +60,15 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
 
   const persist = useCallback((analytics: boolean) => {
+    // Global Privacy Control overrides both an earlier opt-in and any later
+    // accidental opt-in while the browser-level refusal is active.
+    const effectiveAnalytics = analytics && !globalPrivacyControl();
     // Signed-out visitors still need a subject for the durable record. Random
     // and stored only alongside the choice itself - it identifies a decision,
     // not a person, and is never joined to anything else.
     const existing = parseConsent(readCookie(CONSENT_COOKIE));
     const aid = existing?.aid ?? (globalThis.crypto?.randomUUID?.() ?? String(Date.now()));
-    const next: ConsentChoice = { analytics, v: CONSENT_POLICY_VERSION, aid };
+    const next: ConsentChoice = { analytics: effectiveAnalytics, v: CONSENT_POLICY_VERSION, aid };
 
     document.cookie = [
       `${CONSENT_COOKIE}=${serialiseConsent(next)}`,
@@ -85,7 +88,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
     void import("@/lib/supabase/client").then(({ createClient }) =>
       createClient()
         .rpc("record_consent", {
-          p_analytics: analytics,
+          p_analytics: effectiveAnalytics,
           p_anonymous_id: aid,
           p_policy_version: CONSENT_POLICY_VERSION,
         })
@@ -97,14 +100,17 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     const existing = parseConsent(readCookie(CONSENT_COOKIE));
+    if (globalPrivacyControl()) {
+      if (existing?.analytics || !existing) persist(false);
+      else setChoice(existing);
+      setReady(true);
+      return;
+    }
     if (existing) {
       setChoice(existing);
       setReady(true);
       return;
     }
-    // A browser-level refusal is an answer. Record it as a refusal rather than
-    // asking again - the signal exists precisely so people are not asked.
-    if (globalPrivacyControl()) persist(false);
     setReady(true);
   }, [persist]);
 
@@ -113,7 +119,7 @@ export function ConsentProvider({ children }: { children: React.ReactNode }) {
   return (
     <Ctx.Provider value={{ choice, ready, save: persist, reopen }}>
       {children}
-      {choice?.analytics && (
+      {choice?.analytics && !globalPrivacyControl() && (
         <>
           <Analytics />
           <SpeedInsights />

@@ -132,6 +132,7 @@ const frogger: GameEngineFactory = ({
   onGameOver,
   onStatus,
   difficulty,
+  visualBudget,
 }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
@@ -454,6 +455,7 @@ const frogger: GameEngineFactory = ({
     color: string,
     amount = 1,
   ) {
+    const visualCount = Math.max(0, Math.round(amount * (visualBudget?.().particles ?? 1)));
     for (
       let i = 0;
       i < amount;
@@ -470,7 +472,7 @@ const frogger: GameEngineFactory = ({
           2.8,
         );
 
-      particles.push({
+      const particle: Particle = {
         x,
         y,
         vx:
@@ -491,7 +493,8 @@ const frogger: GameEngineFactory = ({
             3,
           ),
         color,
-      });
+      };
+      if (i < visualCount) particles.push(particle);
     }
   }
 

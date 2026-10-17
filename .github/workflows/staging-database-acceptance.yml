@@ -1,0 +1,42 @@
+name: Staging database security acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      isolated_database_confirmed:
+        description: "I confirm STAGING_DATABASE_URL is disposable and NOT production"
+        required: true
+        type: choice
+        options:
+          - "no"
+          - "yes"
+jobs:
+  inspect-staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ISOLATED_DATABASE_CONFIRMED: ${{ inputs.isolated_database_confirmed }}
+      STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Require explicitly provisioned disposable staging database
+        run: |
+          if [ "$ISOLATED_DATABASE_CONFIRMED" != "yes" ]; then
+            echo "::error::Staging testing requires explicit confirmation that database is disposable."
+            exit 1
+          fi
+          if [ -z "$STAGING_DATABASE_URL" ]; then
+            echo "::error::Configure STAGING_DATABASE_URL pointing to an isolated, migrated, disposable test database. Do not use production."
+            exit 1
+          fi
+      - name: Reject production database endpoints before connecting
+        env:
+          STAGING_KIND: database
+          STAGING_TARGET_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          STAGING_ISOLATED_CONFIRMED: ${{ inputs.isolated_database_confirmed }}
+        run: node scripts/assert-isolated-staging.cjs
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client
+      - name: Read-only RLS and RPC privilege acceptance
+        run: |
+          psql -X -v ON_ERROR_STOP=1 "$STAGING_DATABASE_URL" -f database/tests/001_security_contracts.sql
+          psql -X -v ON_ERROR_STOP=1 "$STAGING_DATABASE_URL" -f database/tests/phase3_role_contracts.sql

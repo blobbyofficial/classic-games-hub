@@ -102,7 +102,7 @@ function UserAvatar({ src, name, frame, decoration, className, ...props }: UserA
   const inner = (
     <Avatar className={cn(!ring && frame ? FRAME_STYLES[frame] : undefined, ring && "ring-2 ring-card", className)} {...props}>
       {src ? <AvatarImage src={src} alt={name ?? "avatar"} /> : null}
-      <AvatarFallback style={{ backgroundColor: stringToColor(name ?? "?") }}>
+      <AvatarFallback style={{ backgroundColor: stringToColor(name ?? "?"), backgroundImage: "linear-gradient(rgba(0,0,0,.60), rgba(0,0,0,.60))" }}>
         {initials(name)}
       </AvatarFallback>
     </Avatar>
