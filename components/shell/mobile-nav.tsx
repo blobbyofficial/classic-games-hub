@@ -24,7 +24,7 @@ export function MobileNav() {
       aria-label="Primary"
       className="halloween-mobile-nav fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/85 backdrop-blur-xl backdrop-saturate-150 lg:hidden"
     >
-      <div className="mx-auto grid max-w-lg grid-cols-5 px-1 pb-[env(safe-area-inset-bottom)]">
+      <div className="mx-auto grid w-full max-w-lg grid-cols-5 px-1 pb-[env(safe-area-inset-bottom)]">
         {ITEMS.map((item) => {
           const active = item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
           const badge = item.badgeKey === "friendRequests" ? pending : 0;
@@ -35,7 +35,7 @@ export function MobileNav() {
               aria-current={active ? "page" : undefined}
               className={cn(
                 // 56px tall: comfortably above the 44px minimum touch target.
-                "halloween-mobile-link group relative flex min-h-14 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium",
+                "halloween-mobile-link group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium",
                 "transition-colors duration-200 motion-safe:active:scale-95",
                 active ? "text-primary" : "text-muted-foreground",
               )}
