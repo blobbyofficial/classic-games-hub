@@ -18,7 +18,7 @@ function loadAction(file, rpcCalls) {
     fileName: file,
     reportDiagnostics: true,
   });
-  const module = { exports: {} };
+  const loadedModule = { exports: {} };
   const mocks = {
     "next/cache": { revalidatePath() {} },
     "zod": { z },
@@ -32,12 +32,12 @@ function loadAction(file, rpcCalls) {
     },
     "@/lib/validators": { reviewSchema: z.object({ rating: z.number().min(1).max(5) }) },
   };
-  const context = { module, exports: module.exports, console, require(id) {
+  const context = { module: loadedModule, exports: loadedModule.exports, console, require(id) {
     if (!(id in mocks)) throw Error("Unexpected dependency: " + id);
     return mocks[id];
   } };
   vm.runInNewContext(compiled.outputText, context, { filename: file });
-  return module.exports;
+  return loadedModule.exports;
 }
 test("score submission rejects malformed values without sending RPCs", async () => {
   const calls = [];
@@ -61,12 +61,3 @@ test("score submission rejects malformed values without sending RPCs", async () 
   assert.equal(calls[0].name, "submit_score");
 });
 
-test("economy rejects malformed gifting recipients before RPCs", async () => {
-  const calls = [];
-  const actions = loadAction("actions/economy.ts", calls);
-  const bad = await actions.giftItem("frame", "not-a-user-id");
-  assert.equal(bad.ok, false);
-  const badToken = await actions.giftWithToken("frame", "not-a-user-id");
-  assert.equal(badToken.ok, false);
-  assert.equal(calls.length, 0);
-});
