@@ -17,11 +17,22 @@ test("simultaneous score submissions cannot exceed thirty reward windows per hou
       password: process.env.STAGING_PLAYER_B_PASSWORD,
     })));
     assert.ok(auth.every(x => !x.error && x.data.user?.id));
-    const { data: games, error } = await players[0].from("games")
-      .select("id,slug").eq("status", "published").limit(1);
+    // Public game visibility may be configured for a launch whitelist. Pick a
+    // real seeded game as local service-role admin and publish only this local
+    // fixture; never rely on production game availability for a security test.
+    const serviceRole = process.env.LOCAL_SUPABASE_SERVICE_ROLE_KEY;
+    assert.ok(serviceRole, "Local service-role fixture key required");
+    const admin = createClient(url, serviceRole, { auth: { persistSession: false } });
+    const { data: games, error } = await admin.from("games")
+      .select("id,slug,status").limit(1);
     assert.equal(error, null);
-    assert.ok(games?.length, "Published synthetic game required");
+    assert.ok(games?.length, "A migrated seeded game is required");
     const game = games[0];
+    if (game.status !== "published") {
+      const { error: publishError } = await admin.from("games")
+        .update({ status: "published" }).eq("id", game.id);
+      assert.equal(publishError, null, "Failed to activate isolated game fixture");
+    }
     const results = [];
     for (let round = 0; round < 4; round++) {
       const batchSize = round === 3 ? 7 : 8;
