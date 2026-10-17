@@ -88,7 +88,7 @@ export function GameCard({
               aria-hidden
               className="absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
             >
-              <span className="grid size-14 place-items-center rounded-full bg-primary text-white shadow-lg transition-transform duration-300 ease-[var(--ease-spring)] motion-safe:scale-75 motion-safe:group-hover:scale-100 motion-safe:group-focus-within:scale-100">
+              <span className="halloween-play-button grid size-14 place-items-center rounded-full bg-primary text-white shadow-lg transition-transform duration-300 ease-[var(--ease-spring)] motion-safe:scale-75 motion-safe:group-hover:scale-100 motion-safe:group-focus-within:scale-100">
                 <Play className="size-6 translate-x-0.5 fill-current" />
               </span>
             </div>
