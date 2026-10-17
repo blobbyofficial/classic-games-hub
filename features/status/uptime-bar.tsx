@@ -63,12 +63,9 @@ export function UptimeBar({ data, from, to, className }: Props) {
           const state = UPTIME_STATE[char] ?? "unknown";
           const meta = UPTIME_DAY[state];
           return (
-            <button
+            <span
               key={i}
-              type="button"
-              tabIndex={-1}
               onMouseEnter={() => setHover(i)}
-              onFocus={() => setHover(i)}
               className={cn(
                 "min-w-[2px] flex-1 rounded-[2px] transition-[opacity,transform] duration-150",
                 meta.fill,
@@ -78,7 +75,7 @@ export function UptimeBar({ data, from, to, className }: Props) {
               // The bars are decoration; the strip above carries the label and
               // the table view below carries the detail, so each bar is hidden
               // from assistive technology rather than announcing ninety times.
-              aria-hidden
+              aria-hidden="true"
             />
           );
         })}
