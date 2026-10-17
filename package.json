@@ -12,7 +12,7 @@
     "typecheck": "tsc --noEmit",
     "generate:assets": "node scripts/generate-thumbnails.mjs && node scripts/generate-icons.mjs",
     "check:halloween": "node scripts/check-halloween.mjs",
-    "test:unit": "node scripts/test-game-loop.cjs && node --test scripts/test-platform-contracts.cjs",
+    "test:unit": "node scripts/test-game-loop.cjs && node --test scripts/test-platform-contracts.cjs && node --test scripts/test-action-boundaries.cjs",
     "test:smoke": "node --test scripts/test-http-smoke.cjs",
     "test:db": "psql -X -v ON_ERROR_STOP=1 -f database/tests/001_security_contracts.sql"
   },
