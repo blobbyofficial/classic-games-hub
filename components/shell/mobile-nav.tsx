@@ -21,7 +21,7 @@ export function MobileNav() {
 
   return (
     <nav
-      aria-label="Primary"
+      aria-label="Mobile primary navigation"
       className="halloween-mobile-nav fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/85 backdrop-blur-xl backdrop-saturate-150 lg:hidden"
     >
       <div className="mx-auto grid w-full max-w-lg grid-cols-5 px-1 pb-[env(safe-area-inset-bottom)]">
@@ -35,7 +35,7 @@ export function MobileNav() {
               aria-current={active ? "page" : undefined}
               className={cn(
                 // 56px tall: comfortably above the 44px minimum touch target.
-                "halloween-mobile-link group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl text-[10px] font-medium",
+                "halloween-mobile-link group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-0.5 text-[11px] font-medium focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary",
                 "transition-colors duration-200 motion-safe:active:scale-95",
                 active ? "text-primary" : "text-muted-foreground",
               )}
@@ -57,7 +57,7 @@ export function MobileNav() {
                   )}
                 />
                 {badge > 0 && (
-                  <span className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold tnum text-white ring-2 ring-background">
+                  <span aria-label={`${badge} pending friend requests`} className="absolute -right-2 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full bg-destructive px-1 text-[9px] font-bold tnum text-white ring-2 ring-background">
                     {badge > 9 ? "9+" : badge}
                   </span>
                 )}
