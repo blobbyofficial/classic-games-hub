@@ -36,12 +36,12 @@ export function GamesLibrary({
     let list = games.filter((g) => {
       if (category !== "All" && g.category !== category) return false;
       if (favOnly && !favSet.has(g.id)) return false;
-      if (query) {
-        const q = query.toLowerCase();
+      if (query.trim()) {
+        const q = query.trim().toLocaleLowerCase();
         return (
           g.title.toLowerCase().includes(q) ||
           g.tagline?.toLowerCase().includes(q) ||
-          g.tags.some((t) => t.toLowerCase().includes(q))
+          (g.tags ?? []).some((t) => t.toLowerCase().includes(q))
         );
       }
       return true;
