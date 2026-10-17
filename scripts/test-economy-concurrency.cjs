@@ -38,5 +38,5 @@ test("concurrent duplicate cosmetic purchases recheck ownership after wallet loc
   const recheck = purchase.indexOf("-- Recheck after locking, before debiting", lock);
   const debit = purchase.indexOf("perform public.award_credits", lock);
   assert.ok(lock >= 0 && recheck > lock && debit > recheck, "Ownership must be rechecked under lock before any debit");
-  assert.match(purchase.slice(recheck, debit), /not v_boost and exists[\\s\\S]*?inventory_items/);
+  assert.ok(purchase.slice(recheck, debit).includes("if not v_boost and exists (") && purchase.slice(recheck, debit).includes("from public.inventory_items"));
 });
