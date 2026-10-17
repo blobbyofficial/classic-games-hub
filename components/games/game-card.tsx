@@ -30,17 +30,16 @@ export function GameCard({
   );
 
   return (
-    <div className="group relative isolate">
+    <div className="halloween-game-card group relative isolate">
       <Link
         href={`/games/${game.slug}`}
         className={cn(
-          "hover-lift block overflow-hidden rounded-2xl border border-border bg-card shadow-sm",
-          comingSoon && "pointer-events-none opacity-70",
+          "hover-lift block overflow-hidden rounded-2xl border border-border bg-card shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
+          comingSoon && "opacity-80",
         )}
-        aria-disabled={comingSoon || undefined}
-        tabIndex={comingSoon ? -1 : undefined}
+        aria-label={`${game.title} — ${comingSoon ? "Coming soon" : inDevelopment ? "In development" : earlyAccess ? "Early access" : "View game"}`}
       >
-        <div className="relative aspect-[8/5] overflow-hidden bg-muted">
+        <div className="halloween-game-art relative aspect-[8/5] overflow-hidden bg-muted">
           <Image
             src={game.thumbnail_url ?? "/games/thumbs/snake.svg"}
             alt=""
@@ -61,7 +60,7 @@ export function GameCard({
               already has a gradient over it, so raising the opacity gets the
               same legibility for nothing. */}
           <div className="absolute left-2.5 top-2.5 flex gap-1.5">
-            {game.featured && !comingSoon && (
+            {game.featured && !comingSoon && !inDevelopment && (
               <Badge variant="gold" className="border-transparent bg-black/70 text-gold">
                 <Star className="fill-current" /> Featured
               </Badge>
@@ -76,25 +75,25 @@ export function GameCard({
                 <Wrench className="size-3" /> In development
               </Badge>
             )}
-            {earlyAccess && !comingSoon && (
+            {earlyAccess && !comingSoon && !inDevelopment && (
               <Badge className="border-none bg-[#f47fff] text-white">
                 <Lock className="size-3" /> Early access
               </Badge>
             )}
           </div>
 
-          {!comingSoon && !earlyAccess && (
+          {!comingSoon && !earlyAccess && !inDevelopment && (
             <div
               aria-hidden
               className="absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
             >
-              <span className="grid size-14 place-items-center rounded-full bg-primary text-white shadow-lg transition-transform duration-300 ease-[var(--ease-spring)] motion-safe:scale-75 motion-safe:group-hover:scale-100 motion-safe:group-focus-within:scale-100">
+              <span className="halloween-play-button grid size-14 place-items-center rounded-full bg-primary text-white shadow-lg transition-transform duration-300 ease-[var(--ease-spring)] motion-safe:scale-75 motion-safe:group-hover:scale-100 motion-safe:group-focus-within:scale-100">
                 <Play className="size-6 translate-x-0.5 fill-current" />
               </span>
             </div>
           )}
 
-          <div className="absolute inset-x-3 bottom-2.5">
+          <div className="halloween-game-caption absolute inset-x-3 bottom-2.5">
             <h3 className="truncate font-semibold text-white drop-shadow-sm">{game.title}</h3>
             {game.tagline && (
               <p className="truncate text-xs text-white/75">{game.tagline}</p>
@@ -102,7 +101,7 @@ export function GameCard({
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5 text-xs text-muted-foreground">
+        <div className="halloween-game-meta flex items-center justify-between gap-2 px-3 py-2.5 text-xs text-muted-foreground">
           <span className={cn("truncate font-semibold", meta?.color)}>{game.category}</span>
           <div className="flex shrink-0 items-center gap-3 tnum">
             {game.rating_count > 0 && (

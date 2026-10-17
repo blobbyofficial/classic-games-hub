@@ -12,6 +12,8 @@ import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
 import { getCurrentSettings } from "@/lib/supabase/queries";
 import { SITE_THEME_IDS } from "@/lib/themes";
 import "@/styles/globals.css";
+import "@/styles/seasons/halloween.css";
+import { activeSeason } from "@/lib/seasonal-theme";
 
 // `display: swap` shows the fallback immediately rather than blocking first
 // paint on a slow connection; `preload` on the body face only - the mono face
@@ -83,6 +85,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
       lang="en"
       suppressHydrationWarning
       data-site-theme={siteTheme}
+      data-season={activeSeason() ?? undefined}
       data-reduced-motion={reducedMotion ? "true" : undefined}
     >
       <head>

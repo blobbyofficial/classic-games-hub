@@ -1,39 +1,41 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { PartyPopper, X } from "lucide-react";
+import { PartyPopper, Ghost, X } from "lucide-react";
 import type { SeasonalEvent } from "@/types";
 
 const STORAGE_KEY = "cgh:seasonal-dismissed";
 
 /** Celebratory site-wide banner announcing an active seasonal event. */
 export function SeasonalBanner({ event }: { event: SeasonalEvent }) {
-  // Re-shows when the title changes (a new event is launched).
+  // A changed event title, multiplier or message resets dismissal.
   const [dismissed, setDismissed] = useState(true);
 
   useEffect(() => {
     try {
-      setDismissed(localStorage.getItem(STORAGE_KEY) === event.title);
+      setDismissed(localStorage.getItem(STORAGE_KEY) === `${event.title}:${event.multiplier}:${event.message ?? ""}`);
     } catch {
       setDismissed(false);
     }
-  }, [event.title]);
+  }, [event.title, event.multiplier, event.message]);
 
   if (dismissed) return null;
 
   const dismiss = () => {
     setDismissed(true);
     try {
-      localStorage.setItem(STORAGE_KEY, event.title);
+      localStorage.setItem(STORAGE_KEY, `${event.title}:${event.multiplier}:${event.message ?? ""}`);
     } catch {
       /* ignore */
     }
   };
 
   return (
-    <div className="flex items-center gap-3 border-b border-transparent bg-[linear-gradient(120deg,var(--primary),oklch(0.6_0.2_330))] px-4 py-2 text-center text-sm font-medium text-white">
+    <div role="status"
+      className="halloween-seasonal-banner flex items-center gap-3 border-b border-transparent bg-[linear-gradient(120deg,var(--primary),oklch(0.6_0.2_330))] px-4 py-2 text-center text-sm font-medium text-white">
       <span className="flex min-w-0 flex-1 flex-wrap items-center justify-center gap-x-2 gap-y-1">
-        <PartyPopper className="size-4 shrink-0" />
+        <PartyPopper className="size-4 shrink-0 [[data-season=halloween]_&]:hidden" />
+        <Ghost className="hidden size-4 shrink-0 [[data-season=halloween]_&]:block" />
         <span className="font-semibold">{event.title}</span>
         {event.multiplier > 1 && (
           <span className="rounded-full bg-white/20 px-2 py-0.5 text-xs font-bold tabular-nums">

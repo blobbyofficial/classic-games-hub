@@ -53,7 +53,7 @@ export function SeasonalEventEditor({ flag }: { flag: FeatureFlag }) {
         <div className="min-w-0">
           <CardTitle className="text-base">Seasonal event</CardTitle>
           <p className="mt-0.5 text-xs text-muted-foreground">
-            A site-wide credits multiplier and celebratory banner.
+            A site-wide credits multiplier and celebratory banner. Halloween visuals activate independently of this event.
           </p>
         </div>
         <label className="flex shrink-0 items-center gap-2 text-sm text-muted-foreground">

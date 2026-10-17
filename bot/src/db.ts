@@ -79,5 +79,13 @@ export const db = {
   setBooster: (discordId: string, since: string | null) =>
     rpc<{ ok: boolean }>("bot_set_booster", { p_discord: discordId, p_since: since }),
   /** Writes `last_seen` into discord_bot_config; drives /status on the site. */
-  heartbeat: (version: string | null) => rpc<{ ok: boolean }>("bot_heartbeat", { p_version: version }),
+  heartbeat: async (version: string | null): Promise<void> => {
+    // Unlike optional feature calls, a heartbeat must fail loudly: otherwise
+    // the worker appears healthy while the public status probe declares it down.
+    const { data, error } = await supabase.rpc("bot_heartbeat", { p_version: version });
+    if (error) throw new Error(`bot_heartbeat RPC failed: ${error.message}`);
+    if (!data || (data as { ok?: boolean }).ok !== true) {
+      throw new Error("bot_heartbeat RPC returned an unsuccessful response");
+    }
+  },
 };

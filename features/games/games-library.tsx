@@ -23,7 +23,11 @@ export function GamesLibrary({
   initialCategory?: string;
 }) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<string>(initialCategory ?? "All");
+  const [category, setCategory] = useState<string>(
+    initialCategory && CATEGORIES.includes(initialCategory as (typeof CATEGORIES)[number])
+      ? initialCategory
+      : "All",
+  );
   const [sort, setSort] = useState<Sort>("featured");
   const [favOnly, setFavOnly] = useState(false);
   const favSet = useMemo(() => new Set(favorites), [favorites]);
@@ -32,12 +36,12 @@ export function GamesLibrary({
     let list = games.filter((g) => {
       if (category !== "All" && g.category !== category) return false;
       if (favOnly && !favSet.has(g.id)) return false;
-      if (query) {
-        const q = query.toLowerCase();
+      if (query.trim()) {
+        const q = query.trim().toLocaleLowerCase();
         return (
           g.title.toLowerCase().includes(q) ||
           g.tagline?.toLowerCase().includes(q) ||
-          g.tags.some((t) => t.toLowerCase().includes(q))
+          (g.tags ?? []).some((t) => t.toLowerCase().includes(q))
         );
       }
       return true;
@@ -58,7 +62,7 @@ export function GamesLibrary({
   }, [games, category, favOnly, favSet, query, sort]);
 
   return (
-    <div className="space-y-5">
+    <div className="halloween-library space-y-5">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -72,7 +76,7 @@ export function GamesLibrary({
           {query && (
             <button
               onClick={() => setQuery("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+              className="absolute right-1 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               aria-label="Clear search"
             >
               <X className="size-4" />
@@ -106,18 +110,18 @@ export function GamesLibrary({
       {/* Scrolls rather than wraps on narrow screens, so the filter row stays
           one line tall on a phone instead of pushing the grid down. */}
       <div
-        role="tablist"
-        aria-label="Filter by category"
-        className="rail -mx-4 gap-2 px-4 sm:mx-0 sm:flex-wrap sm:px-0"
+        role="group"
+        aria-label="Filter games by category"
+        className="halloween-library-filters rail -mx-4 gap-2 px-4 sm:mx-0 sm:flex-wrap sm:px-0"
       >
         {["All", ...CATEGORIES].map((cat) => {
           const selected = category === cat;
           return (
             <button
               key={cat}
-              role="tab"
-              aria-selected={selected}
+              aria-pressed={selected}
               onClick={() => setCategory(cat)}
+              type="button"
               className={cn(
                 "rounded-full border px-4 py-2 text-sm font-medium",
                 "transition-[background-color,color,border-color,transform] duration-200 ease-[var(--ease-standard)] motion-safe:active:scale-95",

@@ -286,10 +286,10 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       className={
         isFullscreen
           ? "game-shell-fs flex h-full w-full flex-col items-center justify-center gap-3 overflow-hidden p-3 sm:p-6"
-          : "space-y-3 overscroll-contain [padding-bottom:env(safe-area-inset-bottom)]"
+          : "halloween-player-shell space-y-3 overscroll-contain [padding-bottom:env(safe-area-inset-bottom)]"
       }
     >
-      <div className={`flex items-center justify-between gap-3 ${isFullscreen ? "w-full max-w-3xl" : ""}`}>
+      <div className={`halloween-player-hud flex items-center justify-between gap-3 ${isFullscreen ? "w-full max-w-3xl" : ""}`}>
         <div className="flex items-center gap-4">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
@@ -314,7 +314,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
             <div
               role="group"
               aria-label="Difficulty"
-              className="mr-1 flex rounded-lg border border-border p-0.5"
+              className="halloween-difficulty mr-1 flex rounded-lg border border-border p-0.5"
             >
               {(["easy", "regular", "hard"] as const).map((d) => (
                 <button
@@ -363,7 +363,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
           and right everywhere, and it costs no JavaScript. */}
       <div className={isFullscreen ? "grid min-h-0 w-full flex-1 place-items-center" : "w-full"}>
         <div
-          className="game-stage relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
+          className="halloween-player-stage game-stage relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
           style={
             isFullscreen
               ? { aspectRatio: `${w} / ${h}`, maxWidth: "100%", maxHeight: "100%" }

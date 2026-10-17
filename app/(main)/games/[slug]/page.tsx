@@ -109,7 +109,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
   const devLocked = inDevelopment && !isStaff;
 
   return (
-    <div className="mx-auto max-w-6xl space-y-6">
+    <div className="halloween-game-detail mx-auto max-w-6xl space-y-6">
       {/* The rich-result payload. A game page is the only thing here that can
           realistically win a search: nobody outranks Poki for "free online
           games", but "play <title> online free" is a query with intent and

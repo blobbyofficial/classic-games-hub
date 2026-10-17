@@ -17,6 +17,7 @@ import { HomeLeaderboardPreview } from "@/features/leaderboards/home-preview";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { compactNumber } from "@/lib/utils";
+import { activeSeason } from "@/lib/seasonal-theme";
 
 // Section keys the admin can reorder/hide from Admin → Flags ("home_layout").
 const DEFAULT_ORDER = ["event", "daily", "recent", "featured", "categories", "all_games"] as const;
@@ -31,9 +32,9 @@ type SectionKey = (typeof DEFAULT_ORDER)[number];
  * searches are made of - free, browser, no download.
  */
 export const metadata: Metadata = {
-  title: { absolute: `${SITE.name} - Play 26 Classic Games Free in Your Browser` },
+  title: { absolute: `${SITE.name} - Browser Arcade and Classic Games` },
   description:
-    "Play 26 classic games free in your browser - Snake, Tetris, Minesweeper, Pong and more. No download, no install. Earn credits, climb leaderboards and unlock cosmetics.",
+    "Explore classic browser games including Snake, Tetris, Minesweeper and Pong. Find available games, follow the rebuild, and see player leaderboards.",
   alternates: { canonical: "/" },
 };
 
@@ -111,6 +112,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-10 sm:space-y-14">
       <Hero
+        halloween={activeSeason() === "halloween"}
         gameCount={allGames.length}
         totalPlays={totalPlays}
         isAuthed={Boolean(user)}
@@ -122,55 +124,55 @@ export default async function HomePage() {
 }
 
 function Hero({
+  halloween,
   gameCount,
   totalPlays,
   isAuthed,
   displayName,
 }: {
+  halloween: boolean;
   gameCount: number;
   totalPlays: number;
   isAuthed: boolean;
   displayName?: string | null;
 }) {
   return (
-    /* The ambient glow is painted as a background gradient rather than two
-       blurred divs - same look, no filter for the compositor to maintain, which
-       is what kept this section janky while scrolling on low-end phones. */
-    <section className="relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
-      <div aria-hidden className="pointer-events-none absolute inset-0 bg-grid" />
+    /* Seasonal artwork stays decorative; primary actions and game information are unchanged. */
+    <section className="halloween-hero relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
+      <div aria-hidden className="halloween-scene pointer-events-none absolute inset-0 bg-grid" />
       <div className="relative max-w-2xl motion-safe:animate-rise">
+        {halloween && <p className="halloween-eyebrow mb-4 text-xs font-semibold">The Halloween arcade</p>}
         <h1 className="text-display font-black">
           {displayName ? (
             <>
               Welcome back,
               <br />
-              <span className="text-gradient">{displayName}</span>
+              <span className="text-gradient halloween-highlight">{displayName}</span>
             </>
           ) : (
             <>
-              Your arcade,
+              {halloween ? "Your arcade," : "Pick a game."}
               <br />
-              <span className="text-gradient">reimagined.</span>
+              {halloween ? <span className="halloween-season-heading">after dark.</span> : <span className="text-gradient">Start playing.</span>}
             </>
           )}
         </h1>
         <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Play {gameCount} timeless games, earn credits and XP, unlock achievements, climb the
-          leaderboards and hang out with friends. No pay-to-win - just the classics, done right.
+          Explore {gameCount} games in the library, see which ones are available, and follow your scores and achievements. Some games are being rebuilt.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
-          <Button size="lg" variant="gradient" asChild>
+          <Button size="lg" variant="gradient" className="halloween-cta" asChild>
             <Link href="/games">
               <Gamepad2 /> Browse games
             </Link>
           </Button>
           {!isAuthed && (
-            <Button size="lg" variant="glass" asChild>
+            <Button size="lg" variant="glass" className="halloween-secondary" asChild>
               <Link href="/register">Create free account</Link>
             </Button>
           )}
         </div>
-        <dl className="mt-9 flex flex-wrap gap-x-8 gap-y-3 text-sm">
+        <dl className="halloween-stats mt-9 flex flex-wrap gap-x-8 gap-y-3 pt-4 text-sm">
           <Stat icon={Gamepad2} label="Games" value={gameCount.toString()} />
           <Stat icon={Users} label="Plays" value={compactNumber(totalPlays)} />
           <Stat icon={Star} label="Free forever" value="100%" />

@@ -117,6 +117,30 @@ async function run(request: Request) {
 
   const results: ProbeResult[] = [website, accounts, discordApi];
 
+  // The gateway worker is optional. A never-started worker is not an outage.
+  // Read the heartbeat separately so a missing record can be distinguished
+  // from a worker that previously ran and has stopped reporting.
+  const { data: workerConfig, error: workerConfigError } = await admin
+    .from("discord_bot_config")
+    .select("value")
+    .eq("key", "worker")
+    .maybeSingle();
+  if (workerConfigError) {
+    console.error("[status] worker heartbeat lookup failed:", workerConfigError.message);
+    return NextResponse.json({ error: "worker_heartbeat_lookup_failed" }, { status: 500 });
+  }
+  const workerValue = (workerConfig as unknown as { value?: { last_seen?: unknown } | null } | null)?.value;
+  const workerEverStarted = typeof workerValue?.last_seen === "string";
+  const { error: visibilityError } = await admin
+    .from("status_components")
+    .update({ visible: workerEverStarted })
+    .eq("slug", "discord-bot")
+    .neq("visible", workerEverStarted);
+  if (visibilityError) {
+    console.error("[status] worker visibility update failed:", visibilityError.message);
+    return NextResponse.json({ error: "worker_visibility_update_failed" }, { status: 500 });
+  }
+
   // status_selfcheck() times one representative read per DB-backed area. If the
   // call itself failed, every one of those areas is down by definition and the
   // database is reported down with them.
@@ -148,7 +172,7 @@ async function run(request: Request) {
     // The worker's heartbeat freshness comes back with the self-check rather
     // than as a query of its own.
     const worker = doc.results?.discord_worker;
-    results.push({
+    if (workerEverStarted) results.push({
       slug: "discord-bot",
       ok: worker?.ok ?? false,
       detail: worker?.ok ? undefined : "no recent heartbeat",

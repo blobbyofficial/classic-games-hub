@@ -22,7 +22,7 @@ function SidebarLink({ item, active }: { item: NavItem; active: boolean }) {
       href={item.href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "group relative flex items-center gap-3 rounded-xl py-2.5 pl-3.5 pr-3 text-sm font-medium",
+        "halloween-sidebar-link group relative flex items-center gap-3 rounded-xl py-2.5 pl-3.5 pr-3 text-sm font-medium",
         "transition-[color,background-color] duration-200 ease-[var(--ease-standard)]",
         active
           ? "bg-primary/10 text-primary"
@@ -81,7 +81,7 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="sticky top-16 hidden h-[calc(100dvh-4rem)] w-60 shrink-0 flex-col overflow-y-auto border-r border-border/60 px-3 py-5 lg:flex">
+    <aside className="halloween-sidebar sticky top-16 hidden h-[calc(100dvh-4rem)] w-60 shrink-0 flex-col overflow-y-auto border-r border-border/60 px-3 py-5 lg:flex">
       <NavGroup items={PRIMARY_NAV} pathname={pathname} />
 
       {userId && (

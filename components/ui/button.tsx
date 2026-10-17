@@ -6,7 +6,7 @@ import { Spinner } from "./spinner";
 
 const buttonVariants = cva(
   [
-    "relative inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium",
+    "halloween-ui-button relative inline-flex select-none items-center justify-center gap-2 whitespace-nowrap rounded-lg font-medium",
     "transition-[background-color,box-shadow,color,transform,opacity,border-color] duration-200 ease-[var(--ease-standard)]",
     "disabled:pointer-events-none disabled:opacity-50",
     "[&_svg]:pointer-events-none [&_svg]:shrink-0",
