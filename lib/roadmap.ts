@@ -259,6 +259,17 @@ export const ROADMAP: RoadmapRelease[] = [
         ],
       },
       {
+        heading: "Device-first input, graphics and accessible play",
+        icon: "Laptop",
+        blurb: "Shared foundations land before the game-by-game rebuilds so phone and Chromebook players do not wait for the final relaunch.",
+        items: [
+          { title: "Unified controls for touch, keyboard, pointer and trackpad", description: "Define semantic game actions instead of synthesising fake keyboard events from on-screen buttons; support remapping and per-game help, keyboard-only access, large touch targets, forgiving clicks, pointer capture and clean focus handling. Where relevant, provide keyboard alternatives to long drags and right clicks.", status: "next" },
+          { title: "Fair simulation during slow frames and input bursts", description: "Separate elapsed-time game simulation from animation rendering, buffer fast directional presses appropriately, and prevent stuck keys after blur or tab switching. Gameplay must never accelerate or award different scores merely because a device draws at 30 rather than 60 FPS.", status: "next" },
+          { title: "Adaptive mobile and low-power stage", description: "Compose each game for portrait phones, landscape laptops and focus mode; keep HUD, menus, playfield and control clusters legible. Implement Eco/Balanced/High visual settings and default to modest effects without altering collisions, timer rules or rankings.", status: "next" },
+          { title: "Per-game touch and Chromebook validation gate", description: "Before a game reopens, verify touch, trackpad, keyboard-only, low-power and reduced-motion runs on representative devices. Document input mappings, orientation behaviour, loading speed, frame pacing, pause, restart and score submission.", status: "next" },
+        ],
+      },
+      {
         heading: "How the games feel",
         icon: "SlidersHorizontal",
         items: [
