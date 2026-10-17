@@ -18,6 +18,7 @@ export function GameLoadingMark() {
           className="game-loading-animated size-full object-contain"
         />
       </picture>
+      <Image src="/icon.svg" alt="" aria-hidden="true" width={56} height={56} unoptimized className="game-loading-static hidden size-14 rounded-lg bg-black object-contain" />
       <span className="text-xs font-medium text-muted-foreground">Loading game…</span>
     </div>
   );
