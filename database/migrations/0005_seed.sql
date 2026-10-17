@@ -19,7 +19,7 @@ values
    'Steer with the arrow keys or WASD. Collect power-ups to gain special abilities. Avoid obstacles and your own tail to survive as long as possible.',
    'Arcade', array['modern','survival','reflex'],
    '[{"keys":"Arrow keys / WASD","action":"Steer"},{"keys":"P","action":"Pause"},{"keys":"R","action":"Restart"}]'::jsonb,
-   'slithery', '/games/thumbs/slithery.svg', true, 101, 'medium', 15000, 30, 25),
+   'slithery', '/games/thumbs/slithery.svg', true, 101, 'normal', 15000, 30, 25),
 
   ('tetris', 'Tetris', 'Stack. Clear. Repeat.',
    'The timeless falling-block puzzle. Rotate and place tetrominoes to clear lines as the pace relentlessly climbs.',
