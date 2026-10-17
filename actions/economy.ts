@@ -9,6 +9,7 @@ import type { RpcResult } from "@/types";
 // this boundary; database functions must independently enforce ownership and
 // economic invariants (balances, entitlements, prices and one-time claims).
 const identifierSchema = z.string().trim().min(1).max(128);
+const userIdSchema = z.string().uuid();
 const slugSchema = z.string().trim().min(1).max(128);
 const nameSchema = z.string().trim().min(1).max(80);
 const seasonTierSchema = z.number().int().positive().safe();
@@ -160,7 +161,7 @@ export async function toggleWishlist(slug: string, on: boolean): Promise<RpcResu
 /** Gift cost is calculated by the database, never by the supplied client. */
 export async function giftItem(slug: string, toUserId: string): Promise<RpcResult> {
   const item = invalid(slugSchema, slug, "item");
-  const recipient = invalid(identifierSchema, toUserId, "recipient");
+  const recipient = invalid(userIdSchema, toUserId, "recipient");
   if (!item.ok) return { ok: false, error: item.error };
   if (!recipient.ok) return { ok: false, error: recipient.error };
   return runRpc((db) => db.rpc("gift_item", { p_slug: item.value, p_to: recipient.value }), ["/"]);
@@ -206,7 +207,7 @@ export async function claimSeasonTier(tier: number): Promise<RpcResult> {
 
 export async function giftWithToken(slug: string, toUserId: string): Promise<RpcResult> {
   const item = invalid(slugSchema, slug, "item");
-  const recipient = invalid(identifierSchema, toUserId, "recipient");
+  const recipient = invalid(userIdSchema, toUserId, "recipient");
   if (!item.ok) return { ok: false, error: item.error };
   if (!recipient.ok) return { ok: false, error: recipient.error };
   return runRpc((db) => db.rpc("gift_with_token", { p_slug: item.value, p_to: recipient.value }), ["/shop", "/"]);
