@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logOperation } from "@/lib/observability/operation-log";
 import { discordEnv } from "@/lib/discord/env";
 import { refreshStatChannels } from "@/lib/discord/setup";
 
@@ -21,12 +22,20 @@ export const runtime = "nodejs";
 export const maxDuration = 60;
 
 async function run(request: Request) {
+  const started = Date.now();
   const auth = request.headers.get("authorization");
   if (!discordEnv.cronSecret || auth !== `Bearer ${discordEnv.cronSecret}`) {
+    logOperation({ operation: "cron_auth_rejected", outcome: "denied", severity: "warn" });
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
-  const result = await refreshStatChannels();
-  return NextResponse.json(result);
+  try {
+    const result = await refreshStatChannels();
+    logOperation({ operation: "discord_stats_refresh", outcome: "ok", severity: "info", durationMs: Date.now() - started });
+    return NextResponse.json(result);
+  } catch {
+    logOperation({ operation: "discord_stats_refresh", outcome: "failed", severity: "error", durationMs: Date.now() - started });
+    return NextResponse.json({ error: "stats_refresh_failed" }, { status: 500 });
+  }
 }
 
 export const GET = run;
