@@ -64,7 +64,7 @@ jobs:
         env:
           STAGING_SITE_URL: http://127.0.0.1:3000
         run: |
-          npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/next-local-supabase.log 2>&1 &
+          NEXT_PUBLIC_SUPABASE_URL="$STAGING_SUPABASE_URL" NEXT_PUBLIC_SUPABASE_ANON_KEY="$STAGING_SUPABASE_ANON_KEY" NEXT_PUBLIC_SITE_URL=http://127.0.0.1:3000 npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/next-local-supabase.log 2>&1 &
           for i in $(seq 1 40); do
             if curl -fsS http://127.0.0.1:3000/login >/dev/null; then break; fi
             sleep 2
