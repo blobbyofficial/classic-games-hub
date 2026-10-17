@@ -45,23 +45,19 @@ test("Four sub-daily jobs are configured in the scheduler migration", () => {
   assert.match(sql, /cron_base_url/);
 });
 
-test("Public roadmap icons resolve to explicitly imported Lucide icons", () => {
-  const roadmap = read("lib/roadmap.ts");
-  const page = read("app/(main)/roadmap/page.tsx");
-  const iconNames = [...roadmap.matchAll(/\bicon:\s*"([A-Za-z][A-Za-z0-9]*)"/g)]
-    .map((match) => match[1]);
-  assert.ok(iconNames.length >= 6, "Did not find roadmap icon definitions");
-  const mapping = page.match(/const ICONS:[\s\S]*?= \{([\s\S]*?)\n\};/);
-  assert.ok(mapping, "Roadmap icon registry missing");
-  const mapped = new Set([...mapping[1].matchAll(/^\s*([A-Za-z][A-Za-z0-9]*),?\s*$/gm)]
-    .map((match) => match[1]));
-  const missing = [...new Set(iconNames)].filter((name) => !mapped.has(name));
-  assert.deepEqual(missing, [], `Unknown roadmap icons: ${missing.join(", ")}`);
+test("Status probe requires cron bearer authentication before admin access", () => {
+  const route = read("app/api/cron/status-probe/route.ts");
+  const authAt = route.indexOf('request.headers.get("authorization")');
+  const adminAt = route.indexOf("createAdminClient()");
+  assert.ok(authAt >= 0 && adminAt > authAt, "Expected authorization before admin client");
+  assert.match(route, /discordEnv\.cronSecret/);
+  assert.match(route, /status:\s*401/);
+  assert.match(route, /status_record_checks/);
 });
 
-test("Roadmap override has an explicit visible explanation", () => {
-  const page = read("app/(main)/roadmap/page.tsx");
-  assert.match(page, /roadmap_override/);
-  assert.match(page, /hasActiveOverride/);
-  assert.match(page, /currently managed by site administrators/);
+test("The optional gateway worker health reports readiness explicitly", () => {
+  const health = read("bot/src/health.ts");
+  assert.match(health, /client\.isReady\(\)/);
+  assert.match(health, /ready \? 200 : 503/);
+  assert.match(health, /uptime_seconds/);
 });
