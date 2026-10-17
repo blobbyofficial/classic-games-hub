@@ -6,7 +6,7 @@ const ts = require("typescript");
 
 const source = fs.readFileSync("lib/games/helpers.ts", "utf8");
 const compiled = ts.transpileModule(source, {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+  compilerOptions: { module: 1, target: 9 },
 }).outputText;
 
 test("all game beeps respect sound volume, mute, and invalid settings", () => {
