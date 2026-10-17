@@ -81,6 +81,11 @@ export default async function AdminAnalyticsPage() {
     { count: itemsOwned, error: itemsOwnedError },
     { count: favourites, error: favouritesError },
     { count: ratings, error: ratingsError },
+    { count: pastWeekPlays, error: weeklyPlaysError },
+    { count: pastDayPlays, error: dailyPlaysError },
+    { count: pastMonthPlays, error: monthlyPlaysError },
+    { count: pendingFriendRequests, error: requestsError },
+    { count: openChallenges, error: challengesError },
     { data: gameCatalogue, error: gamesError },
     { data: recentAuditActions, error: auditActionsError },
   ] = await Promise.all([
@@ -111,6 +116,11 @@ export default async function AdminAnalyticsPage() {
     supabase.from("inventory_items").select("*", { count: "exact", head: true }),
     supabase.from("game_favorites").select("*", { count: "exact", head: true }),
     supabase.from("game_ratings").select("*", { count: "exact", head: true }),
+    supabase.from("play_sessions").select("*", { count: "exact", head: true }).gte("created_at", weekAgo),
+    supabase.from("play_sessions").select("*", { count: "exact", head: true }).gte("created_at", dayAgo),
+    supabase.from("play_sessions").select("*", { count: "exact", head: true }).gte("created_at", monthAgo),
+    supabase.from("friendships").select("*", { count: "exact", head: true }).eq("status", "pending"),
+    supabase.from("challenges").select("*", { count: "exact", head: true }).gte("ends_at", new Date().toISOString()),
     supabase.from("games").select("id,title,play_count").eq("status", "published").limit(100),
     supabase.from("audit_logs").select("action").gte("created_at", weekAgo).limit(1000),
   ]);
@@ -136,7 +146,7 @@ export default async function AdminAnalyticsPage() {
     .filter((n): n is number => typeof n === "number" && n > 0);
   const avgDuration = durs.length ? Math.round(durs.reduce((a, b) => a + b, 0) / durs.length) : 0;
 
-  const metricErrors = [rewardsError, achievementsError, auditsError, reportsError, friendshipsError, itemsOwnedError, favouritesError, ratingsError, gamesError, auditActionsError]
+  const metricErrors = [rewardsError, achievementsError, auditsError, reportsError, friendshipsError, itemsOwnedError, favouritesError, ratingsError, weeklyPlaysError, dailyPlaysError, monthlyPlaysError, requestsError, challengesError, gamesError, auditActionsError]
     .filter((error) => error !== null);
   const auditByAction = new Map<string, number>();
   for (const item of recentAuditActions ?? []) {
@@ -163,6 +173,14 @@ export default async function AdminAnalyticsPage() {
           value={avgDuration ? `${Math.floor(avgDuration / 60)}m ${avgDuration % 60}s` : "-"}
           accent="text-gold"
         />
+      </div>
+
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
+        <StatTile icon={Gamepad2} label="Plays (24h)" value={dailyPlaysError ? "Unavailable" : formatNumber(pastDayPlays ?? 0)} />
+        <StatTile icon={Gamepad2} label="Plays (7d)" value={weeklyPlaysError ? "Unavailable" : formatNumber(pastWeekPlays ?? 0)} />
+        <StatTile icon={Gamepad2} label="Plays (30d)" value={monthlyPlaysError ? "Unavailable" : formatNumber(pastMonthPlays ?? 0)} />
+        <StatTile icon={Users} label="Friend requests pending" value={requestsError ? "Unavailable" : formatNumber(pendingFriendRequests ?? 0)} />
+        <StatTile icon={Trophy} label="Challenges open" value={challengesError ? "Unavailable" : formatNumber(openChallenges ?? 0)} />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">
