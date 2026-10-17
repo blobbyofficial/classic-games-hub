@@ -259,6 +259,13 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
 
   useEffect(() => {
     if (!isExpanded) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [isExpanded]);
+
+  useEffect(() => {
+    if (!isExpanded) return;
     const onEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setIsExpanded(false);
     };
@@ -301,7 +308,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       ref={shellRef}
       className={
         isFullscreen || isExpanded
-          ? "game-shell-fs fixed inset-0 z-50 bg-background flex h-full w-full flex-col items-center justify-center gap-3 overflow-hidden p-3 sm:p-6"
+          ? "game-shell-fs fixed inset-0 z-[60] bg-background flex h-full w-full flex-col items-center justify-center gap-3 overflow-hidden p-3 sm:p-6"
           : "halloween-player-shell space-y-3 overscroll-contain [padding-bottom:env(safe-area-inset-bottom)]"
       }
     >
