@@ -176,12 +176,10 @@ html[data-season="halloween"] .halloween-ui-card {border-radius:9px}
 html[data-season="halloween"] .halloween-ui-card:not(.border-dashed) {box-shadow:inset 0 1px #bfa47513}
 html[data-season="halloween"] .halloween-ui-button {border-radius:6px}
 html[data-season="halloween"] .halloween-marquee {width:max-content;max-width:100%;padding:6px 11px;margin-bottom:20px;border:1px solid #cb8a465c;background:#120f0bd9;color:#f5c992;font-size:10px;font-weight:700;letter-spacing:.17em}
-html[data-season="halloween"] .halloween-normal-heading {display:none}
 html[data-season="halloween"] .halloween-season-heading {display:inline;color:#ebd6ac}
 html[data-season="halloween"] .halloween-hero .halloween-season-heading:last-child {color:#f29b51}
 @media(max-width:640px) {html[data-season="halloween"] .halloween-player-shell {padding:5px}html[data-season="halloween"] .halloween-player-stage {border-width:3px}}
 
-html[data-season='halloween'] .halloween-scene { background-image: url('/seasons/halloween/arcade.svg'); background-size: cover; background-position: right center; }
 
 /* Brand and navigation complete the themed experience without blocking controls. */
 html[data-season='halloween'] .halloween-standard-joystick {display:none}
@@ -201,6 +199,7 @@ html[data-season='halloween'] .halloween-logo-icon {transform:rotate(-3deg)}
 html[data-season='halloween'] .halloween-scene {
  background-image:linear-gradient(90deg,#080d0cf8 0%,#080d0cd0 42%,#080d0c28 100%),url('/seasons/halloween/arcade.svg');
  background-position:center,right center;
+ background-size:cover;
 }
 @media(max-width:1100px) {
  html[data-season='halloween'] .halloween-nav-tag {display:none}
