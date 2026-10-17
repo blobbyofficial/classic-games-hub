@@ -34,6 +34,9 @@ jobs:
       - name: Game loop lifecycle test
         run: node scripts/test-game-loop.cjs
 
+      - name: Economy concurrency security contracts
+        run: node --test scripts/test-economy-concurrency.cjs
+
       - name: Build
         run: npm run build
         env:
