@@ -90,12 +90,12 @@ export default async function AdminAnalyticsPage() {
     { data: gameCatalogue, error: gamesError },
     { data: recentAuditActions, error: auditActionsError },
   ] = await Promise.all([
-    supabase.rpc("admin_analytics_daily", { p_days: DAYS }),
     supabase
       .from("play_sessions")
       .select("created_at")
       .gte("created_at", since.toISOString())
       .limit(10000),
+    supabase.rpc("admin_analytics_daily", { p_days: DAYS }),
     supabase
       .from("profiles")
       .select("created_at")
