@@ -95,6 +95,7 @@ const asteroids: GameEngineFactory = ({
   onScore,
   onGameOver,
   onStatus,
+  visualBudget,
 }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
@@ -358,6 +359,7 @@ const asteroids: GameEngineFactory = ({
     amount: number,
     strength = 1,
   ) {
+    const visualCount = Math.max(0, Math.round(amount * (visualBudget?.().particles ?? 1)));
     for (let i = 0; i < amount; i++) {
       const angle =
         Math.random() *
@@ -368,7 +370,7 @@ const asteroids: GameEngineFactory = ({
         (0.5 + Math.random() * 2.8) *
         strength;
 
-      particles.push({
+      const particle: Particle = {
         x,
         y,
         vx:
@@ -388,7 +390,8 @@ const asteroids: GameEngineFactory = ({
           Math.random() < 0.18
             ? "smoke"
             : "spark",
-      });
+      };
+      if (i < visualCount) particles.push(particle);
     }
   }
 
