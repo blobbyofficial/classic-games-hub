@@ -10,9 +10,9 @@ import type { PlayDifficulty, RpcResult, ScoreResult } from "@/types";
 const slugSchema = z.string().trim().min(1).max(120).regex(/^[a-z0-9]+(?:[-_][a-z0-9]+)*$/i);
 const gameIdSchema = z.string().uuid();
 const scoreNumberSchema = z.number().finite().int().min(0).max(2_147_483_647);
-// Exact PlayDifficulty values are defined elsewhere in this project.
-// Restrict shape here; the database must validate membership in its supported set.
-const difficultySchema = z.string().min(1).max(32).regex(/^[a-z][a-z0-9_-]*$/);
+// Only supported gameplay difficulties may reach the score RPC.
+// The database must independently enforce this enum and score integrity.
+const difficultySchema = z.enum(["easy", "regular", "hard"]);
 
 function invalid(error: string): RpcResult {
   return { ok: false, error };
