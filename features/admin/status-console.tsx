@@ -87,15 +87,19 @@ function OpenIncident({ incident }: { incident: Incident }) {
   const [body, setBody] = useState("");
   const [pending, start] = useTransition();
 
-  const submit = () =>
+  const submit = (complete = false) =>
     start(async () => {
-      const res = await postIncidentUpdate({ id: incident.id, status, body });
+      const finalStatus = complete ? (maintenance ? "completed" : "resolved") : status;
+      const finalBody = complete && !body.trim()
+        ? "Scheduled maintenance has been completed."
+        : body;
+      const res = await postIncidentUpdate({ id: incident.id, status: finalStatus, body: finalBody });
       if (!res.ok) {
         toast.error(res.error ?? "Could not post that.");
         return;
       }
       toast.success(
-        status === "resolved" || status === "completed" ? "Incident closed." : "Update posted.",
+        finalStatus === "resolved" || finalStatus === "completed" ? "Incident closed." : "Update posted.",
       );
       setBody("");
       router.refresh();
@@ -151,10 +155,22 @@ function OpenIncident({ incident }: { incident: Incident }) {
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={submit} disabled={pending || body.trim().length < 3} className="gap-2">
+          <Button onClick={() => submit()} disabled={pending || body.trim().length < 3} className="gap-2">
             <Send className="size-4" />
             {status === "resolved" || status === "completed" ? "Post and close" : "Post update"}
           </Button>
+          {maintenance && (
+            <Button
+              variant="outline"
+              onClick={() => submit(true)}
+              disabled={pending}
+              className="gap-2"
+              title="End this maintenance window and release its affected services"
+            >
+              <Wrench className="size-4" />
+              Complete maintenance
+            </Button>
+          )}
         </div>
       </div>
     </div>
