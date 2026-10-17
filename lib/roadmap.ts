@@ -1823,6 +1823,42 @@ export const ROADMAP: RoadmapRelease[] = [
     { title: "Versioned challenge generator", description: "Store challenge seeds, settings and engine versions for reproducible competitions.", status: "idea" },
   ] }] },
 
+  { version: "Player trading and collecting — research", codename: "Collector Exchange", status: "idea", timeframe: "Unscheduled — security and economy design first", summary: "Ideas for friend-to-friend cosmetic trading, edition-limited collecting and a strictly fictional practice market. Existing plans are preserved. Admin inventory correction implementation requires deployment and migration verification; do not mistake future player trading for an existing feature.", groups: [
+    { heading: "Cosmetic trading and player market", icon: "ShoppingBag", items: [
+      { title: "Consent-first cosmetic trade lobby", description: "A browseable hub for players to offer eligible duplicate-free cosmetics to one another, inspired by the clarity of Roblox collecting games without copying assets.", status: "idea" },
+      { title: "Two-sided trade confirmation", description: "Both players see exact items and their effects, confirm the final offer, and re-confirm after any change; cancel or time out abandoned offers.", status: "idea" },
+      { title: "Atomic item-for-item swaps", description: "Trade eligible ownership records in one database transaction with row locks, ownership rechecks, uniqueness constraints, and full audit records.", status: "idea" },
+      { title: "Trading history and scam protection", description: "Show recent completed trades, warn about impersonation, honour blocking, provide reporting and temporary trading restrictions with appeals.", status: "idea" },
+      { title: "Trade eligibility and provenance", description: "Define rules for staff-only, earned, gifted, seasonal, locked and already-equipped items; protect items disputed as stolen or accidentally granted.", status: "idea" },
+      { title: "Trading lounge for small communities", description: "Offer searchable opt-in listings and direct friend proposals before building crowded live trading rooms.", status: "idea" },
+      { title: "Trade valuation context without pressure", description: "Show factual rarity, edition count and previous trades where sufficient data exists; avoid fabricated prices or countdown pressure.", status: "idea" },
+    ] },
+    { heading: "Limited editions and collector ownership", icon: "Gift", items: [
+      { title: "True numbered limited cosmetics", description: "Introduce immutable edition identifiers, clearly defined total issuance and audited minting for cosmetics with fixed supply.", status: "idea" },
+      { title: "Seasonal earned-only editions", description: "Retain Halloween-style event cosmetics with transparent availability and clear future re-release policy.", status: "idea" },
+      { title: "Limited edition provenance timeline", description: "Record first acquisition, eligible ownership transfers and verified edition number without revealing private account details.", status: "idea" },
+      { title: "Fair distribution system for rare editions", description: "Explore earnable contests, creator awards or public events with published eligibility and anti-bot limits rather than paid chance mechanics.", status: "idea" },
+      { title: "Ownership-safe limited transfers", description: "Move a limited-edition instance between users atomically while preserving edition ID, provenance and uniqueness.", status: "idea" },
+      { title: "Limited showcase and collections", description: "Let collectors opt into profile displays for editions, cosmetic sets and original release history without affecting gameplay.", status: "idea" },
+      { title: "Limited release admin controls", description: "Preview stock, lock issued supply after publication and maintain audit logs for corrections and disputes.", status: "idea" },
+    ] },
+    { heading: "Fictional in-game market simulator", icon: "BarChart3", items: [
+      { title: "Practice-only arcade market", description: "Explore a fictional stock-style mini-game with imaginary companies and virtual points, explicitly disconnected from real securities, money, crypto or cash prizes.", status: "idea" },
+      { title: "Transparent market simulation rules", description: "Publish exactly how virtual prices change; design a predictable educational model that does not rely on opaque player exploitation.", status: "idea" },
+      { title: "No purchasable market stakes", description: "Avoid allowing paid currency, real-world money or transferable high-value cosmetics as stakes; never enable cash-out.", status: "idea" },
+      { title: "Optional market learning mode", description: "Explain basic diversification, volatility and simulated gains/losses with clear risk-free practice examples.", status: "idea" },
+      { title: "Economy separation study", description: "Investigate how a standalone virtual market could remain isolated from existing XP levels and credits to prevent progression inflation.", status: "idea" },
+      { title: "Market integrity safeguards", description: "Model anti-manipulation limits, error recovery, leaderboards based on learning goals and no pay-to-win privileges before deciding to build.", status: "idea" },
+    ] },
+    { heading: "Inventory restoration and operational safeguards", icon: "ShieldCheck", items: [
+      { title: "Inventory correction workflow validation", description: "Test administrator remove, optional refund and transfer against actual Supabase migration, existing loadouts, cosmetics entitlements and concurrent requests.", status: "idea" },
+      { title: "Equipped and saved loadout cleanup", description: "Ensure revoked or transferred cosmetics cannot remain active in saved presets, game skins, profiles or cached views.", status: "idea" },
+      { title: "Disputed item holding and rollback", description: "Introduce evidence-based temporary trade restrictions and a reversible correction log for ownership disputes.", status: "idea" },
+      { title: "Historical paid-value refund rules", description: "Avoid credits duplication through repeated refunds, gifts and re-acquisitions by associating each refund with the exact eligible purchase.", status: "idea" },
+      { title: "Inventory action notifications", description: "Tell affected players what was changed and why, with appropriate privacy and support paths.", status: "idea" },
+    ] },
+  ] },
+
 ];
 
 /**
