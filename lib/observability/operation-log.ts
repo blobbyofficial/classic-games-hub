@@ -2,7 +2,7 @@
 import "server-only";
 
 type Severity = "info" | "warn" | "error";
-type Operation = "discord_audit_poll" | "discord_stats_refresh" | "discord_role_sync" | "booster_drops" | "discord_publish" | "cron_auth_rejected" | "cron_completed" | "cron_failed";
+type Operation = "discord_audit_poll" | "discord_stats_refresh" | "discord_role_sync" | "booster_drops" | "discord_publish" | "status_probe" | "cron_auth_rejected" | "cron_completed" | "cron_failed";
 type Outcome = "ok" | "denied" | "failed";
 type LogEvent = Readonly<{
   operation: Operation;
