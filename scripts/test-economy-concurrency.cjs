@@ -2,7 +2,7 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const path = require("node:path");
-const source = fs.readFileSync(path.join(__dirname, "../database/migrations/0080_economy_concurrency_guards.sql"),"utf8");
+const source = fs.readFileSync(path.join(__dirname, "../database/migrations/0082_economy_concurrency_guards.sql"),"utf8");
 test("purchase balance is row-locked before debit", () => {
   const fn = source.slice(source.indexOf("function public.purchase_shop_item"),source.indexOf("function public.gift_item"));
   const lock = fn.indexOf("where id = v_me for update");
@@ -23,7 +23,7 @@ test("security definer RPCs are restricted to authenticated clients", () => {
 
 test("score reward count is serialized by a player-level row lock", () => {
   const scoreSql = fs.readFileSync(
-    path.join(__dirname, "../database/migrations/0081_score_submission_serialization.sql"), "utf8",
+    path.join(__dirname, "../database/migrations/0083_score_submission_serialization.sql"), "utf8",
   );
   const lock = scoreSql.indexOf("where id = v_me for update");
   const count = scoreSql.indexOf("select count(*) into v_recent");
