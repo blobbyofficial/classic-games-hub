@@ -35,7 +35,7 @@ test("mobile navigation, search and library at roadmap widths", { timeout: 15000
         await menu.click();
         await page.getByRole("dialog", { name: "Navigation menu" }).waitFor();
         await page.getByRole("button", { name: "Close navigation menu" }).click();
-        assert.equal(await page.getByRole("dialog", { name: "Navigation menu" }).count(), 0);
+        await page.getByRole("dialog", { name: "Navigation menu" }).waitFor({ state: "hidden" });
       } finally { await page.close(); }
     }
   } finally { await browser.close(); }
