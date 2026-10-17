@@ -9,6 +9,34 @@ const axe = require("axe-core");
 const origin = new URL(process.env.BASE_URL || "http://127.0.0.1:3000");
 const routes = ["/", "/games", "/roadmap", "/status", "/login", "/register"];
 
+test("keyboard navigation gives visible focus on mobile account and game journeys", { timeout: 70000 }, async () => {
+  const browser = await chromium.launch();
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    for (const route of ["/login", "/games"]) {
+      await page.goto(new URL(route, origin).href, { waitUntil: "domcontentloaded" });
+      let focused = false;
+      for (let i = 0; i < 12; i++) {
+        await page.keyboard.press("Tab");
+        const info = await page.evaluate(() => {
+          const node = document.activeElement;
+          return node instanceof HTMLElement ? {
+            tag: node.tagName, visible: node.getBoundingClientRect().width > 0,
+            outline: getComputedStyle(node).outlineStyle,
+            boxShadow: getComputedStyle(node).boxShadow,
+          } : null;
+        });
+        if (info?.visible && (info.outline !== "none" || info.boxShadow !== "none")) {
+          focused = true;
+          break;
+        }
+      }
+      assert.ok(focused, `No visibly styled keyboard focus on ${route}`);
+    }
+    await page.close();
+  } finally { await browser.close(); }
+});
+
 test("public workflows meet automated critical/serious WCAG checks", { timeout: 180000 }, async () => {
   const browser = await chromium.launch();
   try {
