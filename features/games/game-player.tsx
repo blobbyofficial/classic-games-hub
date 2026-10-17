@@ -48,6 +48,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(bestScore);
   const [status, setStatus] = useState("");
+  const [engineError, setEngineError] = useState<string | null>(null);
   const [paused, setPaused] = useState(false);
   const [loadingEngine, setLoadingEngine] = useState(true);
   const [gameOver, setGameOver] = useState(false);
@@ -139,6 +140,8 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     handleRef.current?.destroy();
     handleRef.current = null;
     setLoadingEngine(true);
+    setEngineError(null);
+    setStatus("");
     setGameOver(false);
     setResult(null);
     setScore(0);
@@ -148,7 +151,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
 
     const loader = ENGINE_LOADERS[engineId];
     if (!loader) {
-      setStatus("This game is coming soon.");
+      setEngineError("This game is not available yet.");
       setLoadingEngine(false);
       return;
     }
@@ -177,7 +180,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       gameStart(slug, difficulty);
     }).catch(() => {
       if (generation !== engineGeneration.current) return;
-      setStatus("Could not load this game. Please retry.");
+      setEngineError("Could not load this game. Please retry.");
       setLoadingEngine(false);
     });
   }, [engineId, w, h, difficulty, handleGameOver, syncCanvasResolution, slug]);
@@ -473,7 +476,16 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
           </div>
         )}
 
-        {status && !gameOver && !loadingEngine && (
+        {engineError && !loadingEngine && (
+          <div role="alert" className="absolute inset-0 z-20 grid place-items-center bg-card/95 p-4">
+            <div className="flex max-w-sm flex-col items-center gap-3 text-center">
+              <p className="text-sm font-medium">{engineError}</p>
+              <Button variant="outline" onClick={replay}>Try loading again</Button>
+            </div>
+          </div>
+        )}
+
+        {status && !engineError && !gameOver && !loadingEngine && (
           <div className="pointer-events-none absolute inset-x-0 top-3 flex justify-center">
             {/* Deliberately not backdrop-blurred. This pill is on screen while
                 the game is running, so the filter behind it is recomputed every
