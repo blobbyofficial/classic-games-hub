@@ -310,7 +310,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5" role="group" aria-label="Game actions">
           {/* Changing this restarts the run, because tuning is read when the
               engine is built. Better to restart plainly than to let someone
               finish a run under settings they thought they had changed. */}
@@ -374,7 +374,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
               : { maxWidth: `min(100%, ${w * 1.1}px)`, aspectRatio: `${w} / ${h}` }
           }
         >
-        <canvas ref={canvasRef} width={w} height={h} role="img" aria-label={`${title} game display`} className="block size-full touch-none object-contain" />
+        <canvas ref={canvasRef} width={w} height={h} role="img" aria-label={`${title} game display`} aria-describedby="game-controls-description" className="block size-full touch-none object-contain" />
 
         {loadingEngine && (
           <div className="absolute inset-0 grid place-items-center bg-card">
@@ -412,6 +412,10 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
         {gameOver && <RewardOverlay score={score} result={result} loading={submitting} onReplay={replay} />}
         </div>
       </div>
+
+      <p id="game-controls-description" className="sr-only">
+        This game supports the controls described below. Use the Pause and Restart buttons to manage the game.
+      </p>
 
       {/* Touch controls for touch devices; keyboard hints for pointer devices.
           Chosen by media query rather than by a post-mount `(pointer: coarse)`
