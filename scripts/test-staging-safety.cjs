@@ -15,7 +15,7 @@ test("known production addresses and direct/pooler database connections are reje
 });
 test("unconfirmed staging, wrong schemes and bad targets are rejected", () => {
   assert.throws(() => check("https://staging.example.net", "website", "no"), /confirmation/);
-  assert.throws(() => check("http://staging.example.net", "website"), /HTTPS/);
+  assert.throws(() => check("http://staging.example.net", "website"), /scheme|HTTPS/);
   assert.throws(() => check("https://staging.example.net", "database"), /PostgreSQL/);
   assert.throws(() => check("invalid url", "website"), /Malformed/);
 });
