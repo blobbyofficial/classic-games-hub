@@ -37,7 +37,7 @@ export function MobileMenu() {
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 lg:hidden" />
         <Dialog.Content
-          className="fixed inset-y-0 left-0 z-50 flex w-[84%] max-w-xs flex-col border-r border-border bg-background shadow-xl duration-300 ease-[var(--ease-standard)] data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left lg:hidden"
+          className="fixed inset-y-0 left-0 z-50 flex h-dvh w-[min(84vw,20rem)] min-w-0 flex-col overflow-hidden border-r border-border bg-background pb-[env(safe-area-inset-bottom)] shadow-xl duration-300 ease-[var(--ease-standard)] data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left lg:hidden"
           aria-describedby={undefined}
         >
           <Dialog.Title className="sr-only">Navigation menu</Dialog.Title>
@@ -78,7 +78,7 @@ export function MobileMenu() {
           </div>
 
           {/* Navigation */}
-          <div className="flex-1 space-y-1 overflow-y-auto px-3 py-2">
+          <div className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-3 py-2">
             <nav className="space-y-0.5">
               {PRIMARY_NAV.map((item) => (
                 <DrawerLink key={item.href} item={item} onNavigate={close} />
@@ -122,7 +122,7 @@ export function MobileMenu() {
           </div>
 
           {/* Footer actions */}
-          <div className="space-y-2 border-t border-border/60 p-3">
+          <div className="shrink-0 space-y-2 border-t border-border/60 p-3">
             <div className="flex items-center justify-between rounded-xl px-3 py-1.5">
               <span className="text-sm text-muted-foreground">Theme</span>
               <ThemeToggle />
