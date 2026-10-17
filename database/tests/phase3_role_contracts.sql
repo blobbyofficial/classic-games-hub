@@ -7,6 +7,9 @@ declare
   arg_types text;
   obj regprocedure;
   enabled boolean;
+  can_insert boolean;
+  can_update boolean;
+  can_delete boolean;
 begin
   foreach name in array array['submit_score','purchase_shop_item','gift_item','gift_with_token'] loop
     case name
@@ -39,6 +42,16 @@ begin
       where n.nspname='public' and c.relname=name and c.relkind in ('r','p');
     if enabled is distinct from true then
       raise exception 'Table % absent or RLS disabled',name;
+    end if;
+    -- Flag accidental anonymous write grants even when RLS is enabled.
+    if name in ('credit_transactions','play_sessions','leaderboard_scores') then
+      select has_table_privilege('anon',format('public.%I',name),'INSERT'),
+             has_table_privilege('anon',format('public.%I',name),'UPDATE'),
+             has_table_privilege('anon',format('public.%I',name),'DELETE')
+        into can_insert,can_update,can_delete;
+      if can_insert or can_update or can_delete then
+        raise exception 'Anonymous write grant on sensitive table %',name;
+      end if;
     end if;
   end loop;
 end $$;
