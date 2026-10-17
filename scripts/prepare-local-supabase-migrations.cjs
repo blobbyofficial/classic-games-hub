@@ -18,7 +18,13 @@ function prepareMigrations(sourceDir, destinationDir) {
     }
     if (seen.has(version)) throw Error(`Duplicate SQL migration version ${version}`);
     seen.add(version);
-    const timestamp = `20261017${String(version).padStart(6, "0")}`;
+    // Versions are sequence numbers, not HHMMSS timestamps. Convert their
+    // elapsed seconds into a *valid* time, rather than emitting 000083 seconds.
+    if (version > 86399) throw Error(`Version exceeds daily timestamp window: ${version}`);
+    const hour = Math.floor(version / 3600);
+    const minute = Math.floor((version % 3600) / 60);
+    const second = version % 60;
+    const timestamp = `20261017${[hour, minute, second].map(x => String(x).padStart(2, "0")).join("")}`;
     const destination = path.join(destinationDir, `${timestamp}_${file.replace(/^\d+_/, "")}`);
     fs.copyFileSync(path.join(sourceDir, file), destination);
     output.push(destination);
