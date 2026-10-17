@@ -937,3 +937,35 @@ export async function adminSetEarlyAccess(id: string, days: number): Promise<Rpc
   revalidatePath("/", "layout");
   return { ok: true, until };
 }
+
+
+/** Administrator-only inventory correction; the database repeats the role check. */
+export async function adminCorrectInventory(input: {
+  ownerId: string; inventoryId: number; mode: "remove" | "transfer";
+  recipientId?: string; refund: boolean; reason: string;
+}): Promise<RpcResult> {
+  const actor = await requireStaff();
+  if (actor.role !== "admin") return validationError("Administrator permission required");
+  if (!validUuid(input.ownerId) || !positiveIdSchema.safeParse(input.inventoryId).success)
+    return validationError("Invalid inventory item");
+  if (!["remove", "transfer"].includes(input.mode) || typeof input.refund !== "boolean")
+    return validationError("Invalid operation");
+  if (input.mode === "transfer" && (!validUuid(input.recipientId) || input.refund))
+    return validationError("Select a recipient; transfers cannot issue refunds");
+  if (typeof input.reason !== "string" || input.reason.trim().length < 5 || input.reason.length > 400)
+    return validationError("Provide a reason of 5 to 400 characters");
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("admin_correct_inventory", {
+    p_owner: input.ownerId,
+    p_inventory_id: input.inventoryId,
+    p_mode: input.mode,
+    p_recipient: input.mode === "transfer" ? input.recipientId : null,
+    p_refund: input.mode === "remove" ? input.refund : false,
+    p_reason: input.reason.trim(),
+  });
+  if (error) return validationError(error.message);
+  revalidatePath("/admin/users");
+  revalidatePath("/inventory");
+  revalidatePath("/shop");
+  return (data ?? { ok: false, error: "No result" }) as RpcResult;
+}
