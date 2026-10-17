@@ -23,3 +23,19 @@ export function effectivePixelRatio(devicePixelRatio: number, preset: QualityPre
   const requested = Number.isFinite(devicePixelRatio) && devicePixelRatio > 0 ? devicePixelRatio : 1;
   return Math.max(1, Math.min(requested, PRESETS[preset].pixelRatioCap));
 }
+
+/** Clamp rendering allocation to prevent huge fullscreen backbuffers.
+ * Canvas pixel caps protect fill-rate and memory, never simulation.
+ */
+export function cappedCanvasSize(
+  cssWidth: number, cssHeight: number, devicePixelRatio: number,
+  preset: QualityPreset, maxPixels = 3_000_000,
+): { width: number; height: number } {
+  if (!Number.isFinite(cssWidth) || !Number.isFinite(cssHeight) ||
+      cssWidth <= 0 || cssHeight <= 0) return { width: 1, height: 1 };
+  const dpr = effectivePixelRatio(devicePixelRatio, preset);
+  const scaledPixels = cssWidth * cssHeight * dpr * dpr;
+  const scale = scaledPixels > maxPixels ? Math.sqrt(maxPixels / scaledPixels) : 1;
+  return { width: Math.max(1, Math.round(cssWidth * dpr * scale)),
+           height: Math.max(1, Math.round(cssHeight * dpr * scale)) };
+}
