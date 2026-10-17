@@ -287,7 +287,7 @@ const snake: GameEngineFactory = ({
     const centerY = point.y * cell + cell / 2;
 
     const countToDraw = Math.max(0, Math.round(count * (visualBudget?.().particles ?? 1)));
-    for (let i = 0; i < countToDraw; i++) {
+    for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
       const velocity = 0.4 + Math.random() * spread;
 
