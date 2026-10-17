@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { ENGINE_LOADERS } from "@/lib/games/registry";
 import { canvasFor, CONTROL_SCHEME, SWIPE_GAMES } from "@/lib/games/config";
+import { cappedCanvasSize, renderingBudget, type QualityPreset } from "@/lib/games/render-quality";
 import { submitScore } from "@/actions/games";
 import { gameStart, gameEnd } from "@/lib/analytics";
 import { useSessionStore } from "@/lib/stores/session-store";
@@ -35,6 +36,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const shellRef = useRef<HTMLDivElement>(null);
   const handleRef = useRef<GameEngineHandle | null>(null);
+  const engineGeneration = useRef(0);
   const startTimeRef = useRef(0);
   const submittingRef = useRef(false);
   const { resolvedTheme } = useTheme();
@@ -51,6 +53,11 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [quality, setQuality] = useState<QualityPreset>("balanced");
+  const manualQualityRef = useRef(false);
+  const qualityRef = useRef<QualityPreset>("balanced");
+  qualityRef.current = quality;
   const settings = useSessionStore((s) => s.settings);
   const [difficulty, setDifficulty] = useState<PlayDifficulty>(
     settings?.default_difficulty ?? "regular",
@@ -109,22 +116,22 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     const rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     // Capped at 2×: past that the pixels are invisible and the fill rate is not.
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
-    const bw = Math.round(rect.width * dpr);
-    const bh = Math.round(rect.height * dpr);
+    const { width: bw, height: bh } = cappedCanvasSize(rect.width, rect.height, window.devicePixelRatio || 1, quality);
     // Assigning width/height clears the canvas even when the value is unchanged,
     // so a ResizeObserver that fires on every layout pass would strobe.
     if (canvas.width === bw && canvas.height === bh) return;
     canvas.width = bw;
     canvas.height = bh;
     canvas.getContext("2d")?.setTransform(bw / w, 0, 0, bh / h, 0, 0);
-  }, [w, h]);
+  }, [w, h, quality]);
 
   // (Re)build the engine. Also re-runs on theme change so palettes update.
   const buildEngine = useCallback(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
+    const generation = ++engineGeneration.current;
     handleRef.current?.destroy();
+    handleRef.current = null;
     setLoadingEngine(true);
     setGameOver(false);
     setResult(null);
@@ -141,7 +148,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     }
 
     loader().then(({ default: factory }) => {
-      if (!canvasRef.current) return;
+      if (generation !== engineGeneration.current || !canvasRef.current) return;
       const reduced =
         typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
       syncCanvasResolution();
@@ -150,6 +157,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
         width: w,
         height: h,
         reducedMotion: reduced,
+        visualBudget: () => renderingBudget(qualityRef.current, reduced),
         difficulty,
         onScore: setScore,
         onStatus: setStatus,
@@ -161,18 +169,29 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       // is a new run - the score resets and the clock restarts - so the theme
       // and difficulty rebuilds firing this is correct rather than a leak.
       gameStart(slug, difficulty);
+    }).catch(() => {
+      if (generation !== engineGeneration.current) return;
+      setStatus("Could not load this game. Please retry.");
+      setLoadingEngine(false);
     });
   }, [engineId, w, h, difficulty, handleGameOver, syncCanvasResolution, slug]);
 
   useEffect(() => {
     buildEngine();
-    return () => handleRef.current?.destroy();
+    return () => {
+      engineGeneration.current += 1;
+      handleRef.current?.destroy();
+      handleRef.current = null;
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engineId, resolvedTheme, difficulty]);
 
   // Pause with P / Escape.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isExpanded) return;
+      if (e.defaultPrevented || document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]')) return;
+      if (e.target instanceof HTMLElement && (e.target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName))) return;
       if ((e.key === "p" || e.key === "P" || e.key === "Escape") && !gameOver) {
         e.preventDefault();
         togglePause();
@@ -181,7 +200,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameOver]);
+  }, [gameOver, isExpanded]);
 
   // Swipe-to-move on the canvas for grid/directional games - dispatched as
   // arrow keys so engines handle them the same as a keyboard or D-pad.
@@ -244,12 +263,33 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   // Fullscreen wraps the whole shell (stage + HUD + touch controls) so the
   // experience stays complete on every device.
   const toggleFullscreen = () => {
-    if (document.fullscreenElement) {
-      void document.exitFullscreen().catch(() => {});
+    if (isExpanded) {
+      setIsExpanded(false);
+    } else if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => setIsExpanded(false));
+    } else if (shellRef.current?.requestFullscreen) {
+      // Some mobile browsers expose the method but reject element fullscreen.
+      void shellRef.current.requestFullscreen().catch(() => setIsExpanded(true));
     } else {
-      shellRef.current?.requestFullscreen?.().catch(() => {});
+      setIsExpanded(true);
     }
   };
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+    return () => { document.body.style.overflow = previousOverflow; };
+  }, [isExpanded]);
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsExpanded(false);
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [isExpanded]);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
@@ -269,6 +309,42 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     return () => observer.disconnect();
   }, [syncCanvasResolution]);
 
+  // Local-only frame-cadence safeguard; do not send measurements anywhere.
+  // After sustained slow foreground frames, lower canvas resolution once.
+  // Never alter engine simulation, scoring or a player-chosen preset.
+  useEffect(() => {
+    if (quality !== "balanced" || gameOver || paused) return;
+    let raf = 0;
+    let last = 0;
+    let total = 0;
+    let samples = 0;
+    let slowWindows = 0;
+    const sample = (now: number) => {
+      if (document.hidden) {
+        last = 0;
+      } else if (last) {
+        const interval = now - last;
+        if (interval > 0 && interval < 150) {
+          total += interval;
+          samples++;
+        }
+        if (samples >= 120) {
+          slowWindows = total / samples > 28 ? slowWindows + 1 : 0;
+          samples = 0;
+          total = 0;
+          if (slowWindows >= 2 && !manualQualityRef.current) {
+            setQuality("eco");
+            return;
+          }
+        }
+      }
+      last = now;
+      raf = requestAnimationFrame(sample);
+    };
+    raf = requestAnimationFrame(sample);
+    return () => cancelAnimationFrame(raf);
+  }, [quality, gameOver, paused]);
+
   // Auto-pause when the tab is hidden mid-run.
   useEffect(() => {
     const onVis = () => {
@@ -285,13 +361,13 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     <div
       ref={shellRef}
       className={
-        isFullscreen
-          ? "game-shell-fs flex h-full w-full flex-col items-center justify-center gap-3 overflow-hidden p-3 sm:p-6"
+        isFullscreen || isExpanded
+          ? "game-shell-fs fixed inset-0 z-[60] bg-background flex h-full w-full flex-col items-center justify-center gap-3 overflow-hidden p-3 sm:p-6"
           : "halloween-player-shell space-y-3 overscroll-contain [padding-bottom:env(safe-area-inset-bottom)]"
       }
     >
-      <div className={`halloween-player-hud flex items-center justify-between gap-3 ${isFullscreen ? "w-full max-w-3xl" : ""}`}>
-        <div className="flex items-center gap-4">
+      <div className={`halloween-player-hud flex min-w-0 flex-wrap items-center justify-between gap-2 ${isFullscreen || isExpanded ? "w-full max-w-3xl" : ""}`}>
+        <div className="flex shrink-0 items-center gap-3 sm:gap-4">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               Score
@@ -307,11 +383,11 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5" role="group" aria-label="Game actions">
           {/* Changing this restarts the run, because tuning is read when the
               engine is built. Better to restart plainly than to let someone
               finish a run under settings they thought they had changed. */}
-          {canChooseDifficulty && !isFullscreen && (
+          {canChooseDifficulty && !isFullscreen && !isExpanded && (
             <div
               role="group"
               aria-label="Difficulty"
@@ -338,6 +414,18 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
               ))}
             </div>
           )}
+          <label className="sr-only" htmlFor="game-render-quality">Rendering quality</label>
+          <select
+            id="game-render-quality"
+            aria-label="Rendering quality"
+            value={quality}
+            onChange={(event) => { manualQualityRef.current = true; setQuality(event.target.value as QualityPreset); }}
+            className="h-9 max-w-24 rounded-md border border-border bg-background px-1 text-xs"
+          >
+            <option value="eco">Eco</option>
+            <option value="balanced">Balanced</option>
+            <option value="high">High</option>
+          </select>
           <Button variant="outline" size="icon" onClick={togglePause} disabled={gameOver} aria-label={paused ? "Resume" : "Pause"}>
             {paused ? <Play /> : <Pause />}
           </Button>
@@ -348,9 +436,9 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
             variant="outline"
             size="icon"
             onClick={toggleFullscreen}
-            aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+            aria-label={isFullscreen || isExpanded ? "Exit fullscreen" : "Fullscreen"}
           >
-            {isFullscreen ? <Minimize2 /> : <Maximize2 />}
+            {isFullscreen || isExpanded ? <Minimize2 /> : <Maximize2 />}
           </Button>
         </div>
       </div>
@@ -362,16 +450,16 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
           too small and the game was letterboxed for no reason, too large and it
           overflowed. Letting flexbox measure the leftover space is both simpler
           and right everywhere, and it costs no JavaScript. */}
-      <div className={isFullscreen ? "grid min-h-0 w-full flex-1 place-items-center" : "w-full"}>
+      <div className={isFullscreen || isExpanded ? "grid min-h-0 w-full flex-1 place-items-center" : "w-full"}>
         <div
           className="halloween-player-stage game-stage relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
           style={
-            isFullscreen
+            isFullscreen || isExpanded
               ? { aspectRatio: `${w} / ${h}`, maxWidth: "100%", maxHeight: "100%" }
               : { maxWidth: `min(100%, ${w * 1.1}px)`, aspectRatio: `${w} / ${h}` }
           }
         >
-        <canvas ref={canvasRef} width={w} height={h} className="block size-full touch-none object-contain" />
+        <canvas ref={canvasRef} width={w} height={h} role="img" aria-label={`${title} game display`} aria-describedby="game-controls-description" className="block size-full touch-none object-contain" />
 
         {loadingEngine && (
           <div className="absolute inset-0 grid place-items-center bg-card">
@@ -395,6 +483,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
         {paused && !gameOver && (
           <button
             onClick={togglePause}
+            aria-label="Resume paused game"
             className="absolute inset-0 z-10 grid place-items-center bg-black/60 backdrop-blur-sm"
           >
             <div className="text-center text-white">
@@ -409,6 +498,8 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
         </div>
       </div>
 
+      <p id="game-controls-description" className="sr-only">Use the game controls shown below, or the Pause and Restart buttons above.</p>
+
       {/* Touch controls for touch devices; keyboard hints for pointer devices.
           Chosen by media query rather than by a post-mount `(pointer: coarse)`
           check, which is what this used to do. Reading it in an effect means the
@@ -418,7 +509,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
           stage that changes size resizes the canvas, and resizing a canvas
           clears it. That was the screen "resizing weirdly" mid-game. A media
           query is resolved before the first paint, so nothing moves. */}
-      <div className={`hidden pointer-coarse:block ${isFullscreen ? "w-full max-w-3xl" : ""}`}>
+      <div className={`hybrid-touch-controls hidden pointer-coarse:block ${isFullscreen || isExpanded ? "w-full max-w-3xl" : ""}`}>
         <TouchControls scheme={scheme} />
       </div>
 
