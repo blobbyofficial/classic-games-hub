@@ -166,3 +166,17 @@ html[data-reduced-motion="true"] .halloween-category {
   html[data-season="halloween"] .halloween-game-card > a,
   html[data-season="halloween"] .halloween-category {transition:none}
 }
+
+/* A themed cabinet frame surrounds play without touching canvas rendering. */
+html[data-season="halloween"] .halloween-player-shell {padding:12px;border:1px solid #75573677;border-radius:10px;background:linear-gradient(135deg,#1a21151f,#09110d0e)}
+html[data-season="halloween"] .halloween-player-hud {border-bottom:1px solid #8d6f4455;padding-bottom:12px}
+html[data-season="halloween"] .halloween-player-stage {border:6px solid #24241b;border-radius:9px;outline:1px solid #a6885866;box-shadow:0 0 0 2px #080a07,0 18px 40px #0006}
+html[data-season="halloween"] .halloween-game-detail h1 {letter-spacing:-.03em}
+html[data-season="halloween"] .halloween-ui-card {border-radius:9px}
+html[data-season="halloween"] .halloween-ui-card:not(.border-dashed) {box-shadow:inset 0 1px #bfa47513}
+html[data-season="halloween"] .halloween-ui-button {border-radius:6px}
+html[data-season="halloween"] .halloween-marquee {width:max-content;max-width:100%;padding:6px 11px;margin-bottom:20px;border:1px solid #cb8a465c;background:#120f0bd9;color:#f5c992;font-size:10px;font-weight:700;letter-spacing:.17em}
+html[data-season="halloween"] .halloween-normal-heading {display:none}
+html[data-season="halloween"] .halloween-season-heading {display:inline;color:#ebd6ac}
+html[data-season="halloween"] .halloween-hero .halloween-season-heading:last-child {color:#f29b51}
+@media(max-width:640px) {html[data-season="halloween"] .halloween-player-shell {padding:5px}html[data-season="halloween"] .halloween-player-stage {border-width:3px}}
