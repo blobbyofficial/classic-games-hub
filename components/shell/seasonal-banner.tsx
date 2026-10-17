@@ -8,7 +8,7 @@ const STORAGE_KEY = "cgh:seasonal-dismissed";
 
 /** Celebratory site-wide banner announcing an active seasonal event. */
 export function SeasonalBanner({ event }: { event: SeasonalEvent }) {
-  // Re-shows when the title changes (a new event is launched).
+  // A changed event title, multiplier or message resets dismissal.
   const [dismissed, setDismissed] = useState(true);
 
   useEffect(() => {
@@ -17,7 +17,7 @@ export function SeasonalBanner({ event }: { event: SeasonalEvent }) {
     } catch {
       setDismissed(false);
     }
-  }, [event.title]);
+  }, [event.title, event.multiplier, event.message]);
 
   if (dismissed) return null;
 
