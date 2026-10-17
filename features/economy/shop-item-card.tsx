@@ -7,7 +7,7 @@ import { toast } from "sonner";
 import { purchaseItem, equipItem, unequipItem } from "@/actions/economy";
 import { purchase } from "@/lib/analytics";
 import { useSessionStore } from "@/lib/stores/session-store";
-import { DynamicIcon } from "@/components/dynamic-icon";
+import { ShopArtwork } from "./shop-artwork";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn, formatNumber, RARITY_META } from "@/lib/utils";
@@ -41,7 +41,6 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
   const patchProfile = useSessionStore((s) => s.patchProfile);
   const userId = useSessionStore((s) => s.userId);
   const rarity = RARITY_META[item.rarity];
-  const colors = item.preview?.colors ?? ["#8b5cf6", "#ec4899"];
   const isBoost = item.kind === "xp_boost" || item.kind === "credit_boost";
   const canAfford = credits >= item.price;
   const levelLocked = (item.min_level ?? 0) > (profile?.level ?? 0);
@@ -88,7 +87,7 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
   return (
     <div
       className={cn(
-        "overflow-hidden rounded-2xl border bg-card shadow-sm transition-transform duration-200 ease-out hover:-translate-y-1 motion-reduce:transform-none",
+        "overflow-hidden rounded-xl border bg-card transition-colors duration-200 hover:border-foreground/25",
         `ring-1 ${rarity.ring}`,
       )}
     >
@@ -96,13 +95,10 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
         href={`/shop/${item.slug}`}
         target="_blank"
         rel="noopener noreferrer"
-        className="group/preview relative grid h-28 place-items-center"
-        style={{ background: `linear-gradient(135deg, ${colors[0]}, ${colors[colors.length - 1]})` }}
+        className="group/preview relative block h-40 overflow-hidden"
         aria-label={`Preview ${item.name}`}
       >
-        <div className="grid size-14 place-items-center rounded-2xl bg-black/20 backdrop-blur-sm">
-          <DynamicIcon name={item.preview?.icon ?? kindIcon(item.kind)} className="size-7 text-white" />
-        </div>
+        <ShopArtwork item={item} />
         <Badge className="absolute left-2 top-2 border-none bg-black/30 text-white backdrop-blur-sm">
           {rarity.label}
         </Badge>
@@ -117,7 +113,7 @@ export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }
             Lv {item.min_level}+
           </Badge>
         )}
-        <span className="absolute inset-0 grid place-items-center bg-black/40 opacity-0 backdrop-blur-[1px] transition-opacity group-hover/preview:opacity-100">
+        <span className="absolute inset-0 grid place-items-center bg-black/35 opacity-0 transition-opacity group-hover/preview:opacity-100 group-focus-visible/preview:opacity-100">
           <span className="flex items-center gap-1.5 rounded-full bg-white/90 px-3 py-1 text-xs font-semibold text-black">
             <Eye className="size-3.5" /> Preview
           </span>
