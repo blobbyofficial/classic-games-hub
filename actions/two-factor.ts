@@ -41,6 +41,25 @@ export interface EnrollmentStart {
 
 type Envelope = { ok?: boolean; error?: string; remaining?: number };
 
+const factorIdValid = (id: unknown): id is string =>
+  typeof id === "string" && /^[a-zA-Z0-9-]{1,128}$/.test(id);
+
+function totpCode(value: unknown): string | null {
+  if (typeof value !== "string" || value.length > 32) return null;
+  const code = value.trim();
+  return /^\d{6}$/.test(code) ? code : null;
+}
+
+function publicAuthError(context: string, error: unknown): string {
+  console.error(`[mfa] ${context}`, error);
+  return "Could not complete the request. Try again.";
+}
+
+function validEnvelope(value: unknown): value is Envelope {
+  return typeof value === "object" && value !== null &&
+    typeof (value as Envelope).ok === "boolean";
+}
+
 /** RPC envelope → a sentence, for the handful of errors 0076 can return. */
 function recoveryError(env: Envelope | null): string | null {
   if (env?.ok) return null;
@@ -68,12 +87,17 @@ export async function startTwoFactorEnrollment(): Promise<
 > {
   const supabase = await createClient();
 
-  const { data: existing } = await supabase.auth.mfa.listFactors();
-  if ((existing?.totp ?? []).length > 0) {
+  const { data: auth } = await supabase.auth.getUser();
+  if (!auth.user) return { ok: false, error: "Log in again, then retry." };
+
+  const { data: existing, error: listError } = await supabase.auth.mfa.listFactors();
+  if (listError || !existing) return { ok: false, error: publicAuthError("list factors before enrollment", listError) };
+  if ((existing.totp ?? []).length > 0) {
     return { ok: false, error: "Two-factor authentication is already on for this account." };
   }
   for (const stale of (existing?.all ?? []).filter((f) => f.status !== "verified")) {
-    await supabase.auth.mfa.unenroll({ factorId: stale.id });
+    const { error: cleanupError } = await supabase.auth.mfa.unenroll({ factorId: stale.id });
+    if (cleanupError) return { ok: false, error: publicAuthError("remove stale enrollment", cleanupError) };
   }
 
   const { data, error } = await supabase.auth.mfa.enroll({
@@ -81,7 +105,7 @@ export async function startTwoFactorEnrollment(): Promise<
     friendlyName: "Authenticator app",
     issuer: SITE.name,
   });
-  if (error || !data) return { ok: false, error: error?.message ?? "Could not start setup." };
+  if (error || !data) return { ok: false, error: publicAuthError("enroll", error) };
 
   return {
     ok: true,
@@ -136,12 +160,17 @@ function svgDataUrl(qrCode: string): string {
 
 /** Abandon an in-progress enrolment, so closing the dialog leaves nothing behind. */
 export async function cancelTwoFactorEnrollment(factorId: string): Promise<void> {
+  if (!factorIdValid(factorId)) return;
   const supabase = await createClient();
-  const { data } = await supabase.auth.mfa.listFactors();
+  const { data, error: listError } = await supabase.auth.mfa.listFactors();
+  if (listError) { publicAuthError("list factors for cancellation", listError); return; }
   const factor = (data?.all ?? []).find((f) => f.id === factorId);
   // Only ever cancels something unverified - this must not become a way to
   // remove a working factor without a code.
-  if (factor && factor.status !== "verified") await supabase.auth.mfa.unenroll({ factorId });
+  if (factor && factor.status !== "verified") {
+    const { error } = await supabase.auth.mfa.unenroll({ factorId });
+    if (error) publicAuthError("cancel enrollment", error);
+  }
 }
 
 /**
@@ -153,8 +182,9 @@ export async function confirmTwoFactorEnrollment(
   factorId: string,
   code: string,
 ): Promise<{ ok: true; recoveryCodes: string[] } | { ok: false; error: string }> {
-  const digits = code.replace(/\D/g, "");
-  if (digits.length !== 6) return { ok: false, error: "Enter the 6-digit code from your app." };
+  const digits = totpCode(code);
+  if (!digits) return { ok: false, error: "Enter the 6-digit code from your app." };
+  if (!factorIdValid(factorId)) return { ok: false, error: "Invalid authenticator enrollment." };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.mfa.challengeAndVerify({ factorId, code: digits });
@@ -179,7 +209,8 @@ export async function regenerateRecoveryCodes(): Promise<
   { ok: true; recoveryCodes: string[] } | { ok: false; error: string }
 > {
   const supabase = await createClient();
-  const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  const { data: aal, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assuranceError) return { ok: false, error: publicAuthError("check assurance", assuranceError) };
   if (aal?.currentLevel !== "aal2") {
     return { ok: false, error: "Enter a code from your authenticator app first." };
   }
@@ -193,11 +224,12 @@ export async function regenerateRecoveryCodes(): Promise<
 
 /** Turn 2FA off. Costs a current code, and takes the recovery codes with it. */
 export async function disableTwoFactor(code: string): Promise<TwoFactorState> {
-  const digits = code.replace(/\D/g, "");
-  if (digits.length !== 6) return { error: "Enter the 6-digit code from your app." };
+  const digits = totpCode(code);
+  if (!digits) return { error: "Enter the 6-digit code from your app." };
 
   const supabase = await createClient();
-  const { data: factors } = await supabase.auth.mfa.listFactors();
+  const { data: factors, error: listError } = await supabase.auth.mfa.listFactors();
+  if (listError) return { error: publicAuthError("list factors for disable", listError) };
   const totp = factors?.totp ?? [];
   if (totp.length === 0) return { error: "Two-factor authentication is already off." };
 
@@ -209,9 +241,12 @@ export async function disableTwoFactor(code: string): Promise<TwoFactorState> {
 
   for (const factor of totp) {
     const { error } = await supabase.auth.mfa.unenroll({ factorId: factor.id });
-    if (error) return { error: error.message };
+    if (error) return { error: publicAuthError("unenroll factor", error) };
   }
-  await supabase.rpc("mfa_recovery_clear");
+  const { data: clearData, error: clearError } = await supabase.rpc("mfa_recovery_clear");
+  if (clearError || (validEnvelope(clearData) && !clearData.ok)) {
+    return { error: "Authenticator disabled, but recovery-code cleanup failed. Contact support before using recovery codes." };
+  }
 
   revalidatePath("/settings");
   revalidatePath("/", "layout");
@@ -223,12 +258,12 @@ export async function disableTwoFactor(code: string): Promise<TwoFactorState> {
  * authenticated but still `aal1` and therefore useless until this succeeds.
  */
 export async function verifyTwoFactorChallenge(code: string): Promise<TwoFactorState> {
-  const digits = code.replace(/\D/g, "");
-  if (digits.length !== 6) return { error: "Enter the 6-digit code from your app." };
+  const digits = totpCode(code);
+  if (!digits) return { error: "Enter the 6-digit code from your app." };
 
   const supabase = await createClient();
   const { data: factors, error: listError } = await supabase.auth.mfa.listFactors();
-  if (listError) return { error: listError.message };
+  if (listError) return { error: publicAuthError("list challenge factors", listError) };
 
   const totp = factors?.totp ?? [];
   if (totp.length === 0) return { error: "This account has no authenticator app set up." };
@@ -253,8 +288,11 @@ export async function verifyTwoFactorChallenge(code: string): Promise<TwoFactorS
  * better than burning the code for nothing.
  */
 export async function useRecoveryCode(code: string): Promise<TwoFactorState> {
+  if (typeof code !== "string" || code.length > 128)
+    return { error: "Enter one of your recovery codes." };
   const normalised = normaliseRecoveryCode(code);
-  if (normalised.length < 8) return { error: "Enter one of your recovery codes." };
+  if (normalised.length < 8 || normalised.length > 64)
+    return { error: "Enter one of your recovery codes." };
 
   const supabase = await createClient();
   const {
@@ -270,17 +308,29 @@ export async function useRecoveryCode(code: string): Promise<TwoFactorState> {
   const { data, error } = await supabase.rpc("mfa_recovery_consume", {
     p_hash: hashRecoveryCode(normalised),
   });
-  if (error) return { error: error.message };
-  const message = recoveryError(data as Envelope | null);
+  if (error) return { error: publicAuthError("consume recovery code", error) };
+  if (!validEnvelope(data)) return { error: "Could not verify the recovery code. Contact support if it was already used." };
+  const message = recoveryError(data);
   if (message) return { error: message };
 
-  const { data: factorList } = await admin.auth.admin.mfa.listFactors({ userId: user.id });
-  for (const factor of factorList?.factors ?? []) {
-    await admin.auth.admin.mfa.deleteFactor({ id: factor.id, userId: user.id });
+  const { data: factorList, error: factorsError } = await admin.auth.admin.mfa.listFactors({ userId: user.id });
+  if (factorsError || !factorList) {
+    return { error: "Recovery code was used, but authenticator removal failed. Contact support; do not retry with another code." };
+  }
+  for (const factor of factorList.factors ?? []) {
+    // Never silently claim that recovery succeeded if Supabase rejected deletion.
+    const { error: deleteError } = await admin.auth.admin.mfa.deleteFactor({ id: factor.id, userId: user.id });
+    if (deleteError) {
+      console.error("[mfa] admin factor removal failed", deleteError);
+      return { error: "Recovery code was used, but authenticator removal was incomplete. Contact support; do not retry with another code." };
+    }
   }
   // The remaining codes go too: they were minted for a factor that no longer
   // exists, and leaving them is a second door onto a door that has been removed.
-  await supabase.rpc("mfa_recovery_clear");
+  const { data: clearData, error: clearError } = await supabase.rpc("mfa_recovery_clear");
+  if (clearError || (validEnvelope(clearData) && !clearData.ok)) {
+    return { error: "Authenticator removed, but recovery-code cleanup failed. Contact support." };
+  }
 
   revalidatePath("/", "layout");
   return {
@@ -297,9 +347,8 @@ async function issueRecoveryCodes(
   const { data, error } = await supabase.rpc("mfa_recovery_replace", {
     p_hashes: codes.map((c) => hashRecoveryCode(c)),
   });
-  if (error) return { ok: false, error: error.message };
-  const env = data as Envelope | null;
-  if (!env?.ok) return { ok: false, error: env?.error ?? "unknown error" };
+  if (error) return { ok: false, error: publicAuthError("replace recovery codes", error) };
+  if (!validEnvelope(data) || !data.ok) return { ok: false, error: "Could not save recovery codes." };
   return { ok: true, codes };
 }
 
@@ -313,5 +362,6 @@ function friendlyVerifyError(message: string): string {
     return "That code is not right. Codes last 30 seconds - check your phone's clock is set automatically.";
   }
   if (/rate limit|too many/i.test(message)) return "Too many attempts. Wait a minute and try again.";
-  return message;
+  console.error("[mfa] verification failed:", message);
+  return "Could not verify the code. Try again.";
 }

@@ -17,13 +17,36 @@ import {
 import type { PushSection } from "@/lib/discord/ops";
 import type { GameStatus, RpcResult } from "@/types";
 
+// Server Actions are callable endpoints: TypeScript parameter annotations do not
+// validate data received over the network.
+const uuidSchema = z.string().uuid();
+const positiveIdSchema = z.number().int().positive().safe();
+const finiteIntegerSchema = z.number().finite().int().safe();
+
+function validationError(message: string): RpcResult {
+  return { ok: false, error: message };
+}
+
+function validUuid(value: unknown): value is string {
+  return uuidSchema.safeParse(value).success;
+}
+
+function validRecordKey(value: unknown): value is string {
+  return typeof value === "string" && value.length > 0 && value.length <= 100;
+}
+
 export async function adminAdjustCredits(userId: string, amount: number, reason: string): Promise<RpcResult> {
   await requireStaff();
+  if (!validUuid(userId)) return validationError("Invalid user ID");
+  if (typeof amount !== "number" || !Number.isFinite(amount) || !Number.isSafeInteger(Math.trunc(amount))) {
+    return validationError("Enter a valid credit adjustment");
+  }
+  if (typeof reason !== "string") return validationError("Invalid adjustment reason");
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_adjust_credits", {
     p_user: userId,
     p_amount: Math.trunc(amount),
-    p_reason: reason.slice(0, 200) || "Manual adjustment",
+    p_reason: reason.trim().slice(0, 200) || "Manual adjustment",
   });
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/users");
@@ -31,20 +54,22 @@ export async function adminAdjustCredits(userId: string, amount: number, reason:
 }
 
 export async function adminSetRole(userId: string, role: "user" | "moderator" | "admin"): Promise<RpcResult> {
+  await requireStaff();
+  if (!validUuid(userId)) return validationError("Invalid user ID");
+  if (!["user", "moderator", "admin"].includes(role)) return validationError("Invalid role");
+  // The RPC must independently enforce who can grant elevated roles.
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_set_role", { p_user: userId, p_role: role });
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/users");
   // Mirror the change onto their Discord roles (best-effort, post-response).
-  after(async () => {
-    const discordId = await botDb.discordIdFor(userId);
-    if (discordId) await syncMemberRoles(discordId);
-  });
+  scheduleMemberRoleSync(userId);
   return { ok: true };
 }
 
 export async function adminSetUsername(userId: string, newName: string): Promise<RpcResult> {
   await requireStaff();
+  if (!validUuid(userId)) return validationError("Invalid user ID");
   const parsed = usernameSchema.safeParse(newName);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
 
@@ -60,8 +85,9 @@ export async function adminSetUsername(userId: string, newName: string): Promise
 
 export async function adminSetLevelXp(userId: string, level: number, xp: number): Promise<RpcResult> {
   await requireStaff();
-  if (!Number.isFinite(level) || !Number.isFinite(xp)) {
-    return { ok: false, error: "Enter valid numbers" };
+  if (!validUuid(userId)) return validationError("Invalid user ID");
+  if (!finiteIntegerSchema.safeParse(level).success || !finiteIntegerSchema.safeParse(xp).success || level < 0 || xp < 0) {
+    return validationError("Level and XP must be non-negative safe integers");
   }
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_set_level_xp", {
@@ -76,8 +102,9 @@ export async function adminSetLevelXp(userId: string, level: number, xp: number)
 
 export async function adminUpdateAnnouncement(id: string, input: unknown): Promise<RpcResult> {
   await requireStaff();
+  if (!validUuid(id)) return validationError("Invalid announcement ID");
   const parsed = announcementSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid announcement" };
 
   const supabase = await createClient();
   const { error } = await supabase
@@ -101,6 +128,7 @@ export async function adminUpdateAnnouncement(id: string, input: unknown): Promi
 
 export async function adminDeleteAnnouncement(id: string): Promise<RpcResult> {
   await requireStaff();
+  if (!validUuid(id)) return validationError("Invalid announcement ID");
   const supabase = await createClient();
   const { error } = await supabase.from("announcements").delete().eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -112,22 +140,21 @@ export async function adminDeleteAnnouncement(id: string): Promise<RpcResult> {
 
 export async function adminSetBanned(userId: string, banned: boolean): Promise<RpcResult> {
   await requireStaff();
+  if (!validUuid(userId) || typeof banned !== "boolean") return validationError("Invalid ban request");
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_set_banned", { p_user: userId, p_banned: banned });
   if (error) return { ok: false, error: error.message };
   revalidatePath("/admin/users");
   // Banned accounts lose their managed Discord roles (and get them back on unban).
-  after(async () => {
-    const discordId = await botDb.discordIdFor(userId);
-    if (discordId) await syncMemberRoles(discordId);
-  });
+  scheduleMemberRoleSync(userId);
   return { ok: true };
 }
 
 export async function adminUpsertGame(input: unknown, id?: string): Promise<RpcResult> {
   await requireStaff();
+  if (id !== undefined && !validUuid(id)) return validationError("Invalid game ID");
   const parsed = gameUpsertSchema.safeParse(input);
-  if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
+  if (!parsed.success) return { ok: false, error: parsed.error.issues[0]?.message ?? "Invalid game" };
 
   const supabase = await createClient();
   const payload = {
@@ -148,6 +175,7 @@ export async function adminUpsertGame(input: unknown, id?: string): Promise<RpcR
 
 export async function adminToggleFeatured(id: string, featured: boolean): Promise<RpcResult> {
   await requireStaff();
+  if (!validUuid(id) || typeof featured !== "boolean") return validationError("Invalid featured request");
   const supabase = await createClient();
   const { error } = await supabase.from("games").update({ featured }).eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -161,6 +189,7 @@ export async function adminSetGameStatus(
   status: GameStatus,
 ): Promise<RpcResult> {
   await requireStaff();
+  if (!validUuid(id) || typeof status !== "string" || status.length > 60) return validationError("Invalid game status request");
   const supabase = await createClient();
   const { error } = await supabase.from("games").update({ status }).eq("id", id);
   if (error) return { ok: false, error: error.message };
@@ -204,14 +233,29 @@ export async function adminPublishAnnouncement(input: unknown): Promise<RpcResul
  * notification to everyone - is a far worse failure than a mirror that is
  * fifteen minutes late. The cron job picks up anything this misses.
  */
+function scheduleMemberRoleSync(userId: string): void {
+  after(async () => {
+    try {
+      const discordId = await botDb.discordIdFor(userId);
+      if (discordId) await syncMemberRoles(discordId);
+    } catch (error) {
+      console.error("[discord] member role sync failed", error);
+    }
+  });
+}
+
 function mirrorAnnouncements(): void {
   after(async () => {
-    const { getBotConfig } = await import("@/lib/discord/config");
-    const cfg = await getBotConfig("publishing");
-    if (!cfg.enabled || !cfg.announce_on_publish || !cfg.announce_channel_id) return;
-    const { syncAnnouncements } = await import("@/lib/discord/publish");
-    const res = await syncAnnouncements();
-    if (!res.ok) console.error(`[discord] announcement mirror failed: ${res.error ?? res.detail}`);
+    try {
+      const { getBotConfig } = await import("@/lib/discord/config");
+      const cfg = await getBotConfig("publishing");
+      if (!cfg.enabled || !cfg.announce_on_publish || !cfg.announce_channel_id) return;
+      const { syncAnnouncements } = await import("@/lib/discord/publish");
+      const res = await syncAnnouncements();
+      if (!res.ok) console.error(`[discord] announcement mirror failed: ${res.error ?? res.detail}`);
+    } catch (error) {
+      console.error("[discord] announcement mirror threw", error);
+    }
   });
 }
 
@@ -220,6 +264,9 @@ export async function adminResolveReport(
   status: "resolved" | "dismissed",
 ): Promise<RpcResult> {
   const profile = await requireStaff();
+  if (!positiveIdSchema.safeParse(id).success || !["resolved", "dismissed"].includes(status)) {
+    return validationError("Invalid report resolution request");
+  }
   const supabase = await createClient();
   const { error } = await supabase
     .from("reports")
@@ -232,6 +279,7 @@ export async function adminResolveReport(
 
 export async function adminSetFlag(key: string, enabled: boolean): Promise<RpcResult> {
   await requireStaff();
+  if (!validRecordKey(key) || typeof enabled !== "boolean") return validationError("Invalid feature flag request");
   const supabase = await createClient();
   const { error } = await supabase.from("feature_flags").update({ enabled }).eq("key", key);
   if (error) return { ok: false, error: error.message };
@@ -259,6 +307,7 @@ export async function adminSetSeasonalEvent(input: unknown): Promise<RpcResult> 
 
 export async function adminSetBannerPayload(key: string, input: unknown): Promise<RpcResult> {
   await requireStaff();
+  if (!validRecordKey(key)) return validationError("Invalid banner key");
   const parsed = bannerPayloadSchema.safeParse(input);
   if (!parsed.success) return { ok: false, error: parsed.error.issues[0].message };
 
@@ -466,13 +515,20 @@ export async function adminSetBotSection(
 
   if (!push || !PUSHABLE.has(section)) return { ok: true, detail: "Saved." };
 
-  const { pushSection } = await import("@/lib/discord/ops");
-  const applied = await pushSection(section as PushSection);
-  return {
-    ok: true,
-    detail: applied.ok ? `Saved and pushed to Discord - ${applied.detail}` : "Saved.",
-    warning: applied.ok ? applied.error : `Saved, but couldn't push to Discord: ${applied.error}`,
-  };
+  try {
+    const { pushSection } = await import("@/lib/discord/ops");
+    const applied = await pushSection(section as PushSection);
+    return {
+      ok: true,
+      detail: applied.ok ? `Saved and pushed to Discord - ${applied.detail}` : "Saved.",
+      ...(applied.ok
+        ? (applied.error ? { warning: applied.error } : {})
+        : { warning: `Saved, but couldn't push to Discord: ${applied.error ?? "Unknown error"}` }),
+    };
+  } catch (error) {
+    console.error("[discord] settings push failed", error);
+    return { ok: true, detail: "Saved.", warning: "Saved, but couldn't apply settings to Discord." };
+  }
 }
 
 /**
@@ -538,6 +594,7 @@ export async function adminMessageReportContext(
   reportId: number,
 ): Promise<RpcResult & { context?: unknown }> {
   await requireStaff();
+  if (!positiveIdSchema.safeParse(reportId).success) return validationError("Invalid report ID");
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_message_report_context", {
     p_report_id: reportId,
@@ -721,12 +778,21 @@ export async function adminRunFullRoleSync(): Promise<RpcResult & { detail?: str
   const { syncAllMembers } = await import("@/lib/discord/role-sync");
   const result = await syncAllMembers(200);
   return {
-    ok: true,
+    ok: result.errors === 0,
+    ...(result.errors > 0 ? { error: `${result.errors} member sync error(s); some changes may have succeeded.` } : {}),
     detail: `Scanned ${result.scanned} linked member(s); updated ${result.changed}; ${result.errors} error(s).`,
   };
 }
 
 // ── Community mega-events ──────────────────────────────────────────────
+
+const communityEventSchema = z.object({
+  title: z.string().trim().min(1).max(200),
+  description: z.string().trim().max(5000),
+  target: z.number().int().safe().positive(),
+  reward: z.number().int().safe().nonnegative(),
+  hours: z.number().int().safe().min(1).max(8760),
+});
 
 export async function adminCreateCommunityEvent(input: {
   title: string;
@@ -736,13 +802,15 @@ export async function adminCreateCommunityEvent(input: {
   hours: number;
 }): Promise<RpcResult> {
   await requireStaff();
+  const parsed = communityEventSchema.safeParse(input);
+  if (!parsed.success) return validationError(parsed.error.issues[0]?.message ?? "Invalid community event");
   const supabase = await createClient();
   const { data, error } = await supabase.rpc("admin_create_community_event", {
-    p_title: input.title,
-    p_description: input.description,
-    p_target: Math.trunc(input.target),
-    p_reward: Math.trunc(input.reward),
-    p_hours: Math.trunc(input.hours),
+    p_title: parsed.data.title,
+    p_description: parsed.data.description,
+    p_target: parsed.data.target,
+    p_reward: parsed.data.reward,
+    p_hours: parsed.data.hours,
   });
   if (error) return { ok: false, error: error.message };
   const res = data as { ok?: boolean; error?: string } | null;
@@ -754,6 +822,7 @@ export async function adminCreateCommunityEvent(input: {
 
 export async function adminEndCommunityEvent(id: string): Promise<RpcResult> {
   await requireStaff();
+  if (!validUuid(id)) return validationError("Invalid event ID");
   const supabase = await createClient();
   const { error } = await supabase.rpc("admin_end_community_event", { p_id: id });
   if (error) return { ok: false, error: error.message };
@@ -810,6 +879,7 @@ export async function adminSetFlagConfig(
 ): Promise<RpcResult> {
   await requireStaff();
   const schema = FLAG_SCHEMAS[key];
+  if (!schema || typeof enabled !== "boolean") return validationError("Invalid flag configuration");
   const parsed = schema.safeParse(payload);
   if (!parsed.success) {
     const issue = parsed.error.issues[0];
@@ -853,6 +923,10 @@ export async function adminRunFullDiscordSetup() {
  */
 export async function adminSetEarlyAccess(id: string, days: number): Promise<RpcResult> {
   await requireStaff();
+  if (!validUuid(id)) return validationError("Invalid game ID");
+  if (!z.number().int().safe().min(0).max(3650).safeParse(days).success) {
+    return validationError("Early access must be a whole number of days between 0 and 3650");
+  }
   const supabase = await createClient();
   const until =
     days > 0 ? new Date(Date.now() + days * 86_400_000).toISOString() : null;

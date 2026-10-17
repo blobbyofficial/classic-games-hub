@@ -1,94 +1,125 @@
 "use server";
 
-import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
-import { createClient, createAdminClient } from "@/lib/supabase/server";
-import { emailSchema, passwordSchema } from "@/lib/validators";
+import { redirect } from "next/navigation";
+import { z } from "zod";
+import { createAdminClient, createClient } from "@/lib/supabase/server";
 import { SITE } from "@/lib/constants";
+import { emailSchema, passwordSchema, usernameSchema } from "@/lib/validators";
 
 export type AuthState = { error?: string; message?: string } | null;
 
 type OAuthProvider = "google" | "discord" | "github" | "azure";
+const oauthProviderSchema = z.enum(["google", "discord", "github", "azure"]);
+const INVALID_LOGIN = "Incorrect username/email or password.";
+const RESET_SENT = "If that email exists, a reset link is on the way.";
 
-/** Begin an OAuth flow and hand back the provider's redirect URL. */
+/**
+ * A redirect destination comes from user-controlled form data or a server-action
+ * argument. Only use local absolute paths. Never allow protocol-relative URLs,
+ * backslashes (which browsers can treat as slashes), or control characters.
+ * The callback route must independently validate its own `next` parameter too.
+ */
+function safeNext(value: unknown): string {
+  if (typeof value !== "string" || value.length > 2048) return "/";
+  if (!value.startsWith("/") || value.startsWith("//")) return "/";
+  if (/[\\\u0000-\u001f\u007f]/.test(value)) return "/";
+  return value;
+}
+
+function stringField(data: FormData, field: string): string {
+  const value = data.get(field);
+  return typeof value === "string" ? value : "";
+}
+
+function loginIdentifier(data: FormData): string {
+  const identifier = data.get("identifier") ?? data.get("email");
+  return typeof identifier === "string" ? identifier.trim() : "";
+}
+
+function validationError(result: { error: { issues: { message: string }[] } }): AuthState {
+  return { error: result.error.issues[0]?.message ?? "Invalid input." };
+}
+
+/** Begin an OAuth flow with a validated provider and a local return path. */
 export async function signInWithOAuth(provider: OAuthProvider, next = "/") {
+  const parsedProvider = oauthProviderSchema.safeParse(provider);
+  if (!parsedProvider.success) return { error: "Unsupported sign-in provider." };
+
+  const destination = safeNext(next);
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithOAuth({
-    provider,
+    provider: parsedProvider.data,
     options: {
-      redirectTo: `${SITE.url}/auth/callback?next=${encodeURIComponent(next)}`,
-      scopes: provider === "azure" ? "email openid profile" : undefined,
+      redirectTo: `${SITE.url}/auth/callback?next=${encodeURIComponent(destination)}`,
+      scopes: parsedProvider.data === "azure" ? "email openid profile" : undefined,
     },
   });
-  if (error) return { error: error.message };
-  if (data.url) redirect(data.url);
-  return null;
+
+  if (error) return { error: "Could not start sign-in. Please try again." };
+  if (!data.url) return { error: "The sign-in provider did not return a redirect URL." };
+  redirect(data.url);
 }
 
 export async function signInWithPassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
-  // The login field accepts either an email or a username.
-  const identifierRaw = formData.get("identifier") ?? formData.get("email");
-  const identifier = typeof identifierRaw === "string" ? identifierRaw.trim() : "";
-  const password = z_password(formData.get("password"));
-  const next = (formData.get("next") as string) || "/";
+  const identifier = loginIdentifier(formData);
+  const password = stringField(formData, "password");
+  const next = safeNext(formData.get("next"));
 
-  if (!identifier) return { error: "Enter your username or email" };
-  if (!password) return { error: "Enter your password" };
+  if (!identifier) return { error: "Enter your username or email." };
+  if (!password) return { error: "Enter your password." };
+  // Bound work and reject implausibly large identifiers before a privileged lookup.
+  if (identifier.length > 320 || password.length > 4096) return { error: INVALID_LOGIN };
 
-  // Resolve a username to its account email server-side (never exposed to the
-  // client) when the field isn't already an email address.
   let email = identifier;
   if (!emailSchema.safeParse(identifier).success) {
-    const resolved = await resolveLoginEmail(identifier);
-    if (!resolved) return { error: "That username or password is incorrect" };
-    email = resolved;
+    if (!usernameSchema.safeParse(identifier).success) return { error: INVALID_LOGIN };
+    email = (await resolveLoginEmail(identifier)) ?? "";
+    if (!email) return { error: INVALID_LOGIN };
   }
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-  if (error) return { error: error.message };
+  if (error || !data.user) return { error: INVALID_LOGIN };
 
   revalidatePath("/", "layout");
 
-  // A password alone leaves the session at aal1. If the account has a verified
-  // second factor it owes a code before it is worth anything, so send it
-  // straight to the challenge - the proxy would bounce it there anyway, and one
-  // redirect reads better than two.
-  const owesSecondFactor = (data.user?.factors ?? []).some((f) => f.status === "verified");
-  if (owesSecondFactor) {
+  // Preserve the project's explicit MFA challenge flow. Its route and middleware
+  // must independently enforce the required assurance level.
+  const hasVerifiedFactor = (data.user.factors ?? []).some((factor) => factor.status === "verified");
+  if (hasVerifiedFactor) {
     redirect(next === "/" ? "/two-factor" : `/two-factor?next=${encodeURIComponent(next)}`);
   }
 
   redirect(next);
 }
 
-/**
- * Look up the account email for a username using the privileged client, so the
- * mapping never leaves the server. Returns null if the username is unknown or
- * no service key is configured (in which case the user must log in by email).
- */
+/** Privileged lookup stays server-side. Authorization is handled by the auth API. */
 async function resolveLoginEmail(username: string): Promise<string | null> {
-  const admin = createAdminClient();
-  if (!admin) return null;
+  try {
+    const admin = createAdminClient();
+    if (!admin) return null;
 
-  const { data: profile } = await admin
-    .from("profiles")
-    .select("id")
-    .eq("username", username) // profiles.username is citext → case-insensitive
-    .maybeSingle();
-  if (!profile) return null;
+    const { data: profile, error: profileError } = await admin
+      .from("profiles")
+      .select("id")
+      .eq("username", username)
+      .maybeSingle();
+    if (profileError || !profile) return null;
 
-  const { data, error } = await admin.auth.admin.getUserById(profile.id);
-  if (error || !data.user?.email) return null;
-  return data.user.email;
+    const { data, error } = await admin.auth.admin.getUserById(profile.id);
+    return error ? null : (data.user?.email ?? null);
+  } catch (error) {
+    console.error("[auth] Username login lookup failed", error);
+    return null;
+  }
 }
 
 export async function signUpWithPassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const email = emailSchema.safeParse(formData.get("email"));
   const password = passwordSchema.safeParse(formData.get("password"));
-
-  if (!email.success) return { error: "Enter a valid email address" };
-  if (!password.success) return { error: password.error.issues[0].message };
+  if (!email.success) return { error: "Enter a valid email address." };
+  if (!password.success) return validationError(password);
 
   const supabase = await createClient();
   const { data, error } = await supabase.auth.signUp({
@@ -96,7 +127,7 @@ export async function signUpWithPassword(_prev: AuthState, formData: FormData): 
     password: password.data,
     options: { emailRedirectTo: `${SITE.url}/auth/callback` },
   });
-  if (error) return { error: error.message };
+  if (error) return { error: "Unable to create an account. Please try again." };
 
   if (data.session) {
     revalidatePath("/", "layout");
@@ -107,34 +138,43 @@ export async function signUpWithPassword(_prev: AuthState, formData: FormData): 
 
 export async function resetPasswordRequest(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const email = emailSchema.safeParse(formData.get("email"));
-  if (!email.success) return { error: "Enter a valid email address" };
+  if (!email.success) return { error: "Enter a valid email address." };
 
   const supabase = await createClient();
   const { error } = await supabase.auth.resetPasswordForEmail(email.data, {
-    redirectTo: `${SITE.url}/auth/callback?next=/settings/security`,
+    redirectTo: `${SITE.url}/auth/callback?next=${encodeURIComponent("/settings/security")}`,
   });
-  if (error) return { error: error.message };
-  return { message: "If that email exists, a reset link is on the way." };
+  // Do not reveal whether an account exists. Server-side monitoring should track
+  // provider failures separately from the public-facing response.
+  if (error) console.error("[auth] Password reset request failed", { code: error.code });
+  return { message: RESET_SENT };
 }
 
 export async function updatePassword(_prev: AuthState, formData: FormData): Promise<AuthState> {
   const password = passwordSchema.safeParse(formData.get("password"));
-  if (!password.success) return { error: password.error.issues[0].message };
+  if (!password.success) return validationError(password);
 
   const supabase = await createClient();
+  const { data: userResult, error: userError } = await supabase.auth.getUser();
+  if (userError || !userResult.user) return { error: "Sign in before updating your password." };
+
+  // For accounts enrolled in MFA, do not allow an aal1 session to update the
+  // password. Password-recovery workflows should be checked separately.
+  const { data: assurance, error: assuranceError } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+  if (assuranceError || !assurance) return { error: "Could not verify your session. Try again." };
+  if (assurance.nextLevel === "aal2" && assurance.currentLevel !== "aal2") {
+    return { error: "Complete two-factor verification before changing your password." };
+  }
+
   const { error } = await supabase.auth.updateUser({ password: password.data });
-  if (error) return { error: error.message };
+  if (error) return { error: "Unable to update your password. Try again." };
   return { message: "Password updated." };
 }
 
-export async function signOut() {
+export async function signOut(): Promise<void> {
   const supabase = await createClient();
-  await supabase.auth.signOut();
+  const { error } = await supabase.auth.signOut();
+  if (error) throw new Error("Unable to sign out. Please try again.");
   revalidatePath("/", "layout");
   redirect("/");
-}
-
-// Tiny helper kept local so the file has no partial-schema import weight.
-function z_password(v: FormDataEntryValue | null): string | null {
-  return typeof v === "string" && v.length > 0 ? v : null;
 }
