@@ -1,10 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Gamepad2, Sparkles, Trophy, History, Star, Users, Ghost } from "lucide-react";
+import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users, Ghost } from "lucide-react";
 import { getFeaturedGames, getPublishedGames, getFavoriteGameIds, getRecentlyPlayed } from "@/services/games";
 import { getDailyRewardStatus } from "@/services/economy";
 import { getCurrentProfile, getFlagPayload } from "@/lib/supabase/queries";
+import { createClient } from "@/lib/supabase/server";
 import { GameGrid } from "@/components/games/game-grid";
 import { GameCard } from "@/components/games/game-card";
 import { SectionHeader } from "@/components/section-header";
@@ -31,9 +32,9 @@ type SectionKey = (typeof DEFAULT_ORDER)[number];
  * searches are made of - free, browser, no download.
  */
 export const metadata: Metadata = {
-  title: { absolute: `${SITE.name} - Play 26 Classic Games Free in Your Browser` },
+  title: { absolute: `${SITE.name} - Browser Arcade and Classic Games` },
   description:
-    "Play 26 classic games free in your browser - Snake, Tetris, Minesweeper, Pong and more. No download, no install. Earn credits, climb leaderboards and unlock cosmetics.",
+    "Explore classic browser games including Snake, Tetris, Minesweeper and Pong. Find available games, follow the rebuild, and see player leaderboards.",
   alternates: { canonical: "/" },
 };
 
@@ -136,7 +137,9 @@ function Hero({
   displayName?: string | null;
 }) {
   return (
-    /* The seasonal scene is a decorative CSS background; controls remain normal links. */
+    /* The ambient glow is painted as a background gradient rather than two
+       blurred divs - same look, no filter for the compositor to maintain, which
+       is what kept this section janky while scrolling on low-end phones. */
     <section className="halloween-hero relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
       <div aria-hidden className="halloween-scene pointer-events-none absolute inset-0 bg-grid" />
       <div className="relative max-w-2xl motion-safe:animate-rise">
@@ -151,15 +154,14 @@ function Hero({
             </>
           ) : (
             <>
-              Your arcade,
+              {halloween ? "Your arcade," : "Pick a game."}
               <br />
-              {halloween ? <span className="halloween-season-heading">after dark.</span> : <span className="text-gradient">reimagined.</span>}
+              {halloween ? <span className="halloween-season-heading">after dark.</span> : <span className="text-gradient">Start playing.</span>}
             </>
           )}
         </h1>
         <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Play {gameCount} timeless games, earn credits and XP, unlock achievements, climb the
-          leaderboards and hang out with friends. No pay-to-win - just the classics, done right.
+          Explore {gameCount} games in the library, see which ones are available, and follow your scores and achievements. Some games are being rebuilt.
         </p>
         {halloween && <p className="mt-4 text-sm font-medium text-[#dfb883]">The arcade is open after dark. Dare to play one more round?</p>}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
