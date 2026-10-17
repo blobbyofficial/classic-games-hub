@@ -54,6 +54,9 @@ test("same-sender gift retries recheck recipient ownership after locking the sen
 });
 
 test("score reward calculation clamps numeric before converting to 32-bit integer", () => {
+  const scoreSql = fs.readFileSync(
+    path.join(__dirname, "../database/migrations/0083_score_submission_serialization.sql"), "utf8",
+  );
   const section = scoreSql.slice(scoreSql.indexOf("v_base_credits :="), scoreSql.indexOf("v_credits := v_base_credits"));
   assert.ok(section.includes("v_score::numeric"), "Score division must be numeric to avoid integer overflow");
   assert.ok(section.includes("greatest(1, coalesce(v_game.credit_divisor, 1))"), "Must guard invalid divisor");
