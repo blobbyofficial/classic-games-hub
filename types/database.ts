@@ -923,7 +923,7 @@ export interface Database {
       };
       profile_stats: { Args: { p_user: string }; Returns: Json };
       admin_adjust_credits: { Args: { p_user: string; p_amount: number; p_reason: string }; Returns: undefined };
-      admin_correct_inventory: { Args: { p_owner: string; p_inventory_id: string; p_mode: string; p_recipient?: string | null; p_refund?: boolean; p_reason: string }; Returns: Json };
+      admin_correct_inventory: { Args: { p_owner: string; p_inventory_id: number; p_mode: string; p_recipient?: string | null; p_refund?: boolean; p_reason: string }; Returns: Json };
       admin_set_role: { Args: { p_user: string; p_role: string }; Returns: undefined };
       admin_set_banned: { Args: { p_user: string; p_banned: boolean }; Returns: undefined };
       admin_set_level_xp: { Args: { p_user: string; p_level: number; p_xp: number }; Returns: Json };
