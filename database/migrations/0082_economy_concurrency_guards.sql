@@ -129,6 +129,16 @@ begin
 
   v_price := ceil(v_item.price * 0.75);
   select credits into v_bal from public.profiles where id = v_me for update;
+  if not found then raise exception 'profile not found'; end if;
+  -- Retried gifts from the same sender serialize on this wallet lock. Check
+  -- again after any prior transaction commits, before charging the sender.
+  -- Gifts by *different* senders still rely on the unique inventory constraint
+  -- to roll back the losing transaction without charging it.
+  if exists (
+    select 1 from public.inventory_items where user_id = p_to and item_id = v_item.id
+  ) then
+    return jsonb_build_object('ok', false, 'error', 'They already own this');
+  end if;
   if v_bal < v_price then return jsonb_build_object('ok', false, 'error', 'Not enough credits'); end if;
 
   perform public.award_credits(v_me, -v_price, 'gift_sent', 'shop_item', v_item.slug, jsonb_build_object('to', p_to));
