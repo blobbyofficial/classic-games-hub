@@ -5,6 +5,8 @@ on:
       - 'database/migrations/**'
       - 'database/tests/**'
       - 'scripts/prepare-local-supabase-migrations.cjs'
+      - 'scripts/seed-local-supabase-acceptance.cjs'
+      - 'scripts/test-staging-economy.cjs'
       - '.github/workflows/local-supabase-acceptance.yml'
   workflow_dispatch:
 jobs:
@@ -28,6 +30,19 @@ jobs:
         run: |
           psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 54322 -U postgres -d postgres -f database/tests/001_security_contracts.sql
           psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 54322 -U postgres -d postgres -f database/tests/phase3_role_contracts.sql
+      - name: Install isolated account test dependencies
+        run: npm ci
+      - name: Obtain only the disposable local Supabase keys and create synthetic fixture
+        env:
+          LOCAL_SUPABASE_DEV_CONFIRM: yes
+        run: |
+          npx --yes supabase@latest status -o env > /tmp/cgh-local-supabase.env
+          set -a
+          source /tmp/cgh-local-supabase.env
+          set +a
+          node scripts/seed-local-supabase-acceptance.cjs
+      - name: Exercise real concurrent purchase against disposable local Supabase
+        run: node --test scripts/test-staging-economy.cjs
       - name: Local-only diagnostics on failure
         if: failure()
         run: docker ps -a --format 'table {{.Names}}\t{{.Status}}' || true
