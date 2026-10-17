@@ -6,7 +6,7 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { ENGINE_LOADERS } from "@/lib/games/registry";
 import { canvasFor, CONTROL_SCHEME, SWIPE_GAMES } from "@/lib/games/config";
-import { cappedCanvasSize, type QualityPreset } from "@/lib/games/render-quality";
+import { cappedCanvasSize, renderingBudget, type QualityPreset } from "@/lib/games/render-quality";
 import { submitScore } from "@/actions/games";
 import { gameStart, gameEnd } from "@/lib/analytics";
 import { useSessionStore } from "@/lib/stores/session-store";
@@ -54,6 +54,8 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [quality, setQuality] = useState<QualityPreset>("balanced");
   const manualQualityRef = useRef(false);
+  const qualityRef = useRef<QualityPreset>("balanced");
+  qualityRef.current = quality;
   const settings = useSessionStore((s) => s.settings);
   const [difficulty, setDifficulty] = useState<PlayDifficulty>(
     settings?.default_difficulty ?? "regular",
@@ -151,6 +153,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
         width: w,
         height: h,
         reducedMotion: reduced,
+        visualBudget: () => renderingBudget(qualityRef.current, reduced),
         difficulty,
         onScore: setScore,
         onStatus: setStatus,
