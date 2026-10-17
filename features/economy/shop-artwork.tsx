@@ -1,4 +1,5 @@
 import { DynamicIcon } from "@/components/dynamic-icon";
+import { CuratedShopArtwork } from "./curated-shop-artwork";
 import type { ShopItem } from "@/types";
 
 /**
@@ -6,7 +7,15 @@ import type { ShopItem } from "@/types";
  * backing, a physical object silhouette and item-specific pigments and symbol.
  * No generic multicolour gradient tiles; all colours come from the item record.
  */
+const CURATED_SLUGS = new Set([
+  "frame-neon-ring","frame-violet-pulse","badge-champion","banner-nebula",
+  "trail-comet","deco-crown","deco-headphones","effect-matrix",
+  "effect-fireflies","entrance-glitch","nameplate-cyber","pframe-obsidian",
+  "pframe-prism","theme-deep-space","track-neon-drift",
+]);
+
 export function ShopArtwork({ item }: { item: ShopItem }) {
+  if (CURATED_SLUGS.has(item.slug)) return <CuratedShopArtwork item={item} />;
   const pigments = item.preview?.colors ?? ["#9a8a6f", "#39423f"];
   const first = pigments[0] ?? "#9a8a6f";
   const second = pigments[1] ?? "#39423f";
