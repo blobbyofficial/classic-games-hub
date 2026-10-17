@@ -108,10 +108,34 @@ function startHeartbeat(): void {
   // the Docker image runs `node dist/index.js` directly - so the version on
   // /status was blank on exactly the deployment people actually use.
   const version = process.env.BOT_VERSION ?? process.env.npm_package_version ?? null;
-  const beat = () =>
-    void db.heartbeat(version).catch((err) => console.error("[heartbeat] failed:", err));
-  beat();
-  setInterval(beat, 60_000);
+  let consecutiveFailures = 0;
+  let inFlight = false;
+  const beat = async () => {
+    if (inFlight || !client.isReady()) return;
+    inFlight = true;
+    try {
+      await db.heartbeat(version);
+      if (consecutiveFailures > 0) {
+        console.log("[heartbeat] recovered after", consecutiveFailures, "failed attempt(s)");
+      }
+      consecutiveFailures = 0;
+    } catch (err) {
+      consecutiveFailures++;
+      console.error(`[heartbeat] attempt ${consecutiveFailures} failed:`, err);
+      // The host should restart a worker that has lost database connectivity.
+      // A permanently running but unmonitored gateway is worse than a restart.
+      if (consecutiveFailures >= 5) {
+        console.error("[heartbeat] database unavailable for five checks; restarting worker");
+        process.exitCode = 1;
+        await client.destroy();
+        process.exit(1);
+      }
+    } finally {
+      inFlight = false;
+    }
+  };
+  void beat();
+  setInterval(() => void beat(), 60_000);
 }
 
 // ── Feature listeners ────────────────────────────────────────────────
