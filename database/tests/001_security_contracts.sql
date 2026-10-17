@@ -23,10 +23,14 @@ begin
     select 1 from pg_proc p join pg_namespace n on n.oid=p.pronamespace
     where n.nspname='public' and p.proname='purchase_shop_item'
   ) then raise exception 'purchase_shop_item RPC is missing'; end if;
+  if (select count(*) from pg_class c join pg_namespace n on n.oid=c.relnamespace
+      where n.nspname='public' and c.relkind in ('r','p')
+      and c.relname in ('profiles','play_sessions','leaderboard_scores','inventory_items','credit_transactions')) <> 5
+  then raise exception 'Expected sensitive tables missing'; end if;
   if exists (
     select 1 from pg_class c join pg_namespace n on n.oid=c.relnamespace
     where n.nspname='public' and c.relkind in ('r','p')
-      and c.relname in ('profiles','wallets','game_scores','inventory_items','friendships')
+      and c.relname in ('profiles','play_sessions','leaderboard_scores','inventory_items','credit_transactions')
       and not c.relrowsecurity
   ) then raise exception 'Sensitive public table lacks row-level security'; end if;
 end $$;
