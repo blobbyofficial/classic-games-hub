@@ -285,3 +285,18 @@ html[data-season="halloween"] .halloween-hero::after {
 @media(max-width:640px) {
  html[data-season="halloween"] .halloween-hero::after {width:170px;height:45px;opacity:.35}
 }
+
+/* Respect in-app reduced-motion preferences as well as OS settings. */
+html[data-season="halloween"][data-reduced-motion="true"] .halloween-hero *,
+html[data-season="halloween"][data-reduced-motion="true"] .halloween-ui-button,
+html[data-season="halloween"][data-reduced-motion="true"] .halloween-game-card *,
+html[data-season="halloween"][data-reduced-motion="true"] .halloween-category * {
+  animation:none!important;
+  transition:none!important;
+  scroll-behavior:auto!important;
+}
+@media(prefers-reduced-motion:reduce) {
+ html[data-season="halloween"] .halloween-game-card *,
+ html[data-season="halloween"] .halloween-category *,
+ html[data-season="halloween"] .halloween-ui-button {animation:none!important;transition:none!important}
+}
