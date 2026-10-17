@@ -48,7 +48,7 @@ export function FavoriteButton({
       aria-pressed={fav}
       aria-label={fav ? "Remove from favorites" : "Add to favorites"}
       className={cn(
-        "focus-visible-ring inline-flex items-center gap-2 rounded-full border border-border bg-background/80 px-2.5 py-2 text-sm font-medium backdrop-blur-md transition-colors hover:bg-background",
+        "focus-visible-ring inline-flex items-center gap-2 min-h-11 min-w-11 justify-center rounded-full border border-border bg-background/90 px-2.5 py-2 text-sm font-medium transition-colors hover:bg-background",
         withLabel && "px-4",
         className,
       )}
