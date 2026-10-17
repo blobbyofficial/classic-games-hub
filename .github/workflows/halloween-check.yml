@@ -1,0 +1,35 @@
+name: Halloween visual integration checks
+
+on:
+  pull_request:
+    paths:
+      - "app/**"
+      - "components/**"
+      - "features/**"
+      - "lib/seasonal-theme.ts"
+      - "public/seasons/halloween/**"
+      - "styles/seasons/**"
+      - "scripts/check-halloween.mjs"
+      - "package.json"
+      - "package-lock.json"
+      - ".github/workflows/halloween-check.yml"
+  workflow_dispatch:
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Check Halloween integration
+        run: npm run check:halloween
+      - name: TypeScript validation
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
