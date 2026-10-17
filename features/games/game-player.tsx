@@ -173,6 +173,9 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   // Pause with P / Escape.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      const target = e.target;
+      if (target instanceof HTMLElement &&
+          (target.isContentEditable || target.closest("input, textarea, select, [role='textbox']"))) return;
       if ((e.key === "p" || e.key === "P" || e.key === "Escape") && !gameOver) {
         e.preventDefault();
         togglePause();
@@ -371,7 +374,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
               : { maxWidth: `min(100%, ${w * 1.1}px)`, aspectRatio: `${w} / ${h}` }
           }
         >
-        <canvas ref={canvasRef} width={w} height={h} className="block size-full touch-none object-contain" />
+        <canvas ref={canvasRef} width={w} height={h} role="img" aria-label={`${title} game display`} className="block size-full touch-none object-contain" />
 
         {loadingEngine && (
           <div className="absolute inset-0 grid place-items-center bg-card">
@@ -395,6 +398,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
         {paused && !gameOver && (
           <button
             onClick={togglePause}
+            aria-label="Resume paused game"
             className="absolute inset-0 z-10 grid place-items-center bg-black/60 backdrop-blur-sm"
           >
             <div className="text-center text-white">
