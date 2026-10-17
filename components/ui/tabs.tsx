@@ -14,7 +14,7 @@ const TabsList = React.forwardRef<
     ref={ref}
     className={cn(
       // Scrolls instead of wrapping when the labels outgrow a phone screen.
-      "inline-flex h-11 max-w-full items-center gap-1 overflow-x-auto rounded-xl bg-muted/60 p-1 text-muted-foreground no-scrollbar",
+      "halloween-tabs-list inline-flex h-11 max-w-full items-center gap-1 overflow-x-auto rounded-xl bg-muted/60 p-1 text-muted-foreground no-scrollbar",
       className,
     )}
     {...props}
@@ -29,7 +29,7 @@ const TabsTrigger = React.forwardRef<
   <TabsPrimitive.Trigger
     ref={ref}
     className={cn(
-      "inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium",
+      "halloween-tabs-trigger inline-flex shrink-0 items-center justify-center gap-1.5 whitespace-nowrap rounded-lg px-3.5 py-1.5 text-sm font-medium",
       "transition-[background-color,color,box-shadow] duration-200 ease-[var(--ease-standard)]",
       "hover:text-foreground disabled:pointer-events-none disabled:opacity-50 [&_svg]:size-4",
       "data-[state=active]:bg-background data-[state=active]:text-foreground data-[state=active]:shadow-sm",
