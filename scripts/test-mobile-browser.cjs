@@ -18,7 +18,7 @@ test("mobile navigation, search and library at roadmap widths", { timeout: 15000
           assert.equal(response?.status(), 200, `${pathname} at ${width}px`);
           const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
           assert.ok(overflow <= 2, `${pathname} overflows by ${overflow}px at ${width}px`);
-          if (screenshotDir) await page.screenshot({ path: path.join(screenshotDir, `${pathname === "/" ? "home" : pathname.slice(1)}-${width}px.png`), fullPage: true });
+          if (screenshotDir && [320, 390].includes(width)) await page.screenshot({ path: path.join(screenshotDir, `${pathname === "/" ? "home" : pathname.slice(1)}-${width}px.jpg`), type: "jpeg", quality: 68, fullPage: false });
           const nav = page.getByRole("navigation", { name: "Mobile primary navigation" });
           assert.equal(await nav.isVisible(), true);
           const links = nav.getByRole("link");
