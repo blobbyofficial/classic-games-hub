@@ -99,9 +99,9 @@ export const ROADMAP: RoadmapRelease[] = [
         icon: "Smartphone",
         blurb: "Most players use phones. Treat usability, touch gameplay and narrow-screen reliability as release-blocking rather than optional polish.",
         items: [
-          { title: "Mobile shell and navigation", description: "Audit and redesign 320–430px header, compact search, fixed bottom tabs, drawer scrolling, safe-area padding, keyboard overlays and portrait/landscape navigation. Validate signed-in and anonymous states on Android Chrome and iPhone Safari.", status: "next" },
-          { title: "Mobile-first home, library and account journeys", description: "Prioritise Continue Playing, favourites, playable games, compact hero, readable thumbnails, useful filters and easily reachable actions. Then audit shop, inventory, profiles, friends, leaderboards, forms and notifications. Preserve accessible focus and desktop layouts.", status: "next" },
-          { title: "Mobile usability acceptance tests", description: "Capture actual 320, 375, 390 and 430px screenshots, interaction flows, on-screen keyboard, rotations, long names, loading states and safe areas. No accidental document-wide horizontal scrolling, hidden actions or overlapping navigation.", status: "next" },
+          { title: "Mobile shell and navigation", description: "Audit and redesign 320–430px header, compact search, fixed bottom tabs, drawer scrolling, safe-area padding, keyboard overlays and portrait/landscape navigation. Validate signed-in and anonymous states on Android Chrome and iPhone Safari.", status: "in-progress" },
+          { title: "Mobile-first home, library and account journeys", description: "Prioritise Continue Playing, favourites, playable games, compact hero, readable thumbnails, useful filters and easily reachable actions. Then audit shop, inventory, profiles, friends, leaderboards, forms and notifications. Preserve accessible focus and desktop layouts.", status: "in-progress" },
+          { title: "Mobile usability acceptance tests", description: "Capture actual 320, 375, 390 and 430px screenshots, interaction flows, on-screen keyboard, rotations, long names, loading states and safe areas. No accidental document-wide horizontal scrolling, hidden actions or overlapping navigation.", status: "in-progress" },
         ],
       },
       {
@@ -131,6 +131,16 @@ export const ROADMAP: RoadmapRelease[] = [
           { title: "Expand automated tests beyond build checks", description: "Add unit, database integration, accessibility and end-to-end tests for auth, scores, economy, social flows and critical navigation.", status: "next" },
           { title: "Verify game engine lifecycle fixes", description: "Regression-test pause/resume/stop, animation-frame scheduling, resize, tab switching, input and touch across all engines. Check whether the game-loop fix from PR #49 has merged.", status: "next" },
           { title: "Track fixes against a real acceptance checklist", description: "For each issue record reproduction steps, affected routes, severity, PR, deployed commit and device verification. Keep unverified risks distinct from confirmed defects.", status: "in-progress" },
+        ],
+      },
+      {
+        heading: "Player experience intelligence — Phase 7",
+        icon: "BarChart3",
+        blurb: "Privacy-first usability evidence, with strict safeguards for younger players. Collection remains disabled until legal and consent requirements are approved.",
+        items: [
+          { title: "Design privacy and consent before collection", description: "Complete UK Children's Code, UK GDPR and PECR assessment; minimize metrics, set retention and deletion policies and ensure optional analytics is off until legally configured.", status: "in-progress" },
+          { title: "Build device, usability and performance aggregates", description: "Plan broad screen/input capability buckets, game-start failures, rendering performance, accessibility friction and sparse-count suppression. Exclude browser fingerprints, raw chat, search phrases and exact ages.", status: "in-progress" },
+          { title: "Optional player feedback and aggregate cohorts", description: "Design a voluntary child-appropriate feedback flow, optional broad age groups, retention cohort counts and actionable dashboard with minimum-size privacy protections.", status: "idea" },
         ],
       },
     ],
