@@ -1,0 +1,23 @@
+name: Staging database security acceptance
+on:
+  workflow_dispatch:
+jobs:
+  inspect-staging:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      STAGING_DATABASE_URL: ${{ secrets.STAGING_DATABASE_URL }}
+    steps:
+      - uses: actions/checkout@v7
+      - name: Require explicitly provisioned disposable staging database
+        run: |
+          if [ -z "$STAGING_DATABASE_URL" ]; then
+            echo "::error::Configure STAGING_DATABASE_URL pointing to an isolated, migrated, disposable test database. Do not use production."
+            exit 1
+          fi
+      - name: Install PostgreSQL client
+        run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client
+      - name: Read-only RLS and RPC privilege acceptance
+        run: |
+          psql -X -v ON_ERROR_STOP=1 "$STAGING_DATABASE_URL" -f database/tests/001_security_contracts.sql
+          psql -X -v ON_ERROR_STOP=1 "$STAGING_DATABASE_URL" -f database/tests/phase3_role_contracts.sql
