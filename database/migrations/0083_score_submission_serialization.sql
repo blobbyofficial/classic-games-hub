@@ -77,7 +77,13 @@ begin
     v_credit_mult := public.boost_multiplier(v_me, 'credit_boost');
     v_xp_mult := public.boost_multiplier(v_me, 'xp_boost');
 
-    v_base_credits := least(2 + (v_score / v_game.credit_divisor)::int, v_game.max_credits_per_session);
+    -- Use numeric arithmetic before applying the configured cap. Casting an
+    -- unbounded client score to int first can overflow before LEAST clamps it;
+    -- a zero/invalid divisor must never turn score submission into a DB error.
+    v_base_credits := greatest(0, least(
+      coalesce(v_game.max_credits_per_session, 0)::numeric,
+      2 + floor(v_score::numeric / greatest(1, coalesce(v_game.credit_divisor, 1)))
+    ))::int;
     v_credits := v_base_credits * v_credit_mult;
 
     select greatest(1, least(coalesce((payload->>'multiplier')::numeric, 1), 5))
