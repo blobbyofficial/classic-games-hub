@@ -30,13 +30,13 @@ test("two isolated authenticated sessions can navigate private routes without au
       const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
       try {
         const page = await context.newPage();
-        await page.goto(new URL("/login?next=%2Ffriends", url), { waitUntil: "domcontentloaded" });
+        await page.goto(new URL("/login?next=%2Ffriends", url).href, { waitUntil: "domcontentloaded" });
         await page.getByLabel("Username or email").fill(email);
         await page.getByLabel("Password", { exact: true }).fill(password);
         await page.getByRole("button", { name: "Log in" }).click();
         await page.waitForURL(path => !path.pathname.startsWith("/login"), { timeout: 20000 });
         for (const path of ["/friends", "/notifications", "/settings?tab=privacy"]) {
-          const response = await page.goto(new URL(path, url), { waitUntil: "domcontentloaded" });
+          const response = await page.goto(new URL(path, url).href, { waitUntil: "domcontentloaded" });
           assert.ok(response && response.status() < 500, `Route failed: ${path}`);
           assert.notEqual(new URL(page.url()).pathname, "/login", `Private route redirected: ${path}`);
           assert.ok(await page.locator("main").count(), `No main landmark: ${path}`);
