@@ -110,7 +110,7 @@ export function videoGameJsonLd(game: Game): Json {
       "@type": "Offer",
       price: "0",
       priceCurrency: "GBP",
-      availability: "https://schema.org/InStock",
+      availability: game.status === "published" ? "https://schema.org/InStock" : "https://schema.org/OutOfStock",
     },
     aggregateRating: rated
       ? {
