@@ -274,3 +274,14 @@ html[data-season="halloween"] .halloween-seasonal-banner button:focus-visible {
 }
 /* Allow all seasonal artwork to stay decorative and noninteractive. */
 html[data-season="halloween"] .halloween-scene {pointer-events:none}
+
+/* Small decorative night-sky illustration, no layout shift or motion. */
+html[data-season="halloween"] .halloween-hero::after {
+  content:"";position:absolute;top:14px;right:10px;
+  width:min(42%,350px);height:90px;pointer-events:none;
+  background:url("/seasons/halloween/night-sky.svg") center / contain no-repeat;
+  opacity:.65;z-index:0;
+}
+@media(max-width:640px) {
+ html[data-season="halloween"] .halloween-hero::after {width:170px;height:45px;opacity:.35}
+}
