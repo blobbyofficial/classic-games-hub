@@ -41,7 +41,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
   const pendingRequests = pendingCount?.count ?? 0;
 
   return (
-    <div className="flex min-h-dvh flex-col">
+    <div className="flex min-h-dvh min-w-0 flex-col">
       {/* First tab stop on every page - jumps a keyboard user past the navbar
           and the whole sidebar straight into the page content. */}
       <a
@@ -61,7 +61,7 @@ export default async function MainLayout({ children }: { children: React.ReactNo
       {banners.maintenance && <MaintenanceBanner message={banners.maintenance.message} />}
       {seasonalEvent && <SeasonalBanner event={seasonalEvent} />}
       {banners.site && <SiteBanner config={banners.site} />}
-      <div className="mx-auto flex w-full max-w-[1600px] flex-1 px-0 sm:px-6">
+      <div className="mx-auto flex w-full min-w-0 max-w-[1600px] flex-1 px-0 sm:px-6">
         <Sidebar />
         {/* pb-24 clears the fixed mobile tab bar; the safe-area inset keeps the
             last row of content off a gesture bar on iOS. */}
