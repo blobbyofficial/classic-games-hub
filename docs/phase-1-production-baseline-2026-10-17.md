@@ -177,3 +177,23 @@ Obtain the active Vercel production deployment ID and commit SHA via authorized 
 ### Repeatable public HTTP evidence collector (new)
 
 Run `node scripts/check-public-deployment.mjs https://classic-games-hub.blobbyofficial.com > baseline-public.json` from a trusted terminal with internet access. Save the timestamped JSON as a verification artifact, alongside a separately recorded Vercel production deployment SHA from the authorized dashboard. The collector performs GET requests for /, /games, /roadmap, /status and /api/status, records status, content type, caching hints, response bytes and Vercel request IDs; it **does not** identify the deployed commit, exercise authenticated workflows, query private worker health, or trigger cron jobs. HTTP 200 is not equivalent to a healthy dependency chain.
+
+## New public status evidence — 17 October 2026 (follow-up)
+
+Public HTML retrieved at `https://classic-games-hub.blobbyofficial.com/status` reports:
+
+| Signal | Page-reported value | Interpretation |
+| --- | --- | --- |
+| Site build | `038a558` (`main · production`) | Stronger public production SHA clue; independently compare full SHA and deployment ID via Vercel before closing OPS-001 |
+| Database migration | `0076` (`This build expects 0077 - a migration is not applied yet.`) | **Page-reported schema-version mismatch**, likely actionable until corroborated by live database; do not apply migrations blindly |
+| Discord worker | `Offline — No heartbeat recorded` | **Page-reported missing gateway heartbeat**, host readiness/logs still unknown; separate from Discord API health |
+| Discord bot incident INC-2 | Resolved 17 Oct at 10:28; duration 2h 12m | Public incident record resolved; does not prove worker healthy afterward |
+| Overall status | All systems operational | Does **not** establish that worker heartbeat or migration gates passed |
+
+Public API endpoint `/api/status` remained inaccessible to the retrieval service on this attempt; do not invent JSON output or HTTP status. The crawler provides rendered source content, not an authenticated Vercel or DB observation. The homepage still shows 26 games while explicitly noting some are being rebuilt.
+
+**Actionable findings:**
+- **OPS-011 (P1, page-reported):** Public status page reports database migration `0076`, expected `0077`. Inspect `supabase_migrations.schema_migrations` and migration 0077 on authorized staging/production read-only connection; record deployed commit and current migration ledger, then plan carefully ordered apply if confirmed.
+- **OPS-012 (P1, page-reported):** Worker offline/no heartbeat despite resolved public incident and an overall operational headline. Compare heartbeat query, bot host `/health`, connectivity and runtime config. Treat monitoring semantics separately from service availability.
+
+Do not close Phase 1 without a current, timestamped infrastructure/database observation confirming or disproving these page reports.
