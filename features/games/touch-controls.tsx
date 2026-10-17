@@ -32,8 +32,21 @@ function Pad({
   tap?: boolean;
 }) {
   const activePointer = useRef<number | null>(null);
-  useEffect(() => () => {
-    if (activePointer.current !== null && !tap) key(k, "keyup");
+  const keyboardHeld = useRef(false);
+  useEffect(() => {
+    const clearHeld = () => {
+      if ((activePointer.current !== null || keyboardHeld.current) && !tap) key(k, "keyup");
+      activePointer.current = null;
+      keyboardHeld.current = false;
+    };
+    const onVisibility = () => { if (document.hidden) clearHeld(); };
+    window.addEventListener("blur", clearHeld);
+    document.addEventListener("visibilitychange", onVisibility);
+    return () => {
+      clearHeld();
+      window.removeEventListener("blur", clearHeld);
+      document.removeEventListener("visibilitychange", onVisibility);
+    };
   }, [k, tap]);
   const release = (pointerId: number) => {
     if (activePointer.current !== pointerId) return;
@@ -44,6 +57,26 @@ function Pad({
     <button
       type="button"
       aria-label={label}
+      onKeyDown={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        if (keyboardHeld.current || e.repeat) return;
+        keyboardHeld.current = true;
+        key(k, "keydown");
+        if (tap) key(k, "keyup");
+      }}
+      onKeyUp={(e) => {
+        if (e.key !== "Enter" && e.key !== " ") return;
+        e.preventDefault();
+        if (!keyboardHeld.current) return;
+        keyboardHeld.current = false;
+        if (!tap) key(k, "keyup");
+      }}
+      onBlur={() => {
+        if (!keyboardHeld.current) return;
+        keyboardHeld.current = false;
+        if (!tap) key(k, "keyup");
+      }}
       onPointerDown={(e) => {
         e.preventDefault();
         if (activePointer.current !== null) return;
@@ -188,18 +221,9 @@ export function TouchControls({ scheme }: { scheme: ControlScheme }) {
       )}
 
       {scheme === "flap" && (
-        <button
-          aria-label="Jump"
-          onPointerDown={(e) => {
-            e.preventDefault();
-            key(" ");
-          }}
-          onPointerUp={() => key(" ", "keyup")}
-          onContextMenu={(e) => e.preventDefault()}
-          className="h-16 flex-1 touch-none select-none rounded-2xl border border-border bg-primary/15 text-lg font-semibold text-primary active:scale-95"
-        >
-          Tap to jump
-        </button>
+        <div className="w-full flex justify-center">
+          <Pad k=" " label="Jump" tap big><span className="text-sm font-semibold">Tap to jump</span></Pad>
+        </div>
       )}
     </div>
   );
