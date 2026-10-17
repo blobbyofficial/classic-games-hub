@@ -186,6 +186,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape" && isExpanded) return;
+      if (e.defaultPrevented || document.querySelector('[role="dialog"][data-state="open"], [role="alertdialog"][data-state="open"]')) return;
       if (e.target instanceof HTMLElement && (e.target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName))) return;
       if ((e.key === "p" || e.key === "P" || e.key === "Escape") && !gameOver) {
         e.preventDefault();
