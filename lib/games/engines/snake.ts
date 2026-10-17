@@ -291,7 +291,7 @@ const snake: GameEngineFactory = ({
       const angle = Math.random() * Math.PI * 2;
       const velocity = 0.4 + Math.random() * spread;
 
-      particles.push({
+      const particle: Particle = {
         x: centerX,
         y: centerY,
         vx: Math.cos(angle) * velocity,
@@ -299,7 +299,8 @@ const snake: GameEngineFactory = ({
         life: 0.35 + Math.random() * 0.4,
         maxLife: 0.35 + Math.random() * 0.4,
         size: size * (0.65 + Math.random() * 0.7),
-      });
+      };
+      if (i < countToDraw) particles.push(particle);
     }
   }
 
