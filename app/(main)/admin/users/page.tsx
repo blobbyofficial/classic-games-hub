@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Search } from "lucide-react";
 import { getCurrentProfile } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
@@ -19,6 +20,7 @@ export default async function AdminUsersPage({
 
   return (
     <div className="space-y-4">
+      {profile?.role === "admin" && <Link href="/admin/users/inventory" className="inline-flex rounded-lg border border-border px-3 py-2 text-sm font-medium text-primary hover:bg-muted">Manage user inventories →</Link>}
       <form className="flex gap-2" action="/admin/users">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
