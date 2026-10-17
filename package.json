@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "generate:assets": "node scripts/generate-thumbnails.mjs && node scripts/generate-icons.mjs",
     "check:halloween": "node scripts/check-halloween.mjs",
-    "test:unit": "node scripts/test-game-loop.cjs && node --test scripts/test-platform-contracts.cjs"
+    "test:unit": "node scripts/test-game-loop.cjs && node --test scripts/test-platform-contracts.cjs",
+    "test:smoke": "node --test scripts/test-http-smoke.cjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.2.7",
