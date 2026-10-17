@@ -14,3 +14,15 @@ test("canvas budget protects memory rather than modifying gameplay", () => {
   assert.match(source, /3_000_000/);
   assert.doesNotMatch(source.replace(/\/\*[\s\S]*?\*\//g, ""), /\b(score|difficulty|speed|simulation)\b/i);
 });
+
+test("graphics culling consumes original gameplay RNG budget", () => {
+  for (const [engine, count] of [
+    ["snake", "count"], ["asteroids", "amount"],
+    ["slithery", "amount"], ["frogger", "amount"],
+  ]) {
+    const body = fs.readFileSync(`lib/games/engines/${engine}.ts`, "utf8");
+    assert.match(body, /const particle: Particle = \{/);
+    assert.match(body, /if \(i < (?:visualCount|countToDraw)\) particles\.push\(particle\)/);
+    assert.match(body, new RegExp("i < " + count + ";"), engine + ": particle random-sampling loop must not depend on quality");
+  }
+});
