@@ -17,7 +17,7 @@ const SelectTrigger = React.forwardRef<
     ref={ref}
     className={cn(
       // Matches Input: same height, same border, same 16px-on-touch sizing.
-      "flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-input bg-background/60 px-3 py-2 text-base shadow-xs sm:text-sm",
+      "halloween-select-trigger flex h-10 w-full items-center justify-between gap-2 rounded-lg border border-input bg-background/60 px-3 py-2 text-base shadow-xs sm:text-sm",
       "transition-[border-color,box-shadow,background-color] duration-200 ease-[var(--ease-standard)] hover:border-border",
       "data-[state=open]:border-primary/60 disabled:cursor-not-allowed disabled:opacity-50 [&>span]:line-clamp-1 [&_svg]:size-4 [&_svg]:shrink-0",
       className,
@@ -40,7 +40,7 @@ const SelectContent = React.forwardRef<
     <SelectPrimitive.Content
       ref={ref}
       className={cn(
-        "relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl border border-border bg-popover/95 text-popover-foreground shadow-xl backdrop-blur-xl",
+        "halloween-select-content relative z-50 max-h-96 min-w-[8rem] overflow-hidden rounded-xl border border-border bg-popover/95 text-popover-foreground shadow-xl backdrop-blur-xl",
         "origin-(--radix-select-content-transform-origin) duration-150 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95",
         position === "popper" && "data-[side=bottom]:translate-y-1 data-[side=top]:-translate-y-1",
         className,
