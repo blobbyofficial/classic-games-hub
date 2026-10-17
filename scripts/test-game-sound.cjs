@@ -2,12 +2,22 @@ const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
-const ts = require("typescript");
 
 const source = fs.readFileSync("lib/games/helpers.ts", "utf8");
-const compiled = ts.transpileModule(source, {
-  compilerOptions: { module: 1, target: 9 },
-}).outputText;
+// Extract the small self-contained sound policy without depending on the
+// TypeScript 7 compiler API (not published as the historical JS runtime).
+const begin = source.indexOf("let audioCtx: AudioContext | null = null;");
+const end = source.indexOf("/**\\n * A fixed-timestep game loop.", begin);
+assert.ok(begin >= 0 && end > begin);
+const audioJs = source.slice(begin, end)
+  .replace("let audioCtx: AudioContext | null = null;", "let audioCtx = null;")
+  .replace(/export function /g, "function ")
+  .replace("value: number", "value")
+  .replace("): void", ")")
+  .replace("(): number", "()")
+  .replace("type: OscillatorType = ", "type = ")
+  .replace("(window as unknown as { webkitAudioContext: typeof AudioContext })", "window");
+
 
 test("all game beeps respect sound volume, mute, and invalid settings", () => {
   const played = [];
@@ -23,7 +33,7 @@ test("all game beeps respect sound volume, mute, and invalid settings", () => {
     }
   }
   const sandbox = { exports: {}, window: { AudioContext: FakeAudio } };
-  vm.runInNewContext(compiled, sandbox);
+  vm.runInNewContext(audioJs + "\\nexports.beep = beep; exports.setGameSoundEffectsVolume = setGameSoundEffectsVolume; exports.getGameSoundEffectsVolume = getGameSoundEffectsVolume;", sandbox);
   const { beep, setGameSoundEffectsVolume, getGameSoundEffectsVolume } = sandbox.exports;
   setGameSoundEffectsVolume(0);
   beep();
