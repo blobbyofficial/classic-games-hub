@@ -53,6 +53,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   const [submitting, setSubmitting] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [quality, setQuality] = useState<QualityPreset>("balanced");
+  const manualQualityRef = useRef(false);
   const settings = useSessionStore((s) => s.settings);
   const [difficulty, setDifficulty] = useState<PlayDifficulty>(
     settings?.default_difficulty ?? "regular",
@@ -269,6 +270,42 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     return () => observer.disconnect();
   }, [syncCanvasResolution]);
 
+  // Local-only frame-cadence safeguard; do not send measurements anywhere.
+  // After sustained slow foreground frames, lower canvas resolution once.
+  // Never alter engine simulation, scoring or a player-chosen preset.
+  useEffect(() => {
+    if (quality !== "balanced" || gameOver || paused) return;
+    let raf = 0;
+    let last = 0;
+    let total = 0;
+    let samples = 0;
+    let slowWindows = 0;
+    const sample = (now: number) => {
+      if (document.hidden) {
+        last = 0;
+      } else if (last) {
+        const interval = now - last;
+        if (interval > 0 && interval < 150) {
+          total += interval;
+          samples++;
+        }
+        if (samples >= 120) {
+          slowWindows = total / samples > 28 ? slowWindows + 1 : 0;
+          samples = 0;
+          total = 0;
+          if (slowWindows >= 2 && !manualQualityRef.current) {
+            setQuality("eco");
+            return;
+          }
+        }
+      }
+      last = now;
+      raf = requestAnimationFrame(sample);
+    };
+    raf = requestAnimationFrame(sample);
+    return () => cancelAnimationFrame(raf);
+  }, [quality, gameOver, paused]);
+
   // Auto-pause when the tab is hidden mid-run.
   useEffect(() => {
     const onVis = () => {
@@ -343,7 +380,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
             id="game-render-quality"
             aria-label="Rendering quality"
             value={quality}
-            onChange={(event) => setQuality(event.target.value as QualityPreset)}
+            onChange={(event) => { manualQualityRef.current = true; setQuality(event.target.value as QualityPreset); }}
             className="h-9 max-w-24 rounded-md border border-border bg-background px-1 text-xs"
           >
             <option value="eco">Eco</option>
