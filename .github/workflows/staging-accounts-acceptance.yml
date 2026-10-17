@@ -1,0 +1,33 @@
+name: Staging two-account browser acceptance
+on:
+  workflow_dispatch:
+    inputs:
+      isolated_accounts_confirmed:
+        description: "Both accounts, app and database belong to isolated disposable staging"
+        required: true
+        type: choice
+        options:
+          - "no"
+          - "yes"
+jobs:
+  private-journeys:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      STAGING_ISOLATED_CONFIRMED: ${{ inputs.isolated_accounts_confirmed }}
+      STAGING_SITE_URL: ${{ secrets.STAGING_SITE_URL }}
+      STAGING_PLAYER_A_EMAIL: ${{ secrets.STAGING_PLAYER_A_EMAIL }}
+      STAGING_PLAYER_A_PASSWORD: ${{ secrets.STAGING_PLAYER_A_PASSWORD }}
+      STAGING_PLAYER_B_EMAIL: ${{ secrets.STAGING_PLAYER_B_EMAIL }}
+      STAGING_PLAYER_B_PASSWORD: ${{ secrets.STAGING_PLAYER_B_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npm install --no-save --package-lock=false playwright
+      - run: npx playwright install --with-deps chromium
+      - name: Read-only authenticated account, privacy and social navigation
+        run: node --test scripts/test-staging-accounts.cjs
