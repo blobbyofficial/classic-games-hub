@@ -26,7 +26,7 @@ export function SectionHeader({
           </span>
         )}
         <div className="min-w-0">
-          <h2 className="truncate text-lg font-bold sm:text-xl">{title}</h2>
+          <h2 className="truncate text-lg font-bold text-foreground dark:text-[oklch(0.935_0.016_83)] sm:text-xl">{title}</h2>
           {subtitle && <p className="truncate text-sm text-muted-foreground">{subtitle}</p>}
         </div>
       </div>
