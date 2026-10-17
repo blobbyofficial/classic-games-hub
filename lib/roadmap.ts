@@ -1805,6 +1805,24 @@ export const ROADMAP: RoadmapRelease[] = [
       ] },
   ] },
 
+  { version: "New arcade concepts — exploration", codename: "Play and Discover", status: "idea", timeframe: "Unscheduled", summary: "Additional game and community concepts; additive only.", groups: [{ heading: "Creative arcade experiments", icon: "Gamepad2", items: [
+    { title: "Shared puzzle of the day", description: "Give all players the same deterministic puzzle settings for a fair optional comparison.", status: "idea" },
+    { title: "Puzzle archives", description: "Keep past daily puzzles available without requiring participation on consecutive days.", status: "idea" },
+    { title: "Arcade gauntlet", description: "Offer a short multi-game playlist with a combined results summary.", status: "idea" },
+    { title: "Surprise game finder", description: "Suggest a playable game that matches chosen genre, controls and accessibility preferences.", status: "idea" },
+    { title: "Quick-session collection", description: "Curate games suited to brief sessions and fast restarts.", status: "idea" },
+    { title: "Game rule remix links", description: "Share supported alternative rule configurations with clear ranked eligibility.", status: "idea" },
+    { title: "Ghost replay comparison", description: "Allow optional playback of a recorded compatible run for skill improvement.", status: "idea" },
+    { title: "Community puzzle layouts", description: "Pilot moderated player-made levels for suitable puzzle engines.", status: "idea" },
+    { title: "Small-group arcade event kit", description: "Generate shareable activity pages with game instructions and session results.", status: "idea" },
+    { title: "Collaborative puzzle rooms", description: "Explore cooperative modes for appropriate logic games with transparent permissions.", status: "idea" },
+    { title: "Game-jam feedback workspace", description: "Provide submission pages, judging criteria and constructive creator feedback.", status: "idea" },
+    { title: "Accessible game filters", description: "Search games by tested controls, contrast, motion and input capabilities.", status: "idea" },
+    { title: "Game difficulty explainers", description: "Describe actual rule changes and how difficulty affects score comparisons.", status: "idea" },
+    { title: "Playable alternative suggestions", description: "Suggest genuinely available alternatives when a game is temporarily being rebuilt.", status: "idea" },
+    { title: "Versioned challenge generator", description: "Store challenge seeds, settings and engine versions for reproducible competitions.", status: "idea" },
+  ] }] },
+
 ];
 
 /**
