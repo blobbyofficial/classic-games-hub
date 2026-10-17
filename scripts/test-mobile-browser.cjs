@@ -40,3 +40,40 @@ test("mobile navigation, search and library at roadmap widths", { timeout: 15000
     }
   } finally { await browser.close(); }
 });
+
+test("anonymous account and social entry points remain usable on phones", { timeout: 150000 }, async () => {
+  const browser = await chromium.launch();
+  try {
+    for (const width of [320, 390, 430]) {
+      const page = await browser.newPage({ viewport: { width, height: 780 }, isMobile: true, hasTouch: true });
+      try {
+        for (const pathname of ["/login", "/register", "/shop", "/leaderboards", "/friends", "/notifications"]) {
+          const response = await page.goto(new URL(pathname, origin).href, { waitUntil: "domcontentloaded", timeout: 25000 });
+          assert.ok(response && response.status() < 500, `${pathname}: server error ${response?.status()} at ${width}px`);
+          const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+          assert.ok(overflow <= 2, `${pathname}: horizontal overflow ${overflow}px at ${width}px`);
+          // Form fields must be comfortable on phones and cannot trigger iOS auto-zoom.
+          const tooSmall = await page.locator("input:visible, textarea:visible").evaluateAll(nodes =>
+            nodes.filter(node => Number.parseFloat(getComputedStyle(node).fontSize) < 16)
+              .map(node => ({ tag: node.tagName, type: node.getAttribute("type"), size: getComputedStyle(node).fontSize }))
+          );
+          assert.deepEqual(tooSmall, [], `${pathname}: undersized form inputs at ${width}px`);
+        }
+      } finally { await page.close(); }
+    }
+  } finally { await browser.close(); }
+});
+
+test("landscape and portrait changes do not overflow mobile shell", { timeout: 90000 }, async () => {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
+  try {
+    await page.goto(new URL("/games", origin).href, { waitUntil: "networkidle" });
+    for (const size of [{width: 844,height:390},{width:390,height:844}]) {
+      await page.setViewportSize(size);
+      const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      assert.ok(overflow <= 2, `Orientation-sized viewport overflow: ${JSON.stringify(size)} -> ${overflow}px`);
+      assert.equal(await page.getByRole("textbox", { name: "Search games" }).isVisible(), true);
+    }
+  } finally { await browser.close(); }
+});
