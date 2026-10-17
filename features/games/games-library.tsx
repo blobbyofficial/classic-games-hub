@@ -23,7 +23,11 @@ export function GamesLibrary({
   initialCategory?: string;
 }) {
   const [query, setQuery] = useState("");
-  const [category, setCategory] = useState<string>(initialCategory ?? "All");
+  const [category, setCategory] = useState<string>(
+    initialCategory && CATEGORIES.includes(initialCategory as (typeof CATEGORIES)[number])
+      ? initialCategory
+      : "All",
+  );
   const [sort, setSort] = useState<Sort>("featured");
   const [favOnly, setFavOnly] = useState(false);
   const favSet = useMemo(() => new Set(favorites), [favorites]);
@@ -72,7 +76,7 @@ export function GamesLibrary({
           {query && (
             <button
               onClick={() => setQuery("")}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded p-1 text-muted-foreground hover:text-foreground"
+              className="absolute right-1 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               aria-label="Clear search"
             >
               <X className="size-4" />
@@ -117,6 +121,7 @@ export function GamesLibrary({
               key={cat}
               aria-pressed={selected}
               onClick={() => setCategory(cat)}
+              type="button"
               className={cn(
                 "rounded-full border px-4 py-2 text-sm font-medium",
                 "transition-[background-color,color,border-color,transform] duration-200 ease-[var(--ease-standard)] motion-safe:active:scale-95",
