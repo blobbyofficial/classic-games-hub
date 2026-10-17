@@ -106,8 +106,8 @@ export function GamesLibrary({
       {/* Scrolls rather than wraps on narrow screens, so the filter row stays
           one line tall on a phone instead of pushing the grid down. */}
       <div
-        role="tablist"
-        aria-label="Filter by category"
+        role="group"
+        aria-label="Filter games by category"
         className="rail -mx-4 gap-2 px-4 sm:mx-0 sm:flex-wrap sm:px-0"
       >
         {["All", ...CATEGORIES].map((cat) => {
@@ -115,8 +115,7 @@ export function GamesLibrary({
           return (
             <button
               key={cat}
-              role="tab"
-              aria-selected={selected}
+              aria-pressed={selected}
               onClick={() => setCategory(cat)}
               className={cn(
                 "rounded-full border px-4 py-2 text-sm font-medium",
