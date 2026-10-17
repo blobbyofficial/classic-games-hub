@@ -129,7 +129,8 @@ async function run(request: Request) {
     console.error("[status] worker heartbeat lookup failed:", workerConfigError.message);
     return NextResponse.json({ error: "worker_heartbeat_lookup_failed" }, { status: 500 });
   }
-  const workerEverStarted = typeof (workerConfig?.value as { last_seen?: unknown } | null)?.last_seen === "string";
+  const workerValue = (workerConfig as unknown as { value?: { last_seen?: unknown } | null } | null)?.value;
+  const workerEverStarted = typeof workerValue?.last_seen === "string";
   const { error: visibilityError } = await admin
     .from("status_components")
     .update({ visible: workerEverStarted })

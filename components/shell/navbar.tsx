@@ -19,14 +19,15 @@ export function Navbar() {
   const userId = useSessionStore((s) => s.userId);
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl backdrop-saturate-150">
+    <header className="halloween-navigation sticky top-0 z-40 border-b border-border/60 bg-background/75 backdrop-blur-xl backdrop-saturate-150">
       <div className="mx-auto flex h-16 max-w-[1600px] items-center gap-2 px-3 sm:gap-3 sm:px-6">
         <MobileMenu />
         <Logo className="shrink-0 lg:w-52" />
+        <span className="halloween-nav-tag hidden" aria-hidden="true">AFTER DARK</span>
 
         <button
           onClick={() => setCommandOpen(true)}
-          className="group ml-auto flex h-10 max-w-md flex-1 items-center gap-2.5 rounded-xl border border-border bg-muted/40 px-3 text-sm text-muted-foreground transition-[background-color,border-color] duration-200 hover:border-primary/30 hover:bg-muted/70 lg:ml-0"
+          className="halloween-search group ml-auto flex h-10 max-w-md flex-1 items-center gap-2.5 rounded-xl border border-border bg-muted/40 px-3 text-sm text-muted-foreground transition-[background-color,border-color] duration-200 hover:border-primary/30 hover:bg-muted/70 lg:ml-0"
           aria-label="Search games and players"
           aria-keyshortcuts="Meta+K Control+K"
         >

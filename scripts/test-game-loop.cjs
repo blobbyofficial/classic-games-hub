@@ -1,18 +1,20 @@
 /* Run with: node scripts/test-game-loop.cjs
  * Minimal deterministic runtime test for the shared game loop. Uses installed
- * TypeScript to compile the actual helper source; no extra test dependencies.
+ * the actual createLoop helper source without a compiler dependency.
  */
 const assert = require("node:assert/strict");
 const fs = require("node:fs");
 const vm = require("node:vm");
 const path = require("node:path");
-const ts = require("typescript");
 
 const file = path.join(__dirname, "..", "lib", "games", "helpers.ts");
 const source = fs.readFileSync(file, "utf8");
-const compiled = ts.transpileModule(source, {
-  compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
-}).outputText;
+const start = source.indexOf("export function createLoop(");
+const end = source.indexOf("/**\n * Pick a per-difficulty value.", start);
+assert.ok(start >= 0 && end > start, "createLoop source exists");
+const compiled = source.slice(start, end)
+  .replace(/export function createLoop\([^\n]*\) \{/, "function createLoop(update, render, step = 1 / 60) {")
+  .replace("(now: number)", "(now)") + "\nexports.createLoop = createLoop;";
 
 let clock = 0;
 let nextId = 0;

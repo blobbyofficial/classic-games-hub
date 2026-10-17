@@ -32,7 +32,7 @@ export async function CommunityEventCard() {
 
   return (
     <section
-      className="relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-transparent to-neon/10 p-5"
+      className="halloween-community-event relative overflow-hidden rounded-2xl border border-primary/30 bg-gradient-to-br from-primary/10 via-transparent to-neon/10 p-5"
       aria-label="Community event"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
@@ -60,7 +60,7 @@ export async function CommunityEventCard() {
 
       <div className="mt-4">
         <div
-          className="h-3 overflow-hidden rounded-full bg-muted"
+          className="halloween-community-progress h-3 overflow-hidden rounded-full bg-muted"
           role="progressbar"
           aria-valuenow={event.progress}
           aria-valuemin={0}

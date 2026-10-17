@@ -9,7 +9,7 @@ const Input = React.forwardRef<HTMLInputElement, React.InputHTMLAttributes<HTMLI
         ref={ref}
         className={cn(
           // 16px on touch keeps iOS Safari from zooming the viewport on focus.
-          "flex h-10 w-full rounded-lg border border-input bg-background/60 px-3 py-2 text-base shadow-xs sm:text-sm",
+          "halloween-ui-input flex h-10 w-full rounded-lg border border-input bg-background/60 px-3 py-2 text-base shadow-xs sm:text-sm",
           "transition-[border-color,box-shadow,background-color] duration-200 ease-[var(--ease-standard)]",
           "placeholder:text-muted-foreground/80 hover:border-border",
           "file:border-0 file:bg-transparent file:text-sm file:font-medium",

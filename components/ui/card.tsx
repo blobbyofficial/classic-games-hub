@@ -2,7 +2,7 @@ import * as React from "react";
 import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
 
-const cardVariants = cva("rounded-2xl text-card-foreground", {
+const cardVariants = cva("halloween-ui-card rounded-2xl text-card-foreground", {
   variants: {
     variant: {
       /** The default surface: a real card, one step above the page. */

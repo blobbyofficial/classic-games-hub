@@ -1,0 +1,302 @@
+/* Scoped, reversible Halloween art direction. Not a page-wide tint. */
+html[data-season="halloween"] {
+  --halloween-ink: #080d0c;
+  --halloween-fog: #18211f;
+  --halloween-bone: #e8e4d8;
+  --halloween-pumpkin: #e68b3d;
+}
+html[data-season="halloween"] .halloween-hero {
+  position: relative; isolation: isolate; min-height: 420px;
+  overflow: hidden; border: 1px solid #4b4030; border-radius: 12px;
+  background: #080d0c;
+  color: var(--halloween-bone);
+}
+html[data-season="halloween"] .halloween-scene {
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    linear-gradient(90deg,#080d0c 0%,#080d0cf5 33%,#080d0c66 100%),
+    radial-gradient(ellipse at 85% 80%,#ca6b2a42,transparent 35%),
+    radial-gradient(ellipse at 78% 23%,#a2b99520,transparent 35%),
+    repeating-linear-gradient(90deg,transparent 0 90px,#5471641c 92px 95px,transparent 97px 150px),
+    linear-gradient(145deg,#101c1b,#080d0c 70%);
+}
+html[data-season="halloween"] .halloween-scene::after {
+  content:""; position:absolute; inset:0; opacity:.55;
+  background: repeating-linear-gradient(0deg,transparent 0 5px,#02050466 6px 7px);
+  mask-image:linear-gradient(90deg,transparent 35%,black 90%);
+}
+html[data-season="halloween"] .halloween-hero h1 {color:var(--halloween-bone);letter-spacing:-.045em;text-wrap:balance}
+html[data-season="halloween"] .halloween-hero .halloween-highlight {background:none;color:var(--halloween-pumpkin);-webkit-text-fill-color:currentColor}
+html[data-season="halloween"] .halloween-hero .halloween-eyebrow {color:#c8bd9a;letter-spacing:.22em;text-transform:uppercase}
+html[data-season="halloween"] .halloween-hero .halloween-cta {background:var(--halloween-pumpkin);color:#17100a;border:none;box-shadow:0 4px 30px #d77b2826}
+html[data-season="halloween"] .halloween-hero .halloween-cta:hover {background:#f3a959}
+html[data-season="halloween"] .halloween-hero .halloween-secondary {border:1px solid #66736a;background:#101816c9;color:#e8e4d8}
+html[data-season="halloween"] .halloween-hero .halloween-stats {border-top:1px solid #59635766;color:#c5c7b8}
+html[data-season="halloween"] .halloween-hero .halloween-stats svg {color:#e68b3d}
+html[data-season="halloween"] .halloween-logo-icon {border-radius:6px;background:#20150f;border:1px solid #b56b36;box-shadow:0 0 0 3px #ac582b16}
+html[data-season="halloween"] .halloween-logo-text {color:#e8e4d8;background:none;-webkit-text-fill-color:currentColor}
+html[data-season="halloween"] .halloween-logo-text::after {content:" · AFTER DARK";color:#e68b3d;font-size:.62em;letter-spacing:.06em}
+html[data-season="halloween"] .halloween-navigation {border-bottom-color:#8c552d55}
+@media (prefers-reduced-motion:reduce) {
+  html[data-season="halloween"] .halloween-hero *,html[data-season="halloween"] .halloween-logo-icon {animation:none!important;transition:none!important}
+}
+
+
+/* The shared shell feels like a dim, physical arcade rather than tinted glass. */
+html[data-season="halloween"] .halloween-navigation {
+  background: color-mix(in srgb, var(--background) 96%, #101915);
+  backdrop-filter: none;
+  box-shadow: inset 0 -1px #b3753433;
+}
+html[data-season="halloween"] .halloween-sidebar {
+  border-right-color: #76553a55;
+  background: linear-gradient(180deg,#1a21181a,transparent 56%);
+}
+html[data-season="halloween"] .halloween-sidebar-link {
+  border: 1px solid transparent;
+  border-radius: 6px;
+}
+html[data-season="halloween"] .halloween-sidebar-link[aria-current="page"] {
+  background: #ae72201a;
+  border-color: #ba813c55;
+  color: #eab576;
+}
+html[data-season="halloween"] .halloween-sidebar-link[aria-current="page"] > span[aria-hidden] {
+  background: #e68b3d;
+}
+html[data-season="halloween"] .halloween-mobile-nav {
+  background: color-mix(in srgb,var(--background) 94%,#101810);
+  border-top: 1px solid #9d713c88;
+  backdrop-filter: none;
+}
+html[data-season="halloween"] .halloween-mobile-link[aria-current="page"] {
+  color:#dc9c54;
+}
+html[data-season="halloween"] .halloween-mobile-link[aria-current="page"] > span[aria-hidden] {
+  background: #dc9c54;
+}
+html[data-season="halloween"] .halloween-footer {
+  border-top-color:#9a723c66;
+  background:linear-gradient(180deg,transparent,#30231514 40%,#19191010);
+}
+
+/* Game covers are displayed like discoveries in an old cabinet catalogue.
+   No overlays cover game titles or controls. */
+html[data-season="halloween"] .halloween-game-card > a {
+  border-radius: 7px;
+  border-color: #8c714655;
+  box-shadow: inset 0 0 0 1px #d3a76c12, 0 5px 15px #00000018;
+  transition: border-color .18s ease,box-shadow .18s ease,transform .18s ease;
+}
+html[data-season="halloween"] .halloween-game-card:is(:hover,:focus-within) > a {
+  border-color:#d89855;
+  box-shadow: 0 0 0 1px #e5a25355, 0 12px 26px #00000040;
+}
+html[data-season="halloween"] .halloween-game-art::after {
+  content:"";position:absolute;inset:0;pointer-events:none;
+  border: 5px solid #090c0999;
+  box-shadow:inset 0 0 0 1px #c5ad7166, inset 0 0 32px #0307068c;
+}
+html[data-season="halloween"] .halloween-game-caption {
+  z-index:1;
+}
+html[data-season="halloween"] .halloween-game-caption h3 {
+  letter-spacing:.025em;
+}
+html[data-season="halloween"] .halloween-game-meta {
+  background:color-mix(in srgb,var(--card) 90%,#332219);
+  border-top: 1px solid #b58e4b35;
+}
+
+/* Individual category materials, not four identical gradient cards. */
+html[data-season="halloween"] .halloween-category {
+  position:relative;overflow:hidden;isolation:isolate;border-radius:7px;
+  background-image:none;
+  color:var(--foreground);
+  border:1px solid #9f79454d;
+  box-shadow:inset 0 1px #e7bc7a16;
+}
+html[data-season="halloween"] .halloween-category::after {
+  content:"";position:absolute;inset:0;pointer-events:none;z-index:-1;
+  opacity:.5;
+  background:repeating-linear-gradient(135deg,transparent 0 16px,#fff2 16px 17px,transparent 17px 32px);
+}
+html[data-season="halloween"] .halloween-category-arcade {
+  background:linear-gradient(135deg,#32301e,#191d1b);
+  border-color:#8e813e;
+}
+html[data-season="halloween"] .halloween-category-puzzle {
+  background:linear-gradient(135deg,#302536,#1b1923);
+  border-color:#745c86;
+}
+html[data-season="halloween"] .halloween-category-strategy {
+  background:linear-gradient(135deg,#23382c,#151f1a);
+  border-color:#597f58;
+}
+html[data-season="halloween"] .halloween-category-shooter {
+  background:linear-gradient(135deg,#382422,#201b1a);
+  border-color:#98564d;
+}
+html[data-season="halloween"] .halloween-category-icon {
+  border-radius:5px;background:#080d0c88;
+  border:1px solid #ffffff28;
+  backdrop-filter:none;
+}
+html[data-season="halloween"] .halloween-category:hover {
+  border-color:#e4b477;
+}
+
+/* Genuine event information remains readable and dismissible. */
+html[data-season="halloween"] .halloween-seasonal-banner {
+  background:repeating-linear-gradient(110deg,#151b18,#151b18 18px,#1c221c 18px,#1c221c 36px);
+  color:#f0e7d5;
+  border-top:1px solid #6e5935;
+  border-bottom:1px solid #a7763b;
+}
+html[data-season="halloween"] .halloween-seasonal-banner span.rounded-full {
+  background:#9c642d;
+  color:#fff6e7;
+}
+/* Keep reduced-motion visitors and users who opt out of effects comfortable. */
+html[data-reduced-motion="true"] .halloween-game-card > a,
+html[data-reduced-motion="true"] .halloween-category {
+  transition:none;
+}
+@media (prefers-reduced-motion:reduce) {
+  html[data-season="halloween"] .halloween-game-card > a,
+  html[data-season="halloween"] .halloween-category {transition:none}
+}
+
+/* A themed cabinet frame surrounds play without touching canvas rendering. */
+html[data-season="halloween"] .halloween-player-shell {padding:12px;border:1px solid #75573677;border-radius:10px;background:linear-gradient(135deg,#1a21151f,#09110d0e)}
+html[data-season="halloween"] .halloween-player-hud {border-bottom:1px solid #8d6f4455;padding-bottom:12px}
+html[data-season="halloween"] .halloween-player-stage {border:6px solid #24241b;border-radius:9px;outline:1px solid #a6885866;box-shadow:0 0 0 2px #080a07,0 18px 40px #0006}
+html[data-season="halloween"] .halloween-game-detail h1 {letter-spacing:-.03em}
+html[data-season="halloween"] .halloween-ui-card {border-radius:9px}
+html[data-season="halloween"] .halloween-ui-card:not(.border-dashed) {box-shadow:inset 0 1px #bfa47513}
+html[data-season="halloween"] .halloween-ui-button {border-radius:6px}
+html[data-season="halloween"] .halloween-marquee {width:max-content;max-width:100%;padding:6px 11px;margin-bottom:20px;border:1px solid #cb8a465c;background:#120f0bd9;color:#f5c992;font-size:10px;font-weight:700;letter-spacing:.17em}
+html[data-season="halloween"] .halloween-season-heading {display:inline;color:#ebd6ac}
+html[data-season="halloween"] .halloween-hero .halloween-season-heading:last-child {color:#f29b51}
+@media(max-width:640px) {html[data-season="halloween"] .halloween-player-shell {padding:5px}html[data-season="halloween"] .halloween-player-stage {border-width:3px}}
+
+
+/* Brand and navigation complete the themed experience without blocking controls. */
+html[data-season='halloween'] .halloween-standard-joystick {display:none}
+html[data-season='halloween'] .halloween-brand-ghost {display:block}
+html[data-season='halloween'] .halloween-nav-tag {
+ display:inline-flex;flex:none;align-items:center;white-space:nowrap;
+ border:1px solid #c08a4d77;background:#221910;color:#f5c58a;
+ font:700 9px/1.2 var(--font-geist-mono),monospace;letter-spacing:.1em;
+ padding:6px 7px;border-radius:3px;
+}
+html[data-season='halloween'] .halloween-search {
+ border-radius:5px;background:color-mix(in srgb,var(--background) 86%,#141b18);
+ border-color:#92673973;
+}
+html[data-season='halloween'] .halloween-search:hover {border-color:#dc985e}
+html[data-season='halloween'] .halloween-logo-icon {transform:rotate(-3deg)}
+html[data-season='halloween'] .halloween-scene {
+ background-image:linear-gradient(90deg,#080d0cf8 0%,#080d0cd0 42%,#080d0c28 100%),url('/seasons/halloween/arcade.svg');
+ background-position:center,right center;
+ background-size:cover;
+}
+@media(max-width:1100px) {
+ html[data-season='halloween'] .halloween-nav-tag {display:none}
+}
+@media(max-width:640px) {
+ html[data-season='halloween'] .halloween-scene {
+  background-image:linear-gradient(90deg,#080d0cf2,#080d0ca0),url('/seasons/halloween/arcade.svg');
+  background-position:center,70% center;
+ }
+}
+
+/* Catalogue controls and cabinet detail */
+html[data-season="halloween"] .halloween-library-filters button {
+ border-radius:5px;
+ border-color:#926a3d70;
+}
+html[data-season="halloween"] .halloween-library-filters button[aria-selected="true"] {
+ background:#b97736;color:#100f0b;border-color:#b97736;
+ box-shadow:inset 0 1px #f2c68b55;
+}
+html[data-season="halloween"] .halloween-play-button {
+ background:#df963e;color:#17110b;border-radius:5px;
+ box-shadow:0 0 0 3px #090d0caa,0 0 18px #e3934160;
+}
+html[data-season="halloween"] .halloween-game-card:focus-within > a {
+ outline:2px solid #eab574;outline-offset:3px;
+}
+/* Physical-control details; native game canvas remains untouched. */
+html[data-season="halloween"] .halloween-difficulty {
+ border-radius:5px;border-color:#99754680;background:#111714;
+}
+html[data-season="halloween"] .halloween-difficulty button[aria-pressed="true"] {
+ background:#bc7d3d;color:#16100a;border-radius:3px;
+}
+/* Consistent utility controls across forms and settings. */
+html[data-season="halloween"] .halloween-ui-input,
+html[data-season="halloween"] .halloween-select-trigger {
+ border-radius:5px;border-color:color-mix(in srgb,var(--border) 75%,#ad7548);
+}
+html[data-season="halloween"] .halloween-ui-input:focus-visible,
+html[data-season="halloween"] .halloween-select-trigger:focus-visible {
+ outline:2px solid #d89650;outline-offset:2px;
+}
+html[data-season="halloween"] .halloween-select-content {
+ border-radius:6px;border-color:#86663e;
+}
+html[data-season="halloween"] .halloween-tabs-list {
+ border-radius:5px;border:1px solid #91704455;
+}
+html[data-season="halloween"] .halloween-tabs-trigger {border-radius:3px}
+html[data-season="halloween"] .halloween-tabs-trigger[data-state="active"] {
+ box-shadow:inset 0 -2px #ce8640;
+}
+
+/* Community challenges are real events; they share the haunted materials without changing rewards. */
+html[data-season="halloween"] .halloween-community-event {
+  border:1px solid #b67f4966;
+  border-radius:9px;
+  background:linear-gradient(135deg,#2d231827,#121b1425);
+}
+html[data-season="halloween"] .halloween-community-progress {
+  border-radius:3px;
+  background:#2b2d23;
+}
+html[data-season="halloween"] .halloween-community-progress > div {
+  border-radius:3px;
+  background:linear-gradient(90deg,#b77d3e,#efd09a);
+}
+html[data-season="halloween"] .halloween-seasonal-banner button:focus-visible {
+  outline:2px solid #fff1d6;
+  outline-offset:2px;
+}
+/* Allow all seasonal artwork to stay decorative and noninteractive. */
+html[data-season="halloween"] .halloween-scene {pointer-events:none}
+
+/* Small decorative night-sky illustration, no layout shift or motion. */
+html[data-season="halloween"] .halloween-hero::after {
+  content:"";position:absolute;top:14px;right:10px;
+  width:min(42%,350px);height:90px;pointer-events:none;
+  background:url("/seasons/halloween/night-sky.svg") center / contain no-repeat;
+  opacity:.65;z-index:0;
+}
+@media(max-width:640px) {
+ html[data-season="halloween"] .halloween-hero::after {width:170px;height:45px;opacity:.35}
+}
+
+/* Respect in-app reduced-motion preferences as well as OS settings. */
+html[data-season="halloween"][data-reduced-motion="true"] .halloween-hero *,
+html[data-season="halloween"][data-reduced-motion="true"] .halloween-ui-button,
+html[data-season="halloween"][data-reduced-motion="true"] .halloween-game-card *,
+html[data-season="halloween"][data-reduced-motion="true"] .halloween-category * {
+  animation:none!important;
+  transition:none!important;
+  scroll-behavior:auto!important;
+}
+@media(prefers-reduced-motion:reduce) {
+ html[data-season="halloween"] .halloween-game-card *,
+ html[data-season="halloween"] .halloween-category *,
+ html[data-season="halloween"] .halloween-ui-button {animation:none!important;transition:none!important}
+}
