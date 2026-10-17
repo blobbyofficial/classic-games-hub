@@ -28,6 +28,12 @@ jobs:
             echo "::error::Configure STAGING_DATABASE_URL pointing to an isolated, migrated, disposable test database. Do not use production."
             exit 1
           fi
+      - name: Reject production database endpoints before connecting
+        env:
+          STAGING_KIND: database
+          STAGING_TARGET_URL: ${{ secrets.STAGING_DATABASE_URL }}
+          STAGING_ISOLATED_CONFIRMED: ${{ inputs.isolated_database_confirmed }}
+        run: node scripts/assert-isolated-staging.cjs
       - name: Install PostgreSQL client
         run: sudo apt-get update -qq && sudo apt-get install -y postgresql-client
       - name: Read-only RLS and RPC privilege acceptance
