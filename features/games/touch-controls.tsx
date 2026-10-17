@@ -10,6 +10,7 @@ import {
   RotateCcw,
   ChevronsDown,
 } from "lucide-react";
+import { useEffect, useRef } from "react";
 import type { ControlScheme } from "@/lib/games/config";
 
 /** Dispatch a synthetic key event to the window so engines react uniformly. */
@@ -30,20 +31,34 @@ function Pad({
   big?: boolean;
   tap?: boolean;
 }) {
+  const activePointer = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (activePointer.current !== null && !tap) key(k, "keyup");
+  }, [k, tap]);
+  const release = (pointerId: number) => {
+    if (activePointer.current !== pointerId) return;
+    activePointer.current = null;
+    if (!tap) key(k, "keyup");
+  };
   return (
     <button
+      type="button"
       aria-label={label}
       onPointerDown={(e) => {
         e.preventDefault();
+        if (activePointer.current !== null) return;
+        activePointer.current = e.pointerId;
+        e.currentTarget.setPointerCapture(e.pointerId);
         key(k, "keydown");
         if (tap) key(k, "keyup");
       }}
-      onPointerUp={() => !tap && key(k, "keyup")}
-      onPointerLeave={() => !tap && key(k, "keyup")}
+      onPointerUp={(e) => release(e.pointerId)}
+      onPointerCancel={(e) => release(e.pointerId)}
+      onLostPointerCapture={(e) => release(e.pointerId)}
       onContextMenu={(e) => e.preventDefault()}
       className={`grid ${
         big ? "size-16" : "size-14"
-      } touch-none select-none place-items-center rounded-xl border border-border bg-card/80 text-foreground shadow-sm active:scale-95 active:bg-accent [&_svg]:size-6`}
+      } touch-none select-none place-items-center rounded-xl border border-border bg-card/80 text-foreground shadow-sm motion-safe:active:scale-95 active:bg-accent [&_svg]:size-6`}
     >
       {children}
     </button>
