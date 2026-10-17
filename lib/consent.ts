@@ -57,7 +57,7 @@ export function parseConsent(raw: string | undefined | null): ConsentChoice | nu
     if (typeof parsed?.analytics !== "boolean") return null;
     // A consent given against an older policy is not consent to the new one.
     if (parsed.v !== CONSENT_POLICY_VERSION) return null;
-    return { analytics: parsed.analytics, v: parsed.v, aid: parsed.aid };
+    // The browser controls cookie contents. Never forward unbounded, arbitrary\n    // JSON values into consent audit records as an anonymous subject ID.\n    const aid = typeof parsed.aid === "string" && /^[a-z0-9-]{1,64}$/i.test(parsed.aid)\n      ? parsed.aid : undefined;\n    return { analytics: parsed.analytics, v: parsed.v, aid };
   } catch {
     return null;
   }
