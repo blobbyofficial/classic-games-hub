@@ -35,3 +35,13 @@ test("sparse aggregates cannot reveal fewer than twenty players, including custo
   assert.equal(visible(30, 30), 30);
   assert.equal(visible(25, Number.NaN), 25);
 });
+
+test("browser Global Privacy Control has priority over stored analytics consent", () => {
+  const provider = fs.readFileSync("components/providers/consent-provider.tsx", "utf8");
+  const tracking = fs.readFileSync("lib/analytics.ts", "utf8");
+  assert.match(provider, /const effectiveAnalytics = analytics && !globalPrivacyControl\(\)/);
+  assert.match(provider, /if \(globalPrivacyControl\(\)\) \{/);
+  assert.match(provider, /if \(existing\?\.analytics \|\| !existing\) persist\(false\)/);
+  assert.match(provider, /choice\?\.analytics && !globalPrivacyControl\(\)/);
+  assert.match(tracking, /typeof document === "undefined" \|\| globalPrivacyControl\(\)/);
+});
