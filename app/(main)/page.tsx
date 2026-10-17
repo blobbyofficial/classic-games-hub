@@ -17,6 +17,7 @@ import { HomeLeaderboardPreview } from "@/features/leaderboards/home-preview";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { compactNumber } from "@/lib/utils";
+import { activeSeason } from "@/lib/seasonal-theme";
 
 // Section keys the admin can reorder/hide from Admin → Flags ("home_layout").
 const DEFAULT_ORDER = ["event", "daily", "recent", "featured", "categories", "all_games"] as const;
@@ -111,6 +112,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-10 sm:space-y-14">
       <Hero
+        halloween={activeSeason() === "halloween"}
         gameCount={allGames.length}
         totalPlays={totalPlays}
         isAuthed={Boolean(user)}
@@ -122,11 +124,13 @@ export default async function HomePage() {
 }
 
 function Hero({
+  halloween,
   gameCount,
   totalPlays,
   isAuthed,
   displayName,
 }: {
+  halloween: boolean;
   gameCount: number;
   totalPlays: number;
   isAuthed: boolean;
@@ -139,8 +143,8 @@ function Hero({
     <section className="halloween-hero relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
       <div aria-hidden className="halloween-scene pointer-events-none absolute inset-0 bg-grid" />
       <div className="relative max-w-2xl motion-safe:animate-rise">
-        <p className="halloween-eyebrow mb-4 hidden text-xs font-semibold [[data-season=halloween]_&]:block">October at the arcade // 2026</p>
-        <div className="halloween-marquee hidden items-center gap-2 [[data-season=halloween]_&]:flex" aria-hidden="true"><Ghost className="size-4" /> HAUNTED ARCADE · LIMITED SEASON</div>
+        {halloween && <p className="halloween-eyebrow mb-4 text-xs font-semibold">October at the arcade</p>}
+        {halloween && <div className="halloween-marquee flex items-center gap-2" aria-hidden="true"><Ghost className="size-4" /> HAUNTED ARCADE · LIMITED SEASON</div>}
         <h1 className="text-display font-black">
           {displayName ? (
             <>
@@ -150,9 +154,9 @@ function Hero({
             </>
           ) : (
             <>
-              <span className="halloween-normal-heading">Your arcade,</span><span className="halloween-season-heading hidden">Your arcade,</span>
+              {halloween ? "Your arcade," : "Your arcade,"}
               <br />
-              <span className="text-gradient halloween-highlight halloween-normal-heading">reimagined.</span><span className="halloween-season-heading hidden">after dark.</span>
+              {halloween ? <span className="halloween-season-heading">after dark.</span> : <span className="text-gradient">reimagined.</span>}
             </>
           )}
         </h1>
@@ -160,7 +164,7 @@ function Hero({
           Play {gameCount} timeless games, earn credits and XP, unlock achievements, climb the
           leaderboards and hang out with friends. No pay-to-win - just the classics, done right.
         </p>
-        <p className="mt-4 hidden text-sm font-medium text-[#dfb883] [[data-season=halloween]_&]:block">The arcade is open after dark. Dare to play one more round?</p>
+        {halloween && <p className="mt-4 text-sm font-medium text-[#dfb883]">The arcade is open after dark. Dare to play one more round?</p>}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Button size="lg" variant="gradient" className="halloween-cta" asChild>
             <Link href="/games">
