@@ -36,6 +36,7 @@ jobs:
 
       - name: Regression contract tests
         run: |
+          node --test scripts/test-local-supabase-preparation.cjs
           node --test scripts/test-staging-safety.cjs
           node --test scripts/test-game-sound.cjs
           node --test scripts/test-migration-versions.cjs
