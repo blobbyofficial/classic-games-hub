@@ -2,7 +2,7 @@
 -- Run against staging and production before approving the migration.
 with retired as (
  select slug from public.shop_items where available and not staff_only and not seasonal and price > 0 and kind not in ('xp_boost','credit_boost') and slug not in ('frame-neon-ring','frame-violet-pulse','badge-champion','banner-nebula','trail-comet','deco-crown','deco-headphones','effect-matrix','effect-fireflies','entrance-glitch','nameplate-cyber','pframe-obsidian','pframe-prism','theme-deep-space','track-neon-drift')
-, eligible_refunds as (
+), eligible_refunds as (
   select t.id, t.user_id, -t.amount as paid
   from public.credit_transactions t join retired r on r.slug = t.ref_id
   where t.reason = 'shop_purchase' and t.ref_type = 'shop_item' and t.amount < 0
