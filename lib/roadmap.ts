@@ -68,6 +68,55 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
  */
 export const ROADMAP: RoadmapRelease[] = [
   {
+    version: "v1.6.0-maintenance",
+    codename: "Site Reliability & Bug Verification",
+    status: "in-progress",
+    timeframe: "Alongside the current rebuild",
+    summary: "Track source-backed defects and production verification separately. A code review is not a substitute for testing the deployed website; fixes only count as complete once reproduced or validated on the relevant device and role.",
+    groups: [
+      {
+        heading: "Deployment and scheduled jobs",
+        icon: "Activity",
+        items: [
+          { title: "Verify the deployed version and public routes", description: "Confirm the active Vercel production commit and inspect fresh /, /games, /status and /roadmap responses and screenshots. Earlier public retrieval returned an old cached edition and cache misses, not proof of a current outage.", status: "next" },
+          { title: "Prove every scheduled job runs successfully", description: "Inspect pg_cron job history, Vault cron_secret configuration, live status samples and failures; check status-probe, Discord role sync, stats, audit logs, publish and booster drops. Verify the actual schedules rather than trusting migration files.", status: "next" },
+          { title: "Verify Discord gateway worker health", description: "Check the always-on bot worker heartbeat, interaction credentials, gateway connection and message/role synchronisation; distinguish unconfigured services from code defects.", status: "next" },
+          { title: "Keep public roadmap and deployed release metadata consistent", description: "Reconcile package version 2.0.0, the public 1.x release log, stale game counts and the runtime roadmap_override. Make the displayed roadmap's source and update behaviour clear.", status: "next" },
+        ],
+      },
+      {
+        heading: "Security and account integrity",
+        icon: "Shield",
+        items: [
+          { title: "Test score and reward tampering", description: "Test server-side validation, leaderboard submission, reward RPCs, duplicate requests and malicious client input. Do not claim exploitation without reproduction.", status: "next" },
+          { title: "Audit permissions across roles", description: "Test anonymous, player, moderator and administrator access; verify Supabase RLS and grants, administrative mutations, audit trails and rollback.", status: "next" },
+          { title: "Test account and social edge cases", description: "Exercise login, registration, password reset, MFA, session expiry, friend requests, private messages, party invites, reconnects and blocked-user boundaries using separate accounts.", status: "next" },
+          { title: "Test purchase and gifting concurrency", description: "Check insufficient balances, simultaneous purchases, retries and duplicate submissions to prevent lost credits or duplicate rewards.", status: "next" },
+        ],
+      },
+      {
+        heading: "Accessibility, usability and performance",
+        icon: "Accessibility",
+        items: [
+          { title: "Validate pending accessibility fixes in production", description: "Verify keyboard navigation of game filters, visible mobile section links, game-card availability cues, status-chart text equivalents and reduced-motion handling after relevant PRs merge.", status: "next" },
+          { title: "Test mobile and screen-reader journeys", description: "Capture 360, 390, 768, 1024 and 1440 pixel layouts, light/dark modes, zoom/reflow, loading/error states, keyboard focus and screen-reader announcements.", status: "next" },
+          { title: "Measure actual site and game performance", description: "Record LCP, INP, CLS, bundle sizes and canvas frame times on the current deployment before claiming performance improvements. Investigate excessive client component boundaries.", status: "later" },
+          { title: "Reduce repetitive visual patterns", description: "Review repeated gradient cards, icon tiles, shadows and nested release cards; improve hierarchy and mobile navigation without sacrificing clarity or accessibility.", status: "later" },
+        ],
+      },
+      {
+        heading: "Regression coverage",
+        icon: "ClipboardCheck",
+        items: [
+          { title: "Expand automated tests beyond build checks", description: "Add unit, database integration, accessibility and end-to-end tests for auth, scores, economy, social flows and critical navigation.", status: "next" },
+          { title: "Verify game engine lifecycle fixes", description: "Regression-test pause/resume/stop, animation-frame scheduling, resize, tab switching, input and touch across all engines. Check whether the game-loop fix from PR #49 has merged.", status: "next" },
+          { title: "Track fixes against a real acceptance checklist", description: "For each issue record reproduction steps, affected routes, severity, PR, deployed commit and device verification. Keep unverified risks distinct from confirmed defects.", status: "in-progress" },
+        ],
+      },
+    ],
+  },
+
+  {
     version: "v1.6.0",
     codename: "Ground Up",
     status: "in-progress",
