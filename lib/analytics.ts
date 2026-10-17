@@ -1,7 +1,7 @@
 "use client";
 
 import { track } from "@vercel/analytics";
-import { CONSENT_COOKIE, parseConsent } from "@/lib/consent";
+import { CONSENT_COOKIE, globalPrivacyControl, parseConsent } from "@/lib/consent";
 
 /**
  * Custom product events, on top of the pageviews Vercel collects on its own.
@@ -26,7 +26,7 @@ import { CONSENT_COOKIE, parseConsent } from "@/lib/consent";
 type EventProps = Record<string, string | number | boolean | null>;
 
 function allowed(): boolean {
-  if (typeof document === "undefined") return false;
+  if (typeof document === "undefined" || globalPrivacyControl()) return false;
   const raw = document.cookie
     .split("; ")
     .find((row) => row.startsWith(`${CONSENT_COOKIE}=`))
