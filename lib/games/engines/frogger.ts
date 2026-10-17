@@ -455,9 +455,10 @@ const frogger: GameEngineFactory = ({
     color: string,
     amount = 1,
   ) {
+    const visualCount = Math.max(0, Math.round(amount * (visualBudget?.().particles ?? 1)));
     for (
       let i = 0;
-      i < Math.max(0, Math.round(amount * (visualBudget?.().particles ?? 1)));
+      i < amount;
       i++
     ) {
       const angle =
@@ -471,7 +472,7 @@ const frogger: GameEngineFactory = ({
           2.8,
         );
 
-      particles.push({
+      const particle: Particle = {
         x,
         y,
         vx:
@@ -492,7 +493,8 @@ const frogger: GameEngineFactory = ({
             3,
           ),
         color,
-      });
+      };
+      if (i < visualCount) particles.push(particle);
     }
   }
 
