@@ -38,6 +38,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { SITE } from "@/lib/constants";
+import { getRecentRepositoryActivity } from "@/lib/recent-repository-activity";
 import {
   SERIES,
   LANDED,
@@ -269,7 +270,8 @@ function ReleasePanel({ release, open }: { release: UpdateRelease; open: boolean
   );
 }
 
-export default function UpdatesPage() {
+export default async function UpdatesPage() {
+  const recentActivity = await getRecentRepositoryActivity();
   return (
     <div className="mx-auto max-w-4xl space-y-10">
       {/* Header */}
@@ -280,12 +282,11 @@ export default function UpdatesPage() {
           </span>
           <div>
             <h1 className="text-2xl font-bold tracking-tight">Update log</h1>
-            <p className="text-sm text-muted-foreground">Everything that has shipped on {SITE.name}.</p>
+            <p className="text-sm text-muted-foreground">Curated releases and recent development on {SITE.name}.</p>
           </div>
         </div>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          The complete history, newest first: every release line, every release inside it, and every individual change
-          that has landed in production. For what&apos;s coming next, see the{" "}
+          The curated release archive is below, followed by an automatically refreshed view of recent GitHub commits. A commit is not proof of a production deployment. For future plans, see the{" "}
           <Link href="/roadmap" className="font-medium text-primary hover:underline">
             roadmap
           </Link>
@@ -295,10 +296,52 @@ export default function UpdatesPage() {
         <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
           <Stat icon={Layers} value={UPDATE_STATS.releases} label="Releases shipped" />
           <Stat icon={Package} value={UPDATE_STATS.features} label="Features delivered" />
-          <Stat icon={GitCommitHorizontal} value={UPDATE_STATS.landed} label="Changes in production" />
-          <Stat icon={GitMerge} value={UPDATE_STATS.pullRequests} label="Pull requests merged" />
+          <Stat icon={GitCommitHorizontal} value={UPDATE_STATS.landed} label="Changes in curated ledger" />
+          <Stat icon={GitMerge} value={UPDATE_STATS.pullRequests} label="PRs in curated ledger" />
         </div>
       </header>
+
+
+      {/* GitHub activity is intentionally separate from verified release claims. */}
+      <section className="space-y-3">
+        <div className="space-y-1">
+          <h2 className="text-lg font-bold tracking-tight">Latest repository activity</h2>
+          <p className="max-w-2xl text-sm text-muted-foreground">
+            Latest commits on GitHub main (up to 100), refreshed approximately hourly. Plans, code changes, and
+            maintenance are distinguished here; none is automatically labelled as deployed or released.
+          </p>
+        </div>
+        {recentActivity === null ? (
+          <Card><CardContent className="pt-6 text-sm text-muted-foreground">
+            Recent GitHub activity is temporarily unavailable. The curated release history below is still accessible.{" "}
+            <a href={`${REPO_URL}/commits/main`} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">View commits on GitHub</a>.
+          </CardContent></Card>
+        ) : (
+          <Card>
+            <CardContent className="pt-3">
+              <ul className="divide-y divide-border/60">
+                {recentActivity.map((change) => (
+                  <li key={change.sha} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 py-3">
+                    <a href={change.url} target="_blank" rel="noopener noreferrer"
+                       className="shrink-0 font-mono text-xs text-primary hover:underline">{change.sha.slice(0, 8)}</a>
+                    <span className="min-w-0 flex-1 text-sm">{change.subject}</span>
+                    <span className="shrink-0 rounded-full border border-border px-2 py-0.5 text-[11px] text-muted-foreground">
+                      {change.kind === "plan" ? "Planning" : change.kind === "code" ? "Code change" : "Maintenance"}
+                    </span>
+                    {change.date && <time dateTime={change.date} className="shrink-0 text-xs text-muted-foreground">
+                      {new Date(change.date).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric", timeZone: "UTC" })}
+                    </time>}
+                  </li>
+                ))}
+              </ul>
+              {recentActivity.length === 0 && <p className="py-4 text-sm text-muted-foreground">No commits returned.</p>}
+              <a href={`${REPO_URL}/commits/main`} target="_blank" rel="noopener noreferrer" className="mt-4 inline-block text-sm font-medium text-primary hover:underline">
+                Browse complete GitHub history
+              </a>
+            </CardContent>
+          </Card>
+        )}
+      </section>
 
       {/* Releases, nested by line */}
       <section className="space-y-4">
@@ -384,8 +427,7 @@ export default function UpdatesPage() {
       <section className="space-y-3">
         <h2 className="text-lg font-bold tracking-tight">Everything that landed</h2>
         <p className="max-w-2xl text-sm text-muted-foreground">
-          Every change that reached production, newest first - whether it arrived through a pull request or as a direct
-          commit, and which release it shipped in. {UPDATE_STATS.landed} in total, going back to the very first one.
+          The historical, manually curated landing ledger, newest first. This list does not automatically include newer GitHub commits or certify deployments. {UPDATE_STATS.landed} in total, going back to the very first one.
           {UNASSIGNED.length > 0
             ? ` ${UNASSIGNED.length} of them have not been assigned to a release yet.`
             : " All of them belong to a release."}
