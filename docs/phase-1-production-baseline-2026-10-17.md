@@ -173,3 +173,7 @@ Obtain the active Vercel production deployment ID and commit SHA via authorized 
 - **OPS-002/003:** No authenticated scheduled-job completion or downstream HTTP response evidence acquired.
 
 **Do not close Phase 1 on these signals alone.**
+
+### Repeatable public HTTP evidence collector (new)
+
+Run `node scripts/check-public-deployment.mjs https://classic-games-hub.blobbyofficial.com > baseline-public.json` from a trusted terminal with internet access. Save the timestamped JSON as a verification artifact, alongside a separately recorded Vercel production deployment SHA from the authorized dashboard. The collector performs GET requests for /, /games, /roadmap, /status and /api/status, records status, content type, caching hints, response bytes and Vercel request IDs; it **does not** identify the deployed commit, exercise authenticated workflows, query private worker health, or trigger cron jobs. HTTP 200 is not equivalent to a healthy dependency chain.
