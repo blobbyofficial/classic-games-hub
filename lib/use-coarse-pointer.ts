@@ -3,20 +3,29 @@
 import { useEffect, useState } from "react";
 
 /**
- * Detects whether the device's primary pointer is coarse (touch) rather than
- * fine (mouse/trackpad). Returns `null` until mounted so the caller can avoid
- * a hydration mismatch and render device-specific UI only on the client.
+ * Input capability, not device identity. A touchscreen Chromebook may have a
+ * fine primary pointer plus touch; relying on (pointer: coarse) alone hides
+ * instructions for the player's available touch input.
+ *
+ * No user-agent parsing, fingerprinting, storage or network collection.
  */
 export function useCoarsePointer(): boolean | null {
-  const [coarse, setCoarse] = useState<boolean | null>(null);
+  const [touchCapable, setTouchCapable] = useState<boolean | null>(null);
 
   useEffect(() => {
-    const mq = window.matchMedia("(pointer: coarse)");
-    const update = () => setCoarse(mq.matches);
+    const primary = window.matchMedia("(pointer: coarse)");
+    const any = window.matchMedia("(any-pointer: coarse)");
+    const update = () => {
+      setTouchCapable(primary.matches || any.matches || navigator.maxTouchPoints > 0);
+    };
     update();
-    mq.addEventListener("change", update);
-    return () => mq.removeEventListener("change", update);
+    primary.addEventListener("change", update);
+    any.addEventListener("change", update);
+    return () => {
+      primary.removeEventListener("change", update);
+      any.removeEventListener("change", update);
+    };
   }, []);
 
-  return coarse;
+  return touchCapable;
 }
