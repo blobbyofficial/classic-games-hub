@@ -153,6 +153,8 @@ export interface GameEngineContext {
   /** Report transient status text (e.g. "Paused", "Level 3"). */
   onStatus?: (status: string) => void;
   reducedMotion: boolean;
+  /** Live graphics-only budget. Must not influence game rules or RNG outcomes. */
+  visualBudget?: () => { particles: number; decorativeGlow: boolean };
   /**
    * How hard the player asked for this run to be. Engines that have not been
    * tuned yet may ignore it - absent is the same as "regular" - so adding this
