@@ -34,5 +34,7 @@ export function quantizeMilliseconds(value: number): "0-100" | "101-300" | "301-
 }
 /** Avoid small-cohort reporting to lower reidentification risk. */
 export function visibleAggregateCount(count: number, minimum = 20): number | null {
-  return Number.isSafeInteger(count) && count >= minimum ? count : null;
+  // The caller may raise the threshold, but may never lower the privacy floor.
+  const threshold = Number.isSafeInteger(minimum) ? Math.max(20, minimum) : 20;
+  return Number.isSafeInteger(count) && count >= threshold ? count : null;
 }
