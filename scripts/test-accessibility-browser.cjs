@@ -24,7 +24,7 @@ test("public workflows meet automated critical/serious WCAG checks", { timeout: 
               runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] },
             });
             return r.violations.filter(v => ["critical", "serious"].includes(v.impact))
-              .map(v => ({ rule: v.id, impact: v.impact, elements: v.nodes.map(n => n.target.join(" ")) }));
+              .map(v => ({ rule: v.id, impact: v.impact, elements: v.nodes.map(n => ({ target: n.target.join(" "), html: n.html.slice(0,200), reason: n.failureSummary?.slice(0,300) })) }));
           });
           assert.deepEqual(failures, [], `${pathname} WCAG issues at ${width}px`);
           assert.equal(await page.locator("main").count(), 1, `${pathname} should expose one main landmark`);
