@@ -57,3 +57,20 @@ test("protected cron endpoint rejects anonymous requests in browser test environ
   const response = await fetch(new URL("/api/cron/status-probe", root), { redirect: "manual", signal: AbortSignal.timeout(12000) });
   assert.equal(response.status, 401);
 });
+
+test("private social routes redirect anonymous visitors to login without exposing content", { timeout: 45000 }, async () => {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const context = await browser.newContext({ storageState: { cookies: [], origins: [] } });
+    const page = await context.newPage();
+    for (const pathname of ["/friends", "/notifications"]) {
+      await page.goto(new URL(pathname, root).href, { waitUntil: "domcontentloaded", timeout: 20000 });
+      const destination = new URL(page.url());
+      assert.equal(destination.pathname, "/login", `Anonymous visitor could access ${pathname}`);
+      assert.equal(destination.searchParams.get("next"), pathname, `Login should preserve safe return route ${pathname}`);
+    }
+    await context.close();
+  } finally {
+    await browser.close();
+  }
+});
