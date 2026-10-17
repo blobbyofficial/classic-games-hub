@@ -50,6 +50,7 @@ export function GamesLibrary({
   }, []);
 
   const selectCategory = (next: string) => {
+    if (next === category) return;
     setCategory(next);
     const url = new URL(window.location.href);
     if (next === "All") url.searchParams.delete("category");
@@ -65,16 +66,16 @@ export function GamesLibrary({
   };
 
   const filtered = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
     let list = games.filter((g) => {
       if (category !== "All" && g.category !== category) return false;
       if (favOnly && !favSet.has(g.id)) return false;
-      if (query.trim()) {
-        const q = query.trim().toLocaleLowerCase();
+      if (normalizedQuery) {
         return (
-          g.title.toLowerCase().includes(q) ||
-          g.category.toLowerCase().includes(q) ||
-          g.tagline?.toLowerCase().includes(q) ||
-          (g.tags ?? []).some((t) => t.toLowerCase().includes(q))
+          g.title.toLowerCase().includes(normalizedQuery) ||
+          g.category.toLowerCase().includes(normalizedQuery) ||
+          g.tagline?.toLowerCase().includes(normalizedQuery) ||
+          (g.tags ?? []).some((t) => t.toLowerCase().includes(normalizedQuery))
         );
       }
       return true;
@@ -84,7 +85,10 @@ export function GamesLibrary({
         case "popular":
           return b.play_count - a.play_count;
         case "rating":
-          return Number(b.rating_count > 0) - Number(a.rating_count > 0) || b.rating - a.rating || b.rating_count - a.rating_count;
+          return Number(b.rating_count > 0) - Number(a.rating_count > 0)
+            || b.rating - a.rating
+            || b.rating_count - a.rating_count
+            || a.title.localeCompare(b.title);
         case "az":
           return a.title.localeCompare(b.title);
         default:
