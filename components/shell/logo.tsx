@@ -1,13 +1,25 @@
 import Link from "next/link";
-import { Joystick, Ghost } from "lucide-react";
+import Image from "next/image";
 import { cn } from "@/lib/utils";
 
+/**
+ * The same SVG serves the favicon and every shared site wordmark.
+ * next/image is unoptimized so it references /icon.svg directly and preserves
+ * SVG animation if the source artwork is later replaced with an animated SVG.
+ */
 export function Logo({ className, compact }: { className?: string; compact?: boolean }) {
   return (
-    <Link href="/" className={cn("group flex items-center gap-2", className)} aria-label="Classic Games Hub home">
-      <span className="halloween-logo-icon grid size-9 place-items-center rounded-xl bg-[linear-gradient(135deg,var(--primary),oklch(0.6_0.2_330))] shadow-lg shadow-primary/30 transition-transform group-hover:scale-105">
-        <Joystick className="halloween-standard-joystick size-5 text-white" />
-        <Ghost className="halloween-brand-ghost hidden size-5 text-[#f3b875]" aria-hidden="true" />
+    <Link href="/" className={cn("group flex min-w-0 items-center gap-2", className)} aria-label="Classic Games Hub home">
+      <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-black">
+        <Image
+          src="/icon.svg"
+          alt=""
+          aria-hidden="true"
+          width={36}
+          height={36}
+          unoptimized
+          className="size-full object-contain"
+        />
       </span>
       {!compact && (
         <span className="text-[15px] font-bold leading-tight tracking-tight">
