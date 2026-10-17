@@ -442,7 +442,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
           stage that changes size resizes the canvas, and resizing a canvas
           clears it. That was the screen "resizing weirdly" mid-game. A media
           query is resolved before the first paint, so nothing moves. */}
-      <div className={`hidden pointer-coarse:block ${isFullscreen || isExpanded ? "w-full max-w-3xl" : ""}`}>
+      <div className={`hybrid-touch-controls hidden pointer-coarse:block ${isFullscreen || isExpanded ? "w-full max-w-3xl" : ""}`}>
         <TouchControls scheme={scheme} />
       </div>
 
