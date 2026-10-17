@@ -10,7 +10,8 @@ test("analytics supports coarse dimensions and suppresses sparse cohorts", () =>
   assert.match(source, /inputBucket/);
   assert.match(source, /quantizeMilliseconds/);
   assert.match(source, /minimum = 20/);
-  assert.match(source, /count >= minimum \? count : null/);
+  assert.match(source, /Math\.max\(20, minimum\)/);
+  assert.match(source, /count >= threshold \? count : null/);
 });
 
 test("event contracts reject unapproved fields and require explicit consent", () => {
@@ -19,4 +20,18 @@ test("event contracts reject unapproved fields and require explicit consent", ()
   assert.match(contract, /Object\.keys\(item\)\.length !== KEYS\.size/);
   assert.match(contract, /consent === "granted" \? parseExperienceEvent\(value\) : null/);
   assert.doesNotMatch(contract, /fetch\(|sendBeacon\(|localStorage|document\.cookie/);
+});
+
+test("sparse aggregates cannot reveal fewer than twenty players, including custom thresholds", () => {
+  const declaration = source.match(/export function visibleAggregateCount\(count: number, minimum = 20\): number \| null \{[\s\S]*?\n\}/);
+  assert.ok(declaration, "Expected pure aggregate count helper");
+  const { runInNewContext } = require("node:vm");
+  const js = declaration[0].replace("export function", "function").replace("(count: number, minimum = 20): number | null", "(count, minimum = 20)");
+  const visible = runInNewContext(js + "\nvisibleAggregateCount");
+  assert.equal(visible(19), null);
+  assert.equal(visible(19, 1), null);
+  assert.equal(visible(20, 0), 20);
+  assert.equal(visible(29, 30), null);
+  assert.equal(visible(30, 30), 30);
+  assert.equal(visible(25, Number.NaN), 25);
 });
