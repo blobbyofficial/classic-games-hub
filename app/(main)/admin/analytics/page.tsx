@@ -73,12 +73,12 @@ export default async function AdminAnalyticsPage() {
     { count: mau },
     { count: players },
     { data: durations },
-    { count: rewards },
-    { count: achievements },
-    { count: audits },
-    { count: reports },
-    { data: gameCatalogue },
-    { data: recentAuditActions },
+    { count: rewards, error: rewardsError },
+    { count: achievements, error: achievementsError },
+    { count: audits, error: auditsError },
+    { count: reports, error: reportsError },
+    { data: gameCatalogue, error: gamesError },
+    { data: recentAuditActions, error: auditActionsError },
   ] = await Promise.all([
     supabase
       .from("play_sessions")
@@ -128,6 +128,8 @@ export default async function AdminAnalyticsPage() {
     .filter((n): n is number => typeof n === "number" && n > 0);
   const avgDuration = durs.length ? Math.round(durs.reduce((a, b) => a + b, 0) / durs.length) : 0;
 
+  const metricErrors = [rewardsError, achievementsError, auditsError, reportsError, gamesError, auditActionsError]
+    .filter((error) => error !== null);
   const auditByAction = new Map<string, number>();
   for (const item of recentAuditActions ?? []) {
     auditByAction.set(item.action, (auditByAction.get(item.action) ?? 0) + 1);
@@ -137,6 +139,11 @@ export default async function AdminAnalyticsPage() {
 
   return (
     <div className="space-y-6">
+      {metricErrors.length > 0 && (
+        <p role="alert" className="rounded-lg border border-destructive/40 bg-destructive/10 px-3 py-2 text-sm text-destructive">
+          Some analytics queries failed. Missing values below must not be interpreted as zero; verify admin database permissions and logs.
+        </p>
+      )}
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-5">
         <StatTile icon={Activity} label="Active today" value={formatNumber(dau ?? 0)} />
         <StatTile icon={Activity} label="Active (7d)" value={formatNumber(wau ?? 0)} accent="text-sky-400" />
