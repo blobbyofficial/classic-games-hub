@@ -1778,6 +1778,33 @@ export const ROADMAP: RoadmapRelease[] = [
       ] },
   ] },
 
+  { version: "SEO future — authority and scale", codename: "Organic Discovery at Scale", status: "idea", timeframe: "Unscheduled future research", summary: "Long-horizon, user-first search visibility and organic traffic initiatives. These ideas supplement the existing technical SEO backlog and never guarantee specific rankings; retain all previously planned items and permissions.", groups: [
+      { heading: "Search authority and long-term traffic", icon: "Rocket", items: [
+        { title: "Flagship original game destination programme", description: "Build a small set of standout, fully playable and technically polished game destinations with original mechanics explanations, demonstrations, and player-tested controls; measure real search activation before expanding.", status: "idea" },
+        { title: "Search-driven editorial collections", description: "Research genuine search demand for distinct collections such as accessible keyboard games and puzzle games; create only pages with useful human-curated selections and unique guidance.", status: "idea" },
+        { title: "Original learning and strategy library", description: "Publish first-hand game strategies, explanations, practice drills and expert walkthroughs tied to playable titles, maintained with game version changes.", status: "idea" },
+        { title: "Game comparison pages with hands-on evidence", description: "Create useful comparisons based on tested controls, modes, performance and rules rather than mass-generated keyword variants.", status: "idea" },
+        { title: "Public community tournament knowledge base", description: "Publish evergreen rules and useful summaries of genuine community competitions, with visible dates, game versions and links to relevant games.", status: "idea" },
+        { title: "Ethical partner and creator outreach", description: "Collaborate with relevant small creators, educators and communities on genuinely useful gameplay and event resources; earn editorial citations without link schemes.", status: "idea" },
+        { title: "Multilingual content feasibility study", description: "Use real international demand and available translation review resources before launching language-localised game guides and hreflang URLs.", status: "idea" },
+        { title: "Search-informed game investment", description: "Use aggregated impressions and high-intent query gaps to help prioritise which quality game experiences are built, without replacing existing roadmap commitments.", status: "idea" },
+        { title: "Brand identity and navigation entity consistency", description: "Audit branded search confusion, official website references and social account consistency; clarify authoritative canonical identity.", status: "idea" },
+        { title: "Organic acquisition to engaged play attribution", description: "Evaluate search traffic by completed game starts and return behaviour, not rankings or pageviews alone.", status: "idea" },
+      ] },
+      { heading: "Future technical discovery infrastructure", icon: "Gauge", items: [
+        { title: "Programmatic content quality gates", description: "If additional public landing templates are introduced, require real user value, unique substance, editorial oversight and no indexable duplicates.", status: "idea" },
+        { title: "Scalable game content lifecycle", description: "Provide a structured editorial workflow for description, tested instructions, screenshots, licensing, status, publish date and significant update history.", status: "idea" },
+        { title: "Structured data eligibility monitor", description: "Automatically test visible claims against JSON-LD and schema syntax; don't assume VideoGame markup guarantees special Google rich results.", status: "idea" },
+        { title: "Automated indexability release checks", description: "CI-check canonical, robots, public status, response codes, sitemap links and representative mobile content whenever games are published or rebuilt.", status: "idea" },
+        { title: "Search crawl and render observability", description: "Measure real crawler HTTP status, latency and robots handling from server logs without invasive visitor tracking.", status: "idea" },
+        { title: "Image discovery architecture", description: "Serve accessible original game images with descriptive alt text, stable image URLs, appropriate metadata and inclusion in useful indexable pages.", status: "idea" },
+        { title: "International URL architecture review", description: "Before any localisation, define separate stable locale URLs, translated canonicals and hreflang parity only where full translations can be supported.", status: "idea" },
+        { title: "Organic traffic infrastructure scaling", description: "Performance-test the anonymous public game catalogue during traffic spikes and avoid account-database round trips on crawlable pages.", status: "idea" },
+        { title: "Indexing policy for long-lived rebuilds", description: "Evaluate how staff-only rebuilding states affect search intent and public information; preserve useful pages and distinguish real availability without automatically deleting indexed URLs.", status: "idea" },
+        { title: "Search Console evidence review gates", description: "Require baseline query, indexing and page experience evidence before attributing wins to an SEO feature or adjusting major metadata.", status: "idea" },
+      ] },
+  ] },
+
 ];
 
 /**
