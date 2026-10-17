@@ -1,0 +1,42 @@
+name: Browser and accessibility regression
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'app/**'
+      - 'components/**'
+      - 'features/**'
+      - 'scripts/test-browser.cjs'
+      - '.github/workflows/browser-regression.yml'
+jobs:
+  chromium:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - name: Install browser-only test tooling without changing lockfile
+        run: npm install --no-save --package-lock=false playwright axe-core
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Build local app
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://isgqukmmhuzhpalbruwt.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_K6DD29odFaDeNTYozEsifQ_rD1ThsG5' }}
+          NEXT_PUBLIC_SITE_URL: http://127.0.0.1:3000
+      - name: Start server and test browser routes
+        run: |
+          npm run start -- --hostname 127.0.0.1 --port 3000 > /tmp/next-browser.log 2>&1 &
+          for i in $(seq 1 40); do
+            if curl -fsS http://127.0.0.1:3000/ >/dev/null; then break; fi
+            sleep 2
+          done
+          BASE_URL=http://127.0.0.1:3000 node --test scripts/test-browser.cjs
+      - name: Print application diagnostics on failure
+        if: failure()
+        run: tail -n 120 /tmp/next-browser.log || true
