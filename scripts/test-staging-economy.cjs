@@ -16,7 +16,13 @@ const slug = process.env.STAGING_ECONOMY_ITEM_SLUG;
 test("concurrent cosmetic purchase spends only once", { timeout: 60000 }, async () => {
   assert.equal(process.env.STAGING_ECONOMY_WRITES_CONFIRMED, "yes",
     "Explicitly confirm this is a disposable account and item; test writes account data");
-  assertIsolatedEnvironment({ confirmed: process.env.STAGING_ISOLATED_CONFIRMED, url, kind: "website" });
+  if (process.env.LOCAL_SUPABASE_DEV_CONFIRM === "yes") {
+    // Only the disposable Docker stack can opt into localhost HTTP.
+    assert.equal(url, "http://127.0.0.1:54321",
+      "Local integration acceptance must use the exact loopback Supabase port");
+  } else {
+    assertIsolatedEnvironment({ confirmed: process.env.STAGING_ISOLATED_CONFIRMED, url, kind: "website" });
+  }
   assert.ok(anonKey && email && password && /^[a-z0-9_-]{1,120}$/i.test(slug ?? ""), "Provide synthetic test credentials and safe shop item slug");
 
   const makeClient = () => createClient(url, anonKey, { auth: { persistSession: false, autoRefreshToken: false } });
