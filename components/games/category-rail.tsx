@@ -31,9 +31,9 @@ export function CategoryRail() {
             <Link
               key={cat}
               href={`/games?category=${cat}`}
-              className={`hover-lift group flex items-center gap-3 rounded-2xl border bg-gradient-to-br p-4 ${TINTS[cat]}`}
+              className={`halloween-category halloween-category-${cat.toLowerCase()} hover-lift group flex items-center gap-3 rounded-2xl border bg-gradient-to-br p-4 ${TINTS[cat]}`}
             >
-              <span className="grid size-11 shrink-0 place-items-center rounded-xl bg-background/50 backdrop-blur-sm transition-transform duration-300 ease-[var(--ease-spring)] motion-safe:group-hover:scale-110">
+              <span className="halloween-category-icon grid size-11 shrink-0 place-items-center rounded-xl bg-background/50 backdrop-blur-sm transition-transform duration-300 ease-[var(--ease-spring)] motion-safe:group-hover:scale-110">
                 <Icon className="size-5" />
               </span>
               <span className="min-w-0">
