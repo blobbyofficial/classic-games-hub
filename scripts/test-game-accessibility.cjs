@@ -20,3 +20,12 @@ test("game loader failure is announced and can be retried without hiding gamepla
   assert.match(player, /setEngineError\(null\)/);
   assert.match(player, /generation !== engineGeneration\.current/);
 });
+
+test("touch pads support keyboard control and release held keys on blur or hidden tab", () => {
+  const touch = fs.readFileSync("features/games/touch-controls.tsx", "utf8");
+  assert.match(touch, /onKeyDown=\{\(e\) =>/);
+  assert.match(touch, /onKeyUp=\{\(e\) =>/);
+  assert.match(touch, /window\.addEventListener\("blur", clearHeld\)/);
+  assert.match(touch, /visibilitychange/);
+  assert.match(touch, /<Pad k=" " label="Jump" tap big>/);
+});
