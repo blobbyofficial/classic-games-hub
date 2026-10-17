@@ -88,6 +88,13 @@ function Pad({
       onPointerUp={(e) => release(e.pointerId)}
       onPointerCancel={(e) => release(e.pointerId)}
       onLostPointerCapture={(e) => release(e.pointerId)}
+      onClick={(e) => {
+        // Assistive technology can activate a native button with a virtual click
+        // but without pointer or keyboard events. Do not double-activate taps.
+        if (e.detail !== 0) return;
+        key(k, "keydown");
+        key(k, "keyup");
+      }}
       onContextMenu={(e) => e.preventDefault()}
       className={`grid ${
         big ? "size-16" : "size-14"
