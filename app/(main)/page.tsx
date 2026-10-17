@@ -31,9 +31,9 @@ type SectionKey = (typeof DEFAULT_ORDER)[number];
  * searches are made of - free, browser, no download.
  */
 export const metadata: Metadata = {
-  title: { absolute: `${SITE.name} - Play 26 Classic Games Free in Your Browser` },
+  title: { absolute: `${SITE.name} - Browser Arcade and Classic Games` },
   description:
-    "Play 26 classic games free in your browser - Snake, Tetris, Minesweeper, Pong and more. No download, no install. Earn credits, climb leaderboards and unlock cosmetics.",
+    "Explore classic browser games including Snake, Tetris, Minesweeper and Pong. Find available games, follow the rebuild, and see player leaderboards.",
   alternates: { canonical: "/" },
 };
 
@@ -148,15 +148,14 @@ function Hero({
             </>
           ) : (
             <>
-              Your arcade,
+              Pick a game.
               <br />
-              <span className="text-gradient">reimagined.</span>
+              <span className="text-gradient">Start playing.</span>
             </>
           )}
         </h1>
         <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
-          Play {gameCount} timeless games, earn credits and XP, unlock achievements, climb the
-          leaderboards and hang out with friends. No pay-to-win - just the classics, done right.
+          Explore {gameCount} games in the library, see which ones are available, and follow your scores and achievements. Some games are being rebuilt.
         </p>
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Button size="lg" variant="gradient" asChild>
