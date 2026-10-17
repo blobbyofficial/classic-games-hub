@@ -38,7 +38,7 @@ async function main() {
   if (itemsError) throw Error("Local shop query failed: " + itemsError.message);
   const item = items?.find(x =>
     !["xp_boost", "credit_boost"].includes(x.kind) &&
-    Number.isSafeInteger(x.price) && x.price >= 0 && x.price <= 5000
+    Number.isSafeInteger(x.price) && x.price > 0 && x.price <= 5000
   );
   if (!item) throw Error("No expendable local cosmetic shop item available");
   const variables = {
