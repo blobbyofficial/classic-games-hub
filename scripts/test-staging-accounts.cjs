@@ -14,8 +14,13 @@ if (!origin || process.env.STAGING_ISOLATED_CONFIRMED !== "yes") {
   throw Error("Explicit staging site URL and isolated-environment confirmation are required");
 }
 const url = new URL(origin);
-if (url.protocol !== "https:" || url.hostname === "classic-games-hub.blobbyofficial.com" ||
-    url.hostname === "blobbyofficial.com" || url.hostname.endsWith(".vercel.app") === false && !url.hostname.includes("staging")) {
+const localDocker = process.env.LOCAL_SUPABASE_DEV_CONFIRM === "yes" &&
+  origin === "http://127.0.0.1:3000" &&
+  process.env.STAGING_SUPABASE_URL === "http://127.0.0.1:54321";
+if (!localDocker && (url.protocol !== "https:" ||
+    url.hostname === "classic-games-hub.blobbyofficial.com" ||
+    url.hostname === "blobbyofficial.com" ||
+    (!url.hostname.endsWith(".vercel.app") && !url.hostname.includes("staging")))) {
   throw Error("Refusing to exercise an unrecognized or production site URL");
 }
 if (credentials.some(([email,password]) => !email || !password)) {
