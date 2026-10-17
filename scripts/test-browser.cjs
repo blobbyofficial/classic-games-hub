@@ -22,9 +22,9 @@ test("public pages render at phone and laptop widths without critical accessibil
           await page.addScriptTag({ content: axe.source });
           const violations = await page.evaluate(async () => {
             const result = await window.axe.run(document, { runOnly: { type: "tag", values: ["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"] } });
-            return result.violations.filter(v => v.impact === "critical");
+            return result.violations.filter(v => v.impact === "critical").map(v => ({ id: v.id, nodes: v.nodes.map(n => ({ target: n.target, html: n.html.slice(0, 350), summary: n.failureSummary })) }));
           });
-          assert.deepEqual(violations.map(v => `${v.id}: ${v.nodes.length} nodes`), [], `Critical accessibility issues on ${pathname} at ${width}px`);
+          assert.deepEqual(violations, [], `Critical accessibility issues on ${pathname} at ${width}px`);
           // Catch large unintentional document-wide horizontal overflow.
           const overflow = await page.evaluate(() => document.documentElement.scrollWidth - window.innerWidth);
           assert.ok(overflow <= 2, `${pathname} overflows viewport by ${overflow}px at ${width}px`);
