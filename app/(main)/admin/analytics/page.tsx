@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Users, Gamepad2, Activity, UserPlus, Clock } from "lucide-react";
+import { Users, Gamepad2, Activity, UserPlus, Clock, Gift, Trophy, ShieldCheck, AlertTriangle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { StatTile } from "@/components/stat-tile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -73,6 +73,10 @@ export default async function AdminAnalyticsPage() {
     { count: mau },
     { count: players },
     { data: durations },
+    { count: rewards },
+    { count: achievements },
+    { count: audits },
+    { count: reports },
   ] = await Promise.all([
     supabase
       .from("play_sessions")
@@ -93,6 +97,10 @@ export default async function AdminAnalyticsPage() {
       .select("duration_seconds")
       .gte("created_at", weekAgo)
       .limit(10000),
+    supabase.from("daily_reward_claims").select("*", { count: "exact", head: true }).gte("created_at", weekAgo),
+    supabase.from("user_achievements").select("*", { count: "exact", head: true }).gte("unlocked_at", weekAgo),
+    supabase.from("audit_logs").select("*", { count: "exact", head: true }).gte("created_at", weekAgo),
+    supabase.from("reports").select("*", { count: "exact", head: true }).eq("status", "open"),
   ]);
 
   const days = lastNDays(DAYS);
@@ -161,6 +169,20 @@ export default async function AdminAnalyticsPage() {
         </Card>
       </div>
 
+      <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+        <StatTile icon={Gift} label="Daily reward claims (7d)" value={formatNumber(rewards ?? 0)} />
+        <StatTile icon={Trophy} label="Achievements awarded (7d)" value={formatNumber(achievements ?? 0)} />
+        <StatTile icon={ShieldCheck} label="Admin audit entries (7d)" value={formatNumber(audits ?? 0)} />
+        <StatTile icon={AlertTriangle} label="Open reports" value={formatNumber(reports ?? 0)} />
+      </div>
+      {(sessions?.length === 10000 || newProfiles?.length === 10000 || durations?.length === 10000) && (
+        <p role="status" className="rounded-lg border border-warning/40 px-3 py-2 text-xs text-warning">
+          A chart reached the 10,000-record query limit and may show incomplete totals. Count tiles use database counts.
+        </p>
+      )}
+      <p className="text-xs text-muted-foreground">
+        Operational and economy activity is aggregated from existing server records. No extra visitor tracking is enabled.
+      </p>
       <p className="text-xs text-muted-foreground">
         Aggregated from gameplay and profile data only - no extra tracking is collected for this
         page. Site-traffic analytics (page views, performance) live in the Vercel dashboard.
