@@ -34,6 +34,9 @@ jobs:
       - name: Game loop lifecycle test
         run: node scripts/test-game-loop.cjs
 
+      - name: Rendering-quality regression contracts
+        run: node --test scripts/test-render-quality.cjs
+
       - name: Build
         run: npm run build
         env:
