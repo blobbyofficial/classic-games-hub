@@ -2,6 +2,13 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   Map as MapIcon,
+  Activity,
+  Shield,
+  Smartphone,
+  Laptop,
+  Accessibility,
+  ClipboardCheck,
+  Monitor,
   Palette,
   Users,
   SlidersHorizontal,
@@ -42,6 +49,13 @@ export const metadata: Metadata = {
 };
 
 const ICONS: Record<string, LucideIcon> = {
+  Activity,
+  Shield,
+  Smartphone,
+  Laptop,
+  Accessibility,
+  ClipboardCheck,
+  Monitor,
   Palette,
   Users,
   SlidersHorizontal,
@@ -93,6 +107,8 @@ export default async function RoadmapPage() {
     if (Array.isArray(releases) && releases.length > 0) roadmap = releases;
   }
 
+  const hasActiveOverride = roadmap !== ROADMAP;
+
   return (
     <div className="mx-auto max-w-4xl space-y-10">
       {/* Header */}
@@ -124,6 +140,12 @@ export default async function RoadmapPage() {
           </a>
           .
         </p>
+
+        {hasActiveOverride && (
+          <p className="rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-muted-foreground">
+            This roadmap is managed by site administrators and may differ from the repository roadmap.
+          </p>
+        )}
 
         {/* Legend */}
         <div className="flex flex-wrap gap-2">
