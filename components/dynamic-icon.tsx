@@ -77,7 +77,7 @@ const MAP: Record<string, LucideIcon> = {
 };
 
 /** Render a Lucide icon by its kebab-case name (from DB icon fields). */
-export function DynamicIcon({ name, className }: { name: string; className?: string }) {
+export function DynamicIcon({ name, className, style }: { name: string; className?: string; style?: React.CSSProperties }) {
   const Icon = MAP[name] ?? HelpCircle;
-  return <Icon className={className} />;
+  return <Icon className={className} style={style} />;
 }
