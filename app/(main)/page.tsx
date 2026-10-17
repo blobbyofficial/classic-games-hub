@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users } from "lucide-react";
+import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users, Ghost } from "lucide-react";
 import { getFeaturedGames, getPublishedGames, getFavoriteGameIds, getRecentlyPlayed } from "@/services/games";
 import { getDailyRewardStatus } from "@/services/economy";
 import { getCurrentProfile, getFlagPayload } from "@/lib/supabase/queries";
@@ -140,6 +140,7 @@ function Hero({
       <div aria-hidden className="halloween-scene pointer-events-none absolute inset-0 bg-grid" />
       <div className="relative max-w-2xl motion-safe:animate-rise">
         <p className="halloween-eyebrow mb-4 hidden text-xs font-semibold [[data-season=halloween]_&]:block">October at the arcade // 2026</p>
+        <div className="halloween-marquee hidden items-center gap-2 [[data-season=halloween]_&]:flex" aria-hidden="true"><Ghost className="size-4" /> HAUNTED ARCADE · LIMITED SEASON</div>
         <h1 className="text-display font-black">
           {displayName ? (
             <>
@@ -149,9 +150,9 @@ function Hero({
             </>
           ) : (
             <>
-              Your arcade,
+              <span className="halloween-normal-heading">Your arcade,</span><span className="halloween-season-heading hidden">Your arcade,</span>
               <br />
-              <span className="text-gradient halloween-highlight">reimagined.</span>
+              <span className="text-gradient halloween-highlight halloween-normal-heading">reimagined.</span><span className="halloween-season-heading hidden">after dark.</span>
             </>
           )}
         </h1>
