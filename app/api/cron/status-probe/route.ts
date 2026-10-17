@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { logOperation } from "@/lib/observability/operation-log";
 import { createAdminClient } from "@/lib/supabase/server";
 import { discordEnv } from "@/lib/discord/env";
 import { siteUrl } from "@/lib/version";
@@ -87,11 +88,13 @@ async function timedFetch(
 async function run(request: Request) {
   const auth = request.headers.get("authorization");
   if (!discordEnv.cronSecret || auth !== `Bearer ${discordEnv.cronSecret}`) {
+    logOperation({ operation: "cron_auth_rejected", outcome: "denied", severity: "warn" });
     return NextResponse.json({ error: "unauthorized" }, { status: 401 });
   }
 
   const admin = createAdminClient();
   if (!admin) {
+    logOperation({ operation: "status_probe", outcome: "failed", severity: "error" });
     return NextResponse.json({ error: "no_secret_key" }, { status: 500 });
   }
 
@@ -193,6 +196,7 @@ async function run(request: Request) {
     pruned = data;
   }
 
+  logOperation({ operation: "status_probe", outcome: "ok", severity: "info", durationMs: Date.now() - started });
   return NextResponse.json({
     ok: true,
     took_ms: Date.now() - started,
