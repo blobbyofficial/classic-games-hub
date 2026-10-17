@@ -28,7 +28,7 @@ export function Navbar() {
         <button
           onClick={() => setCommandOpen(true)}
           className="halloween-search group ml-auto flex h-10 min-w-0 max-w-md flex-1 items-center justify-center gap-2 rounded-xl border border-border bg-muted/40 px-2 text-sm text-muted-foreground transition-[background-color,border-color] duration-200 hover:border-primary/30 hover:bg-muted/70 min-[380px]:justify-start sm:gap-2.5 sm:px-3 lg:ml-0"
-          aria-label="Search games and players"
+          aria-label="Search games, players, ⌘K"
           aria-keyshortcuts="Meta+K Control+K"
         >
           <Search className="size-4 shrink-0 transition-transform duration-200 motion-safe:group-hover:scale-110" />
