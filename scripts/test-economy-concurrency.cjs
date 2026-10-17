@@ -20,3 +20,14 @@ test("security definer RPCs are restricted to authenticated clients", () => {
     assert.ok(source.includes(`grant execute on function public.${signature} to authenticated;`));
   }
 });
+
+test("score reward count is serialized by a player-level row lock", () => {
+  const scoreSql = fs.readFileSync(
+    path.join(__dirname, "../database/migrations/0081_score_submission_serialization.sql"), "utf8",
+  );
+  const lock = scoreSql.indexOf("where id = v_me for update");
+  const count = scoreSql.indexOf("select count(*) into v_recent");
+  const insert = scoreSql.indexOf("insert into public.play_sessions");
+  assert.ok(lock >= 0 && count > lock && insert > count);
+  assert.match(scoreSql, /revoke execute on function public\.submit_score\(text, bigint, integer, text\) from public, anon;/);
+});
