@@ -12,6 +12,16 @@
 | Marketing accuracy | `app/(main)/page.tsx`, `app/(main)/games/page.tsx` | Remove guaranteed 26-playable language and reduce vague hype | SEO and copy review; live game-state verification |
 | Status accessibility | `features/status/report-chart.tsx` | Provide an expandable readable table for all time buckets | Keyboard and screen reader; large report history on mobile |
 
+## Second implementation pass — 17 October 2026
+
+- `components/games/game-card.tsx`: "Coming soon" cards now remain navigable to their information page (instead of a pointer-disabled, unfocusable link); in-development games no longer show the generic hover play overlay. Availability remains enforced by the game route; this is not a new access-control check.
+- `components/empty-state.tsx`: replaces the repeated dashed/tinted-icon template with a calmer bordered utility treatment.
+- `features/games/games-library.tsx`: unknown URL categories fall back to All, category buttons carry explicit types, and Clear search has a more usable touch/focus target.
+- `scripts/test-game-loop.cjs`: executes the actual TypeScript game-loop helper in a deterministic animation-frame harness. Checks initial scheduling, ticking, pause, idempotent resume, stopping and prevention of restart after stop.
+- `.github/workflows/ci.yml`: adds that regression check to the site CI job after TypeScript typecheck.
+
+**Verification status:** Commits are recorded on this branch; CI execution and browser validation have not been confirmed. A test existing is not evidence that it passed.
+
 ## Remaining work by stage
 
 1. **Audit:** Capture real deployed screenshot/device baseline and inventory all route states. Production origin/commit SHA must be confirmed.
