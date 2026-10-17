@@ -67,6 +67,7 @@ export default async function AdminAnalyticsPage() {
 
   const [
     { data: sessions },
+    { data: dailyTotals, error: dailyTotalsError },
     { data: newProfiles },
     { count: dau },
     { count: wau },
@@ -89,6 +90,7 @@ export default async function AdminAnalyticsPage() {
     { data: gameCatalogue, error: gamesError },
     { data: recentAuditActions, error: auditActionsError },
   ] = await Promise.all([
+    supabase.rpc("admin_analytics_daily", { p_days: DAYS }),
     supabase
       .from("play_sessions")
       .select("created_at")
@@ -136,8 +138,9 @@ export default async function AdminAnalyticsPage() {
     const k = p.created_at.slice(0, 10);
     if (signupByDay.has(k)) signupByDay.set(k, (signupByDay.get(k) ?? 0) + 1);
   }
-  const playSeries = days.map((day) => ({ day, count: playByDay.get(day) ?? 0 }));
-  const signupSeries = days.map((day) => ({ day, count: signupByDay.get(day) ?? 0 }));
+  const dailyByDay = new Map((dailyTotals ?? []).map((row) => [row.day, row]));
+  const playSeries = days.map((day) => ({ day, count: Number(dailyByDay.get(day)?.plays ?? (dailyTotalsError ? playByDay.get(day) ?? 0 : 0)) }));
+  const signupSeries = days.map((day) => ({ day, count: Number(dailyByDay.get(day)?.signups ?? (dailyTotalsError ? signupByDay.get(day) ?? 0 : 0)) }));
   const totalPlays14 = playSeries.reduce((s, d) => s + d.count, 0);
   const totalSignups14 = signupSeries.reduce((s, d) => s + d.count, 0);
 
@@ -146,7 +149,7 @@ export default async function AdminAnalyticsPage() {
     .filter((n): n is number => typeof n === "number" && n > 0);
   const avgDuration = durs.length ? Math.round(durs.reduce((a, b) => a + b, 0) / durs.length) : 0;
 
-  const metricErrors = [rewardsError, achievementsError, auditsError, reportsError, friendshipsError, itemsOwnedError, favouritesError, ratingsError, weeklyPlaysError, dailyPlaysError, monthlyPlaysError, requestsError, challengesError, gamesError, auditActionsError]
+  const metricErrors = [dailyTotalsError, rewardsError, achievementsError, auditsError, reportsError, friendshipsError, itemsOwnedError, favouritesError, ratingsError, weeklyPlaysError, dailyPlaysError, monthlyPlaysError, requestsError, challengesError, gamesError, auditActionsError]
     .filter((error) => error !== null);
   const auditByAction = new Map<string, number>();
   for (const item of recentAuditActions ?? []) {
@@ -256,9 +259,9 @@ export default async function AdminAnalyticsPage() {
         <StatTile icon={ShieldCheck} label="Admin audit entries (7d)" value={auditsError ? "Unavailable" : formatNumber(audits ?? 0)} />
         <StatTile icon={AlertTriangle} label="Open reports" value={reportsError ? "Unavailable" : formatNumber(reports ?? 0)} />
       </div>
-      {(sessions?.length === 10000 || newProfiles?.length === 10000 || durations?.length === 10000) && (
+      {(dailyTotalsError || durations?.length === 10000) && (
         <p role="status" className="rounded-lg border border-warning/40 px-3 py-2 text-xs text-warning">
-          A chart reached the 10,000-record query limit and may show incomplete totals. Count tiles use database counts.
+          {dailyTotalsError ? "Daily aggregate RPC unavailable; charts show limited fallback data until migration 0084 is applied." : "Average session duration uses a capped sample of records."}
         </p>
       )}
       <p className="text-xs text-muted-foreground">
