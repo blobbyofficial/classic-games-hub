@@ -13,7 +13,8 @@
     "generate:assets": "node scripts/generate-thumbnails.mjs && node scripts/generate-icons.mjs",
     "check:halloween": "node scripts/check-halloween.mjs",
     "test:unit": "node scripts/test-game-loop.cjs && node --test scripts/test-platform-contracts.cjs",
-    "test:smoke": "node --test scripts/test-http-smoke.cjs"
+    "test:smoke": "node --test scripts/test-http-smoke.cjs",
+    "test:db": "psql -X -v ON_ERROR_STOP=1 -f database/tests/001_security_contracts.sql"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.2.7",
