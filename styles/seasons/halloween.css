@@ -1,0 +1,42 @@
+/* Scoped, reversible Halloween art direction. Not a page-wide tint. */
+html[data-season="halloween"] {
+  --halloween-ink: #080d0c;
+  --halloween-fog: #18211f;
+  --halloween-bone: #e8e4d8;
+  --halloween-pumpkin: #e68b3d;
+}
+html[data-season="halloween"] .halloween-hero {
+  position: relative; isolation: isolate; min-height: 420px;
+  overflow: hidden; border: 1px solid #4b4030; border-radius: 12px;
+  background: #080d0c;
+  color: var(--halloween-bone);
+}
+html[data-season="halloween"] .halloween-scene {
+  position:absolute; inset:0; pointer-events:none;
+  background:
+    linear-gradient(90deg,#080d0c 0%,#080d0cf5 33%,#080d0c66 100%),
+    radial-gradient(ellipse at 85% 80%,#ca6b2a42,transparent 35%),
+    radial-gradient(ellipse at 78% 23%,#a2b99520,transparent 35%),
+    repeating-linear-gradient(90deg,transparent 0 90px,#5471641c 92px 95px,transparent 97px 150px),
+    linear-gradient(145deg,#101c1b,#080d0c 70%);
+}
+html[data-season="halloween"] .halloween-scene::after {
+  content:""; position:absolute; inset:0; opacity:.55;
+  background: repeating-linear-gradient(0deg,transparent 0 5px,#02050466 6px 7px);
+  mask-image:linear-gradient(90deg,transparent 35%,black 90%);
+}
+html[data-season="halloween"] .halloween-hero h1 {color:var(--halloween-bone);letter-spacing:-.045em;text-wrap:balance}
+html[data-season="halloween"] .halloween-hero .halloween-highlight {color:var(--halloween-pumpkin)}
+html[data-season="halloween"] .halloween-hero .halloween-eyebrow {color:#c8bd9a;letter-spacing:.22em;text-transform:uppercase}
+html[data-season="halloween"] .halloween-hero .halloween-cta {background:var(--halloween-pumpkin);color:#17100a;border:none;box-shadow:0 4px 30px #d77b2826}
+html[data-season="halloween"] .halloween-hero .halloween-cta:hover {background:#f3a959}
+html[data-season="halloween"] .halloween-hero .halloween-secondary {border:1px solid #66736a;background:#101816c9;color:#e8e4d8}
+html[data-season="halloween"] .halloween-hero .halloween-stats {border-top:1px solid #59635766;color:#c5c7b8}
+html[data-season="halloween"] .halloween-hero .halloween-stats svg {color:#e68b3d}
+html[data-season="halloween"] .halloween-logo-icon {border-radius:6px;background:#20150f;border:1px solid #b56b36;box-shadow:0 0 0 3px #ac582b16}
+html[data-season="halloween"] .halloween-logo-text {color:#e8e4d8;background:none;-webkit-text-fill-color:currentColor}
+html[data-season="halloween"] .halloween-logo-text::after {content:" · AFTER DARK";color:#e68b3d;font-size:.62em;letter-spacing:.06em}
+html[data-season="halloween"] .halloween-navigation {border-bottom-color:#8c552d55}
+@media (prefers-reduced-motion:reduce) {
+  html[data-season="halloween"] .halloween-hero *,html[data-season="halloween"] .halloween-logo-icon {animation:none!important;transition:none!important}
+}
