@@ -34,6 +34,9 @@ jobs:
       - name: Game loop lifecycle test
         run: node scripts/test-game-loop.cjs
 
+      - name: Privacy-first analytics design contracts
+        run: node --test scripts/test-privacy-buckets.cjs
+
       - name: Build
         run: npm run build
         env:
