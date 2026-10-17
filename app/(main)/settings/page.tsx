@@ -19,6 +19,7 @@ import { BlockedUsers } from "@/features/settings/blocked-users";
 import { ConsentSettings } from "@/features/settings/consent-settings";
 import { ConnectionsSettings, type DiscordConnection } from "@/features/settings/connections-settings";
 import { SiteThemePicker } from "@/features/settings/site-theme-picker";
+import { activeSeason } from "@/lib/seasonal-theme";
 
 export const metadata: Metadata = { title: "Settings" };
 
@@ -92,7 +93,8 @@ export default async function SettingsPage({
           <PreferencesSettings settings={settings} />
           <SiteThemePicker
             current={(settings as { site_theme?: string }).site_theme ?? "default"}
-            canUsePremium={
+            halloweenAvailable={activeSeason() === "halloween"}
+            canUsePremium=
               (profile as { booster_since?: string | null }).booster_since != null ||
               profile.role === "admin" ||
               profile.role === "moderator"
