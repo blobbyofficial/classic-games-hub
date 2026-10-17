@@ -1,14 +1,15 @@
 /** Phase 4 mobile acceptance smoke against an isolated local build. */
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
-const { chromium } = require("playwright");
+const { chromium, webkit } = require("playwright");
+const browserEngine = process.env.BROWSER_NAME === "webkit" ? webkit : chromium;
 const fs = require("node:fs");
 const path = require("node:path");
 const screenshotDir = process.env.SCREENSHOT_DIR;
 if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
 const origin = new URL(process.env.BASE_URL || "http://127.0.0.1:3000");
 test("mobile navigation, search and library at roadmap widths", { timeout: 150000 }, async () => {
-  const browser = await chromium.launch();
+  const browser = await browserEngine.launch();
   try {
     for (const width of [320, 360, 375, 390, 430]) {
       const page = await browser.newPage({ viewport: { width, height: 760 }, isMobile: true, hasTouch: true, deviceScaleFactor: 2 });
@@ -47,7 +48,7 @@ test("mobile navigation, search and library at roadmap widths", { timeout: 15000
 });
 
 test("anonymous account and social entry points remain usable on phones", { timeout: 150000 }, async () => {
-  const browser = await chromium.launch();
+  const browser = await browserEngine.launch();
   try {
     for (const width of [320, 390, 430]) {
       const page = await browser.newPage({ viewport: { width, height: 780 }, isMobile: true, hasTouch: true });
@@ -70,7 +71,7 @@ test("anonymous account and social entry points remain usable on phones", { time
 });
 
 test("landscape and portrait changes do not overflow mobile shell", { timeout: 90000 }, async () => {
-  const browser = await chromium.launch();
+  const browser = await browserEngine.launch();
   const page = await browser.newPage({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
   try {
     await page.goto(new URL("/games", origin).href, { waitUntil: "networkidle" });
