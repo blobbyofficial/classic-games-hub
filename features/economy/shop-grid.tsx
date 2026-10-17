@@ -26,21 +26,22 @@ const GROUPS: { key: string; label: string; kinds: string[] }[] = [
 export function ShopGrid({ items, owned }: { items: ShopItem[]; owned: string[] }) {
   const [group, setGroup] = useState("all");
   const ownedSet = new Set(owned);
-  const active = GROUPS.find((g) => g.key === group)!;
+  const visibleGroups = GROUPS.filter((g) => g.key === "all" || items.some((item) => g.kinds.includes(item.kind)));
+  const active = visibleGroups.find((g) => g.key === group) ?? visibleGroups[0];
   const filtered = active.kinds.length === 0 ? items : items.filter((i) => active.kinds.includes(i.kind));
 
   return (
     <div className="space-y-5">
       <div
-        role="tablist"
+        role="group"
         aria-label="Filter shop items"
         className="rail -mx-4 gap-2 px-4 sm:mx-0 sm:flex-wrap sm:px-0"
       >
-        {GROUPS.map((g) => (
+        {visibleGroups.map((g) => (
           <button
             key={g.key}
-            role="tab"
-            aria-selected={group === g.key}
+            type="button"
+            aria-pressed={group === g.key}
             onClick={() => setGroup(g.key)}
             className={cn(
               "rounded-full border px-4 py-2 text-sm font-medium",
