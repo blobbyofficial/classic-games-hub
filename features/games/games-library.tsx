@@ -93,7 +93,7 @@ export function GamesLibrary({
             <Heart className={favOnly ? "fill-current" : undefined} /> Favourites
           </Button>
           <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger aria-label="Sort games by" className="w-40">
               <SlidersHorizontal className="size-4" />
               <SelectValue />
             </SelectTrigger>
