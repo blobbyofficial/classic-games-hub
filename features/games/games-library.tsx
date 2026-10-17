@@ -70,30 +70,30 @@ export function GamesLibrary({
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search games…"
-            className="pl-9 pr-9"
+            className="min-h-11 pl-9 pr-9 text-base sm:text-sm"
             aria-label="Search games"
           />
           {query && (
             <button
               onClick={() => setQuery("")}
-              className="absolute right-1 top-1/2 flex size-8 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
+              className="absolute right-0 top-1/2 flex size-11 -translate-y-1/2 items-center justify-center rounded-md text-muted-foreground hover:text-foreground focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               aria-label="Clear search"
             >
               <X className="size-4" />
             </button>
           )}
         </div>
-        <div className="flex items-center gap-2">
+        <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:flex">
           <Button
             variant={favOnly ? "default" : "outline"}
             onClick={() => setFavOnly((f) => !f)}
             aria-pressed={favOnly}
-            className="shrink-0"
+            className="min-h-11 shrink-0"
           >
             <Heart className={favOnly ? "fill-current" : undefined} /> Favourites
           </Button>
           <Select value={sort} onValueChange={(v) => setSort(v as Sort)}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger aria-label="Sort games by" className="min-h-11 min-w-0 w-full sm:w-40">
               <SlidersHorizontal className="size-4" />
               <SelectValue />
             </SelectTrigger>
@@ -112,7 +112,7 @@ export function GamesLibrary({
       <div
         role="group"
         aria-label="Filter games by category"
-        className="halloween-library-filters rail -mx-4 gap-2 px-4 sm:mx-0 sm:flex-wrap sm:px-0"
+        className="halloween-library-filters rail -mx-4 gap-2 overflow-x-auto overscroll-x-contain px-4 pb-2 sm:mx-0 sm:flex-wrap sm:overflow-visible sm:px-0"
       >
         {["All", ...CATEGORIES].map((cat) => {
           const selected = category === cat;
@@ -123,7 +123,7 @@ export function GamesLibrary({
               onClick={() => setCategory(cat)}
               type="button"
               className={cn(
-                "rounded-full border px-4 py-2 text-sm font-medium",
+                "min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
                 "transition-[background-color,color,border-color,transform] duration-200 ease-[var(--ease-standard)] motion-safe:active:scale-95",
                 selected
                   ? "border-transparent bg-primary text-primary-foreground shadow-sm shadow-primary/25"
