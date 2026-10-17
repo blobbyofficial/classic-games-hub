@@ -197,3 +197,7 @@ Public API endpoint `/api/status` remained inaccessible to the retrieval service
 - **OPS-012 (P1, page-reported):** Worker offline/no heartbeat despite resolved public incident and an overall operational headline. Compare heartbeat query, bot host `/health`, connectivity and runtime config. Treat monitoring semantics separately from service availability.
 
 Do not close Phase 1 without a current, timestamped infrastructure/database observation confirming or disproving these page reports.
+
+### GitHub confirmation of the public build commit
+
+The public status page's short commit `038a558` was matched against repository history to full commit `038a558ae9a7b0f9559fcb9485851f1dc475e23a` (message: "Show uploaded animated mark while game engine loads"). The latest searched `main` commit is `d271b47d3101226e26bf2f2bafaf303fc2ada7f6`, which is newer than the page-reported build. This confirms the page's short hash is a real repo commit and supports **production may be behind main**; it does *not* independently prove the Vercel deployment identity or that the crawler's HTML is uncached. Production SHA verification requires Vercel evidence. Source `lib/version.ts` obtains build SHA from `VERCEL_GIT_COMMIT_SHA`, and `features/status/versions-card.tsx` displays its first 7 characters; the UI's schema-warning message is produced whenever reported schema differs from the hardcoded expected value, not from database migration-ledger inspection here.
