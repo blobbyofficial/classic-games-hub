@@ -4,6 +4,7 @@ import { useState, useTransition } from "react";
 import { CalendarClock, Contrast, Gauge, Globe, Music, Volume2 } from "lucide-react";
 import { toast } from "sonner";
 import { updateSettings } from "@/actions/profile";
+import { useSessionStore } from "@/lib/stores/session-store";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -87,14 +88,18 @@ function VolumeRow({
 export function GameplaySettings({ settings }: { settings: UserSettings }) {
   const [local, setLocal] = useState(settings);
   const [, start] = useTransition();
+  const patchSettings = useSessionStore((state) => state.patchSettings);
 
   const update = (key: keyof UserSettings, value: unknown) => {
+    const previous = local[key];
     setLocal((s) => ({ ...s, [key]: value }));
+    patchSettings({ [key]: value } as Partial<UserSettings>);
     start(async () => {
       const res = await updateSettings({ [key]: value });
       if (!res.ok) {
         toast.error(res.error ?? "Could not save");
-        setLocal(settings);
+        setLocal((s) => ({ ...s, [key]: previous }));
+        patchSettings({ [key]: previous } as Partial<UserSettings>);
       }
     });
   };
