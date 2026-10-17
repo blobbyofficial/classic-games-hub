@@ -182,3 +182,32 @@ html[data-season="halloween"] .halloween-hero .halloween-season-heading:last-chi
 @media(max-width:640px) {html[data-season="halloween"] .halloween-player-shell {padding:5px}html[data-season="halloween"] .halloween-player-stage {border-width:3px}}
 
 html[data-season='halloween'] .halloween-scene { background-image: url('/seasons/halloween/arcade.svg'); background-size: cover; background-position: right center; }
+
+/* Brand and navigation complete the themed experience without blocking controls. */
+html[data-season='halloween'] .halloween-standard-joystick {display:none}
+html[data-season='halloween'] .halloween-brand-ghost {display:block}
+html[data-season='halloween'] .halloween-nav-tag {
+ display:inline-flex;flex:none;align-items:center;white-space:nowrap;
+ border:1px solid #c08a4d77;background:#221910;color:#f5c58a;
+ font:700 9px/1.2 var(--font-geist-mono),monospace;letter-spacing:.1em;
+ padding:6px 7px;border-radius:3px;
+}
+html[data-season='halloween'] .halloween-search {
+ border-radius:5px;background:color-mix(in srgb,var(--background) 86%,#141b18);
+ border-color:#92673973;
+}
+html[data-season='halloween'] .halloween-search:hover {border-color:#dc985e}
+html[data-season='halloween'] .halloween-logo-icon {transform:rotate(-3deg)}
+html[data-season='halloween'] .halloween-scene {
+ background-image:linear-gradient(90deg,#080d0cf8 0%,#080d0cd0 42%,#080d0c28 100%),url('/seasons/halloween/arcade.svg');
+ background-position:center,right center;
+}
+@media(max-width:1100px) {
+ html[data-season='halloween'] .halloween-nav-tag {display:none}
+}
+@media(max-width:640px) {
+ html[data-season='halloween'] .halloween-scene {
+  background-image:linear-gradient(90deg,#080d0cf2,#080d0ca0),url('/seasons/halloween/arcade.svg');
+  background-position:center,70% center;
+ }
+}
