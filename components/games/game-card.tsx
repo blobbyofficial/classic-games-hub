@@ -35,10 +35,8 @@ export function GameCard({
         href={`/games/${game.slug}`}
         className={cn(
           "hover-lift block overflow-hidden rounded-2xl border border-border bg-card shadow-sm",
-          comingSoon && "pointer-events-none opacity-70",
+          comingSoon && "opacity-80",
         )}
-        aria-disabled={comingSoon || undefined}
-        tabIndex={comingSoon ? -1 : undefined}
       >
         <div className="relative aspect-[8/5] overflow-hidden bg-muted">
           <Image
@@ -83,7 +81,7 @@ export function GameCard({
             )}
           </div>
 
-          {!comingSoon && !earlyAccess && (
+          {!comingSoon && !earlyAccess && !inDevelopment && (
             <div
               aria-hidden
               className="absolute inset-0 grid place-items-center opacity-0 transition-opacity duration-200 group-hover:opacity-100 group-focus-within:opacity-100"
