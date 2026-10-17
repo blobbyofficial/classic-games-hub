@@ -37,7 +37,7 @@ const LINKS = {
 export function Footer() {
   return (
     /* mb clears the fixed mobile tab bar so the last row of links stays tappable. */
-    <footer className="mt-16 border-t border-border/60 bg-muted/20 pb-20 defer-paint lg:pb-0">
+    <footer className="halloween-footer mt-16 border-t border-border/60 bg-muted/20 pb-20 defer-paint lg:pb-0">
       <div className="mx-auto grid max-w-[1600px] gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_repeat(4,1fr)]">
         <div className="space-y-4">
           <Logo />
