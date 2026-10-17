@@ -10,6 +10,7 @@
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
+    "check:halloween": "node scripts/check-halloween.mjs",
     "generate:assets": "node scripts/generate-thumbnails.mjs && node scripts/generate-icons.mjs"
   },
   "dependencies": {
