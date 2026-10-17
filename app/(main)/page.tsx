@@ -154,7 +154,7 @@ function Hero({
             </>
           ) : (
             <>
-              {halloween ? "Your arcade," : "Your arcade,"}
+              Your arcade,
               <br />
               {halloween ? <span className="halloween-season-heading">after dark.</span> : <span className="text-gradient">reimagined.</span>}
             </>
