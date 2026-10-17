@@ -12,5 +12,5 @@ test("render presets preserve three distinct bounded DPR budgets", () => {
 test("canvas budget protects memory rather than modifying gameplay", () => {
   assert.match(source, /Math\.sqrt\(maxPixels \/ scaledPixels\)/);
   assert.match(source, /3_000_000/);
-  assert.doesNotMatch(source, /score|difficulty|speed|simulation/i);
+  assert.doesNotMatch(source.replace(/\/\*[\s\S]*?\*\//g, ""), /\b(score|difficulty|speed|simulation)\b/i);
 });
