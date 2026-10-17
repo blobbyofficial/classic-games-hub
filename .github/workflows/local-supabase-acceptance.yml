@@ -70,6 +70,7 @@ jobs:
             sleep 2
           done
           node --test scripts/test-staging-accounts.cjs
+          BASE_URL=http://127.0.0.1:3000 node --test scripts/test-http-smoke.cjs
       - name: Local-only diagnostics on failure
         if: failure()
         run: docker ps -a --format 'table {{.Names}}\t{{.Status}}' || true
