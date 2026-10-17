@@ -243,11 +243,11 @@ const slithery: GameEngineFactory = ({
     speed = 80,
   ) {
     const visualCount = Math.max(0, Math.round(amount * (visualBudget?.().particles ?? 1)));
-    for (let i = 0; i < visualCount; i++) {
+    for (let i = 0; i < amount; i++) {
       const angle = Math.random() * Math.PI * 2;
       const velocity = randomRange(speed * 0.35, speed);
 
-      particles.push({
+      const particle: Particle = {
         x,
         y,
         vx: Math.cos(angle) * velocity,
@@ -256,7 +256,8 @@ const slithery: GameEngineFactory = ({
         maxLife: randomRange(0.35, 0.75),
         size: randomRange(2, 4.5),
         hue,
-      });
+      };
+      if (i < visualCount) particles.push(particle);
     }
 
     if (particles.length > 900) {
