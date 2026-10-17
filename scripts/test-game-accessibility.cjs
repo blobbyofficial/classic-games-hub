@@ -30,3 +30,14 @@ test("touch pads support keyboard control and release held keys on blur or hidde
   assert.match(touch, /<Pad k=" " label="Jump" tap big>/);
   assert.match(touch, /e\.detail !== 0/);
 });
+
+test("score submission resets busy flags even after an action rejection", () => {
+  const begin = player.indexOf("setSubmitting(true);");
+  const end = player.indexOf("},", begin);
+  const section = player.slice(begin, end + 2);
+  assert.match(section, /try \{/);
+  assert.match(section, /catch \{/);
+  assert.match(section, /finally \{/);
+  assert.match(section, /setSubmitting\(false\)/);
+  assert.match(section, /submittingRef\.current = false/);
+});
