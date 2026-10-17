@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { getRecentReports, getStatusSummary } from "@/services/status";
+import { getIncidentHistory, getRecentReports, getStatusSummary } from "@/services/status";
 import { StatusConsole } from "@/features/admin/status-console";
 import { INDICATOR } from "@/lib/status";
 import { cn } from "@/lib/utils";
@@ -9,7 +9,11 @@ import { cn } from "@/lib/utils";
 export const dynamic = "force-dynamic";
 
 export default async function AdminStatusPage() {
-  const [summary, reports] = await Promise.all([getStatusSummary(), getRecentReports(60)]);
+  const [summary, reports, maintenanceHistory] = await Promise.all([
+    getStatusSummary(),
+    getRecentReports(60),
+    getIncidentHistory(100, undefined, "maintenance"),
+  ]);
 
   if (!summary) {
     return (
@@ -43,7 +47,13 @@ export default async function AdminStatusPage() {
 
       <StatusConsole
         components={summary.components}
-        open={[...summary.incidents, ...summary.maintenance]}
+        open={[
+          ...summary.incidents,
+          ...summary.maintenance,
+          ...(maintenanceHistory ?? []).filter(
+            (incident) => !incident.resolved_at && !summary.maintenance.some((current) => current.id === incident.id),
+          ),
+        ]}
         reports={reports}
       />
     </div>
