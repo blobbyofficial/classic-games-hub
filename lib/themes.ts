@@ -14,6 +14,7 @@ export interface SiteTheme {
 }
 
 export const SITE_THEMES: SiteTheme[] = [
+  { id: "halloween", name: "Halloween", swatch: ["#d68138", "#171e19"], premium: false },
   { id: "default", name: "Arcade Violet", swatch: ["#8b5cf6", "#6d28d9"], premium: false },
   { id: "midnight", name: "Midnight", swatch: ["#3f3f46", "#09090b"], premium: false },
   { id: "ocean", name: "Ocean", swatch: ["#60a5fa", "#1d4ed8"], premium: false },

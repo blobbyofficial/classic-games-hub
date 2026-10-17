@@ -4,7 +4,7 @@ import { Suspense } from "react";
 import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users } from "lucide-react";
 import { getFeaturedGames, getPublishedGames, getFavoriteGameIds, getRecentlyPlayed } from "@/services/games";
 import { getDailyRewardStatus } from "@/services/economy";
-import { getCurrentProfile, getFlagPayload } from "@/lib/supabase/queries";
+import { getCurrentProfile, getCurrentSettings, getFlagPayload } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { GameGrid } from "@/components/games/game-grid";
 import { GameCard } from "@/components/games/game-card";
@@ -41,12 +41,13 @@ export const metadata: Metadata = {
 export default async function HomePage() {
   // getFavoriteGameIds resolves to an empty set when signed out, so it joins the
   // batch rather than costing a second round trip after the profile lands.
-  const [profile, featured, allGames, layoutFlag, favorites] = await Promise.all([
+  const [profile, featured, allGames, layoutFlag, favorites, settings] = await Promise.all([
     getCurrentProfile(),
     getFeaturedGames(),
     getPublishedGames(),
     getFlagPayload("home_layout"),
     getFavoriteGameIds(),
+    getCurrentSettings(),
   ]);
   const user = profile;
   const totalPlays = allGames.reduce((sum, g) => sum + g.play_count, 0);
@@ -112,7 +113,7 @@ export default async function HomePage() {
   return (
     <div className="space-y-10 sm:space-y-14">
       <Hero
-        halloween={activeSeason() === "halloween"}
+        halloween={activeSeason() === "halloween" && (!profile || (settings as { site_theme?: string } | null)?.site_theme === "halloween")}
         gameCount={allGames.length}
         totalPlays={totalPlays}
         isAuthed={Boolean(user)}

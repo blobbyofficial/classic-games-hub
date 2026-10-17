@@ -71,7 +71,9 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const hasSession = cookieStore.getAll().some((c) => /^sb-.*auth-token/.test(c.name));
   const settings = hasSession ? await getCurrentSettings().catch(() => null) : null;
   const rawTheme = (settings as { site_theme?: string } | null)?.site_theme ?? "default";
+  const season = activeSeason();
   const siteTheme = SITE_THEME_IDS.has(rawTheme) ? rawTheme : "default";
+  const halloweenEnabled = season === "halloween" && (!hasSession || siteTheme === "halloween");
 
   // Reduced motion has to land on the server-rendered html tag: applying it
   // after hydration would mean the animations play once before being switched
@@ -84,8 +86,8 @@ export default async function RootLayout({ children }: { children: React.ReactNo
     <html
       lang="en"
       suppressHydrationWarning
-      data-site-theme={siteTheme}
-      data-season={activeSeason() ?? undefined}
+      data-site-theme={siteTheme === "halloween" ? "default" : siteTheme}
+      data-season={halloweenEnabled ? "halloween" : undefined}
       data-reduced-motion={reducedMotion ? "true" : undefined}
     >
       <head>

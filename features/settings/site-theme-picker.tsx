@@ -16,14 +16,20 @@ import { cn } from "@/lib/utils";
 export function SiteThemePicker({
   current,
   canUsePremium,
+  halloweenAvailable,
 }: {
   current: string;
   canUsePremium: boolean;
+  halloweenAvailable: boolean;
 }) {
   const [selected, setSelected] = useState(current);
   const [pending, start] = useTransition();
 
   const apply = (id: string, premium: boolean) => {
+    if (id === "halloween" && !halloweenAvailable) {
+      toast.error("The Halloween theme is only available during October.");
+      return;
+    }
     if (premium && !canUsePremium) {
       toast.error("Boost the Discord server to unlock premium themes!");
       return;
@@ -31,12 +37,20 @@ export function SiteThemePicker({
     if (id === selected || pending) return;
     const previous = selected;
     setSelected(id);
-    document.documentElement.setAttribute("data-site-theme", id);
+    document.documentElement.setAttribute("data-site-theme", id === "halloween" ? "default" : id);
+    if (halloweenAvailable) {
+      if (id === "halloween") document.documentElement.setAttribute("data-season", "halloween");
+      else document.documentElement.removeAttribute("data-season");
+    }
     start(async () => {
       const res = await updateSettings({ site_theme: id });
       if (!res.ok) {
         setSelected(previous);
-        document.documentElement.setAttribute("data-site-theme", previous);
+        document.documentElement.setAttribute("data-site-theme", previous === "halloween" ? "default" : previous);
+        if (halloweenAvailable) {
+          if (previous === "halloween") document.documentElement.setAttribute("data-season", "halloween");
+          else document.documentElement.removeAttribute("data-season");
+        }
         toast.error(res.error ?? "Could not save the theme");
       } else {
         toast.success("Site theme updated");
@@ -54,8 +68,8 @@ export function SiteThemePicker({
         </CardDescription>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-3 gap-3 sm:grid-cols-5">
-          {SITE_THEMES.map((t) => {
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {SITE_THEMES.filter((t) => t.id !== "halloween" || halloweenAvailable || selected === "halloween").map((t) => {
             const locked = t.premium && !canUsePremium;
             const active = selected === t.id;
             return (
@@ -86,6 +100,7 @@ export function SiteThemePicker({
                 />
                 <span className="mt-1.5 flex items-center gap-1 text-xs font-medium">
                   {t.name}
+                  {t.id === "halloween" && <span className="ml-1 rounded border border-amber-600/50 px-1 py-0.5 text-[10px] font-normal text-amber-600 dark:text-amber-300">{halloweenAvailable ? "Limited time theme" : "Season ended"}</span>}
                   {t.animated && <Sparkles className="size-3 text-gold" />}
                 </span>
                 {active && (
