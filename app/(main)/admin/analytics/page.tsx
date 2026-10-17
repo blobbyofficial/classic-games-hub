@@ -77,6 +77,10 @@ export default async function AdminAnalyticsPage() {
     { count: achievements, error: achievementsError },
     { count: audits, error: auditsError },
     { count: reports, error: reportsError },
+    { count: friendships, error: friendshipsError },
+    { count: itemsOwned, error: itemsOwnedError },
+    { count: favourites, error: favouritesError },
+    { count: ratings, error: ratingsError },
     { data: gameCatalogue, error: gamesError },
     { data: recentAuditActions, error: auditActionsError },
   ] = await Promise.all([
@@ -103,6 +107,10 @@ export default async function AdminAnalyticsPage() {
     supabase.from("user_achievements").select("*", { count: "exact", head: true }).gte("unlocked_at", weekAgo),
     supabase.from("audit_logs").select("*", { count: "exact", head: true }).gte("created_at", weekAgo),
     supabase.from("reports").select("*", { count: "exact", head: true }).eq("status", "open"),
+    supabase.from("friendships").select("*", { count: "exact", head: true }).eq("status", "accepted"),
+    supabase.from("inventory_items").select("*", { count: "exact", head: true }),
+    supabase.from("game_favorites").select("*", { count: "exact", head: true }),
+    supabase.from("game_ratings").select("*", { count: "exact", head: true }),
     supabase.from("games").select("id,title,play_count").eq("status", "published").limit(100),
     supabase.from("audit_logs").select("action").gte("created_at", weekAgo).limit(1000),
   ]);
@@ -128,7 +136,7 @@ export default async function AdminAnalyticsPage() {
     .filter((n): n is number => typeof n === "number" && n > 0);
   const avgDuration = durs.length ? Math.round(durs.reduce((a, b) => a + b, 0) / durs.length) : 0;
 
-  const metricErrors = [rewardsError, achievementsError, auditsError, reportsError, gamesError, auditActionsError]
+  const metricErrors = [rewardsError, achievementsError, auditsError, reportsError, friendshipsError, itemsOwnedError, favouritesError, ratingsError, gamesError, auditActionsError]
     .filter((error) => error !== null);
   const auditByAction = new Map<string, number>();
   for (const item of recentAuditActions ?? []) {
@@ -221,10 +229,14 @@ export default async function AdminAnalyticsPage() {
         </Card>
       </div>
       <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
-        <StatTile icon={Gift} label="Daily reward claims (7d)" value={formatNumber(rewards ?? 0)} />
-        <StatTile icon={Trophy} label="Achievements awarded (7d)" value={formatNumber(achievements ?? 0)} />
-        <StatTile icon={ShieldCheck} label="Admin audit entries (7d)" value={formatNumber(audits ?? 0)} />
-        <StatTile icon={AlertTriangle} label="Open reports" value={formatNumber(reports ?? 0)} />
+        <StatTile icon={Users} label="Accepted friendships" value={friendshipsError ? "Unavailable" : formatNumber(friendships ?? 0)} />
+        <StatTile icon={Gift} label="Cosmetics owned" value={itemsOwnedError ? "Unavailable" : formatNumber(itemsOwned ?? 0)} />
+        <StatTile icon={Gamepad2} label="Game favourites" value={favouritesError ? "Unavailable" : formatNumber(favourites ?? 0)} />
+        <StatTile icon={Trophy} label="Game ratings" value={ratingsError ? "Unavailable" : formatNumber(ratings ?? 0)} />
+        <StatTile icon={Gift} label="Daily reward claims (7d)" value={rewardsError ? "Unavailable" : formatNumber(rewards ?? 0)} />
+        <StatTile icon={Trophy} label="Achievements awarded (7d)" value={achievementsError ? "Unavailable" : formatNumber(achievements ?? 0)} />
+        <StatTile icon={ShieldCheck} label="Admin audit entries (7d)" value={auditsError ? "Unavailable" : formatNumber(audits ?? 0)} />
+        <StatTile icon={AlertTriangle} label="Open reports" value={reportsError ? "Unavailable" : formatNumber(reports ?? 0)} />
       </div>
       {(sessions?.length === 10000 || newProfiles?.length === 10000 || durations?.length === 10000) && (
         <p role="status" className="rounded-lg border border-warning/40 px-3 py-2 text-xs text-warning">
