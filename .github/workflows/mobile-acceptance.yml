@@ -33,7 +33,15 @@ jobs:
             if curl -fsS http://127.0.0.1:3000/ >/dev/null; then break; fi
             sleep 2
           done
-          BASE_URL=http://127.0.0.1:3000 node --test scripts/test-mobile-browser.cjs
+          SCREENSHOT_DIR=artifacts/mobile BASE_URL=http://127.0.0.1:3000 node --test scripts/test-mobile-browser.cjs
+      - name: Preserve screenshots for release review
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: mobile-acceptance-screenshots
+          path: artifacts/mobile/
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Show server logs on failure
         if: failure()
         run: tail -n 120 /tmp/next-mobile.log || true
