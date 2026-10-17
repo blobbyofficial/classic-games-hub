@@ -42,6 +42,7 @@ const snake: GameEngineFactory = ({
   onGameOver,
   onStatus,
   difficulty,
+  visualBudget,
 }) => {
   const ctx = canvas.getContext("2d")!;
   const cols = 24;
@@ -285,11 +286,12 @@ const snake: GameEngineFactory = ({
     const centerX = point.x * cell + cell / 2;
     const centerY = point.y * cell + cell / 2;
 
+    const countToDraw = Math.max(0, Math.round(count * (visualBudget?.().particles ?? 1)));
     for (let i = 0; i < count; i++) {
       const angle = Math.random() * Math.PI * 2;
       const velocity = 0.4 + Math.random() * spread;
 
-      particles.push({
+      const particle: Particle = {
         x: centerX,
         y: centerY,
         vx: Math.cos(angle) * velocity,
@@ -297,7 +299,8 @@ const snake: GameEngineFactory = ({
         life: 0.35 + Math.random() * 0.4,
         maxLife: 0.35 + Math.random() * 0.4,
         size: size * (0.65 + Math.random() * 0.7),
-      });
+      };
+      if (i < countToDraw) particles.push(particle);
     }
   }
 
@@ -773,10 +776,8 @@ const snake: GameEngineFactory = ({
 
     ctx.fillStyle = foodColor;
     ctx.shadowColor = foodColor;
-    ctx.shadowBlur =
-      food.type === "normal"
-        ? 10
-        : 16;
+    ctx.shadowBlur = visualBudget?.().decorativeGlow === false ? 0 :
+      food.type === "normal" ? 10 : 16;
 
     roundRect(
       ctx,
@@ -835,7 +836,7 @@ const snake: GameEngineFactory = ({
       if (isHead) {
         ctx.fillStyle = pal.neon;
         ctx.shadowColor = pal.neon;
-        ctx.shadowBlur = 10;
+        ctx.shadowBlur = visualBudget?.().decorativeGlow === false ? 0 : 10;
       } else {
         ctx.fillStyle =
           `color-mix(in oklch, ${pal.primary}, ${pal.neon} ${Math.round(t * 40)}%)`;
