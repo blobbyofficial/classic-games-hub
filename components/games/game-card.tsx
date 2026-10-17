@@ -30,7 +30,7 @@ export function GameCard({
   );
 
   return (
-    <div className="group relative isolate">
+    <div className="halloween-game-card group relative isolate">
       <Link
         href={`/games/${game.slug}`}
         className={cn(
@@ -40,7 +40,7 @@ export function GameCard({
         aria-disabled={comingSoon || undefined}
         tabIndex={comingSoon ? -1 : undefined}
       >
-        <div className="relative aspect-[8/5] overflow-hidden bg-muted">
+        <div className="halloween-game-art relative aspect-[8/5] overflow-hidden bg-muted">
           <Image
             src={game.thumbnail_url ?? "/games/thumbs/snake.svg"}
             alt=""
@@ -94,7 +94,7 @@ export function GameCard({
             </div>
           )}
 
-          <div className="absolute inset-x-3 bottom-2.5">
+          <div className="halloween-game-caption absolute inset-x-3 bottom-2.5">
             <h3 className="truncate font-semibold text-white drop-shadow-sm">{game.title}</h3>
             {game.tagline && (
               <p className="truncate text-xs text-white/75">{game.tagline}</p>
@@ -102,7 +102,7 @@ export function GameCard({
           </div>
         </div>
 
-        <div className="flex items-center justify-between gap-2 px-3 py-2.5 text-xs text-muted-foreground">
+        <div className="halloween-game-meta flex items-center justify-between gap-2 px-3 py-2.5 text-xs text-muted-foreground">
           <span className={cn("truncate font-semibold", meta?.color)}>{game.category}</span>
           <div className="flex shrink-0 items-center gap-3 tnum">
             {game.rating_count > 0 && (
