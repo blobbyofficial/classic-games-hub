@@ -33,3 +33,11 @@ jobs:
         run: npm run typecheck
       - name: Lint
         run: npm run lint
+      - name: Game engine lifecycle regression
+        run: node scripts/test-game-loop.cjs
+      - name: Production build
+        run: npm run build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: ${{ vars.NEXT_PUBLIC_SUPABASE_URL || 'https://isgqukmmhuzhpalbruwt.supabase.co' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ vars.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'sb_publishable_K6DD29odFaDeNTYozEsifQ_rD1ThsG5' }}
+          NEXT_PUBLIC_SITE_URL: ${{ vars.NEXT_PUBLIC_SITE_URL || 'https://classic-games-hub.blobbyofficial.com' }}
