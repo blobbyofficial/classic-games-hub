@@ -1,11 +1,10 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users, Ghost } from "lucide-react";
+import { Gamepad2, Sparkles, Trophy, History, Star, Users, Ghost } from "lucide-react";
 import { getFeaturedGames, getPublishedGames, getFavoriteGameIds, getRecentlyPlayed } from "@/services/games";
 import { getDailyRewardStatus } from "@/services/economy";
 import { getCurrentProfile, getFlagPayload } from "@/lib/supabase/queries";
-import { createClient } from "@/lib/supabase/server";
 import { GameGrid } from "@/components/games/game-grid";
 import { GameCard } from "@/components/games/game-card";
 import { SectionHeader } from "@/components/section-header";
@@ -137,14 +136,12 @@ function Hero({
   displayName?: string | null;
 }) {
   return (
-    /* The ambient glow is painted as a background gradient rather than two
-       blurred divs - same look, no filter for the compositor to maintain, which
-       is what kept this section janky while scrolling on low-end phones. */
+    /* The seasonal scene is a decorative CSS background; controls remain normal links. */
     <section className="halloween-hero relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
       <div aria-hidden className="halloween-scene pointer-events-none absolute inset-0 bg-grid" />
       <div className="relative max-w-2xl motion-safe:animate-rise">
         {halloween && <p className="halloween-eyebrow mb-4 text-xs font-semibold">October at the arcade</p>}
-        {halloween && <div className="halloween-marquee flex items-center gap-2" aria-hidden="true"><Ghost className="size-4" /> HAUNTED ARCADE · LIMITED SEASON</div>}
+        {halloween && <div className="halloween-marquee flex items-center gap-2"><Ghost className="size-4" aria-hidden="true" /> HAUNTED ARCADE · LIMITED SEASON</div>}
         <h1 className="text-display font-black">
           {displayName ? (
             <>
