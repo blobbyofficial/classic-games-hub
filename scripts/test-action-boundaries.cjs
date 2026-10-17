@@ -14,7 +14,7 @@ const root = path.resolve(__dirname, "..");
 function loadAction(file, rpcCalls) {
   const source = fs.readFileSync(path.join(root, file), "utf8");
   const compiled = ts.transpileModule(source, {
-    compilerOptions: { module: ts.ModuleKind.CommonJS, target: ts.ScriptTarget.ES2022 },
+    compilerOptions: { module: 1, target: 9 },
     fileName: file,
     reportDiagnostics: true,
   });
