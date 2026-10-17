@@ -245,18 +245,26 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   // Fullscreen wraps the whole shell (stage + HUD + touch controls) so the
   // experience stays complete on every device.
   const toggleFullscreen = () => {
-    // iPhone Safari does not support requestFullscreen for ordinary elements.
-    // Give those players an in-page screen takeover instead of a dead button.
-    if (!shellRef.current?.requestFullscreen) {
-      setIsExpanded((value) => !value);
-      return;
-    }
-    if (document.fullscreenElement) {
-      void document.exitFullscreen().catch(() => {});
+    if (isExpanded) {
+      setIsExpanded(false);
+    } else if (document.fullscreenElement) {
+      void document.exitFullscreen().catch(() => setIsExpanded(false));
+    } else if (shellRef.current?.requestFullscreen) {
+      // Some mobile browsers expose the method but reject element fullscreen.
+      void shellRef.current.requestFullscreen().catch(() => setIsExpanded(true));
     } else {
-      shellRef.current?.requestFullscreen?.().catch(() => {});
+      setIsExpanded(true);
     }
   };
+
+  useEffect(() => {
+    if (!isExpanded) return;
+    const onEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setIsExpanded(false);
+    };
+    window.addEventListener("keydown", onEscape);
+    return () => window.removeEventListener("keydown", onEscape);
+  }, [isExpanded]);
 
   useEffect(() => {
     const onChange = () => setIsFullscreen(Boolean(document.fullscreenElement));
