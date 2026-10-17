@@ -2,6 +2,10 @@
 const { test } = require("node:test");
 const assert = require("node:assert/strict");
 const { chromium } = require("playwright");
+const fs = require("node:fs");
+const path = require("node:path");
+const screenshotDir = process.env.SCREENSHOT_DIR;
+if (screenshotDir) fs.mkdirSync(screenshotDir, { recursive: true });
 const origin = new URL(process.env.BASE_URL || "http://127.0.0.1:3000");
 test("mobile navigation, search and library at roadmap widths", { timeout: 150000 }, async () => {
   const browser = await chromium.launch();
@@ -14,6 +18,7 @@ test("mobile navigation, search and library at roadmap widths", { timeout: 15000
           assert.equal(response?.status(), 200, `${pathname} at ${width}px`);
           const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
           assert.ok(overflow <= 2, `${pathname} overflows by ${overflow}px at ${width}px`);
+          if (screenshotDir) await page.screenshot({ path: path.join(screenshotDir, `${pathname === "/" ? "home" : pathname.slice(1)}-${width}px.png`), fullPage: true });
           const nav = page.getByRole("navigation", { name: "Mobile primary navigation" });
           assert.equal(await nav.isVisible(), true);
           const links = nav.getByRole("link");
