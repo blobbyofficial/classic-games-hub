@@ -1,5 +1,7 @@
 # Quality overhaul — implementation and verification register
 
+**Stage 1 consolidated source audit:** [Comprehensive architecture, UX and verification audit](stage-1-comprehensive-audit.md). Source findings are documented; production/device validation remains outstanding.
+
 **17 October 2026.** This branch contains a **first, limited code slice**. It does not implement the complete eight-stage overhaul. Never interpret a percentage from a planning audit as tests passed or work shipped.
 
 ## Confirmed source changes in this branch
