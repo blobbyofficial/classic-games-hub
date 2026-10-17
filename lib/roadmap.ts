@@ -1859,6 +1859,40 @@ export const ROADMAP: RoadmapRelease[] = [
     ] },
   ] },
 
+  { version: "Collector Exchange — detailed delivery plan", codename: "Collect, Trade & Learn", status: "idea", timeframe: "Unscheduled — subject to architecture and safety review", summary: "Detailed implementation stages for cosmetic trading, fixed-supply editions and the fictional practice-only market simulator. Read docs/collector-exchange-design.md for complete journeys, data models, trust rules, test criteria and rollout gates. This is additive; previously planned items are unchanged.", groups: [
+    { heading: "Trading Hub delivery stages", icon: "ShoppingBag", items: [
+      { title: "T0 — Inventory integrity before trading", description: "Validate correction migration, ownership constraints, saved loadout cleanup, refunds and audit using independent test accounts; do not allow player trades before passing security tests.", status: "idea" },
+      { title: "T1 — Safe direct friend trades", description: "Introduce opt-in item-for-item offers for a restricted allowlist, independent final confirmation, state-change invalidation and atomic server-side settlement.", status: "idea" },
+      { title: "T2 — Asynchronous offer inbox", description: "Add sent/received/completed/cancelled tabs, counteroffers, opt-in wishlists, item locks and consent-based visibility.", status: "idea" },
+      { title: "T3 — Trading listings and community lounge", description: "Only when participation supports it, add searchable optional exchange listings, moderation, anti-spam limits and community trading sessions.", status: "idea" },
+      { title: "T4 — Ownership disputes and security checks", description: "Add staff item holds, item history, offer receipts, rollback review, escalation, account recovery checks and trade integrity monitoring.", status: "idea" },
+      { title: "Trading design specification and sign-off", description: "Review docs/collector-exchange-design.md and require database constraints, idempotency, privacy, test cases and accessibility before implementation.", status: "idea" },
+    ] },
+    { heading: "Limited Edition delivery stages", icon: "Gift", items: [
+      { title: "L0 — Collector metadata and archives", description: "Label existing cosmetics accurately by season, event and availability without claiming unverified stock limits or invented historic serials.", status: "idea" },
+      { title: "L1 — Audited numbered cosmetics issuance", description: "Design immutable fixed-supply edition records and atomic unique serial issuance; distribute through transparent, accessible earned objectives.", status: "idea" },
+      { title: "L2 — Individual edition passport", description: "Show verified serial, edition origin and private/public ownership settings alongside non-tradable restrictions where appropriate.", status: "idea" },
+      { title: "L3 — Eligible limited transfers", description: "Integrate numbered copies into the secure Trading Hub with distinct instance IDs, durable history, ownership holds and strict mint limits.", status: "idea" },
+      { title: "L4 — Creator and community editions", description: "Explore attributed creator/jam editions, collection exhibitions and authenticity checking without pay-to-win rewards.", status: "idea" },
+      { title: "Inventory schema compatibility study", description: "Plan safe migration from one-item-per-user inventory uniqueness to individual collectible instances without losing existing cosmetics or saved appearances.", status: "idea" },
+    ] },
+    { heading: "Fictional Market Simulator stages", icon: "BarChart3", items: [
+      { title: "M0 — Standalone fictional learning prototype", description: "Prototype a pausable browser strategy experience using practice points only; no site credits, XP stakes, paid entry, real assets or cash-out.", status: "idea" },
+      { title: "M1 — Scenario-led tutorial", description: "Explain virtual companies and price changes through transparent fictional events and optional practice activities.", status: "idea" },
+      { title: "M2 — Story and scenario library", description: "Build finite themed scenarios, accessible result explanations and private progress summaries based on understanding rather than wealth.", status: "idea" },
+      { title: "M3 — Friendly scenario comparison", description: "Allow friends to compare reasoning on identical deterministic scenarios without winnings or speculative rewards.", status: "idea" },
+      { title: "Economy isolation and safety gate", description: "Keep simulation points nontransferable and separate from progression; review user experience, accessibility and fairness before expanding.", status: "idea" },
+    ] },
+    { heading: "Collector community extensions", icon: "Sparkles", items: [
+      { title: "Collector museum and origin passport", description: "Offer a permission-controlled gallery displaying provenance and achievements for cosmetics, independent of owning rare or expensive items.", status: "idea" },
+      { title: "Creator-signed cosmetic exhibitions", description: "Curate credited non-pay-to-win cosmetics or colour themes with consent, moderation and clear event criteria.", status: "idea" },
+      { title: "Trade safety practice mode", description: "Teach the interface with dummy items, including how edited offers invalidate prior approval and how to report suspicious requests.", status: "idea" },
+      { title: "Optional fair collection goals", description: "Use disclosed achievable objectives with guaranteed rewards, never paid random chances or penalties for missed participation.", status: "idea" },
+      { title: "Event archive and edition authentication", description: "Archive past edition criteria, release artwork and verified instance signatures; distinguish genuinely scarce editions from seasonal availability.", status: "idea" },
+      { title: "Collector staff quality dashboard", description: "Monitor mint caps, item corrections, disputes, duplicates, revoked grants and verification without implying every event is production-complete.", status: "idea" },
+    ] },
+  ] },
+
 ];
 
 /**
