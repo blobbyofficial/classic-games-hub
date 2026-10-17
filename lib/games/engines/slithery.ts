@@ -64,6 +64,7 @@ const slithery: GameEngineFactory = ({
   onGameOver,
   onStatus,
   difficulty,
+  visualBudget,
 }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
@@ -241,7 +242,8 @@ const slithery: GameEngineFactory = ({
     hue: number,
     speed = 80,
   ) {
-    for (let i = 0; i < amount; i++) {
+    const visualCount = Math.max(0, Math.round(amount * (visualBudget?.().particles ?? 1)));
+    for (let i = 0; i < visualCount; i++) {
       const angle = Math.random() * Math.PI * 2;
       const velocity = randomRange(speed * 0.35, speed);
 
