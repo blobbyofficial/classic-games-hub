@@ -7,6 +7,7 @@ on:
       - 'scripts/prepare-local-supabase-migrations.cjs'
       - 'scripts/seed-local-supabase-acceptance.cjs'
       - 'scripts/test-staging-economy.cjs'
+      - 'scripts/test-local-supabase-rls.cjs'
       - '.github/workflows/local-supabase-acceptance.yml'
   workflow_dispatch:
 jobs:
@@ -41,6 +42,8 @@ jobs:
           source /tmp/cgh-local-supabase.env
           set +a
           node scripts/seed-local-supabase-acceptance.cjs
+      - name: Verify distinct real JWT roles, cross-account privacy and economic write rejection
+        run: node --test scripts/test-local-supabase-rls.cjs
       - name: Exercise real concurrent purchase against disposable local Supabase
         run: node --test scripts/test-staging-economy.cjs
       - name: Local-only diagnostics on failure
