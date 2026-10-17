@@ -300,3 +300,41 @@ html[data-season="halloween"][data-reduced-motion="true"] .halloween-category * 
  html[data-season="halloween"] .halloween-category *,
  html[data-season="halloween"] .halloween-ui-button {animation:none!important;transition:none!important}
 }
+
+/* Minimal polish pass: fewer competing shapes, clearer hierarchy, no extra glow. */
+html[data-season="halloween"] .halloween-hero {
+  border-color:#635342;
+  border-radius:12px;
+  min-height:380px;
+}
+html[data-season="halloween"] .halloween-hero::after {display:none}
+html[data-season="halloween"] .halloween-scene::after {display:none}
+html[data-season="halloween"] .halloween-scene {
+  background-image:linear-gradient(90deg,#080d0cfb 0%,#080d0ce5 50%,#080d0c80 100%),url("/seasons/halloween/arcade.svg");
+}
+html[data-season="halloween"] .halloween-hero .halloween-cta {
+  box-shadow:none;
+  border-radius:6px;
+}
+html[data-season="halloween"] .halloween-game-card > a {
+  box-shadow:none;
+  border-color:#7a685344;
+}
+html[data-season="halloween"] .halloween-game-card > a:hover {
+  box-shadow:none;
+}
+html[data-season="halloween"] .halloween-logo-icon {
+  box-shadow:none;
+  transform:none;
+}
+html[data-season="halloween"] .halloween-logo-text::after {content:none}
+html[data-season="halloween"] .halloween-nav-tag {display:none}
+html[data-season="halloween"] .halloween-category {
+  box-shadow:none;
+}
+html[data-season="halloween"] .halloween-category::after {display:none}
+@media(max-width:640px) {
+  html[data-season="halloween"] .halloween-scene {
+    background-image:linear-gradient(90deg,#080d0cf6,#080d0cc0),url("/seasons/halloween/arcade.svg");
+  }
+}

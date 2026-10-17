@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users, Ghost } from "lucide-react";
+import { Gamepad2, Sparkles, Trophy, Flame, History, Star, Users } from "lucide-react";
 import { getFeaturedGames, getPublishedGames, getFavoriteGameIds, getRecentlyPlayed } from "@/services/games";
 import { getDailyRewardStatus } from "@/services/economy";
 import { getCurrentProfile, getFlagPayload } from "@/lib/supabase/queries";
@@ -137,14 +137,11 @@ function Hero({
   displayName?: string | null;
 }) {
   return (
-    /* The ambient glow is painted as a background gradient rather than two
-       blurred divs - same look, no filter for the compositor to maintain, which
-       is what kept this section janky while scrolling on low-end phones. */
+    /* Seasonal artwork stays decorative; primary actions and game information are unchanged. */
     <section className="halloween-hero relative overflow-hidden rounded-3xl border border-border bg-aurora px-6 py-12 shadow-sm sm:px-10 sm:py-16">
       <div aria-hidden className="halloween-scene pointer-events-none absolute inset-0 bg-grid" />
       <div className="relative max-w-2xl motion-safe:animate-rise">
-        {halloween && <p className="halloween-eyebrow mb-4 text-xs font-semibold">October at the arcade</p>}
-        {halloween && <div className="halloween-marquee flex items-center gap-2"><Ghost className="size-4" aria-hidden="true" /> HAUNTED ARCADE · LIMITED SEASON</div>}
+        {halloween && <p className="halloween-eyebrow mb-4 text-xs font-semibold">The Halloween arcade</p>}
         <h1 className="text-display font-black">
           {displayName ? (
             <>
@@ -163,7 +160,6 @@ function Hero({
         <p className="mt-5 max-w-xl text-base leading-relaxed text-muted-foreground sm:text-lg">
           Explore {gameCount} games in the library, see which ones are available, and follow your scores and achievements. Some games are being rebuilt.
         </p>
-        {halloween && <p className="mt-4 text-sm font-medium text-[#dfb883]">The arcade is open after dark. Dare to play one more round?</p>}
         <div className="mt-8 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
           <Button size="lg" variant="gradient" className="halloween-cta" asChild>
             <Link href="/games">
