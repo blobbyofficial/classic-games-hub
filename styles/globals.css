@@ -803,3 +803,15 @@ html[data-site-theme="aurora"] {
   border: 1px solid color-mix(in oklch, var(--primary) 28%, var(--border));
   border-radius: calc(var(--radius) + 4px);
 }
+
+/* The user's in-app reduced-motion setting also suppresses animated GIFs.
+   Unlike CSS animations, GIF playback cannot be paused via animation:none. */
+html[data-reduced-motion="true"] .game-loading-animated {
+  visibility: hidden;
+}
+html[data-reduced-motion="true"] .game-loading-animated:not(:root) {
+  /* Keep static branding visible without requesting another GIF. */
+  background: url("/icon.svg") center / contain no-repeat;
+  visibility: visible;
+  content: url("/icon.svg");
+}
