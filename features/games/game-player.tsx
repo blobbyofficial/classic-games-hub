@@ -51,6 +51,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
   const settings = useSessionStore((s) => s.settings);
   const [difficulty, setDifficulty] = useState<PlayDifficulty>(
     settings?.default_difficulty ?? "regular",
@@ -244,6 +245,12 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   // Fullscreen wraps the whole shell (stage + HUD + touch controls) so the
   // experience stays complete on every device.
   const toggleFullscreen = () => {
+    // iPhone Safari does not support requestFullscreen for ordinary elements.
+    // Give those players an in-page screen takeover instead of a dead button.
+    if (!shellRef.current?.requestFullscreen) {
+      setIsExpanded((value) => !value);
+      return;
+    }
     if (document.fullscreenElement) {
       void document.exitFullscreen().catch(() => {});
     } else {
@@ -285,8 +292,8 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     <div
       ref={shellRef}
       className={
-        isFullscreen
-          ? "game-shell-fs flex h-full w-full flex-col items-center justify-center gap-3 overflow-hidden p-3 sm:p-6"
+        isFullscreen || isExpanded
+          ? "game-shell-fs fixed inset-0 z-50 bg-background flex h-full w-full flex-col items-center justify-center gap-3 overflow-hidden p-3 sm:p-6"
           : "halloween-player-shell space-y-3 overscroll-contain [padding-bottom:env(safe-area-inset-bottom)]"
       }
     >
@@ -311,7 +318,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
           {/* Changing this restarts the run, because tuning is read when the
               engine is built. Better to restart plainly than to let someone
               finish a run under settings they thought they had changed. */}
-          {canChooseDifficulty && !isFullscreen && (
+          {canChooseDifficulty && !isFullscreen && !isExpanded && (
             <div
               role="group"
               aria-label="Difficulty"
@@ -348,9 +355,9 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
             variant="outline"
             size="icon"
             onClick={toggleFullscreen}
-            aria-label={isFullscreen ? "Exit fullscreen" : "Fullscreen"}
+            aria-label={isFullscreen || isExpanded ? "Exit fullscreen" : "Fullscreen"}
           >
-            {isFullscreen ? <Minimize2 /> : <Maximize2 />}
+            {isFullscreen || isExpanded ? <Minimize2 /> : <Maximize2 />}
           </Button>
         </div>
       </div>
@@ -362,11 +369,11 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
           too small and the game was letterboxed for no reason, too large and it
           overflowed. Letting flexbox measure the leftover space is both simpler
           and right everywhere, and it costs no JavaScript. */}
-      <div className={isFullscreen ? "grid min-h-0 w-full flex-1 place-items-center" : "w-full"}>
+      <div className={isFullscreen || isExpanded ? "grid min-h-0 w-full flex-1 place-items-center" : "w-full"}>
         <div
           className="halloween-player-stage game-stage relative mx-auto w-full select-none overflow-hidden rounded-2xl border border-border bg-card shadow-lg"
           style={
-            isFullscreen
+            isFullscreen || isExpanded
               ? { aspectRatio: `${w} / ${h}`, maxWidth: "100%", maxHeight: "100%" }
               : { maxWidth: `min(100%, ${w * 1.1}px)`, aspectRatio: `${w} / ${h}` }
           }
@@ -418,7 +425,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
           stage that changes size resizes the canvas, and resizing a canvas
           clears it. That was the screen "resizing weirdly" mid-game. A media
           query is resolved before the first paint, so nothing moves. */}
-      <div className={`hidden pointer-coarse:block ${isFullscreen ? "w-full max-w-3xl" : ""}`}>
+      <div className={`hidden pointer-coarse:block ${isFullscreen || isExpanded ? "w-full max-w-3xl" : ""}`}>
         <TouchControls scheme={scheme} />
       </div>
 
