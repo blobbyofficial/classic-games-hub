@@ -93,13 +93,20 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
       }
 
       setSubmitting(true);
-      const res = await submitScore(slug, finalScore, duration, difficulty);
-      setResult(res);
-      setSubmitting(false);
-      if (res.ok && res.credits_earned && profile) {
-        setCredits(profile.credits + res.credits_earned);
+      try {
+        const res = await submitScore(slug, finalScore, duration, difficulty);
+        setResult(res);
+        if (res.ok && res.credits_earned && profile) {
+          setCredits(profile.credits + res.credits_earned);
+        }
+      } catch {
+        // A transient Server Action failure should not leave the game stuck in
+        // a permanent submitting state or expose internal error details.
+        setResult({ ok: false, error: "Couldn't save your score. Try again." });
+      } finally {
+        setSubmitting(false);
+        submittingRef.current = false;
       }
-      submittingRef.current = false;
     },
     [best, difficulty, isAuthed, profile, setCredits, slug],
   );
