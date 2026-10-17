@@ -93,6 +93,41 @@ export interface LandedChange {
 export const REPO_URL = "https://github.com/blobbyofficial/classic-games-hub";
 
 export const SERIES: ReleaseSeries[] = [
+  {
+    version: "v1.6.0",
+    codename: "Reliability and Mobile Foundations",
+    dates: "17 Oct 2026",
+    summary: "Production safeguards, security and concurrency acceptance, mobile improvements and accessibility, followed by a focused roadmap correction.",
+    releases: [
+      {
+        version: "v1.6.0",
+        codename: "Release Integration",
+        date: "17 Oct 2026",
+        scope: "The unified integration merges maintenance Phases 1–7, excluding the planned Ground Up overhaul.",
+        summary: "Improved core reliability with verified local database migrations, gameplay and economy concurrency protections, browser acceptance, mobile and accessibility improvements. Optional experience analytics remain disabled pending privacy approval.",
+        groups: [
+          {
+            heading: "Security and reliability",
+            icon: "ShieldCheck",
+            items: [
+              { title: "Economy and scores", description: "Serialize purchases and score rewards, check duplicate gifts and bound per-hour rewards against concurrent submissions." },
+              { title: "Isolated integration tests", description: "Exercise migrated database permissions, two synthetic user accounts, browser flows and security boundaries." },
+            ],
+          },
+          {
+            heading: "Mobile and accessibility",
+            icon: "Smartphone",
+            items: [
+              { title: "Responsive and accessible gameplay", description: "Improve narrow-screen navigation, input cleanup, gameplay controls and accessibility acceptance." },
+              { title: "Roadmap presentation follow-up", description: "Restore missing roadmap section icons and distinguish administrator-managed override content." },
+            ],
+          },
+        ],
+        commits: ["8607084889422fac11c32ecdf1d140014e013c79", "a10e4f16f44524a0a61a01b9a50242cac55fac3d"],
+        prs: [59, 67],
+      },
+    ],
+  },
   // ─────────────────────────────── v1.5 ───────────────────────────────
   {
     version: "v1.5.0",
