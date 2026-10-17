@@ -154,3 +154,22 @@ Commit `9dd8a66e5c719163bd7f7190435f533d9ac50202` has two completed successful G
 ### Evidence-driven next action
 
 Obtain the active Vercel production deployment ID and commit SHA via authorized deployment access; compare it with the successful CI SHA. Read timestamped `admin_cron_status`, `cron.job_run_details` and application/HTTP response logs. Collect the gateway worker's actual host URL, readiness status and latest DB heartbeat. Until then, do not mark Phase 1 complete.
+
+## Follow-up — public route retrieval and CI after documentation update
+
+**Public retrieval on 17 October 2026:** The web retrieval service provided parsed HTML for `/`, `/games`, `/status` and `/roadmap`. This improves the prior `fetch timeout`/cache-miss result: the routes served retrievable page content to this tool. However, the results are crawler representations, **not** direct status/header captures, uncached browser screenshots, or an authenticated Vercel deployment-to-SHA link. Do not declare the production deployment verified.
+
+**Incident observation:** The retrieved `/status` page reported **"Degraded performance"** and a currently displayed automatic incident **INC-2: "Discord bot is not responding"**, classified "Major" and "Investigating", with the displayed incident start **17 Oct 08:15** (page-rendered timezone unspecified). The page also showed some services as "Under maintenance" and "Checked just now", but a crawler snapshot cannot establish continuously current worker health. This is **evidence of a public incident report**, not proof that the gateway process is down. Inspect worker heartbeat, host logs, status probe records, and the precise service/incident timestamps before changing worker code or treating it as an infrastructure outage.
+
+**Current public surface:** The retrieved homepage and games page both displayed 26 games in the library; homepage explicitly said some are being rebuilt. This is consistent with a 26-item catalogue but not evidence 26 are playable.
+
+**Latest CI verification:** PR commit `d73b3a01631c33dda649d27ab1bdcdd24c68461b` has successful GitHub Actions run `39039014512` (CI) and run `39039014501` (CodeQL). Both were reported as completed/success. These runs predate this new documentation-only edit; its own checks must be inspected separately.
+
+### Updated findings
+
+- **OPS-001:** Four public routes are retrievable through the public web tool; the deployment SHA, HTTP headers and browser screenshot gate remain open.
+- **OPS-004:** Public status page reports an automatic Discord bot incident (INC-2); **root cause remains unverified**. Do not conflate the public alert with confirmed worker downtime.
+- **OPS-005:** CI + CodeQL verified successful on the last audited PR SHA `d73b3a0`; the active production SHA remains unconfirmed.
+- **OPS-002/003:** No authenticated scheduled-job completion or downstream HTTP response evidence acquired.
+
+**Do not close Phase 1 on these signals alone.**
