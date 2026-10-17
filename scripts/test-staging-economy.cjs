@@ -40,7 +40,7 @@ test("concurrent cosmetic purchase spends only once", { timeout: 60000 }, async 
   assert.equal(itemError, null, "Missing test item");
   assert.ok(item && item.available && !item.staff_only &&
     !["xp_boost","credit_boost"].includes(item.kind) &&
-    Number.isSafeInteger(item.price) && item.price >= 0, "Use an available, non-boost cosmetic");
+    Number.isSafeInteger(item.price) && item.price > 0, "Use an available, non-boost cosmetic");
 
   const { data: owner, error: ownerError } = await client.from("profiles")
     .select("credits").eq("id", uid).single();
