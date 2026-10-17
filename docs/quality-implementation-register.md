@@ -22,6 +22,12 @@
 
 **Verification status:** Commits are recorded on this branch; CI execution and browser validation have not been confirmed. A test existing is not evidence that it passed.
 
+## Third implementation pass — 17 October 2026
+
+- `components/games/game-card.tsx`: adds explicit accessible names describing current access/status, strengthens keyboard focus visibility, and ensures featured/early-access badges do not visually compete with the primary in-development state.
+- `features/games/games-library.tsx`: normalises whitespace in search and tolerates missing tag arrays, with other filters unchanged.
+- These are source-verified code changes only. Browser testing, build output, accessibility audits and deployment checks remain pending.
+
 ## Remaining work by stage
 
 1. **Audit:** Capture real deployed screenshot/device baseline and inventory all route states. Production origin/commit SHA must be confirmed.
