@@ -12,22 +12,21 @@ export const revalidate = 3600;
  */
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const base = SITE.url.replace(/\/$/, "");
-  const now = new Date();
 
   const staticRoutes: MetadataRoute.Sitemap = [
-    { url: `${base}/`, lastModified: now, changeFrequency: "daily", priority: 1 },
-    { url: `${base}/games`, lastModified: now, changeFrequency: "daily", priority: 0.9 },
-    { url: `${base}/leaderboards`, lastModified: now, changeFrequency: "hourly", priority: 0.7 },
-    { url: `${base}/shop`, lastModified: now, changeFrequency: "weekly", priority: 0.6 },
-    { url: `${base}/achievements`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
-    { url: `${base}/roadmap`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
-    { url: `${base}/updates`, lastModified: now, changeFrequency: "weekly", priority: 0.5 },
-    { url: `${base}/status`, lastModified: now, changeFrequency: "daily", priority: 0.3 },
-    { url: `${base}/legal/terms`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${base}/legal/privacy`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${base}/legal/cookies`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${base}/login`, lastModified: now, changeFrequency: "monthly", priority: 0.3 },
-    { url: `${base}/register`, lastModified: now, changeFrequency: "monthly", priority: 0.4 },
+    { url: `${base}/`, changeFrequency: "daily", priority: 1 },
+    { url: `${base}/games`, changeFrequency: "daily", priority: 0.9 },
+    { url: `${base}/leaderboards`, changeFrequency: "hourly", priority: 0.7 },
+    { url: `${base}/shop`, changeFrequency: "weekly", priority: 0.6 },
+    { url: `${base}/achievements`, changeFrequency: "weekly", priority: 0.5 },
+    { url: `${base}/roadmap`, changeFrequency: "weekly", priority: 0.5 },
+    { url: `${base}/updates`, changeFrequency: "weekly", priority: 0.5 },
+    { url: `${base}/status`, changeFrequency: "daily", priority: 0.3 },
+    { url: `${base}/legal/terms`, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${base}/legal/privacy`, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${base}/legal/cookies`, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${base}/login`, changeFrequency: "monthly", priority: 0.3 },
+    { url: `${base}/register`, changeFrequency: "monthly", priority: 0.4 },
   ];
 
   let gameRoutes: MetadataRoute.Sitemap = [];
@@ -35,7 +34,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const games = await getPublishedGames();
     gameRoutes = games.map((g) => ({
       url: `${base}/games/${g.slug}`,
-      lastModified: g.updated_at ? new Date(g.updated_at) : now,
+      ...(g.updated_at && !Number.isNaN(Date.parse(g.updated_at)) ? { lastModified: new Date(g.updated_at) } : {}),
       changeFrequency: "weekly",
       priority: 0.8,
     }));
