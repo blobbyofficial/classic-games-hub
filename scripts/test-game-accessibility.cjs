@@ -28,4 +28,5 @@ test("touch pads support keyboard control and release held keys on blur or hidde
   assert.match(touch, /window\.addEventListener\("blur", clearHeld\)/);
   assert.match(touch, /visibilitychange/);
   assert.match(touch, /<Pad k=" " label="Jump" tap big>/);
+  assert.match(touch, /e\.detail !== 0/);
 });
