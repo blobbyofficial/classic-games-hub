@@ -253,3 +253,24 @@ html[data-season="halloween"] .halloween-tabs-trigger {border-radius:3px}
 html[data-season="halloween"] .halloween-tabs-trigger[data-state="active"] {
  box-shadow:inset 0 -2px #ce8640;
 }
+
+/* Community challenges are real events; they share the haunted materials without changing rewards. */
+html[data-season="halloween"] .halloween-community-event {
+  border:1px solid #b67f4966;
+  border-radius:9px;
+  background:linear-gradient(135deg,#2d231827,#121b1425);
+}
+html[data-season="halloween"] .halloween-community-progress {
+  border-radius:3px;
+  background:#2b2d23;
+}
+html[data-season="halloween"] .halloween-community-progress > div {
+  border-radius:3px;
+  background:linear-gradient(90deg,#b77d3e,#efd09a);
+}
+html[data-season="halloween"] .halloween-seasonal-banner button:focus-visible {
+  outline:2px solid #fff1d6;
+  outline-offset:2px;
+}
+/* Allow all seasonal artwork to stay decorative and noninteractive. */
+html[data-season="halloween"] .halloween-scene {pointer-events:none}
