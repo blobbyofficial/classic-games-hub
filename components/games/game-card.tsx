@@ -37,7 +37,6 @@ export function GameCard({
           "hover-lift block overflow-hidden rounded-2xl border border-border bg-card shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring",
           comingSoon && "opacity-80",
         )}
-        aria-label={`${game.title} — ${comingSoon ? "Coming soon" : inDevelopment ? "In development" : earlyAccess ? "Early access" : "View game"}`}
       >
         <div className="halloween-game-art relative aspect-[8/5] overflow-hidden bg-muted">
           <Image
