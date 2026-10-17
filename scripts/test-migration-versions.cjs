@@ -20,3 +20,13 @@ test("SQL migrations use unique monotonically sortable version identifiers", () 
   const version = readFileSync(join(__dirname, "../lib/version.ts"), "utf8");
   assert.match(version, new RegExp(`export const EXPECTED_SCHEMA = ["\u0027]${latest}["\u0027]`), "Expected schema version must match latest SQL migration");
 });
+
+test("fresh seed respects the original difficulty enum", () => {
+  const { readFileSync } = require("node:fs");
+  const dir = join(__dirname, "../database/migrations");
+  const definition = readFileSync(join(dir, "0002_games_platform.sql"), "utf8");
+  const seed = readFileSync(join(dir, "0005_seed.sql"), "utf8");
+  assert.match(definition, /difficulty in \('easy', 'normal', 'hard'\)/);
+  assert.doesNotMatch(seed, /'medium'/,
+    "Seed must not use a difficulty that violates the original schema");
+});
