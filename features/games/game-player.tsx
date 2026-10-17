@@ -174,6 +174,8 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   // Pause with P / Escape.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape" && isExpanded) return;
+      if (e.target instanceof HTMLElement && (e.target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(e.target.tagName))) return;
       if ((e.key === "p" || e.key === "P" || e.key === "Escape") && !gameOver) {
         e.preventDefault();
         togglePause();
@@ -182,7 +184,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [gameOver]);
+  }, [gameOver, isExpanded]);
 
   // Swipe-to-move on the canvas for grid/directional games - dispatched as
   // arrow keys so engines handle them the same as a keyboard or D-pad.
@@ -312,8 +314,8 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
           : "halloween-player-shell space-y-3 overscroll-contain [padding-bottom:env(safe-area-inset-bottom)]"
       }
     >
-      <div className={`halloween-player-hud flex items-center justify-between gap-3 ${isFullscreen ? "w-full max-w-3xl" : ""}`}>
-        <div className="flex items-center gap-4">
+      <div className={`halloween-player-hud flex min-w-0 flex-wrap items-center justify-between gap-2 ${isFullscreen || isExpanded ? "w-full max-w-3xl" : ""}`}>
+        <div className="flex shrink-0 items-center gap-3 sm:gap-4">
           <div>
             <p className="text-[11px] font-medium uppercase tracking-wide text-muted-foreground">
               Score
@@ -329,7 +331,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-1.5">
+        <div className="flex shrink-0 items-center gap-1 sm:gap-1.5">
           {/* Changing this restarts the run, because tuning is read when the
               engine is built. Better to restart plainly than to let someone
               finish a run under settings they thought they had changed. */}
