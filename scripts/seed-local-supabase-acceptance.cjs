@@ -41,7 +41,23 @@ async function main() {
     Number.isSafeInteger(x.price) && x.price > 0 && x.price <= 5000
   );
   if (!item) throw Error("No expendable local cosmetic shop item available");
+  const bName = "e2e" + randomUUID().replaceAll("-", "").slice(0, 12);
+  const bEmail = bName + "@example.invalid";
+  const bPassword = "Local-E2E-" + randomUUID();
+  const { data: second, error: secondError } = await admin.auth.admin.createUser({
+    email: bEmail, password: bPassword, email_confirm: true,
+    user_metadata: { user_name: bName },
+  });
+  if (secondError || !second?.user?.id || second.user.id === userId) {
+    throw Error("Could not create distinct synthetic local player B");
+  }
+  const { error: secondProfileError } = await admin.from("profiles")
+    .update({ credits: 1234 }).eq("id", second.user.id);
+  if (secondProfileError) throw Error("Could not fund isolated player B");
   const variables = {
+    STAGING_PLAYER_B_EMAIL: bEmail,
+    STAGING_PLAYER_B_PASSWORD: bPassword,
+    LOCAL_SUPABASE_SERVICE_ROLE_KEY: serviceRole,
     STAGING_SUPABASE_URL: url,
     STAGING_SUPABASE_ANON_KEY: anon,
     STAGING_PLAYER_A_EMAIL: email,
