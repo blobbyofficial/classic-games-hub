@@ -132,6 +132,7 @@ const frogger: GameEngineFactory = ({
   onGameOver,
   onStatus,
   difficulty,
+  visualBudget,
 }) => {
   const ctx = canvas.getContext("2d")!;
   const pal = palette();
@@ -456,7 +457,7 @@ const frogger: GameEngineFactory = ({
   ) {
     for (
       let i = 0;
-      i < amount;
+      i < Math.max(0, Math.round(amount * (visualBudget?.().particles ?? 1)));
       i++
     ) {
       const angle =
