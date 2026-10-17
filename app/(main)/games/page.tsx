@@ -9,7 +9,7 @@ import { breadcrumbJsonLd, gameListJsonLd } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Games",
-  description: "Browse and play 26 classic arcade, puzzle, strategy and shooter games.",
+  description: "Explore the Classic Games Hub library, including arcade, puzzle, strategy and shooter games.",
   // /games?category=puzzle is a filtered view of this page, not a page of its
   // own - without a canonical each filter competes with the unfiltered list.
   alternates: { canonical: "/games" },
@@ -39,7 +39,7 @@ export default async function GamesPage({
       <PageHeader
         icon={Gamepad2}
         title="Game library"
-        description="Every classic, one click away."
+        description="Find a game, check its availability, and get playing."
         className="mb-0"
       />
 
