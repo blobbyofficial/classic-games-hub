@@ -6,6 +6,7 @@ import { useTheme } from "next-themes";
 import { toast } from "sonner";
 import { ENGINE_LOADERS } from "@/lib/games/registry";
 import { canvasFor, CONTROL_SCHEME, SWIPE_GAMES } from "@/lib/games/config";
+import { effectivePixelRatio, type QualityPreset } from "@/lib/games/render-quality";
 import { submitScore } from "@/actions/games";
 import { gameStart, gameEnd } from "@/lib/analytics";
 import { useSessionStore } from "@/lib/stores/session-store";
@@ -51,6 +52,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
   const [result, setResult] = useState<ScoreResult | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  const [quality, setQuality] = useState<QualityPreset>("balanced");
   const settings = useSessionStore((s) => s.settings);
   const [difficulty, setDifficulty] = useState<PlayDifficulty>(
     settings?.default_difficulty ?? "regular",
@@ -109,7 +111,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     const rect = canvas.getBoundingClientRect();
     if (!rect.width || !rect.height) return;
     // Capped at 2×: past that the pixels are invisible and the fill rate is not.
-    const dpr = Math.min(2, window.devicePixelRatio || 1);
+    const dpr = effectivePixelRatio(window.devicePixelRatio || 1, quality);
     const bw = Math.round(rect.width * dpr);
     const bh = Math.round(rect.height * dpr);
     // Assigning width/height clears the canvas even when the value is unchanged,
@@ -118,7 +120,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
     canvas.width = bw;
     canvas.height = bh;
     canvas.getContext("2d")?.setTransform(bw / w, 0, 0, bh / h, 0, 0);
-  }, [w, h]);
+  }, [w, h, quality]);
 
   // (Re)build the engine. Also re-runs on theme change so palettes update.
   const buildEngine = useCallback(() => {
@@ -338,6 +340,18 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
               ))}
             </div>
           )}
+          <label className="sr-only" htmlFor="game-render-quality">Rendering quality</label>
+          <select
+            id="game-render-quality"
+            aria-label="Rendering quality"
+            value={quality}
+            onChange={(event) => setQuality(event.target.value as QualityPreset)}
+            className="h-9 max-w-24 rounded-md border border-border bg-background px-1 text-xs"
+          >
+            <option value="eco">Eco</option>
+            <option value="balanced">Balanced</option>
+            <option value="high">High</option>
+          </select>
           <Button variant="outline" size="icon" onClick={togglePause} disabled={gameOver} aria-label={paused ? "Resume" : "Pause"}>
             {paused ? <Play /> : <Pause />}
           </Button>
