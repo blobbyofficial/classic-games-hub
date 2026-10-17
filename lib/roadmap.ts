@@ -95,6 +95,26 @@ export const ROADMAP: RoadmapRelease[] = [
         ],
       },
       {
+        heading: "Mobile-first experience — urgent foundations",
+        icon: "Smartphone",
+        blurb: "Most players use phones. Treat usability, touch gameplay and narrow-screen reliability as release-blocking rather than optional polish.",
+        items: [
+          { title: "Mobile shell and navigation", description: "Audit and redesign 320–430px header, compact search, fixed bottom tabs, drawer scrolling, safe-area padding, keyboard overlays and portrait/landscape navigation. Validate signed-in and anonymous states on Android Chrome and iPhone Safari.", status: "next" },
+          { title: "Mobile-first home, library and account journeys", description: "Prioritise Continue Playing, favourites, playable games, compact hero, readable thumbnails, useful filters and easily reachable actions. Then audit shop, inventory, profiles, friends, leaderboards, forms and notifications. Preserve accessible focus and desktop layouts.", status: "next" },
+          { title: "Mobile usability acceptance tests", description: "Capture actual 320, 375, 390 and 430px screenshots, interaction flows, on-screen keyboard, rotations, long names, loading states and safe areas. No accidental document-wide horizontal scrolling, hidden actions or overlapping navigation.", status: "next" },
+        ],
+      },
+      {
+        heading: "Chromebook and trackpad support — urgent foundations",
+        icon: "Laptop",
+        blurb: "A laptop trackpad is not a mouse, and budget Chromebooks need low-overhead gameplay and forgiving inputs.",
+        items: [
+          { title: "Laptop-size and trackpad-friendly UI", description: "Design 768–1280px compact desktop layouts that give the game stage priority, keep controls visible, use comfortably sized targets and avoid drag-only, hover-only or right-click-only actions. Verify zoom and keyboard navigation.", status: "next" },
+          { title: "Chromebook performance baseline and Eco mode", description: "Profile low-power ChromeOS-class hardware before setting budgets. Offer Eco/Balanced/High graphics presets for effects, particles, resolution and optional frame-rate caps; automatically reduce decorative rendering only after measured sustained frame-time pressure. Never alter scoring or simulation rules.", status: "next" },
+          { title: "Input and latency diagnostics", description: "Measure key-to-action latency, dropped frames, loading and long tasks separately from server/network delay; ensure gameplay is local and does not wait for a server response per input. Re-test page switching, focus, lag spikes and resume.", status: "next" },
+        ],
+      },
+      {
         heading: "Accessibility, usability and performance",
         icon: "Accessibility",
         items: [
