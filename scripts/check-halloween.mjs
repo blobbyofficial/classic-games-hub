@@ -15,11 +15,11 @@ for(const file of ["public/seasons/halloween/arcade.svg","public/seasons/hallowe
   assert.ok(existsSync(new URL("../"+file,import.meta.url)),file+" missing");
   assert.ok(css.includes("/"+file.replace(/^public\//,"")),file+" not referenced");
 }
-assert.match(layout,/data-season=\{activeSeason\(\)/);
+assert.match(layout,/data-season=\{halloweenEnabled/);
 assert.match(layout,/styles\/seasons\/halloween\.css/);
 assert.match(season,/override === "off"/);
 assert.match(season,/override === "halloween"/);
-assert.match(home,/halloween=\{activeSeason\(\) === "halloween"\}/);
+assert.match(home,/halloween=\{activeSeason\(\) === "halloween"/);
 assert.match(event,/halloween-seasonal-banner/);
 assert.match(event,/event\.multiplier, event\.message/);
 assert.match(card,/halloween-game-card/);
