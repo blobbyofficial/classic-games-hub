@@ -26,6 +26,11 @@ jobs:
         with:
           node-version: 22
           cache: npm
+      - name: Reject production website endpoints before signing in
+        env:
+          STAGING_KIND: website
+          STAGING_TARGET_URL: ${{ secrets.STAGING_SITE_URL }}
+        run: node scripts/assert-isolated-staging.cjs
       - run: npm ci
       - run: npm install --no-save --package-lock=false playwright
       - run: npx playwright install --with-deps chromium
