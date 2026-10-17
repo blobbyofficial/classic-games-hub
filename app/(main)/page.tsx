@@ -34,7 +34,19 @@ type SectionKey = (typeof DEFAULT_ORDER)[number];
 export const metadata: Metadata = {
   title: { absolute: `${SITE.name} - Browser Arcade and Classic Games` },
   description:
-    "Explore classic browser games including Snake, Tetris, Minesweeper and Pong. Find available games, follow the rebuild, and see player leaderboards.",
+    "Pick a classic game and start playing for free in your browser. Explore 26 games, earn XP and credits, unlock achievements and climb the leaderboards.",
+  openGraph: {
+    type: "website",
+    url: SITE.url,
+    siteName: SITE.name,
+    title: "Classic Games Hub | Pick a game. Start playing.",
+    description: "26 games in the library. Free browser play, XP, achievements and leaderboards. Your next high score starts here.",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Classic Games Hub | Pick a game. Start playing.",
+    description: "26 games in the library. Free browser play, XP, achievements and leaderboards.",
+  },
   alternates: { canonical: "/" },
 };
 
