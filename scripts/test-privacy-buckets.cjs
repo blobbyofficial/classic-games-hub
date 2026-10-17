@@ -45,3 +45,10 @@ test("browser Global Privacy Control has priority over stored analytics consent"
   assert.match(provider, /choice\?\.analytics && !globalPrivacyControl\(\)/);
   assert.match(tracking, /typeof document === "undefined" \|\| globalPrivacyControl\(\)/);
 });
+
+test("consent parsing bounds untrusted anonymous subject identifiers", () => {
+  const consent = fs.readFileSync("lib/consent.ts", "utf8");
+  assert.match(consent, /typeof parsed\.aid === "string"/);
+  assert.match(consent, /\^\[a-z0-9-\]\{1,64\}\$/i);
+  assert.match(consent, /\? parsed\.aid : undefined/);
+});
