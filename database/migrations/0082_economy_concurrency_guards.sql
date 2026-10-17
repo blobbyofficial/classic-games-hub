@@ -46,6 +46,18 @@ begin
 
   -- Serialize concurrent spending for this player before validating balance.
   select credits into v_credits from public.profiles where id = v_me for update;
+  if not found then
+    raise exception 'profile not found';
+  end if;
+  -- The earlier ownership check happened before taking the account lock.
+  -- A competing purchase may have committed while this transaction waited.
+  -- Recheck after locking, before debiting, so a duplicate is a clean no-op
+  -- rather than a unique-constraint exception that leaks through the UI.
+  if not v_boost and exists (
+    select 1 from public.inventory_items where user_id = v_me and item_id = v_item.id
+  ) then
+    return jsonb_build_object('ok', false, 'error', 'You already own this item');
+  end if;
   if v_credits < v_item.price then
     return jsonb_build_object('ok', false, 'error', 'Not enough credits');
   end if;
