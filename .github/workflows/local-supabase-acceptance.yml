@@ -3,6 +3,7 @@ on:
   pull_request:
     paths:
       - 'database/migrations/**'
+      - 'database/tests/analytics_role_contracts.sql'
       - 'database/tests/**'
       - 'scripts/prepare-local-supabase-migrations.cjs'
       - 'scripts/seed-local-supabase-acceptance.cjs'
@@ -35,6 +36,7 @@ jobs:
         run: |
           psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 54322 -U postgres -d postgres -f database/tests/001_security_contracts.sql
           psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 54322 -U postgres -d postgres -f database/tests/phase3_role_contracts.sql
+          psql -X -v ON_ERROR_STOP=1 -h 127.0.0.1 -p 54322 -U postgres -d postgres -f database/tests/analytics_role_contracts.sql
       - name: Install isolated account test dependencies
         run: npm ci
       - name: Obtain only the disposable local Supabase keys and create synthetic fixture
