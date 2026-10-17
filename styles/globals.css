@@ -827,3 +827,9 @@ html[data-reduced-motion="true"] .game-loading-static { display: block; }
     padding-right: max(12px, env(safe-area-inset-right));
   }
 }
+
+/* Touch-enabled Chromebooks have fine primary pointers; show game controls
+   when ANY pointer can be coarse without moving the stage after hydration. */
+@media (any-pointer: coarse) {
+  .hybrid-touch-controls { display: block; }
+}
