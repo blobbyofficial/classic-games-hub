@@ -33,3 +33,27 @@ test("public pages render at phone and laptop widths without critical accessibil
     }
   } finally { await browser.close(); }
 });
+
+test("game library search, sorting and keyboard controls work", { timeout: 60000 }, async () => {
+  const browser = await chromium.launch({ headless: true });
+  try {
+    const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+    await page.goto(new URL("/games", root).href, { waitUntil: "networkidle" });
+    const search = page.getByRole("textbox", { name: "Search games" });
+    await search.fill("a-nonexistent-game-that-cannot-possibly-match");
+    await assert.doesNotReject(() => page.getByText("No games match your filters").waitFor());
+    await page.getByRole("button", { name: "Clear filters" }).click();
+    await assert.doesNotReject(() => page.getByRole("group", { name: "Filter games by category" }).waitFor());
+    const sort = page.getByRole("combobox", { name: "Sort games by" });
+    await sort.focus();
+    await sort.press("Enter");
+    await assert.doesNotReject(() => page.getByRole("option", { name: "Most played" }).waitFor());
+    await page.getByRole("option", { name: "Most played" }).click();
+    assert.equal(await sort.getAttribute("aria-expanded"), "false");
+  } finally { await browser.close(); }
+});
+
+test("protected cron endpoint rejects anonymous requests in browser test environment", { timeout: 30000 }, async () => {
+  const response = await fetch(new URL("/api/cron/status-probe", root), { redirect: "manual", signal: AbortSignal.timeout(12000) });
+  assert.equal(response.status, 401);
+});
