@@ -129,3 +129,28 @@ These are tracked **audit findings**, not ten confirmed production defects.
 - [ ] Confirmed production defects (if any) logged with reproduction evidence.
 
 **Outcome:** Phase 1 has produced a repeatable source-backed baseline; **it is not complete** until the outstanding runtime gates pass.
+
+## Follow-up evidence — 17 October 2026
+
+### Actual GitHub Actions results on audit commit
+
+Commit `9dd8a66e5c719163bd7f7190435f533d9ac50202` has two completed successful GitHub Actions workflow runs, retrieved from the GitHub Actions API through the linked repository connector.
+
+| Workflow | Run ID | Result | Inspected jobs/steps |
+| --- | --- | --- | --- |
+| CI | `39038475333` | completed / success | Site: install, lint, typecheck, lifecycle regression, build all succeeded; Discord bot: install, typecheck, build all succeeded |
+| CodeQL | `39038475323` | completed / success | Analyse job and init/analyze steps succeeded |
+
+**Limitations:** These are PR-head checks for the documentation audit branch, **not** a verified successful Vercel deployment, and not an assertion about `main` CI history. The connector's commit-run method returns PR-triggered runs only; querying base SHA `d271b47d3101226e26bf2f2bafaf303fc2ada7f6` yielded no runs through that method and therefore cannot establish absence of push checks. These checks also do not exercise the live site, cron execution or the running bot.
+
+### Public site retrieval attempt
+
+- Site root `https://classic-games-hub.blobbyofficial.com/`: direct web-tool retrieval failed with a **fetch timeout**; this does not establish that browsers cannot reach it.
+- `/api/status`: direct web-tool retrieval was reported inaccessible to the retrieval tool; no HTTP application status code can be inferred.
+- `/updates`: a web search result indexed two days before the audit returned update-log content; it is **not a cache-bypassing production deployment verification**.
+
+**Disposition:** OPS-005 is partially resolved for **this PR's CI checks**, but remains open as a production deployment/CI association check. OPS-001 remains unknown, not a confirmed outage. No deployment or cron infrastructure has been changed.
+
+### Evidence-driven next action
+
+Obtain the active Vercel production deployment ID and commit SHA via authorized deployment access; compare it with the successful CI SHA. Read timestamped `admin_cron_status`, `cron.job_run_details` and application/HTTP response logs. Collect the gateway worker's actual host URL, readiness status and latest DB heartbeat. Until then, do not mark Phase 1 complete.
