@@ -99,9 +99,9 @@ export const ROADMAP: RoadmapRelease[] = [
         icon: "Smartphone",
         blurb: "Most players use phones. Treat usability, touch gameplay and narrow-screen reliability as release-blocking rather than optional polish.",
         items: [
-          { title: "Mobile shell and navigation", description: "Audit and redesign 320–430px header, compact search, fixed bottom tabs, drawer scrolling, safe-area padding, keyboard overlays and portrait/landscape navigation. Validate signed-in and anonymous states on Android Chrome and iPhone Safari.", status: "next" },
-          { title: "Mobile-first home, library and account journeys", description: "Prioritise Continue Playing, favourites, playable games, compact hero, readable thumbnails, useful filters and easily reachable actions. Then audit shop, inventory, profiles, friends, leaderboards, forms and notifications. Preserve accessible focus and desktop layouts.", status: "next" },
-          { title: "Mobile usability acceptance tests", description: "Capture actual 320, 375, 390 and 430px screenshots, interaction flows, on-screen keyboard, rotations, long names, loading states and safe areas. No accidental document-wide horizontal scrolling, hidden actions or overlapping navigation.", status: "next" },
+          { title: "Mobile shell and navigation", description: "Audit and redesign 320–430px header, compact search, fixed bottom tabs, drawer scrolling, safe-area padding, keyboard overlays and portrait/landscape navigation. Validate signed-in and anonymous states on Android Chrome and iPhone Safari.", status: "in-progress" },
+          { title: "Mobile-first home, library and account journeys", description: "Prioritise Continue Playing, favourites, playable games, compact hero, readable thumbnails, useful filters and easily reachable actions. Then audit shop, inventory, profiles, friends, leaderboards, forms and notifications. Preserve accessible focus and desktop layouts.", status: "in-progress" },
+          { title: "Mobile usability acceptance tests", description: "Capture actual 320, 375, 390 and 430px screenshots, interaction flows, on-screen keyboard, rotations, long names, loading states and safe areas. No accidental document-wide horizontal scrolling, hidden actions or overlapping navigation.", status: "in-progress" },
         ],
       },
       {
