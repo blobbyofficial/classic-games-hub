@@ -314,7 +314,7 @@ export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props
             <div
               role="group"
               aria-label="Difficulty"
-              className="mr-1 flex rounded-lg border border-border p-0.5"
+              className="halloween-difficulty mr-1 flex rounded-lg border border-border p-0.5"
             >
               {(["easy", "regular", "hard"] as const).map((d) => (
                 <button
