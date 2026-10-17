@@ -9,6 +9,7 @@ on:
       - 'scripts/test-staging-economy.cjs'
       - 'scripts/test-local-supabase-rls.cjs'
       - 'scripts/test-local-score-concurrency.cjs'
+      - 'scripts/test-local-social-boundaries.cjs'
       - 'scripts/test-staging-accounts.cjs'
       - '.github/workflows/local-supabase-acceptance.yml'
   workflow_dispatch:
@@ -50,6 +51,8 @@ jobs:
         run: node --test scripts/test-staging-economy.cjs
       - name: Verify actual concurrent score grants stop at thirty
         run: node --test scripts/test-local-score-concurrency.cjs
+      - name: Verify real friend requests, accepted friendship, block and DM rejection
+        run: node --test scripts/test-local-social-boundaries.cjs
       - name: Install Chromium for locally authenticated browser tests
         run: |
           npm install --no-save --package-lock=false playwright
