@@ -13,3 +13,10 @@ test("game actions and overlays have readable names", () => {
   assert.match(player, /aria-label="Restart"/);
   assert.match(player, /aria-label="Resume paused game"/);
 });
+
+test("game loader failure is announced and can be retried without hiding gameplay UI", () => {
+  assert.match(player, /role="alert"/);
+  assert.match(player, /onClick=\{replay\}>Try loading again/);
+  assert.match(player, /setEngineError\(null\)/);
+  assert.match(player, /generation !== engineGeneration\.current/);
+});
