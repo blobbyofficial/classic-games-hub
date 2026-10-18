@@ -12,6 +12,8 @@ Basic has neutral, low-chroma light and dark modes. Halloween remains seasonal, 
 4. **Retro** — Level-unlocked theme. Proposed requirement: **level 20**, to be confirmed before release. Arcade-inspired typography for headings, readable modern body type, cabinet-style borders and navigation, restrained scanline/pixel-art motifs, tactile control styles, responsive layout and low-cost fallbacks. Light/dark/system variants. Never render pixel fonts for long body text.
 5. **Red** — Free, fixed appearance without light/dark variant. Deep crimson surfaces with brighter red highlights, balanced white/off-white text, careful accessible contrast. Changing global Light/Dark setting must not alter the Red palette; keep the user's preferred mode stored for other themes.
 
+For the complete Premium experience proposal, see [Premium Atelier design specification](./premium-atelier-theme-spec.md). It is planning-only and remains locked until all implementation and eligibility gates pass.
+
 ## Engineering requirements before shipping the future themes
 - Single theme catalogue drives picker, manifest, rendering, validation and backend permissions. Never expose a theme that lacks its complete styles and eligibility checks.
 - Use explicit `data-site-theme` with only one active theme at a time. Seasonal selectors must require Halloween explicitly and cannot leak into other themes. Basic must never inherit seasonal art.
