@@ -18,7 +18,7 @@ export function SiteThemePicker({
   halloweenAvailable: boolean;
   entitlements: ThemeEntitlements;
 }) {
-  const [selected, setSelected] = useState(SITE_THEMES.some(t => t.id === current) ? current : "default");
+  const [selected, setSelected] = useState(canUseSiteTheme(current, entitlements) ? current : "default");
   const [pending, start] = useTransition();
 
   const apply = (id: string) => {
