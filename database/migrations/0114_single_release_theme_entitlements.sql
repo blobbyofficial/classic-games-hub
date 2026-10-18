@@ -19,16 +19,26 @@ create policy theme_unlocks_owner_read on public.theme_unlocks
   for select to authenticated using (user_id = (select auth.uid()));
 
 create or replace function public.grant_retro_theme_on_level()
-returns trigger language plpgsql security definer set search_path=public as $$
+returns trigger language plpgsql security definer set search_path=public as $
+declare v_granted integer := 0;
 begin
   if new.level >= 25 then
     insert into public.theme_unlocks(user_id)
     values (new.id)
     on conflict (user_id) do nothing;
+    get diagnostics v_granted = row_count;
+    if v_granted > 0 then
+      insert into public.notifications (user_id, type, title, body, data)
+      values (
+        new.id, 'level_up', 'Insert Coin unlocked!',
+        'You reached Level 25. Your permanent Retro theme is ready in Settings.',
+        jsonb_build_object('theme', 'retro', 'level', 25)
+      );
+    end if;
   end if;
   return new;
 end;
-$$;
+$;
 revoke execute on function public.grant_retro_theme_on_level() from public, anon, authenticated;
 drop trigger if exists profiles_award_retro_theme on public.profiles;
 create trigger profiles_award_retro_theme
