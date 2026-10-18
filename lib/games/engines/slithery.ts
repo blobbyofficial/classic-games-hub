@@ -178,6 +178,8 @@ const slithery: GameEngineFactory = ({
   let respawnSeed = 1000;
 
   const keys = new Set<string>();
+  let pointerClient: Point | null = null;
+  let keyboardSteering = false;
 
   function clamp(value: number, min: number, max: number) {
     return Math.max(min, Math.min(max, value));
@@ -418,6 +420,9 @@ const slithery: GameEngineFactory = ({
     };
 
     boosting = false;
+    pointerClient = null;
+    keyboardSteering = false;
+    keys.clear();
     started = false;
     alive = true;
     elapsedSeconds = 0;
@@ -614,6 +619,13 @@ const slithery: GameEngineFactory = ({
 
   function updatePlayer(dt: number) {
     if (!alive || !started) return;
+
+    // A pointer is screen-relative, not a stationary location in the world.
+    // Reproject it as the camera follows the player so steering keeps working
+    // after the snake has travelled past its original pointer position.
+    if (pointerClient && !keyboardSteering) {
+      mouseWorld = canvasToWorld(pointerClient.x, pointerClient.y);
+    }
 
     const targetAngle = getMouseAngle();
 
@@ -2238,6 +2250,8 @@ const slithery: GameEngineFactory = ({
   }
 
   function onMouseMove(e: MouseEvent) {
+    pointerClient = { x: e.clientX, y: e.clientY };
+    keyboardSteering = false;
     mouseWorld =
       canvasToWorld(
         e.clientX,
@@ -2258,6 +2272,7 @@ const slithery: GameEngineFactory = ({
 
   function onMouseLeave() {
     boosting = false;
+    pointerClient = null;
   }
 
   function onTouchStart(e: TouchEvent) {
@@ -2265,6 +2280,8 @@ const slithery: GameEngineFactory = ({
       e.touches[0];
     if (!touch) return;
 
+    pointerClient = { x: touch.clientX, y: touch.clientY };
+    keyboardSteering = false;
     mouseWorld =
       canvasToWorld(
         touch.clientX,
@@ -2282,6 +2299,8 @@ const slithery: GameEngineFactory = ({
       e.touches[0];
     if (!touch) return;
 
+    pointerClient = { x: touch.clientX, y: touch.clientY };
+    keyboardSteering = false;
     mouseWorld =
       canvasToWorld(
         touch.clientX,
@@ -2295,10 +2314,12 @@ const slithery: GameEngineFactory = ({
 
   function onTouchEnd() {
     boosting = false;
+    pointerClient = null;
   }
 
   function onTouchCancel() {
     boosting = false;
+    pointerClient = null;
   }
 
   function onKeyDown(
@@ -2308,6 +2329,10 @@ const slithery: GameEngineFactory = ({
       e.key.toLowerCase();
 
     keys.add(key);
+    if (["w", "a", "s", "d", "arrowup", "arrowdown", "arrowleft", "arrowright"].includes(key)) {
+      keyboardSteering = true;
+      pointerClient = null;
+    }
 
     if (
       key === " " ||
