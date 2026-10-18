@@ -80,13 +80,14 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // that keeps anonymous traffic (and 404s) off the auth endpoint.
   const cookieStore = await cookies();
   const hasSession = cookieStore.getAll().some((c) => /^sb-.*auth-token/.test(c.name));
-  const [settings, entitlements] = hasSession
-    ? await Promise.all([
-        getCurrentSettings().catch(() => null),
-        getCurrentThemeEntitlements().catch(() => ({ premium: false, retro: false })),
-      ])
-    : [null, { premium: false, retro: false }];
+  const settings = hasSession ? await getCurrentSettings().catch(() => null) : null;
   const rawTheme = (settings as { site_theme?: string } | null)?.site_theme ?? "default";
+  // Only restricted themes need an additional RPC on every server render.
+  // Basic, Red and Halloween retain the previous fast settings-only path.
+  const needsEntitlement = rawTheme === "premium" || rawTheme === "retro";
+  const entitlements = hasSession && needsEntitlement
+    ? await getCurrentThemeEntitlements().catch(() => ({ premium: false, retro: false }))
+    : { premium: false, retro: false };
   const season = activeSeason();
   // A saved booster/level theme must pass a fresh server entitlement check;
   // stale preferences (or revoked boosts) always render Basic safely.
