@@ -68,39 +68,6 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
  */
 export const ROADMAP: RoadmapRelease[] = [
   {
-    version: "Arcade Reborn — Game Architecture 2.1",
-    codename: "Platform-First Game Rebuild",
-    status: "next",
-    timeframe: "Planning approved — implementation unscheduled",
-    summary: "Preserve the existing game catalogue and player records while building a workspace-monorepo game platform. Every rebuilt game becomes an independently tested package connected through a versioned, capability-based SDK. Snake is the first reference migration. No game retirement, database deletion or production rollout is authorised by this plan.",
-    groups: [
-      { heading: "Preservation and transition", icon: "Shield", items: [
-        { title: "Archive safely, never delete existing games", description: "Inventory source code, game definitions, saves, favourites, achievements, historical scores, URLs and dependencies. Design reversible Vaulted / In development / Released statuses and a game-specific coming-soon experience; keep public links valid.", status: "next" },
-        { title: "Release gating and player continuity", description: "Do not hide currently playable games until backups, migrations, rollback, score-history handling and a communication plan are verified. Separate legacy score versions when rules change.", status: "next" },
-      ] },
-      { heading: "Workspace monorepo and game packages", icon: "FolderGit2", items: [
-        { title: "Introduce pnpm workspace boundaries incrementally", description: "Retain the current Next.js app layout initially. Add packages/game-sdk, game-runtime, game-input, game-rendering, game-audio, game-ui, game-testing and game-contracts plus independently buildable games/* packages; avoid nested Git repositories.", status: "next" },
-        { title: "Game manifest, template and dependency boundaries", description: "Create versioned manifests declaring SDK compatibility, capabilities, input support, display and quality options; generate game packages with unit tests, assets, docs and CI. Prevent game packages importing Supabase or internal site/server code.", status: "next" },
-      ] },
-      { heading: "Versioned capability-based SDK and trusted platform integration", icon: "Plug", items: [
-        { title: "Typed capability contracts and lifecycle", description: "Define initialise/start/pause/resume/update/render/restart/dispose, explicit state transitions, cancellation, errors, optional capability negotiation and robust resource cleanup. Appearance changes must not restart a live run.", status: "next" },
-        { title: "Gameplay-to-platform APIs", description: "Provide gated SDK interfaces for input, display, audio, settings, runs, scores, achievements, progress, challenges, events, UI, telemetry and future social/multiplayer. Implement core services first, not every proposed namespace upfront.", status: "next" },
-        { title: "Secure and versioned run processing", description: "Introduce server-issued run IDs, idempotent submissions, scoring-rules versions, trusted reward calculation, game-specific score verification, authenticated permissions and backward-compatible leaderboard migration. Client events are never authority for XP, credits or achievements.", status: "next" },
-      ] },
-      { heading: "Mobile-first input and low-end performance", icon: "Smartphone", items: [
-        { title: "Action-based multi-device controls", description: "Replace hardcoded control-scheme and synthetic global keyboard dispatch with logical actions, configurable keyboard/swipe/touch/gamepad bindings, buffering, dead zones, focus handling and remapping. Support hybrid touchscreen Chromebooks and trackpads.", status: "next" },
-        { title: "Deterministic simulation and adaptive rendering", description: "Separate fixed-step simulation from render FPS. Build Eco/Balanced/High budgets, resolution caps, battery-conscious pause behaviour, asset loading, reduced-motion options and measured frame pacing without changing game rules.", status: "next" },
-        { title: "Device and accessibility acceptance", description: "Test real Android, iPhone, tablet, desktop and low-power Chromebook-class devices, including orientation, safe areas, keyboard navigation, screen-reader usability where relevant, input latency, memory growth and repeated restart/visibility cycles.", status: "next" },
-      ] },
-      { heading: "Snake reference migration and release gates", icon: "Gamepad2", items: [
-        { title: "Rebuild Snake as the first independent game package", description: "Separate deterministic simulation, movement/collision/spawning, modes, input, renderer, audio, HUD, progression and run integration. Deliver a polished Classic Mode before expanding gameplay.", status: "next" },
-        { title: "Independent game harness and CI", description: "Run games outside the website with mocked SDK services. Require package typechecking, unit and integration tests, compatibility checks for SDK changes, gameplay regression tests and measured performance baselines.", status: "next" },
-        { title: "Quality-gated staged rollout", description: "Use feature flags and preview builds; verify scoring, replay/restart, touch, keyboard, gamepad, pause/resume, cleanup, low-end performance and playtesting. Only then enable the rebuilt Snake and migrate later games one at a time.", status: "next" },
-      ] },
-    ],
-  },
-
-  {
     version: "Analytics & Observability (unversioned)",
     codename: "Platform Intelligence",
     status: "in-progress",
@@ -211,8 +178,31 @@ export const ROADMAP: RoadmapRelease[] = [
     status: "in-progress",
     timeframe: "Now - the arcade is mid-rebuild",
     summary:
-      "Every game on the site is being rebuilt, so every game is locked to staff while it waits its turn. This first release reopens none of them: it builds the machinery all twenty-six rebuilds run on. A stage that fills your whole screen instead of a small square in the middle of a page, an effects library so animation stops being something eight games happen to have, skins and arenas, sound that the volume slider actually controls, and input that does not throw your presses away.",
+      "Every game on the site is being rebuilt, so every game is locked to staff while it waits its turn. This first release reopens none of them: it builds the machinery all twenty-six rebuilds run on. A stage that fills your whole screen instead of a small square in the middle of a page, an effects library so animation stops being something eight games happen to have, skins and arenas, sound that the volume slider actually controls, and input that does not throw your presses away. This same v1.6.0 foundation now explicitly includes Arcade Reborn: pnpm workspace game packages, a versioned capability-based Game SDK, deterministic low-end-friendly gameplay, secure run integration and Snake as the first reference migration. The remaining catalogue returns game by game after quality gates; nothing is deleted.",
     groups: [
+      { heading: "Arcade Reborn — preservation and transition", icon: "Shield", items: [
+        { title: "Archive safely, never delete existing games", description: "Inventory source code, game definitions, saves, favourites, achievements, historical scores, URLs and dependencies. Design reversible Vaulted / In development / Released statuses and a game-specific coming-soon experience; keep public links valid.", status: "next" },
+        { title: "Release gating and player continuity", description: "Do not hide currently playable games until backups, migrations, rollback, score-history handling and a communication plan are verified. Separate legacy score versions when rules change.", status: "next" },
+      ] },
+      { heading: "Arcade Reborn — workspace monorepo and game packages", icon: "FolderGit2", items: [
+        { title: "Introduce pnpm workspace boundaries incrementally", description: "Retain the current Next.js app layout initially. Add packages/game-sdk, game-runtime, game-input, game-rendering, game-audio, game-ui, game-testing and game-contracts plus independently buildable games/* packages; avoid nested Git repositories.", status: "next" },
+        { title: "Game manifest, template and dependency boundaries", description: "Create versioned manifests declaring SDK compatibility, capabilities, input support, display and quality options; generate game packages with unit tests, assets, docs and CI. Prevent game packages importing Supabase or internal site/server code.", status: "next" },
+      ] },
+      { heading: "Arcade Reborn — Game SDK and platform integration", icon: "Plug", items: [
+        { title: "Typed capability contracts and lifecycle", description: "Define initialise/start/pause/resume/update/render/restart/dispose, explicit state transitions, cancellation, errors, optional capability negotiation and robust resource cleanup. Appearance changes must not restart a live run.", status: "next" },
+        { title: "Gameplay-to-platform APIs", description: "Provide gated SDK interfaces for input, display, audio, settings, runs, scores, achievements, progress, challenges, events, UI, telemetry and future social/multiplayer. Implement core services first, not every proposed namespace upfront.", status: "next" },
+        { title: "Secure and versioned run processing", description: "Introduce server-issued run IDs, idempotent submissions, scoring-rules versions, trusted reward calculation, game-specific score verification, authenticated permissions and backward-compatible leaderboard migration. Client events are never authority for XP, credits or achievements.", status: "next" },
+      ] },
+      { heading: "Arcade Reborn — mobile and low-end performance", icon: "Smartphone", items: [
+        { title: "Action-based multi-device controls", description: "Replace hardcoded control-scheme and synthetic global keyboard dispatch with logical actions, configurable keyboard/swipe/touch/gamepad bindings, buffering, dead zones, focus handling and remapping. Support hybrid touchscreen Chromebooks and trackpads.", status: "next" },
+        { title: "Deterministic simulation and adaptive rendering", description: "Separate fixed-step simulation from render FPS. Build Eco/Balanced/High budgets, resolution caps, battery-conscious pause behaviour, asset loading, reduced-motion options and measured frame pacing without changing game rules.", status: "next" },
+        { title: "Device and accessibility acceptance", description: "Test real Android, iPhone, tablet, desktop and low-power Chromebook-class devices, including orientation, safe areas, keyboard navigation, screen-reader usability where relevant, input latency, memory growth and repeated restart/visibility cycles.", status: "next" },
+      ] },
+      { heading: "Arcade Reborn — Snake reference migration", icon: "Gamepad2", items: [
+        { title: "Rebuild Snake as the first independent game package", description: "Separate deterministic simulation, movement/collision/spawning, modes, input, renderer, audio, HUD, progression and run integration. Deliver a polished Classic Mode before expanding gameplay.", status: "next" },
+        { title: "Independent game harness and CI", description: "Run games outside the website with mocked SDK services. Require package typechecking, unit and integration tests, compatibility checks for SDK changes, gameplay regression tests and measured performance baselines.", status: "next" },
+        { title: "Quality-gated staged rollout", description: "Use feature flags and preview builds; verify scoring, replay/restart, touch, keyboard, gamepad, pause/resume, cleanup, low-end performance and playtesting. Only then enable the rebuilt Snake and migrate later games one at a time.", status: "next" },
+      ] },
       {
         heading: "The stage",
         icon: "Maximize2",
