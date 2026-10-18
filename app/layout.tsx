@@ -13,6 +13,8 @@ import { getCurrentSettings } from "@/lib/supabase/queries";
 import { SITE_THEME_IDS } from "@/lib/themes";
 import "@/styles/globals.css";
 import "@/styles/seasons/halloween.css";
+// Premium is pre-styled but not selectable until verified booster gating ships.
+import "@/styles/themes/premium.css";
 import { activeSeason } from "@/lib/seasonal-theme";
 
 // `display: swap` shows the fallback immediately rather than blocking first
