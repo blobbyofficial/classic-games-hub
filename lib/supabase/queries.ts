@@ -1,3 +1,4 @@
+import { parseThemeEntitlements } from "@/lib/themes";
 import { cache } from "react";
 import { createClient } from "./server";
 import type { BannerConfig, BannerVariant, Profile, SeasonalEvent, UserSettings } from "@/types";
@@ -38,6 +39,16 @@ export const getCurrentProfile = cache(async (): Promise<Profile | null> => {
   const supabase = await createClient();
   const { data } = await supabase.from("profiles").select("*").eq("id", user.id).single();
   return data;
+});
+
+/** Server-authoritative per-request entitlement view, fail-closed on errors. */
+export const getCurrentThemeEntitlements = cache(async () => {
+  const user = await getSessionUser();
+  if (!user) return { premium: false, retro: false };
+  const supabase = await createClient();
+  const { data, error } = await supabase.rpc("my_theme_entitlements");
+  if (error) return { premium: false, retro: false };
+  return parseThemeEntitlements(data);
 });
 
 export const getCurrentSettings = cache(async (): Promise<UserSettings | null> => {

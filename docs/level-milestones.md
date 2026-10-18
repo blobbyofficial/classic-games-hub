@@ -9,12 +9,14 @@ where each one is enforced.
 | 10 | Create groups | `create_group()` (`0035`) |
 | 15 | Post stories | `post_story()` (`0035`) |
 | 20 | Five saved looks instead of one | `preset_slot_limit()` (`0047`) |
+| 25 | Permanent Insert Coin Retro site theme | `theme_unlocks` and `check_site_theme()` (`0114`) |
 | 30 | Vanity profile URL | `set_vanity_slug()` (`0045`) |
 | 50 | The mythic Singularity effect | `add_xp()` (`0036`), backfilled in `0047` |
 
-There is deliberately no central milestone table. Each gate lives inside the
-`SECURITY DEFINER` RPC that performs the action it guards, because that is the
-only place a check cannot be skipped. The UI mirrors some of these predicates to
+There is deliberately no central milestone table. Most gates live inside the
+`SECURITY DEFINER` RPC that performs the action it guards. The Retro theme
+exception uses a protected entitlement table and a database settings trigger
+instead, so the check cannot be skipped by a client write. The UI mirrors some of these predicates to
 decide what to show, but showing or hiding a control is presentation, and
 presentation is not a security boundary.
 
@@ -58,3 +60,14 @@ before earning it.
 once owned, and `effect` is in `equip_item`'s allowlist, so it equips like any
 other effect. The renderer is `Singularity` in
 `components/profile/profile-effects.tsx`.
+
+
+## Insert Coin Retro theme (level 25)
+
+Migration 0114 backfills level-25+ players into a read-only-to-clients
+`theme_unlocks` table and awards the unlock through a trusted level-change
+trigger. The unlock is persistent even when a player's level later decreases.
+Staff can preview without being awarded a permanent milestone. The
+`check_site_theme()` database trigger refuses to select Retro unless the
+server confirms a permanent entitlement, current level >= 25, or staff role.
+The Settings picker mirrors this rule for better UX; it is never the authority.

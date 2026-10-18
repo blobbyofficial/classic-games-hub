@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Press_Start_2P } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ConsentProvider } from "@/components/providers/consent-provider";
@@ -9,10 +9,14 @@ import { cookies } from "next/headers";
 import { SITE } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/json-ld";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
-import { getCurrentSettings } from "@/lib/supabase/queries";
-import { SITE_THEME_IDS } from "@/lib/themes";
+import { getCurrentSettings, getCurrentThemeEntitlements } from "@/lib/supabase/queries";
+import { SITE_THEME_IDS, canUseSiteTheme } from "@/lib/themes";
 import "@/styles/globals.css";
 import "@/styles/seasons/halloween.css";
+// Premium is pre-styled but not selectable until verified booster gating ships.
+import "@/styles/themes/premium.css";
+import "@/styles/themes/retro.css";
+import "@/styles/themes/red.css";
 import { activeSeason } from "@/lib/seasonal-theme";
 
 // `display: swap` shows the fallback immediately rather than blocking first
@@ -26,6 +30,13 @@ const geistSans = Geist({
   fallback: ["system-ui", "arial"],
   adjustFontFallback: true,
 });
+const retroDisplay = Press_Start_2P({
+  variable: "--font-retro-display",
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+});
+
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -71,8 +82,16 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   const hasSession = cookieStore.getAll().some((c) => /^sb-.*auth-token/.test(c.name));
   const settings = hasSession ? await getCurrentSettings().catch(() => null) : null;
   const rawTheme = (settings as { site_theme?: string } | null)?.site_theme ?? "default";
+  // Only restricted themes need an additional RPC on every server render.
+  // Basic, Red and Halloween retain the previous fast settings-only path.
+  const needsEntitlement = rawTheme === "premium" || rawTheme === "retro";
+  const entitlements = hasSession && needsEntitlement
+    ? await getCurrentThemeEntitlements().catch(() => ({ premium: false, retro: false }))
+    : { premium: false, retro: false };
   const season = activeSeason();
-  const siteTheme = SITE_THEME_IDS.has(rawTheme) ? rawTheme : "default";
+  // A saved booster/level theme must pass a fresh server entitlement check;
+  // stale preferences (or revoked boosts) always render Basic safely.
+  const siteTheme = SITE_THEME_IDS.has(rawTheme) && canUseSiteTheme(rawTheme, entitlements) ? rawTheme : "default";
   const halloweenEnabled = season === "halloween" && (!hasSession || siteTheme === "halloween");
 
   // Reduced motion has to land on the server-rendered html tag: applying it
@@ -98,7 +117,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </>
         )}
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${retroDisplay.variable} font-sans`}>
         {/* Site-wide identity, on every page so no single page has to be the one
             Google indexes for it to resolve. Both carry a stable @id, which is
             what lets the per-page blocks reference the publisher instead of

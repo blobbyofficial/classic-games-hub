@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { User, SlidersHorizontal, Shield, Lock, Link2, Gamepad2 } from "lucide-react";
-import { getCurrentProfile, getCurrentSettings } from "@/lib/supabase/queries";
+import { getCurrentProfile, getCurrentSettings, getCurrentThemeEntitlements } from "@/lib/supabase/queries";
 import { getUserAchievements, getUserBestScores } from "@/services/profiles";
 import { getTwoFactorState } from "@/services/two-factor";
 import { createClient } from "@/lib/supabase/server";
@@ -32,7 +32,7 @@ export default async function SettingsPage({
 }) {
   const { tab } = await searchParams;
   const initialTab = TABS.includes(tab ?? "") ? (tab as string) : "profile";
-  const [profile, settings] = await Promise.all([getCurrentProfile(), getCurrentSettings()]);
+  const [profile, settings, themeEntitlements] = await Promise.all([getCurrentProfile(), getCurrentSettings(), getCurrentThemeEntitlements()]);
   if (!profile || !settings) redirect("/login?next=/settings");
 
   // Everything below needs only profile.id, so it goes out as one batch instead
@@ -94,11 +94,7 @@ export default async function SettingsPage({
           <SiteThemePicker
             current={(settings as { site_theme?: string }).site_theme ?? "default"}
             halloweenAvailable={activeSeason() === "halloween"}
-            canUsePremium={
-              (profile as { booster_since?: string | null }).booster_since != null ||
-              profile.role === "admin" ||
-              profile.role === "moderator"
-            }
+            entitlements={themeEntitlements}
           />
         </TabsContent>
         <TabsContent value="gameplay" className="space-y-4">

@@ -4,24 +4,24 @@
 @custom-variant dark (&:is(.dark *));
 
 /* Classic Games Hub global tokens. Halloween overrides apply only with data-season=halloween. */
-/* Neutral Arcade Violet foundation, never seasonal. Seasonal palettes are scoped below. */
+/* Basic is a neutral, low-chroma UI, independent of Halloween. */
 :root {
-  --brand-h: 293;
-  --brand-c: 0.18;
+  --brand-h: 260;
+  --brand-c: 0.025;
   --background: oklch(0.985 0.006 285);
   --foreground: oklch(0.19 0.025 285);
   --card: oklch(0.998 0.003 285);
   --card-foreground: var(--foreground);
   --popover: var(--card);
   --popover-foreground: var(--foreground);
-  --primary: oklch(0.56 var(--brand-c) var(--brand-h));
+  --primary: oklch(0.36 0.016 260);
   --primary-foreground: oklch(0.99 0 0);
   --secondary: oklch(0.944 0.016 285);
   --secondary-foreground: oklch(0.25 0.025 285);
   --muted: oklch(0.953 0.012 285);
   --muted-foreground: oklch(0.46 0.018 285);
-  --accent: oklch(0.93 0.045 var(--brand-h));
-  --accent-foreground: oklch(0.30 0.075 var(--brand-h));
+  --accent: oklch(0.93 0.012 260);
+  --accent-foreground: oklch(0.28 0.012 260);
   --destructive: oklch(0.55 0.2 26);
   --destructive-foreground: white;
   --success: oklch(0.55 0.13 152);
@@ -29,7 +29,7 @@
   --border: oklch(0.86 0.013 285);
   --input: var(--border);
   --ring: var(--primary);
-  --neon: oklch(0.65 0.17 var(--brand-h));
+  --neon: oklch(0.52 0.025 260);
   --gold: oklch(0.72 0.15 85);
   --radius: 0.625rem;
   --glass: oklch(0.995 0.004 285 / 90%);
@@ -42,38 +42,224 @@
   --shadow-xl: 0 26px 48px -20px hsl(var(--shadow-color) / 0.25);
 }
 
-.dark {
-  --background: oklch(0.135 0.015 285);
-  --foreground: oklch(0.95 0.012 285);
-  --card: oklch(0.18 0.017 285);
-  --card-foreground: var(--foreground);
-  --popover: oklch(0.20 0.018 285);
-  --popover-foreground: var(--foreground);
-  --primary: oklch(0.75 max(0, calc(var(--brand-c) - 0.03)) var(--brand-h));
-  --primary-foreground: oklch(0.14 0.014 285);
-  --secondary: oklch(0.24 0.018 285);
-  --secondary-foreground: oklch(0.93 0.01 285);
-  --muted: oklch(0.22 0.014 285);
-  --muted-foreground: oklch(0.73 0.014 285);
-  --accent: oklch(0.28 0.06 var(--brand-h));
-  --accent-foreground: oklch(0.91 0.07 var(--brand-h));
-  --destructive: oklch(0.72 0.17 28);
-  --destructive-foreground: oklch(0.14 0.02 20);
-  --success: oklch(0.74 0.12 150);
-  --warning: oklch(0.80 0.13 80);
-  --border: oklch(0.30 0.018 285);
-  --input: oklch(0.31 0.018 285);
-  --ring: var(--primary);
-  --neon: oklch(0.77 0.13 var(--brand-h));
-  --gold: oklch(0.82 0.12 85);
-  --glass: oklch(0.19 0.015 285 / 93%);
-  --glass-border: oklch(0.52 0.023 285 / 27%);
-  --shadow-color: 260 24% 2%;
-  --shadow-xs: 0 1px 3px hsl(var(--shadow-color) / 0.38);
-  --shadow-sm: 0 2px 7px hsl(var(--shadow-color) / 0.39);
-  --shadow-md: 0 9px 21px -8px hsl(var(--shadow-color) / 0.56);
-  --shadow-lg: 0 20px 42px -15px hsl(var(--shadow-color) / 0.65);
-  --shadow-xl: 0 30px 64px -19px hsl(var(--shadow-color) / 0.75);
+
+
+/* BASIC LIGHT — soft porcelain, graphite ink and quiet architectural detail.
+   Explicitly scoped: switching to Halloween leaves its own styling untouched.
+   These tokens complement Basic Dark's restrained gaming-library aesthetic. */
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) {
+  color-scheme: light;
+  --brand-h: 260;
+  --brand-c: 0.012;
+
+  /* Distinguish page, cards and floating surfaces without harsh white glare. */
+  --background: #f5f6f8;
+  --foreground: #1a1d23;
+  --card: #ffffff;
+  --card-foreground: #1a1d23;
+  --popover: #ffffff;
+  --popover-foreground: #171a20;
+  --secondary: #e9ebef;
+  --secondary-foreground: #292d35;
+  --muted: #edf0f3;
+  --muted-foreground: #5f6672;
+  --accent: #e7eaf0;
+  --accent-foreground: #1b1e25;
+
+  /* Dark, neutral primary controls; precise rather than saturated. */
+  --primary: #22262d;
+  --primary-foreground: #ffffff;
+  --ring: #505968;
+
+  /* Low-contrast edges for layout; stronger input borders for affordance. */
+  --border: #d9dde4;
+  --input: #aeb6c2;
+  --glass: rgb(255 255 255 / 94%);
+  --glass-border: rgb(91 102 118 / 18%);
+
+  /* Semantic status signals are intentionally separate from theme branding. */
+  --destructive: #b53440;
+  --destructive-foreground: #ffffff;
+  --success: #287a5a;
+  --warning: #98610d;
+  --neon: #4d5663;
+  --gold: #866432;
+
+  --shadow-color: 225 19% 25%;
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.045);
+  --shadow-sm: 0 3px 9px hsl(var(--shadow-color) / 0.055);
+  --shadow-md: 0 10px 27px -11px hsl(var(--shadow-color) / 0.16);
+  --shadow-lg: 0 20px 40px -18px hsl(var(--shadow-color) / 0.19);
+  --shadow-xl: 0 30px 55px -23px hsl(var(--shadow-color) / 0.23);
+}
+
+/* Component-level polish for Basic Light, using existing page classes and
+   respecting contrast, focus and touch-target sizes. No seasonal decorations. */
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-navigation {
+  background: rgb(255 255 255 / 95%);
+  border-bottom-color: var(--border);
+  box-shadow: 0 1px 0 rgb(25 30 39 / 3%);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-sidebar {
+  background: #fafbfc;
+  border-right-color: var(--border);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-mobile-nav {
+  background: rgb(255 255 255 / 97%);
+  border-top-color: var(--border);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-footer {
+  background: #fafbfc;
+  border-top-color: var(--border);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-sidebar-link[aria-current="page"],
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-mobile-link[aria-current="page"] {
+  background: #e8ebf0;
+  color: #1b2028;
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-sidebar-link[aria-current="page"] > span[aria-hidden],
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-mobile-link[aria-current="page"] > span[aria-hidden] {
+  background: #353d48;
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-search {
+  background: #f5f6f8;
+  border-color: #c9ced8;
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-search:focus-within {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px rgb(80 89 104 / 13%);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-logo-icon {
+  background: #f0f2f5;
+  border-color: var(--border);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-logo-text {
+  color: #171a20;
+  -webkit-text-fill-color: currentColor;
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-game-card > a {
+  background: var(--card);
+  border-color: #d9dde4;
+  box-shadow: 0 2px 8px rgb(27 34 47 / 4%);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-game-card:is(:hover,:focus-within) > a {
+  border-color: #858e9c;
+  box-shadow: 0 12px 26px rgb(27 34 47 / 9%);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-game-meta {
+  background: #fafbfc;
+  border-top-color: var(--border);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-library-filters button[aria-selected="true"] {
+  background: #22262d;
+  border-color: #22262d;
+  color: #ffffff;
+}
+
+
+/* BASIC DARK — quiet graphite surfaces, restrained monochrome emphasis.
+   Explicitly exclude Halloween, so this design never overrides the seasonal
+   colour tokens or future themed modes. */
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) {
+  color-scheme: dark;
+  --brand-h: 260;
+  --brand-c: 0.012;
+
+  /* Three clearly separated elevations: page / cards / floating surfaces. */
+  --background: #101114;
+  --foreground: #f1f1f3;
+  --card: #191b20;
+  --card-foreground: #f1f1f3;
+  --popover: #202228;
+  --popover-foreground: #f5f5f6;
+  --secondary: #26292f;
+  --secondary-foreground: #ebebee;
+  --muted: #22252b;
+  --muted-foreground: #abb0ba;
+  --accent: #30343c;
+  --accent-foreground: #ffffff;
+
+  /* Primary buttons are bright neutral, without coloured glow. */
+  --primary: #eceef1;
+  --primary-foreground: #101114;
+  --ring: #c8ced8;
+
+  /* Crisp, quiet outlines and practical focus/field visibility. */
+  --border: #353941;
+  --input: #464b55;
+  --glass: rgb(28 30 35 / 94%);
+  --glass-border: rgb(108 113 125 / 32%);
+
+  /* Semantic status colours remain differentiated for usability. */
+  --destructive: #f08b8b;
+  --destructive-foreground: #241112;
+  --success: #74caaa;
+  --warning: #eac184;
+  --neon: #c6cad1;
+  --gold: #d8be91;
+
+  /* Neutral charcoal shadows, not purple/orange light blooms. */
+  --shadow-color: 230 10% 2%;
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.28);
+  --shadow-sm: 0 3px 9px hsl(var(--shadow-color) / 0.30);
+  --shadow-md: 0 10px 25px -9px hsl(var(--shadow-color) / 0.48);
+  --shadow-lg: 0 19px 43px -17px hsl(var(--shadow-color) / 0.56);
+  --shadow-xl: 0 26px 55px -22px hsl(var(--shadow-color) / 0.65);
+}
+
+/* Basic Dark component polish. These selectors do not touch Halloween.
+   Keep visual treatments subtle and let semantic tokens drive each page. */
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-navigation {
+  background: rgb(18 19 23 / 94%);
+  border-bottom-color: var(--border);
+  box-shadow: 0 1px 0 rgb(255 255 255 / 2%);
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-sidebar {
+  background: #14161a;
+  border-right-color: var(--border);
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-mobile-nav {
+  background: rgb(22 24 28 / 97%);
+  border-top-color: var(--border);
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-footer {
+  border-top-color: var(--border);
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-sidebar-link[aria-current="page"],
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-mobile-link[aria-current="page"] {
+  background: #282b31;
+  color: var(--foreground);
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-sidebar-link[aria-current="page"] > span[aria-hidden],
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-mobile-link[aria-current="page"] > span[aria-hidden] {
+  background: #d8dce3;
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-search {
+  background: #202228;
+  border-color: #3b3e47;
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-search:focus-within {
+  border-color: var(--ring);
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-logo-text {
+  color: var(--foreground);
+  -webkit-text-fill-color: currentColor;
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-logo-icon {
+  background: #202228;
+  border-color: var(--border);
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-game-card > a {
+  border-color: #343840;
+  box-shadow: none;
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-game-card:is(:hover,:focus-within) > a {
+  border-color: #858d9a;
+  box-shadow: 0 8px 24px rgb(0 0 0 / 20%);
+}
+html.dark[data-site-theme="default"]:not([data-season="halloween"]) .halloween-game-meta {
+  background: #1c1e23;
+  border-top-color: var(--border);
 }
 
 /* Halloween owns its own complete palette, never the default theme tokens.
@@ -153,77 +339,12 @@ html.dark[data-season="halloween"] {
 }
 
 
-/* ── Global site colour themes (settings → Appearance) ─────────────────────
-   Free: default, midnight, ocean, emerald. Premium (boosters & staff):
-   crimson, gold, rose, synthwave (animated), aurora (animated). The premium
-   gate is enforced server-side (migration 0038); these are just the looks. */
-
+/* Only Basic and Halloween are active. Future theme rules must be scoped to
+   their own data-site-theme and loaded only when the theme is released. */
 @property --brand-h {
   syntax: "<number>";
   inherits: true;
-  initial-value: 53;
-}
-
-html[data-site-theme="midnight"] {
-  --brand-h: 285;
-  --brand-c: 0.02;
-}
-html.dark[data-site-theme="midnight"] {
-  --background: oklch(0.1 0.005 285);
-  --card: oklch(0.145 0.006 285);
-  --popover: oklch(0.14 0.006 285);
-  --secondary: oklch(0.2 0.008 285);
-  --muted: oklch(0.19 0.008 285);
-  --border: oklch(0.24 0.008 285);
-  --input: oklch(0.24 0.008 285);
-  --glass: oklch(0.14 0.006 285 / 55%);
-}
-html[data-site-theme="ocean"] {
-  --brand-h: 245;
-}
-html[data-site-theme="emerald"] {
-  --brand-h: 158;
-  --brand-c: 0.17;
-}
-html[data-site-theme="crimson"] {
-  --brand-h: 22;
-  --brand-c: 0.21;
-}
-html[data-site-theme="gold"] {
-  --brand-h: 80;
-  --brand-c: 0.16;
-}
-html[data-site-theme="rose"] {
-  --brand-h: 350;
-  --brand-c: 0.2;
-}
-/* Animated premium themes: the brand hue itself slowly drifts. Static fallback
-   hue applies wherever @property animation isn't supported, and motion is
-   disabled entirely for reduced-motion users. */
-html[data-site-theme="synthwave"] {
-  --brand-h: 310;
-}
-html[data-site-theme="aurora"] {
-  --brand-h: 190;
-  --brand-c: 0.19;
-}
-@media (prefers-reduced-motion: no-preference) {
-  html[data-site-theme="synthwave"] {
-    animation: cgh-theme-synthwave 16s ease-in-out infinite alternate;
-  }
-  html[data-site-theme="aurora"] {
-    animation: cgh-theme-aurora 18s ease-in-out infinite alternate;
-  }
-}
-@keyframes cgh-theme-synthwave {
-  0% { --brand-h: 320; }
-  50% { --brand-h: 262; }
-  100% { --brand-h: 210; }
-}
-@keyframes cgh-theme-aurora {
-  0% { --brand-h: 160; }
-  50% { --brand-h: 230; }
-  100% { --brand-h: 290; }
+  initial-value: 260;
 }
 
 @theme inline {

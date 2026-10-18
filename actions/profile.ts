@@ -152,8 +152,11 @@ export async function updateSettings(input: Record<string, unknown>): Promise<Rp
       logFailure("updateSettings.halloween-schema", error);
       return { ok: false, error: "Halloween is not enabled in the database yet. Apply the theme migration." };
     }
-    if (error.message.includes("boosters and staff")) {
-      return { ok: false, error: "That theme is for server boosters and staff." };
+    if (error.message.includes("boosters and staff") || error.message.includes("active Discord server boost")) {
+      return { ok: false, error: "Premium requires an active Discord server boost." };
+    }
+    if (error.message.includes("Retro unlocks at level 25")) {
+      return { ok: false, error: "Reach Level 25 to unlock the Retro theme." };
     }
     logFailure("updateSettings", error);
     return { ok: false, error: SAVE_ERROR };
