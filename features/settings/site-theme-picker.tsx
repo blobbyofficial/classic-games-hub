@@ -59,7 +59,6 @@ export function SiteThemePicker({
       <CardContent>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {SITE_THEMES.filter((t) => t.id !== "halloween" || halloweenAvailable || selected === "halloween").map((t) => {
-            
             const active = selected === t.id;
             return (
               <button
@@ -77,13 +76,9 @@ export function SiteThemePicker({
                 <span
                   className={cn(
                     "block h-12 w-full rounded-lg",
-                    t.animated && "motion-safe:animate-gradient-flow bg-[length:200%_200%]",
                   )}
                   style={{
-                    background: t.animated
-                      ? `linear-gradient(120deg, ${t.swatch[0]}, ${t.swatch[1]}, ${t.swatch[0]})`
-                      : `linear-gradient(150deg, ${t.swatch[0]}, ${t.swatch[1]})`,
-                    backgroundSize: t.animated ? "200% 200%" : undefined,
+                    background: `linear-gradient(150deg, ${t.swatch[0]}, ${t.swatch[1]})`,
                   }}
                 />
                 <span className="mt-1.5 flex items-center gap-1 text-xs font-medium">
