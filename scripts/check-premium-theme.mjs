@@ -17,9 +17,11 @@ for (const selector of [".halloween-navigation", ".halloween-sidebar", ".hallowe
   assert.ok(css.includes(selector), "Premium surface missing: " + selector);
 }
 assert.match(css, /prefers-reduced-motion: reduce/, "Reduced-motion rules missing");
-assert.ok(!/id:\s*["']premium["']/.test(catalogue), "Premium must not become selectable before entitlement checks");
-assert.ok(!schema.includes('"premium"'), "Premium must not be accepted for settings writes before gate");
 for (const mode of ['html.dark[data-site-theme="premium"]:not([data-season="halloween"])', 'html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"])']) {
   assert.ok(css.includes(mode), `Missing scoped Premium variant: ${mode}`);
 }
-console.log("Atelier Night/Day static checks passed (isolation, tokens, surfaces, locked status).");
+assert.match(catalogue, /id: "premium"/);
+assert.ok(schema.includes('"premium"'));
+assert.match(read("database/migrations/0114_single_release_theme_entitlements.sql"), /new.site_theme = 'premium'/);
+assert.match(read("app/layout.tsx"), /canUseSiteTheme/);
+console.log("Atelier Night/Day checks passed (tokens, surfaces, secured eligibility).");
