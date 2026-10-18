@@ -12,6 +12,8 @@ Basic has neutral, low-chroma light and dark modes. Halloween remains seasonal, 
 4. **Retro** — Level-unlocked theme. Proposed requirement: **level 25** (between existing 20 and 30 milestones), to be confirmed before release. Arcade-inspired typography for headings, readable modern body type, cabinet-style borders and navigation, restrained scanline/pixel-art motifs, tactile control styles, responsive layout and low-cost fallbacks. Light/dark/system variants. Never render pixel fonts for long body text.
 5. **Red / Velvet Red** — Free, fixed appearance without light/dark variant. Low-saturation oxblood-charcoal surfaces with muted rose highlights, balanced off-white text and careful accessible contrast. Changing global Light/Dark setting must not alter the Red palette; keep the user's preferred mode stored for other themes. **CSS foundation, picker, validator and database migration implemented on branch**; see [Velvet Red specification](./velvet-red-theme-spec.md). Deployment and browser QA pending.
 
+The all-five-theme one-shot rollout procedure is in [five-theme release runbook](./five-theme-release-runbook.md). Premium and Retro now have entitlement integration in migration 0114 and the Settings picker, but production validation is pending.
+
 For the complete Retro arcade makeover plan, see [Insert Coin specification](./retro-insert-coin-theme-spec.md). This is planning-only and is not currently an unlockable theme.
 
 For the complete Premium experience proposal, see [Premium Atelier design specification](./premium-atelier-theme-spec.md). It is planning-only and remains locked until all implementation and eligibility gates pass.
@@ -31,7 +33,7 @@ For the complete Premium experience proposal, see [Premium Atelier design specif
 2. Develop a shared theme manifest and isolated design token architecture with screenshot/contrast regression tests.
 3. Implement Red (free, fixed) to prove theme mode opt-out and live switching. **Code committed; browser testing, SQL rollout and deployment outstanding.**
 4. Implement Retro plus audited level gating and typography/assets.
-5. Implement Premium plus verified booster gating, polished UI components and performance fallbacks.
+5. Implement Premium with booster gating and Retro with level-25 entitlement checks; server/SSR/picker integration coded, pending migration and browser QA.
 6. Run a cross-theme compatibility release gate before exposing any additional option.
 
 No dates or future theme releases are promised by this design document.
