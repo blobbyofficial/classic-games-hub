@@ -9,8 +9,8 @@ import { cookies } from "next/headers";
 import { SITE } from "@/lib/constants";
 import { JsonLd } from "@/components/seo/json-ld";
 import { organizationJsonLd, websiteJsonLd } from "@/lib/seo";
-import { getCurrentSettings } from "@/lib/supabase/queries";
-import { SITE_THEME_IDS } from "@/lib/themes";
+import { getCurrentSettings, getCurrentThemeEntitlements } from "@/lib/supabase/queries";
+import { SITE_THEME_IDS, canUseSiteTheme } from "@/lib/themes";
 import "@/styles/globals.css";
 import "@/styles/seasons/halloween.css";
 // Premium is pre-styled but not selectable until verified booster gating ships.
@@ -80,10 +80,17 @@ export default async function RootLayout({ children }: { children: React.ReactNo
   // that keeps anonymous traffic (and 404s) off the auth endpoint.
   const cookieStore = await cookies();
   const hasSession = cookieStore.getAll().some((c) => /^sb-.*auth-token/.test(c.name));
-  const settings = hasSession ? await getCurrentSettings().catch(() => null) : null;
+  const [settings, entitlements] = hasSession
+    ? await Promise.all([
+        getCurrentSettings().catch(() => null),
+        getCurrentThemeEntitlements().catch(() => ({ premium: false, retro: false })),
+      ])
+    : [null, { premium: false, retro: false }];
   const rawTheme = (settings as { site_theme?: string } | null)?.site_theme ?? "default";
   const season = activeSeason();
-  const siteTheme = SITE_THEME_IDS.has(rawTheme) ? rawTheme : "default";
+  // A saved booster/level theme must pass a fresh server entitlement check;
+  // stale preferences (or revoked boosts) always render Basic safely.
+  const siteTheme = SITE_THEME_IDS.has(rawTheme) && canUseSiteTheme(rawTheme, entitlements) ? rawTheme : "default";
   const halloweenEnabled = season === "halloween" && (!hasSession || siteTheme === "halloween");
 
   // Reduced motion has to land on the server-rendered html tag: applying it
