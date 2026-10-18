@@ -37,12 +37,12 @@ test("migration files are nonempty, consistently named, and free of merge confli
   assert.ok(files.length > 0, "No migration SQL files found");
   const widths = new Set();
   for (const file of files) {
-    const match = /^(\\d+)_([a-z0-9][a-z0-9_-]*)\\.sql$/.exec(file);
+    const match = /^(\d+)_([a-z0-9][a-z0-9_-]*)\.sql$/.exec(file);
     assert.ok(match, `Unexpected migration filename: ${file}`);
     widths.add(match[1].length);
     const sql = readFileSync(join(dir, file), "utf8");
     assert.ok(sql.trim().length > 0, `Empty migration: ${file}`);
-    assert.doesNotMatch(sql, /^(?:<<<<<<< |=======\\s*$|>>>>>>> )/m, `Merge conflict marker in ${file}`);
+    assert.doesNotMatch(sql, /^(?:<<<<<<< |=======\s*$|>>>>>>> )/m, `Merge conflict marker in ${file}`);
   }
   assert.equal(widths.size, 1, "Mixed migration version widths can sort incorrectly");
 });
