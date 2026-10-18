@@ -1962,6 +1962,34 @@ export const ROADMAP: RoadmapRelease[] = [
     ] },
   ] },
 
+  {
+    version: "future-animated-identity-level-shop",
+    codename: "Living Library & Earned Collection",
+    status: "later",
+    timeframe: "After the current site/theme release",
+    summary: "Bring individual game art and iconography to life without distracting loops or slowing down phones, while making shop cosmetic availability follow a fair, clearly explained level ladder. Full technical plan: docs/animated-identity-level-shop-plan.md.",
+    groups: [
+      {
+        heading: "Game thumbnails and icon animation",
+        icon: "Clapperboard",
+        items: [
+          { title: "Audit every active game and icon asset", description: "Inventory actual slugs, posters, icon usage and current 512px animated site mark. Prepare distinct game-specific storyboards and stable static first frames; do not assume all games currently have animations.", status: "later" },
+          { title: "Build motion manifest and poster-first previews", description: "Use one reusable lazy animation component that triggers short previews on meaningful interaction, stops when off-screen and honours reduced motion, low-power mobile and data-saving settings. Do not autoplay the entire library or animate game canvases.", status: "later" },
+          { title: "Produce unique game and curated cosmetic animations", description: "Create hand-designed, recognisable micro-scenes for each actual game and curated shop item; apply theme-sensitive animation styles to icons only when they communicate feedback. Verify each asset individually before counting coverage.", status: "later" },
+        ],
+      },
+      {
+        heading: "Earned shop progression",
+        icon: "LockKeyhole",
+        items: [
+          { title: "Audit and hand-tier the current shop catalogue", description: "Inspect actual available shop rows and nominate level gates for individual item slugs, keeping a useful affordable selection at level 1 and meaningful cosmetic tiers across levels 5–50. Preserve existing ownership and already-earned cosmetics.", status: "later" },
+          { title: "Make level requirements unmistakable", description: "Add Available/Locked/Owned filters, readable required-level messaging, remaining progress and safe previews of locked items. Existing min_level checks and purchase_shop_item server protection must remain authoritative.", status: "later" },
+          { title: "Ship a safe data migration and purchase tests", description: "Only update exact confirmed shop slugs in an idempotent migration. Test direct RPC bypass attempts, existing ownership, gifting, boost items and all threshold boundaries; no guessed mass-level assignment or confiscation.", status: "later" },
+        ],
+      },
+    ],
+  },
+
 ];
 
 /**
