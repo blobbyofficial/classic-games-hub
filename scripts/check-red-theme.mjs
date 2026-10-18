@@ -23,5 +23,5 @@ for (const selector of [".halloween-navigation",".halloween-sidebar",".halloween
   assert.ok(css.includes(selector), "Missing themed surface " + selector);
 }
 assert.ok(css.includes("prefers-reduced-motion: reduce"), "Reduced motion guard missing");
-assert.ok(!themes.includes('id: "premium"') && !themes.includes('id: "retro"'), "Locked unfinished themes must stay unreleased");
+assert.ok(themes.includes('id: "premium"') && themes.includes('id: "retro"'), "All five themes must ship together");
 console.log("Velvet Red static checks passed (fixed mode, catalogue, migration, surfaces).");
