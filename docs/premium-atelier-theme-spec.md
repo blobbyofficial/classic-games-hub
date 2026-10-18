@@ -1,7 +1,7 @@
 # Premium UI — Atelier
-Status: ATELIER NIGHT + DAY CSS FOUNDATIONS IMPLEMENTED ON DEVELOPMENT BRANCH; neither is selectable, deployed or unlockable. Secure eligibility, end-to-end UI QA and performance acceptance remain pending.
+Status: NIGHT + DAY CSS AND BOOSTER-GATED PICKER/SSR/DB CODED ON DEVELOPMENT BRANCH. Production migration, live role-sync testing, UI QA and deployment remain pending.
 Owner: Classic Games Hub. Proposed entitlement: active Discord server booster (plus authorised staff preview).
-This document extends [site-theme-redesign-plan.md](./site-theme-redesign-plan.md), without exposing another theme in the app. The scoped light/dark stylesheet is `styles/themes/premium.css`, imported by `app/layout.tsx` but unreachable via the active theme catalogue; therefore this is not a completed user-facing Premium theme.
+This document extends [site-theme-redesign-plan.md](./site-theme-redesign-plan.md), without exposing another theme in the app. The scoped light/dark stylesheet is `styles/themes/premium.css`, imported by `app/layout.tsx` but now included in the active catalogue with server-side booster gating in migration 0114; production readiness still requires integration and visual verification.
 
 ## Product intent
 Premium is the standout *cosmetic* thank-you for supporting the Discord server. It should feel like a cohesive premium edition of the whole Hub, not a gold recolour of Basic or a performance-heavy animated wallpaper. Elegant, smooth, fast, accessible, mobile-first, distinct from both Basic and Halloween; no competitive advantages, credits/XP boosts or exclusive game power. No manipulative renewal prompts.
