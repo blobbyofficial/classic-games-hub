@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Geist, Geist_Mono, Press_Start_2P } from "next/font/google";
 import { Toaster } from "sonner";
 import { ThemeProvider } from "@/components/providers/theme-provider";
 import { ConsentProvider } from "@/components/providers/consent-provider";
@@ -15,6 +15,7 @@ import "@/styles/globals.css";
 import "@/styles/seasons/halloween.css";
 // Premium is pre-styled but not selectable until verified booster gating ships.
 import "@/styles/themes/premium.css";
+import "@/styles/themes/retro.css";
 import { activeSeason } from "@/lib/seasonal-theme";
 
 // `display: swap` shows the fallback immediately rather than blocking first
@@ -28,6 +29,13 @@ const geistSans = Geist({
   fallback: ["system-ui", "arial"],
   adjustFontFallback: true,
 });
+const retroDisplay = Press_Start_2P({
+  variable: "--font-retro-display",
+  subsets: ["latin"],
+  display: "swap",
+  preload: false,
+});
+
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
@@ -100,7 +108,7 @@ export default async function RootLayout({ children }: { children: React.ReactNo
           </>
         )}
       </head>
-      <body className={`${geistSans.variable} ${geistMono.variable} font-sans`}>
+      <body className={`${geistSans.variable} ${geistMono.variable} ${retroDisplay.variable} font-sans`}>
         {/* Site-wide identity, on every page so no single page has to be the one
             Google indexes for it to resolve. Both carry a stable @id, which is
             what lets the per-page blocks reference the publisher instead of
