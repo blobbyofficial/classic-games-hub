@@ -854,6 +854,7 @@ export interface Database {
     Views: Record<string, never>;
     Functions: {
       admin_analytics_daily: { Args: { p_days?: number }; Returns: { day: string; plays: number; signups: number }[] };
+      my_theme_entitlements: { Args: Record<string, never>; Returns: Json };
       submit_score: {
         Args: { p_slug: string; p_score: number; p_duration?: number; p_difficulty?: string };
         Returns: Json;
