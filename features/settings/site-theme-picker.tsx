@@ -71,7 +71,7 @@ export function SiteThemePicker({
               <button
                 key={t.id}
                 onClick={() => apply(t.id)}
-                aria-label={t.name}
+                aria-label={locked ? `${t.name}, locked: ${t.id === "premium" ? "requires an active Discord server boost" : "requires level 25"}` : t.name}
                 aria-pressed={active}
                 disabled={locked || pending}
                 title={locked ? (t.id === "premium" ? "Boost the Discord server to unlock" : "Unlock at level 25") : undefined}
@@ -83,7 +83,32 @@ export function SiteThemePicker({
                   locked && "cursor-not-allowed opacity-65",
                 )}
               >
-                {t.id === "red" ? (
+                {t.id === "premium" ? (
+                  <span aria-hidden="true" className="flex h-12 flex-col overflow-hidden rounded-lg border border-[#aa9677] bg-[#0c1018] p-1.5">
+                    <span className="mb-1 flex items-center justify-between">
+                      <span className="h-1 w-12 rounded-full bg-[#c9ab7d]" />
+                      <span className="h-1 w-1 rounded-full bg-[#b5beca]" />
+                    </span>
+                    <span className="flex min-h-0 flex-1 gap-1">
+                      <span className="w-1/4 rounded-sm bg-[#202937]" />
+                      <span className="flex flex-1 flex-col justify-between rounded-sm border border-[#384455] bg-[#161d27] p-1">
+                        <span className="h-1 w-1/2 rounded-full bg-[#b5beca]" />
+                        <span className="h-1.5 w-2/5 rounded-sm bg-[#c9ab7d]" />
+                      </span>
+                    </span>
+                  </span>
+                ) : t.id === "retro" ? (
+                  <span aria-hidden="true" className="flex h-12 flex-col overflow-hidden rounded-sm border-[3px] border-[#678d71] bg-[#101715] p-1">
+                    <span className="mb-1 h-1 w-3/4 bg-[#f2ce81]" />
+                    <span className="flex min-h-0 flex-1 gap-1">
+                      <span className="w-1/4 border border-[#678d71] bg-[#293c31]" />
+                      <span className="flex flex-1 flex-col border border-[#678d71] bg-[#182720] p-1">
+                        <span className="h-1 w-2/3 bg-[#8bebb6]" />
+                        <span className="mt-auto h-1.5 w-1/2 bg-[#f2ce81]" />
+                      </span>
+                    </span>
+                  </span>
+                ) : t.id === "red" ? (
                   <span aria-hidden="true" className="flex h-12 w-full flex-col overflow-hidden rounded-lg border border-[#614a52] bg-[#161214] p-1.5">
                     <span className="mb-1 flex h-1.5 items-center gap-1">
                       <span className="h-1.5 w-1.5 rounded-full bg-[#d77b82]" />
