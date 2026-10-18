@@ -257,3 +257,268 @@ html:not(.dark)[data-site-theme="retro"][data-reduced-motion="true"] .halloween-
     transform: none;
   }
 }
+
+
+/*
+ * INSERT COIN / Retro Night — actual 8-bit arcade cabinet styling.
+ * Dark evergreen cabinet panels, CRT-inspired inset game frames, glowing
+ * green *solid* status cues, amber keycaps and visibly stepped edges.
+ * No flickering scanlines, expensive compositing, or filters over gameplay.
+ * The level-gated theme remains unselectable until server validation ships.
+ */
+html.dark[data-site-theme="retro"]:not([data-season="halloween"]) {
+  color-scheme: dark;
+  --background: #0d1513;
+  --foreground: #f3efd9;
+  --card: #182720;
+  --card-foreground: #f3efd9;
+  --popover: #1d3028;
+  --popover-foreground: #fff5dd;
+  --primary: #8bebb6;
+  --primary-foreground: #092319;
+  --secondary: #293c31;
+  --secondary-foreground: #f1eccc;
+  --muted: #24352d;
+  --muted-foreground: #b2c9b9;
+  --accent: #315141;
+  --accent-foreground: #f4f4da;
+  --destructive: #ff9890;
+  --destructive-foreground: #301512;
+  --success: #9cedbb;
+  --warning: #f2ce81;
+  --border: #678d71;
+  --input: #8baf90;
+  --ring: #b4f6cc;
+  --neon: #8bebb6;
+  --gold: #f2ce81;
+  --radius: 0.25rem;
+  --glass: rgb(24 39 32 / 97%);
+  --glass-border: rgb(139 175 144 / 48%);
+  --shadow-color: 150 35% 2%;
+  --shadow-xs: 2px 2px 0 #050b08;
+  --shadow-sm: 3px 3px 0 #050b08;
+  --shadow-md: 5px 5px 0 #050b08;
+  --shadow-lg: 7px 7px 0 #050b08;
+  --shadow-xl: 9px 9px 0 #050b08;
+  --retro-pixel-font: var(--font-retro-display), "Courier New", monospace;
+  --retro-frame: #678d71;
+  --retro-ink: #f3efd9;
+  --retro-paper: #182720;
+  --retro-gold: #f2ce81;
+}
+
+/* Shared 8-bit type stays bold and characterful in both appearances; long
+ * descriptions, forms and conversations retain a legible modern body face. */
+html.dark[data-site-theme="retro"] :is(h1,h2,h3,.halloween-logo-text) {
+  font-family: var(--retro-pixel-font);
+  font-weight: 400;
+  text-transform: uppercase;
+  letter-spacing: 0;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  text-wrap: balance;
+}
+html.dark[data-site-theme="retro"] h1 {
+  font-size: clamp(1.15rem, 1rem + 1.4vw, 2.2rem);
+}
+html.dark[data-site-theme="retro"] h2 {
+  font-size: clamp(.9rem, .8rem + .75vw, 1.35rem);
+}
+html.dark[data-site-theme="retro"] h3 {
+  font-size: clamp(.75rem, .7rem + .38vw, 1rem);
+}
+html.dark[data-site-theme="retro"] .halloween-logo-text {
+  font-size: clamp(.55rem, .48rem + .35vw, .78rem);
+  color: #f3efd9;
+  -webkit-text-fill-color: currentColor;
+}
+html.dark[data-site-theme="retro"] :is(p,li,input,textarea,select,[role="textbox"]) {
+  font-family: var(--font-geist-sans), system-ui, sans-serif;
+}
+
+/* Metal cabinet shell, hardware-style nav and lit active indicators. */
+html.dark[data-site-theme="retro"] .halloween-navigation {
+  background: #18291f;
+  border-bottom: 4px solid #86b58e;
+  box-shadow: inset 0 -2px 0 #35553e;
+  backdrop-filter: none;
+}
+html.dark[data-site-theme="retro"] .halloween-sidebar {
+  background: #14231b;
+  border-right: 4px solid #587b5e;
+  box-shadow: inset -2px 0 #2c4636;
+}
+html.dark[data-site-theme="retro"] .halloween-mobile-nav {
+  background: #18291f;
+  border-top: 4px solid #86b58e;
+  backdrop-filter: none;
+}
+html.dark[data-site-theme="retro"] .halloween-footer {
+  background: #14231b;
+  border-top: 3px solid #587b5e;
+}
+html.dark[data-site-theme="retro"] .halloween-logo-icon {
+  background: #243b2e;
+  border: 3px solid #d5ba77;
+  border-radius: 2px;
+  box-shadow: 3px 3px 0 #050b08;
+  image-rendering: pixelated;
+}
+html.dark[data-site-theme="retro"] .halloween-search {
+  background: #101c17;
+  border: 3px solid #729d78;
+  border-radius: 2px;
+  color: #deebd8;
+  box-shadow: 3px 3px 0 #060b08;
+}
+html.dark[data-site-theme="retro"] .halloween-search:focus-visible {
+  outline: 3px dashed #b4f6cc;
+  outline-offset: 4px;
+}
+html.dark[data-site-theme="retro"] .halloween-sidebar-link,
+html.dark[data-site-theme="retro"] .halloween-mobile-link {
+  border-radius: 2px;
+  font-weight: 700;
+  transition: background-color 90ms steps(2,end), color 90ms steps(2,end);
+}
+html.dark[data-site-theme="retro"] .halloween-sidebar-link[aria-current="page"],
+html.dark[data-site-theme="retro"] .halloween-mobile-link[aria-current="page"] {
+  background: #375b41;
+  color: #f3efd9;
+  box-shadow: inset 3px 0 0 #f2ce81;
+}
+html.dark[data-site-theme="retro"] .halloween-sidebar-link[aria-current="page"] > span[aria-hidden] {
+  background: #f2ce81;
+}
+
+/* Arcade cabinets hold real artwork, with angular borders and a solid label. */
+html.dark[data-site-theme="retro"] .halloween-game-card > a {
+  border: 4px solid #729d78;
+  border-radius: 3px;
+  background: #182720;
+  box-shadow: 4px 4px 0 #050b08, inset 0 0 0 2px #345740;
+  transform: none;
+  transition: border-color 90ms steps(2,end), box-shadow 90ms steps(2,end), transform 90ms steps(2,end);
+}
+html.dark[data-site-theme="retro"] .halloween-game-card:is(:hover,:focus-within) > a {
+  border-color: #d5ba77;
+  box-shadow: 2px 2px 0 #050b08, inset 0 0 0 2px #345740;
+}
+@media (hover:hover) and (pointer:fine) and (prefers-reduced-motion:no-preference) {
+  html.dark[data-site-theme="retro"] .halloween-game-card:hover > a {
+    transform: translate(2px,2px);
+  }
+}
+html.dark[data-site-theme="retro"] .halloween-game-card:focus-within > a {
+  outline: 3px dashed #b4f6cc;
+  outline-offset: 5px;
+}
+html.dark[data-site-theme="retro"] .halloween-game-art {
+  border-bottom: 3px solid #729d78;
+  background: #101c17;
+}
+html.dark[data-site-theme="retro"] .halloween-game-art img {
+  image-rendering: auto;
+}
+html.dark[data-site-theme="retro"] .halloween-game-meta {
+  background: #25392d;
+  border-top: 2px solid #587b5e;
+}
+html.dark[data-site-theme="retro"] .halloween-game-card .halloween-game-meta :is(h2,h3) {
+  font-family: var(--retro-pixel-font);
+  font-size: .7rem;
+  line-height: 1.6;
+  color: #f3efd9;
+}
+
+/* Eight-bit tactile controls: press in two steps, no indefinite animation. */
+html.dark[data-site-theme="retro"] .halloween-ui-card {
+  border: 3px solid #729d78;
+  border-radius: 3px;
+  box-shadow: 4px 4px 0 #050b08;
+}
+html.dark[data-site-theme="retro"] .halloween-ui-button {
+  border-radius: 2px;
+  border-width: 2px;
+  box-shadow: 3px 3px 0 #050b08;
+  transition: transform 90ms steps(2,end), box-shadow 90ms steps(2,end), background-color 90ms steps(2,end);
+}
+html.dark[data-site-theme="retro"] .halloween-ui-button:active {
+  transform: translate(2px,2px);
+  box-shadow: 1px 1px 0 #050b08;
+}
+html.dark[data-site-theme="retro"] .halloween-ui-button:focus-visible,
+html.dark[data-site-theme="retro"] .halloween-ui-input:focus-visible,
+html.dark[data-site-theme="retro"] .halloween-select-trigger:focus-visible {
+  outline: 3px dashed #b4f6cc;
+  outline-offset: 3px;
+}
+html.dark[data-site-theme="retro"] .halloween-ui-input,
+html.dark[data-site-theme="retro"] .halloween-select-trigger {
+  border: 2px solid #8baf90;
+  border-radius: 2px;
+  background: #15251c;
+  color: #f3efd9;
+}
+html.dark[data-site-theme="retro"] .halloween-select-content,
+html.dark[data-site-theme="retro"] .halloween-tabs-list {
+  border: 3px solid #729d78;
+  border-radius: 2px;
+  background: #1d3028;
+}
+html.dark[data-site-theme="retro"] .halloween-tabs-trigger {
+  border-radius: 2px;
+}
+html.dark[data-site-theme="retro"] .halloween-tabs-trigger[data-state="active"] {
+  background: #375b41;
+  color: #f3efd9;
+  box-shadow: inset 0 -3px #f2ce81;
+}
+
+/* Cabinet controls wrap gameplay, never intercept canvas events. */
+html.dark[data-site-theme="retro"] .halloween-player-shell {
+  border: 4px solid #729d78;
+  border-radius: 3px;
+  background: #1b2d23;
+  box-shadow: 5px 5px 0 #050b08;
+}
+html.dark[data-site-theme="retro"] .halloween-player-hud {
+  border-bottom: 3px solid #729d78;
+}
+html.dark[data-site-theme="retro"] .halloween-player-stage {
+  border: 4px solid #8bad8e;
+  border-radius: 2px;
+  outline: 2px solid #d5ba77;
+  box-shadow: none;
+}
+html.dark[data-site-theme="retro"] .halloween-difficulty {
+  border: 2px solid #729d78;
+  border-radius: 2px;
+  background: #26392d;
+}
+html.dark[data-site-theme="retro"] .halloween-difficulty button[aria-pressed="true"],
+html.dark[data-site-theme="retro"] .halloween-library-filters button[aria-selected="true"] {
+  border-radius: 2px;
+  background: #8bebb6;
+  color: #092319;
+}
+
+/* Keep text crisp on compact mobile devices, and respect disabled motion. */
+@media (max-width:640px) {
+  html.dark[data-site-theme="retro"] .halloween-logo-text { font-size: .56rem; }
+  html.dark[data-site-theme="retro"] .halloween-game-card .halloween-game-meta :is(h2,h3) { font-size: .55rem; }
+  html.dark[data-site-theme="retro"] .halloween-player-shell { padding: 4px; }
+  html.dark[data-site-theme="retro"] .halloween-player-stage { border-width: 2px; }
+}
+html.dark[data-site-theme="retro"][data-reduced-motion="true"] .halloween-game-card > a,
+html.dark[data-site-theme="retro"][data-reduced-motion="true"] .halloween-ui-button {
+  transition: none;
+  transform: none;
+}
+@media (prefers-reduced-motion:reduce) {
+  html.dark[data-site-theme="retro"] .halloween-game-card > a,
+  html.dark[data-site-theme="retro"] .halloween-ui-button {
+    transition: none;
+    transform: none;
+  }
+}
