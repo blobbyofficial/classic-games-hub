@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search, X, SlidersHorizontal, Heart, Gamepad2 } from "lucide-react";
 import { GameGrid } from "@/components/games/game-grid";
 import { EmptyState } from "@/components/empty-state";
@@ -13,6 +13,10 @@ import type { GameWithMeta } from "@/types";
 
 type Sort = "featured" | "popular" | "rating" | "az";
 
+function categoryFromUrl(value?: string | null) {
+  return CATEGORIES.find((category) => category.toLowerCase() === value?.toLowerCase()) ?? "All";
+}
+
 export function GamesLibrary({
   games,
   favorites,
@@ -24,24 +28,54 @@ export function GamesLibrary({
 }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>(
-    initialCategory && CATEGORIES.includes(initialCategory as (typeof CATEGORIES)[number])
-      ? initialCategory
-      : "All",
+    categoryFromUrl(initialCategory),
   );
   const [sort, setSort] = useState<Sort>("featured");
   const [favOnly, setFavOnly] = useState(false);
   const favSet = useMemo(() => new Set(favorites), [favorites]);
 
+  // Follow navigation to a different category, including browser Back/Forward.
+  // The library remains client-filtered: changing the URL does not need a
+  // server fetch or a full-page transition.
+  useEffect(() => {
+    setCategory(categoryFromUrl(initialCategory));
+  }, [initialCategory]);
+
+  useEffect(() => {
+    const onPopState = () => {
+      setCategory(categoryFromUrl(new URLSearchParams(window.location.search).get("category")));
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  const selectCategory = (next: string) => {
+    if (next === category) return;
+    setCategory(next);
+    const url = new URL(window.location.href);
+    if (next === "All") url.searchParams.delete("category");
+    else url.searchParams.set("category", next.toLowerCase());
+    // Native History API integration is supported by the Next.js App Router.
+    window.history.pushState(null, "", url.pathname + url.search + url.hash);
+  };
+
+  const resetFilters = () => {
+    setQuery("");
+    setFavOnly(false);
+    selectCategory("All");
+  };
+
   const filtered = useMemo(() => {
+    const normalizedQuery = query.trim().toLowerCase();
     let list = games.filter((g) => {
       if (category !== "All" && g.category !== category) return false;
       if (favOnly && !favSet.has(g.id)) return false;
-      if (query.trim()) {
-        const q = query.trim().toLocaleLowerCase();
+      if (normalizedQuery) {
         return (
-          g.title.toLowerCase().includes(q) ||
-          g.tagline?.toLowerCase().includes(q) ||
-          (g.tags ?? []).some((t) => t.toLowerCase().includes(q))
+          g.title.toLowerCase().includes(normalizedQuery) ||
+          g.category.toLowerCase().includes(normalizedQuery) ||
+          g.tagline?.toLowerCase().includes(normalizedQuery) ||
+          (g.tags ?? []).some((t) => t.toLowerCase().includes(normalizedQuery))
         );
       }
       return true;
@@ -51,7 +85,10 @@ export function GamesLibrary({
         case "popular":
           return b.play_count - a.play_count;
         case "rating":
-          return b.rating - a.rating || b.rating_count - a.rating_count;
+          return Number(b.rating_count > 0) - Number(a.rating_count > 0)
+            || b.rating - a.rating
+            || b.rating_count - a.rating_count
+            || a.title.localeCompare(b.title);
         case "az":
           return a.title.localeCompare(b.title);
         default:
@@ -120,7 +157,7 @@ export function GamesLibrary({
             <button
               key={cat}
               aria-pressed={selected}
-              onClick={() => setCategory(cat)}
+              onClick={() => selectCategory(cat)}
               type="button"
               className={cn(
                 "min-h-11 shrink-0 rounded-full border px-4 py-2 text-sm font-medium focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary",
@@ -144,11 +181,7 @@ export function GamesLibrary({
           action={
             <Button
               variant="outline"
-              onClick={() => {
-                setQuery("");
-                setCategory("All");
-                setFavOnly(false);
-              }}
+              onClick={resetFilters}
             >
               Clear filters
             </Button>
