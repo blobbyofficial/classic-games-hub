@@ -3,12 +3,82 @@
 
 @custom-variant dark (&:is(.dark *));
 
-/* CLASSIC GAMES HUB — HALLOWEEN 2026
-   Seasonal reskin of the original global stylesheet.
-   Preserves existing utility names, game layouts, user themes, and cosmetics.
-   Replace globals.css to apply; revert to the original after Halloween.
-*/
+/* Classic Games Hub global tokens. Halloween overrides apply only with data-season=halloween. */
+/* Neutral Arcade Violet foundation, never seasonal. Seasonal palettes are scoped below. */
 :root {
+  --brand-h: 293;
+  --brand-c: 0.18;
+  --background: oklch(0.985 0.006 285);
+  --foreground: oklch(0.19 0.025 285);
+  --card: oklch(0.998 0.003 285);
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.56 var(--brand-c) var(--brand-h));
+  --primary-foreground: oklch(0.99 0 0);
+  --secondary: oklch(0.944 0.016 285);
+  --secondary-foreground: oklch(0.25 0.025 285);
+  --muted: oklch(0.953 0.012 285);
+  --muted-foreground: oklch(0.46 0.018 285);
+  --accent: oklch(0.93 0.045 var(--brand-h));
+  --accent-foreground: oklch(0.30 0.075 var(--brand-h));
+  --destructive: oklch(0.55 0.2 26);
+  --destructive-foreground: white;
+  --success: oklch(0.55 0.13 152);
+  --warning: oklch(0.65 0.15 78);
+  --border: oklch(0.86 0.013 285);
+  --input: var(--border);
+  --ring: var(--primary);
+  --neon: oklch(0.65 0.17 var(--brand-h));
+  --gold: oklch(0.72 0.15 85);
+  --radius: 0.625rem;
+  --glass: oklch(0.995 0.004 285 / 90%);
+  --glass-border: oklch(0.79 0.014 285 / 46%);
+  --shadow-color: 260 15% 22%;
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.06);
+  --shadow-sm: 0 2px 5px hsl(var(--shadow-color) / 0.07);
+  --shadow-md: 0 6px 18px -7px hsl(var(--shadow-color) / 0.16);
+  --shadow-lg: 0 16px 30px -14px hsl(var(--shadow-color) / 0.19);
+  --shadow-xl: 0 26px 48px -20px hsl(var(--shadow-color) / 0.25);
+}
+
+.dark {
+  --background: oklch(0.135 0.015 285);
+  --foreground: oklch(0.95 0.012 285);
+  --card: oklch(0.18 0.017 285);
+  --card-foreground: var(--foreground);
+  --popover: oklch(0.20 0.018 285);
+  --popover-foreground: var(--foreground);
+  --primary: oklch(0.75 max(0, calc(var(--brand-c) - 0.03)) var(--brand-h));
+  --primary-foreground: oklch(0.14 0.014 285);
+  --secondary: oklch(0.24 0.018 285);
+  --secondary-foreground: oklch(0.93 0.01 285);
+  --muted: oklch(0.22 0.014 285);
+  --muted-foreground: oklch(0.73 0.014 285);
+  --accent: oklch(0.28 0.06 var(--brand-h));
+  --accent-foreground: oklch(0.91 0.07 var(--brand-h));
+  --destructive: oklch(0.72 0.17 28);
+  --destructive-foreground: oklch(0.14 0.02 20);
+  --success: oklch(0.74 0.12 150);
+  --warning: oklch(0.80 0.13 80);
+  --border: oklch(0.30 0.018 285);
+  --input: oklch(0.31 0.018 285);
+  --ring: var(--primary);
+  --neon: oklch(0.77 0.13 var(--brand-h));
+  --gold: oklch(0.82 0.12 85);
+  --glass: oklch(0.19 0.015 285 / 93%);
+  --glass-border: oklch(0.52 0.023 285 / 27%);
+  --shadow-color: 260 24% 2%;
+  --shadow-xs: 0 1px 3px hsl(var(--shadow-color) / 0.38);
+  --shadow-sm: 0 2px 7px hsl(var(--shadow-color) / 0.39);
+  --shadow-md: 0 9px 21px -8px hsl(var(--shadow-color) / 0.56);
+  --shadow-lg: 0 20px 42px -15px hsl(var(--shadow-color) / 0.65);
+  --shadow-xl: 0 30px 64px -19px hsl(var(--shadow-color) / 0.75);
+}
+
+/* Halloween owns its own complete palette, never the default theme tokens.
+   This also prevents Midnight and the other palettes from inheriting orange. */
+html[data-season="halloween"] {
   /* Bone-white paper, dried ink, and jack-o'-lantern amber. */
   --brand-h: 53;
   --brand-c: 0.16;
@@ -46,7 +116,8 @@
   --shadow-xl: 0 26px 48px -20px hsl(var(--shadow-color) / 0.25);
 }
 
-.dark {
+
+html.dark[data-season="halloween"] {
   /* Ink-black, damp stone, muted witch-green; orange reserved for action. */
   --background: oklch(0.112 0.012 70);
   --foreground: oklch(0.935 0.016 83);
@@ -80,6 +151,7 @@
   --shadow-lg: 0 20px 42px -15px hsl(var(--shadow-color) / 0.65);
   --shadow-xl: 0 30px 64px -19px hsl(var(--shadow-color) / 0.75);
 }
+
 
 /* ── Global site colour themes (settings → Appearance) ─────────────────────
    Free: default, midnight, ocean, emerald. Premium (boosters & staff):

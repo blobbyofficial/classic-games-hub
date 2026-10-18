@@ -142,6 +142,16 @@ export async function updateSettings(input: Record<string, unknown>): Promise<Rp
   const { error } = await auth.supabase.from("user_settings")
     .update(parsed.data).eq("user_id", auth.user.id);
   if (error) {
+    // An older database migration still rejecting Halloween is an operational
+    // schema mismatch, not a generic network/save error. Give an actionable
+    // message while the repair migration is applied.
+    if (parsed.data.site_theme === "halloween" &&
+        (error.message.includes("invalid_theme") ||
+         error.message.includes("Unknown site theme") ||
+         error.code === "23514")) {
+      logFailure("updateSettings.halloween-schema", error);
+      return { ok: false, error: "Halloween is not enabled in the database yet. Apply the theme migration." };
+    }
     if (error.message.includes("boosters and staff")) {
       return { ok: false, error: "That theme is for server boosters and staff." };
     }
