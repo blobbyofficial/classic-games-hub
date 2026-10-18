@@ -1,33 +1,14 @@
-/**
- * Global site colour themes (settings → Appearance). The looks live in
- * styles/globals.css (`html[data-site-theme=…]`); the premium gate is enforced
- * by the database (migration 0038) - this catalogue only drives the UI.
- */
-
+/** Active colour themes. Future themes must be deliberately released, not exposed as placeholders. */
 export interface SiteTheme {
-  id: string;
+  id: "default" | "halloween";
   name: string;
-  /** Swatch colours for the picker (top → bottom). */
   swatch: [string, string];
   premium: boolean;
   animated?: boolean;
 }
-
 export const SITE_THEMES: SiteTheme[] = [
-  { id: "halloween", name: "Halloween", swatch: ["#d68138", "#171e19"], premium: false },
-  { id: "default", name: "Arcade Violet", swatch: ["#8b5cf6", "#6d28d9"], premium: false },
-  { id: "midnight", name: "Midnight", swatch: ["#3f3f46", "#09090b"], premium: false },
-  { id: "ocean", name: "Ocean", swatch: ["#60a5fa", "#1d4ed8"], premium: false },
-  { id: "emerald", name: "Emerald", swatch: ["#34d399", "#047857"], premium: false },
-  { id: "crimson", name: "Crimson", swatch: ["#f87171", "#b91c1c"], premium: true },
-  { id: "gold", name: "Gold Rush", swatch: ["#fbbf24", "#b45309"], premium: true },
-  { id: "rose", name: "Neon Rose", swatch: ["#fb7185", "#be123c"], premium: true },
-  { id: "synthwave", name: "Synthwave", swatch: ["#e879f9", "#22d3ee"], premium: true, animated: true },
-  { id: "aurora", name: "Aurora", swatch: ["#34d399", "#a78bfa"], premium: true, animated: true },
+  { id: "default", name: "Basic", swatch: ["#f5f5f5", "#202124"], premium: false },
+  { id: "halloween", name: "Halloween", swatch: ["#dd904a", "#171e19"], premium: false },
 ];
-
-export const SITE_THEME_IDS = new Set(SITE_THEMES.map((t) => t.id));
-
-export function isPremiumTheme(id: string): boolean {
-  return SITE_THEMES.find((t) => t.id === id)?.premium ?? false;
-}
+export const SITE_THEME_IDS = new Set<string>(SITE_THEMES.map(t => t.id));
+export function isPremiumTheme(_id: string): boolean { return false; }
