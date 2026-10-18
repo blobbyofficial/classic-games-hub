@@ -8,7 +8,7 @@ import { SITE_THEMES } from "@/lib/themes";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-/** Select between Basic and seasonal Halloween. Other old presets are retired. */
+/** Free Basic, seasonal Halloween, and fixed-mode Red. */
 export function SiteThemePicker({
   current,
   halloweenAvailable,
@@ -53,7 +53,7 @@ export function SiteThemePicker({
       <CardHeader>
         <CardTitle>Site colour theme</CardTitle>
         <CardDescription>
-          Choose a clean Basic appearance or the seasonal Halloween design. Light and dark mode are configured separately above.
+          Choose Basic, seasonal Halloween or Velvet Red. Red has one carefully balanced appearance and ignores the Light/Dark preference until you switch away.
         </CardDescription>
       </CardHeader>
       <CardContent>
