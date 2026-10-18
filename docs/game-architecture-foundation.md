@@ -1,4 +1,4 @@
-# Game Architecture 2.1 — foundation
+# Game Architecture v1.6.1 — foundation
 
 This is an **additive, non-production first phase**. The existing `lib/games/registry.ts`, canvas engine factories, game URLs, scores, favourites, database game rows and published states remain unchanged. Do not switch to the new runtime without a game-specific migration and tests.
 
@@ -6,7 +6,7 @@ This is an **additive, non-production first phase**. The existing `lib/games/reg
 
 - `packages/game-contracts/src/index.ts` contains the versioned v1 manifest and a runtime validator. A manifest describes a game package; it **does not** create a Supabase catalogue row or publish a game.
 - `packages/game-runtime/src/index.ts` implements serialized initialization/start/pause/resume/restart/dispose transitions, state/error events and cancellation. The game owns its listeners, animation frames and other resources and **must** clean them up in `dispose`.
-- No workspace installer, new database schema, SDK access to score submissions, or migrated game is introduced in this phase.
+- Added source-only game SDK and input packages, isolated TypeScript projects, opt-in pnpm workspace discovery and a focused Node test harness. No database schema or migrated game is introduced.\n- A score service interface is only a transport request; the server remains responsible for validating scores and calculating rewards.
 
 ## Proposed package layout
 
@@ -26,7 +26,7 @@ games/
 
 ## Safety and acceptance gates
 
-1. Define isolated package builds and a workspace setup *without replacing npm until CI is proven*.
+1. Independently typecheck all four packages with `npm run check:game-packages` and exercise baseline tests with `npm run test:game-packages`; migrate package installs to pnpm only after CI and lockfile review.
 2. Add negative manifest tests, lifecycle/reentrancy/rejection/abort tests, and a standalone game harness.
 3. Implement capability negotiation and typed platform adapters; never grant score, credit or XP authority to clients.
 4. Port Snake behind a default-off feature flag, preserving legacy engine IDs and existing public routes.
@@ -35,4 +35,4 @@ games/
 
 ## Outstanding design issue
 
-The current runtime reports invalid operations as `failed`. Before production adoption, distinguish programmer misuse from fatal engine errors and test disposal under outstanding promises and rejected cleanup. Manifest validation must also be connected to the game loader and CI rather than trusted implicitly.
+Invalid lifecycle calls now raise `GameLifecycleError` without failing a healthy game. Before production adoption, test cancellation and cleanup under outstanding promises and rejected cleanup, and connect manifest validation to the loader and CI. The existing package typechecks and Node tests have been authored but have not been executed in this session.
