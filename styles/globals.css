@@ -43,6 +43,120 @@
 }
 
 
+
+/* BASIC LIGHT — soft porcelain, graphite ink and quiet architectural detail.
+   Explicitly scoped: switching to Halloween leaves its own styling untouched.
+   These tokens complement Basic Dark's restrained gaming-library aesthetic. */
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) {
+  color-scheme: light;
+  --brand-h: 260;
+  --brand-c: 0.012;
+
+  /* Distinguish page, cards and floating surfaces without harsh white glare. */
+  --background: #f5f6f8;
+  --foreground: #1a1d23;
+  --card: #ffffff;
+  --card-foreground: #1a1d23;
+  --popover: #ffffff;
+  --popover-foreground: #171a20;
+  --secondary: #e9ebef;
+  --secondary-foreground: #292d35;
+  --muted: #edf0f3;
+  --muted-foreground: #5f6672;
+  --accent: #e7eaf0;
+  --accent-foreground: #1b1e25;
+
+  /* Dark, neutral primary controls; precise rather than saturated. */
+  --primary: #22262d;
+  --primary-foreground: #ffffff;
+  --ring: #505968;
+
+  /* Low-contrast edges for layout; stronger input borders for affordance. */
+  --border: #d9dde4;
+  --input: #aeb6c2;
+  --glass: rgb(255 255 255 / 94%);
+  --glass-border: rgb(91 102 118 / 18%);
+
+  /* Semantic status signals are intentionally separate from theme branding. */
+  --destructive: #b53440;
+  --destructive-foreground: #ffffff;
+  --success: #287a5a;
+  --warning: #98610d;
+  --neon: #4d5663;
+  --gold: #866432;
+
+  --shadow-color: 225 19% 25%;
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.045);
+  --shadow-sm: 0 3px 9px hsl(var(--shadow-color) / 0.055);
+  --shadow-md: 0 10px 27px -11px hsl(var(--shadow-color) / 0.16);
+  --shadow-lg: 0 20px 40px -18px hsl(var(--shadow-color) / 0.19);
+  --shadow-xl: 0 30px 55px -23px hsl(var(--shadow-color) / 0.23);
+}
+
+/* Component-level polish for Basic Light, using existing page classes and
+   respecting contrast, focus and touch-target sizes. No seasonal decorations. */
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-navigation {
+  background: rgb(255 255 255 / 95%);
+  border-bottom-color: var(--border);
+  box-shadow: 0 1px 0 rgb(25 30 39 / 3%);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-sidebar {
+  background: #fafbfc;
+  border-right-color: var(--border);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-mobile-nav {
+  background: rgb(255 255 255 / 97%);
+  border-top-color: var(--border);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-footer {
+  background: #fafbfc;
+  border-top-color: var(--border);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-sidebar-link[aria-current="page"],
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-mobile-link[aria-current="page"] {
+  background: #e8ebf0;
+  color: #1b2028;
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-sidebar-link[aria-current="page"] > span[aria-hidden],
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-mobile-link[aria-current="page"] > span[aria-hidden] {
+  background: #353d48;
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-search {
+  background: #f5f6f8;
+  border-color: #c9ced8;
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-search:focus-within {
+  border-color: var(--ring);
+  box-shadow: 0 0 0 2px rgb(80 89 104 / 13%);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-logo-icon {
+  background: #f0f2f5;
+  border-color: var(--border);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-logo-text {
+  color: #171a20;
+  -webkit-text-fill-color: currentColor;
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-game-card > a {
+  background: var(--card);
+  border-color: #d9dde4;
+  box-shadow: 0 2px 8px rgb(27 34 47 / 4%);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-game-card:is(:hover,:focus-within) > a {
+  border-color: #858e9c;
+  box-shadow: 0 12px 26px rgb(27 34 47 / 9%);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-game-meta {
+  background: #fafbfc;
+  border-top-color: var(--border);
+}
+html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) .halloween-library-filters button[aria-selected="true"] {
+  background: #22262d;
+  border-color: #22262d;
+  color: #ffffff;
+}
+
+
 /* BASIC DARK — quiet graphite surfaces, restrained monochrome emphasis.
    Explicitly exclude Halloween, so this design never overrides the seasonal
    colour tokens or future themed modes. */
