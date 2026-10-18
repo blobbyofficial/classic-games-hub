@@ -94,11 +94,6 @@ export default async function SettingsPage({
           <SiteThemePicker
             current={(settings as { site_theme?: string }).site_theme ?? "default"}
             halloweenAvailable={activeSeason() === "halloween"}
-            canUsePremium={
-              (profile as { booster_since?: string | null }).booster_since != null ||
-              profile.role === "admin" ||
-              profile.role === "moderator"
-            }
           />
         </TabsContent>
         <TabsContent value="gameplay" className="space-y-4">
