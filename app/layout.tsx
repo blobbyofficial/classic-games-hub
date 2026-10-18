@@ -16,6 +16,7 @@ import "@/styles/seasons/halloween.css";
 // Premium is pre-styled but not selectable until verified booster gating ships.
 import "@/styles/themes/premium.css";
 import "@/styles/themes/retro.css";
+import "@/styles/themes/red.css";
 import { activeSeason } from "@/lib/seasonal-theme";
 
 // `display: swap` shows the fallback immediately rather than blocking first
