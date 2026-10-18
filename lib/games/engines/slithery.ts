@@ -2299,6 +2299,8 @@ const slithery: GameEngineFactory = ({
       e.touches[0];
     if (!touch) return;
 
+    pointerClient = { x: touch.clientX, y: touch.clientY };
+    keyboardSteering = false;
     mouseWorld =
       canvasToWorld(
         touch.clientX,
