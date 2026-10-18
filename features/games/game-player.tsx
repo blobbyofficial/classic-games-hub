@@ -31,7 +31,7 @@ interface Props {
  * shown and ignored: a control that changes nothing is worse than no control,
  * and the remaining engines are being rewritten in v1.6.0 anyway.
  */
-const TUNED_ENGINES = new Set(["frogger", "snake", "mines", "hangman"]);
+const TUNED_ENGINES = new Set(["frogger", "snake", "slithery", "mines", "hangman"]);
 
 export function GamePlayer({ slug, engineId, title, bestScore, isAuthed }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);

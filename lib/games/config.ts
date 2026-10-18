@@ -46,11 +46,11 @@ export type ControlScheme =
  * games WITHOUT their own touch input belong here - snake, 2048 and slide
  * already handle touch natively, so adding swipe there would double-fire.
  */
-export const SWIPE_GAMES = new Set(["frogger", "tetris", "slithery"]);
+export const SWIPE_GAMES = new Set(["frogger", "tetris"]);
 
 export const CONTROL_SCHEME: Record<string, ControlScheme> = {
   snake: "dpad",
-  slithery: "dpad",
+  slithery: "none",
   tetris: "tetris",
   "2048": "dpad",
   breakout: "paddle",
