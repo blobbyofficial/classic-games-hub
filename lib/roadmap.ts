@@ -68,10 +68,10 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
  */
 export const ROADMAP: RoadmapRelease[] = [
   {
-    version: "Arcade Reborn — Game Architecture 2.1",
-    codename: "Platform-First Game Rebuild",
-    status: "next",
-    timeframe: "Planning approved — implementation unscheduled",
+    version: "1.6.1",
+    codename: "Game Architecture Rebuild",
+    status: "in-progress",
+    timeframe: "In development — PR #78",
     summary: "Preserve the existing game catalogue and player records while building a workspace-monorepo game platform. Every rebuilt game becomes an independently tested package connected through a versioned, capability-based SDK. Snake is the first reference migration. No game retirement, database deletion or production rollout is authorised by this plan.",
     groups: [
       { heading: "Preservation and transition", icon: "Shield", items: [
@@ -79,16 +79,16 @@ export const ROADMAP: RoadmapRelease[] = [
         { title: "Release gating and player continuity", description: "Do not hide currently playable games until backups, migrations, rollback, score-history handling and a communication plan are verified. Separate legacy score versions when rules change.", status: "next" },
       ] },
       { heading: "Workspace monorepo and game packages", icon: "FolderGit2", items: [
-        { title: "Introduce pnpm workspace boundaries incrementally", description: "Retain the current Next.js app layout initially. Add packages/game-sdk, game-runtime, game-input, game-rendering, game-audio, game-ui, game-testing and game-contracts plus independently buildable games/* packages; avoid nested Git repositories.", status: "next" },
-        { title: "Game manifest, template and dependency boundaries", description: "Create versioned manifests declaring SDK compatibility, capabilities, input support, display and quality options; generate game packages with unit tests, assets, docs and CI. Prevent game packages importing Supabase or internal site/server code.", status: "next" },
+        { title: "Introduce pnpm workspace boundaries incrementally", status: "in-progress", description: "Retain the current Next.js app layout initially. Add packages/game-sdk, game-runtime, game-input, game-rendering, game-audio, game-ui, game-testing and game-contracts plus independently buildable games/* packages; avoid nested Git repositories.", status: "next" },
+        { title: "Game manifest, template and dependency boundaries", status: "in-progress", description: "Create versioned manifests declaring SDK compatibility, capabilities, input support, display and quality options; generate game packages with unit tests, assets, docs and CI. Prevent game packages importing Supabase or internal site/server code.", status: "next" },
       ] },
       { heading: "Versioned capability-based SDK and trusted platform integration", icon: "Plug", items: [
-        { title: "Typed capability contracts and lifecycle", description: "Define initialise/start/pause/resume/update/render/restart/dispose, explicit state transitions, cancellation, errors, optional capability negotiation and robust resource cleanup. Appearance changes must not restart a live run.", status: "next" },
-        { title: "Gameplay-to-platform APIs", description: "Provide gated SDK interfaces for input, display, audio, settings, runs, scores, achievements, progress, challenges, events, UI, telemetry and future social/multiplayer. Implement core services first, not every proposed namespace upfront.", status: "next" },
+        { title: "Typed capability contracts and lifecycle", status: "in-progress", description: "Define initialise/start/pause/resume/update/render/restart/dispose, explicit state transitions, cancellation, errors, optional capability negotiation and robust resource cleanup. Appearance changes must not restart a live run.", status: "next" },
+        { title: "Gameplay-to-platform APIs", status: "in-progress", description: "Provide gated SDK interfaces for input, display, audio, settings, runs, scores, achievements, progress, challenges, events, UI, telemetry and future social/multiplayer. Implement core services first, not every proposed namespace upfront.", status: "next" },
         { title: "Secure and versioned run processing", description: "Introduce server-issued run IDs, idempotent submissions, scoring-rules versions, trusted reward calculation, game-specific score verification, authenticated permissions and backward-compatible leaderboard migration. Client events are never authority for XP, credits or achievements.", status: "next" },
       ] },
       { heading: "Mobile-first input and low-end performance", icon: "Smartphone", items: [
-        { title: "Action-based multi-device controls", description: "Replace hardcoded control-scheme and synthetic global keyboard dispatch with logical actions, configurable keyboard/swipe/touch/gamepad bindings, buffering, dead zones, focus handling and remapping. Support hybrid touchscreen Chromebooks and trackpads.", status: "next" },
+        { title: "Action-based multi-device controls", status: "in-progress", description: "Replace hardcoded control-scheme and synthetic global keyboard dispatch with logical actions, configurable keyboard/swipe/touch/gamepad bindings, buffering, dead zones, focus handling and remapping. Support hybrid touchscreen Chromebooks and trackpads.", status: "next" },
         { title: "Deterministic simulation and adaptive rendering", description: "Separate fixed-step simulation from render FPS. Build Eco/Balanced/High budgets, resolution caps, battery-conscious pause behaviour, asset loading, reduced-motion options and measured frame pacing without changing game rules.", status: "next" },
         { title: "Device and accessibility acceptance", description: "Test real Android, iPhone, tablet, desktop and low-power Chromebook-class devices, including orientation, safe areas, keyboard navigation, screen-reader usability where relevant, input latency, memory growth and repeated restart/visibility cycles.", status: "next" },
       ] },
