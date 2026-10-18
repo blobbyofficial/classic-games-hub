@@ -10,6 +10,7 @@ const validator = read("lib/validators.ts");
 assert.match(layout,/Press_Start_2P/, "Real pixel display font must be loaded");
 assert.match(layout,/styles\/themes\/retro\.css/, "Retro stylesheet must be imported");
 assert.match(css,/html:not\(\.dark\)\[data-site-theme="retro"\]/, "Retro light scope missing");
+assert.match(css,/html\.dark\[data-site-theme="retro"\]:not\(\[data-season="halloween"\]\)/, "Retro dark palette must exclude Halloween");
 assert.match(css,/--retro-pixel-font:/);
 assert.match(css,/font-family: var\(--retro-pixel-font\)/, "Headings should use actual pixel font");
 for(const cls of [".halloween-navigation",".halloween-sidebar",".halloween-mobile-nav",".halloween-game-card",".halloween-ui-card",".halloween-ui-button",".halloween-player-stage"]){
@@ -18,4 +19,7 @@ for(const cls of [".halloween-navigation",".halloween-sidebar",".halloween-mobil
 assert.match(css,/prefers-reduced-motion:reduce/);
 assert.ok(!/id:\s*["']retro["']/.test(themes),"Do not expose theme before level entitlement checks");
 assert.ok(!validator.includes('"retro"'),"Do not accept theme before backend gating");
-console.log("Retro Day source checks passed (font, isolation, components, locked status).");
+for (const fragment of ["--background: #0d1513", "--primary: #8bebb6", "html.dark[data-site-theme=\"retro\"] .halloween-game-card", "html.dark[data-site-theme=\"retro\"] .halloween-player-stage"]) {
+  assert.ok(css.includes(fragment), `Missing Retro Night rule: ${fragment}`);
+}
+console.log("Retro Day/Night source checks passed (font, isolation, components, locked status).");
