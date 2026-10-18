@@ -21,6 +21,14 @@ export interface PackagedGame {
   dispose(): void | Promise<void>;
 }
 
+/** Raised for invalid API usage; it does not corrupt the current game state. */
+export class GameLifecycleError extends Error {
+  constructor(message: string) {
+    super(message);
+    this.name = "GameLifecycleError";
+  }
+}
+
 /** Serialized operations avoid overlapping asynchronous lifecycle transitions. */
 export class GameRuntime {
   private stateValue: GameRuntimeState = "idle";
@@ -47,14 +55,18 @@ export class GameRuntime {
   private async runOperation(action: () => Promise<void>): Promise<void> {
     try { await action(); }
     catch (error) {
-      this.setState("failed");
-      this.listener?.({ type: "error", error });
+      // Invalid transitions are caller errors, not failures of the running game.
+      // Engine failures still surface via the error event and failed state.
+      if (!(error instanceof GameLifecycleError)) {
+        if (!this.disposedRequested) this.setState("failed");
+        this.listener?.({ type: "error", error });
+      }
       throw error;
     }
   }
   initialize(host: Omit<GameHost, "signal">): Promise<void> {
     return this.enqueue(() => this.runOperation(async () => {
-      if (this.disposedRequested || this.stateValue !== "idle") throw new Error("Game can only initialize once");
+      if (this.disposedRequested || this.stateValue !== "idle") throw new GameLifecycleError("Game can only initialize once");
       this.game = this.create();
       await this.game.initialize({ ...host, signal: this.controller.signal });
       this.setState("ready");
@@ -62,28 +74,28 @@ export class GameRuntime {
   }
   start(): Promise<void> {
     return this.enqueue(() => this.runOperation(async () => {
-      if (this.disposedRequested || this.stateValue !== "ready" || !this.game) throw new Error("Game is not ready");
+      if (this.disposedRequested || this.stateValue !== "ready" || !this.game) throw new GameLifecycleError("Game is not ready");
       await this.game.start();
       this.setState("running");
     }));
   }
   pause(): Promise<void> {
     return this.enqueue(() => this.runOperation(async () => {
-      if (this.disposedRequested || this.stateValue !== "running" || !this.game) throw new Error("Game is not running");
+      if (this.disposedRequested || this.stateValue !== "running" || !this.game) throw new GameLifecycleError("Game is not running");
       await this.game.pause();
       this.setState("paused");
     }));
   }
   resume(): Promise<void> {
     return this.enqueue(() => this.runOperation(async () => {
-      if (this.disposedRequested || this.stateValue !== "paused" || !this.game) throw new Error("Game is not paused");
+      if (this.disposedRequested || this.stateValue !== "paused" || !this.game) throw new GameLifecycleError("Game is not paused");
       await this.game.resume();
       this.setState("running");
     }));
   }
   restart(): Promise<void> {
     return this.enqueue(() => this.runOperation(async () => {
-      if (this.disposedRequested || !this.game || !["ready", "running", "paused"].includes(this.stateValue)) throw new Error("Game cannot restart");
+      if (this.disposedRequested || !this.game || !["ready", "running", "paused"].includes(this.stateValue)) throw new GameLifecycleError("Game cannot restart");
       await this.game.restart();
       this.setState("running");
     }));
