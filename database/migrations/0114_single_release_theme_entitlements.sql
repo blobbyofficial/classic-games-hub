@@ -1,6 +1,6 @@
 -- 0114_single_release_theme_entitlements.sql
 -- Deploy AFTER 0111, 0112, 0113. Enables all five themes together.
--- Retro earns a permanent unlock at level 25; Premium checks CURRENT profile
+-- Retro earns a permanent unlock at level 25 (staff can preview); Premium checks CURRENT profile
 -- booster_since (maintained by existing Discord sync) or staff role.
 --
 -- Locked entitlements are stored separately from profiles and user_settings:
@@ -53,7 +53,7 @@ begin
     return jsonb_build_object('premium',false,'retro',false);
   end if;
   select coalesce(p.booster_since is not null or p.role in ('admin','moderator'),false),
-         coalesce(p.level >= 25,false) or exists(
+         coalesce(p.level >= 25 or p.role in ('admin','moderator'),false) or exists(
            select 1 from public.theme_unlocks u where u.user_id = p.id
          )
     into v_premium,v_retro
@@ -85,7 +85,7 @@ begin
   end if;
 
   if new.site_theme = 'retro' then
-    select coalesce(level >= 25,false) or exists(
+    select coalesce(level >= 25 or role in ('admin','moderator'),false) or exists(
       select 1 from public.theme_unlocks where user_id = new.user_id
     ) into v_allowed from public.profiles where id = new.user_id;
     if coalesce(v_allowed,false) then return new; end if;
