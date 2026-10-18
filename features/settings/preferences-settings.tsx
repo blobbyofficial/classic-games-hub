@@ -65,6 +65,7 @@ export function PreferencesSettings({ settings }: { settings: UserSettings }) {
           <CardDescription>Make the Hub comfortable for you.</CardDescription>
         </CardHeader>
         <CardContent className="divide-y divide-border/60">
+          <div className="site-appearance-row">
           <Row icon={Sparkles} title="Theme" description="Light, dark or match your system.">
             <Select value={theme} onValueChange={setTheme}>
               <SelectTrigger className="w-36">
@@ -77,6 +78,8 @@ export function PreferencesSettings({ settings }: { settings: UserSettings }) {
               </SelectContent>
             </Select>
           </Row>
+          </div>
+          <p className="red-fixed-mode-note hidden py-3 text-sm text-muted-foreground">Velvet Red uses one fixed, comfortable appearance. Your Light/Dark preference is saved and will return when you switch to another site colour theme.</p>
           <Row
             icon={Zap}
             title="Reduced motion"
