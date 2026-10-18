@@ -17,9 +17,11 @@ for(const cls of [".halloween-navigation",".halloween-sidebar",".halloween-mobil
  assert.ok(css.includes(cls), "Missing retro component treatment: " + cls);
 }
 assert.match(css,/prefers-reduced-motion:reduce/);
-assert.ok(!/id:\s*["']retro["']/.test(themes),"Do not expose theme before level entitlement checks");
-assert.ok(!validator.includes('"retro"'),"Do not accept theme before backend gating");
 for (const fragment of ["--background: #0d1513", "--primary: #8bebb6", "html.dark[data-site-theme=\"retro\"] .halloween-game-card", "html.dark[data-site-theme=\"retro\"] .halloween-player-stage"]) {
   assert.ok(css.includes(fragment), `Missing Retro Night rule: ${fragment}`);
 }
-console.log("Retro Day/Night source checks passed (font, isolation, components, locked status).");
+assert.match(themes,/id: "retro"/);
+assert.ok(validator.includes('"retro"'));
+assert.match(read("database/migrations/0114_single_release_theme_entitlements.sql"), /new.site_theme = 'retro'/);
+assert.match(read("app/layout.tsx"), /canUseSiteTheme/);
+console.log("Retro Day/Night checks passed (font, surfaces, secured entitlement).");
