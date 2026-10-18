@@ -73,14 +73,27 @@ export function SiteThemePicker({
                     : "border-border hover:border-primary/50",
                 )}
               >
-                <span
-                  className={cn(
-                    "block h-12 w-full rounded-lg",
-                  )}
-                  style={{
-                    background: `linear-gradient(150deg, ${t.swatch[0]}, ${t.swatch[1]})`,
-                  }}
-                />
+                {t.id === "red" ? (
+                  <span aria-hidden="true" className="flex h-12 w-full flex-col overflow-hidden rounded-lg border border-[#614a52] bg-[#161214] p-1.5">
+                    <span className="mb-1 flex h-1.5 items-center gap-1">
+                      <span className="h-1.5 w-1.5 rounded-full bg-[#d77b82]" />
+                      <span className="h-1 w-8 rounded-full bg-[#72505b]" />
+                      <span className="ml-auto h-1 w-3 rounded-full bg-[#574149]" />
+                    </span>
+                    <span className="flex min-h-0 flex-1 gap-1">
+                      <span className="w-1/4 rounded-sm bg-[#30252a]" />
+                      <span className="flex flex-1 flex-col justify-between rounded-sm border border-[#554149] bg-[#211a1e] p-1">
+                        <span className="h-1 w-3/5 rounded-full bg-[#9a747d]" />
+                        <span className="h-1.5 w-2/5 rounded-sm bg-[#d77b82]" />
+                      </span>
+                    </span>
+                  </span>
+                ) : (
+                  <span
+                    className="block h-12 w-full rounded-lg"
+                    style={{ background: `linear-gradient(150deg, ${t.swatch[0]}, ${t.swatch[1]})` }}
+                  />
+                )}
                 <span className="mt-1.5 flex items-center gap-1 text-xs font-medium">
                   {t.name}
                   {t.id === "halloween" && <span className="ml-1 rounded border border-amber-600/50 px-1 py-0.5 text-[10px] font-normal text-amber-600 dark:text-amber-300">{halloweenAvailable ? "Limited time theme" : "Season ended"}</span>}
