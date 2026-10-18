@@ -4,17 +4,19 @@ import { useState, useTransition } from "react";
 import { Check } from "lucide-react";
 import { toast } from "sonner";
 import { updateSettings } from "@/actions/profile";
-import { SITE_THEMES } from "@/lib/themes";
+import { SITE_THEMES, canUseSiteTheme, type ThemeEntitlements } from "@/lib/themes";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 
-/** Free Basic, seasonal Halloween, and fixed-mode Red. */
+/** All five themes with server-backed Premium and Retro unlock status. */
 export function SiteThemePicker({
   current,
   halloweenAvailable,
+  entitlements,
 }: {
   current: string;
   halloweenAvailable: boolean;
+  entitlements: ThemeEntitlements;
 }) {
   const [selected, setSelected] = useState(SITE_THEMES.some(t => t.id === current) ? current : "default");
   const [pending, start] = useTransition();
@@ -22,6 +24,10 @@ export function SiteThemePicker({
   const apply = (id: string) => {
     if (id === "halloween" && !halloweenAvailable) {
       toast.error("The Halloween theme is only available during October.");
+      return;
+    }
+    if (!canUseSiteTheme(id, entitlements)) {
+      toast.error(id === "premium" ? "Boost the Discord server to unlock Premium." : "Reach level 25 to unlock Retro.");
       return;
     }
     if (id === selected || pending) return;
@@ -53,24 +59,28 @@ export function SiteThemePicker({
       <CardHeader>
         <CardTitle>Site colour theme</CardTitle>
         <CardDescription>
-          Choose Basic, seasonal Halloween or Velvet Red. Red has one carefully balanced appearance and ignores the Light/Dark preference until you switch away.
+          Choose from five designs. Premium is for active Discord server boosters; Retro unlocks at level 25. Velvet Red uses a fixed appearance, while the others support Light and Dark.
         </CardDescription>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
           {SITE_THEMES.filter((t) => t.id !== "halloween" || halloweenAvailable || selected === "halloween").map((t) => {
             const active = selected === t.id;
+            const locked = !canUseSiteTheme(t.id, entitlements);
             return (
               <button
                 key={t.id}
                 onClick={() => apply(t.id)}
                 aria-label={t.name}
                 aria-pressed={active}
+                disabled={locked || pending}
+                title={locked ? (t.id === "premium" ? "Boost the Discord server to unlock" : "Unlock at level 25") : undefined}
                 className={cn(
                   "group relative overflow-hidden rounded-xl border p-2 text-left transition-all",
                   active
                     ? "border-primary ring-2 ring-primary/50"
                     : "border-border hover:border-primary/50",
+                  locked && "cursor-not-allowed opacity-65",
                 )}
               >
                 {t.id === "red" ? (
@@ -96,6 +106,7 @@ export function SiteThemePicker({
                 )}
                 <span className="mt-1.5 flex items-center gap-1 text-xs font-medium">
                   {t.name}
+                  {locked && <span className="ml-1 text-[10px] text-muted-foreground">{t.id === "premium" ? "Booster" : "Level 25"}</span>}
                   {t.id === "halloween" && <span className="ml-1 rounded border border-amber-600/50 px-1 py-0.5 text-[10px] font-normal text-amber-600 dark:text-amber-300">{halloweenAvailable ? "Limited time theme" : "Season ended"}</span>}
                 </span>
                 {active && (
