@@ -49,7 +49,7 @@ export const settingsSchema = z.object({
   presence_visibility: z.enum(["everyone", "friends", "nobody"]).optional(),
   friends_visibility: z.enum(["private", "friends", "followers", "public"]).optional(),
   site_theme: z
-    .enum(["halloween", "default"])
+    .enum(["halloween", "default", "red"])
     .optional(),
   // Gameplay (0064). The bounds mirror the column checks so a bad value is
   // rejected with a readable message here rather than as a constraint violation.
