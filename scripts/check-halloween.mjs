@@ -27,6 +27,14 @@ assert.match(player,/halloween-player-stage/);
 assert.match(nav,/halloween-navigation/);
 assert.match(css,/html\[data-season=["']halloween["']\]/);
 assert.match(css,/prefers-reduced-motion/);
+const globals=read("styles/globals.css");
+assert.match(css,/html:not\(\.dark\)\[data-season="halloween"\]/, "Halloween light mode missing");
+assert.match(css,/html\.dark\[data-season="halloween"\]/, "Halloween dark mode missing");
+assert.match(globals,/html\.dark\[data-site-theme="default"\]:not\(\[data-season="halloween"\]\)/,
+  "Basic dark styles must exclude Halloween");
+assert.match(globals,/html:not\(\.dark\)\[data-site-theme="default"\]:not\(\[data-season="halloween"\]\)/,
+  "Basic light styles must exclude Halloween");
+
 assert.match(css,/\.halloween-hero::after/);
 assert.ok(!css.includes(".halloween-normal-heading"),"obsolete heading selector");
 console.log("Halloween source checks passed (assets, activation, scope, accessibility).");
