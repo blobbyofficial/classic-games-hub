@@ -1,7 +1,13 @@
 # Insert Coin — Retro theme implementation specification
 
-**Status:** PLANNING ONLY. No Retro CSS, components, user entitlements, migrations, or picker options have been enabled.
+**Status:** RETRO DAY 8-BIT CSS FOUNDATION CODED on development branch. Not selectable, not deployed, and not level-unlockable. Retro Night, entitlement backend, visual QA and release gates remain pending.
 **Proposed unlock:** Level **25** (subject to owner approval). This creates a distinct milestone between existing level-20 saved-look slots and level-30 vanity URL. Existing level curve uses `xpForLevel()`, but unlock checks must use trusted server-side level data, never local XP calculations.
+
+## Development implementation note (current branch)
+- `styles/themes/retro.css` provides Retro Day colours, pixel typography, arcade cabinet frames, tactile controls, navigation and exterior player shell treatment.
+- `app/layout.tsx` imports `Press_Start_2P` from `next/font/google` with `preload: false` and exposes `--font-retro-display`. The display font is for headings and small labels; body text remains Geist.
+- `scripts/check-retro-theme.mjs` provides source-level checks for font setup, theme scope, styled surfaces and a locked/unreleased theme.
+- Theme registry, validators and database deliberately do not accept `retro` yet; security and level-25 grant remain unimplemented. Browser build, font-download availability, layout testing and contrast testing remain unverified.
 
 ## Product promise
 A full '1990s arcade takeover' of Classic Games Hub, not a colour preset. The UI should evoke a lovingly maintained real arcade cabinet: bold marquee typography, tactile control panels, trackable scoreboard readouts, authentic panel insets and delightful feedback. Avoid unlicensed game branding, misleading fake scores and cartoonish excessive gradients. Maintain the same fast workflows, URLs, keyboard/touch controls, permissions and progression as Basic.
