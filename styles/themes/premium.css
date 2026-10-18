@@ -2,9 +2,9 @@
  * ATELIER NIGHT — Premium theme design implementation (not yet unlockable).
  * A scoped CSS-only theme: no network fonts, animation libraries or runtime JS.
  * The Premium theme is not in SITE_THEMES / settingsSchema until secure
- * booster entitlement and the corresponding Light mode are implemented.
+ * booster entitlement and the other release gates are implemented.
  *
- * All selectors require an explicit Premium theme and an active dark appearance.
+ * Every rule requires an explicit Premium theme and its corresponding light or dark appearance.
  * Tokens are intentionally defined on html to support every current utility.
  */
 html.dark[data-site-theme="premium"]:not([data-season="halloween"]) {
@@ -234,4 +234,238 @@ html.dark[data-site-theme="premium"][data-reduced-motion="true"] .halloween-sear
 @media (max-width: 640px) {
   html.dark[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-player-shell { padding: 5px; }
   html.dark[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-player-stage { border-width: 2px; }
+}
+
+
+/* ATELIER DAY — Premium's complete warm-porcelain light appearance.
+ * The shared Night identity continues through editorial graphite typography,
+ * fine bronze detailing and carefully controlled elevation. No dark-mode
+ * surfaces, night selectors or seasonal effects leak into this appearance.
+ */
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) {
+  color-scheme: light;
+  --brand-h: 80;
+  --brand-c: 0.035;
+  --background: #eeece7;
+  --foreground: #252c36;
+  --card: #faf9f6;
+  --card-foreground: #252c36;
+  --popover: #ffffff;
+  --popover-foreground: #252c36;
+  --primary: #66513b;
+  --primary-foreground: #ffffff;
+  --secondary: #e9e5df;
+  --secondary-foreground: #333942;
+  --muted: #eae7e1;
+  --muted-foreground: #535d68;
+  --accent: #e5ded3;
+  --accent-foreground: #2d3138;
+  --destructive: #ac3439;
+  --destructive-foreground: #ffffff;
+  --success: #257557;
+  --warning: #906013;
+  --border: #d3cec4;
+  --input: #afa79a;
+  --ring: #786044;
+  --neon: #576579;
+  --gold: #786044;
+
+  --radius: 0.875rem;
+  --glass: rgb(250 249 246 / 96%);
+  --glass-border: rgb(113 100 82 / 23%);
+  --shadow-color: 34 17% 27%;
+  --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.05);
+  --shadow-sm: 0 4px 12px -4px hsl(var(--shadow-color) / 0.09);
+  --shadow-md: 0 13px 30px -12px hsl(var(--shadow-color) / 0.16);
+  --shadow-lg: 0 23px 44px -20px hsl(var(--shadow-color) / 0.2);
+  --shadow-xl: 0 34px 62px -26px hsl(var(--shadow-color) / 0.25);
+
+  --atelier-foil: #786044;
+  --atelier-foil-muted: #987b58;
+  --atelier-surface-0: #eeece7;
+  --atelier-surface-1: #faf9f6;
+  --atelier-surface-2: #ffffff;
+  --atelier-focus: #786044;
+  --atelier-fast: 110ms;
+  --atelier-standard: 170ms;
+}
+
+/* Day shell: opaque enough for low-powered devices, with subtle bronze edges. */
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-navigation {
+  background: rgb(250 249 246 / 97%);
+  border-bottom-color: #d3cec4;
+  box-shadow: 0 1px 0 #66513b12;
+  backdrop-filter: none;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-sidebar {
+  background: #f4f1eb;
+  border-right-color: #d3cec4;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-mobile-nav {
+  background: rgb(250 249 246 / 98%);
+  border-top-color: #d3cec4;
+  backdrop-filter: none;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-footer {
+  background: #f4f1eb;
+  border-top-color: #d3cec4;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-logo-icon {
+  background: #eee8de;
+  border: 1px solid #ac9679;
+  border-radius: 10px;
+  box-shadow: inset 0 1px #ffffffb3;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-logo-text {
+  color: #252c36;
+  -webkit-text-fill-color: currentColor;
+  letter-spacing: -.025em;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-search {
+  background: #f1efe9;
+  border-color: #c4bbad;
+  border-radius: 12px;
+  color: #535d68;
+  transition: background-color var(--atelier-fast), border-color var(--atelier-fast);
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-search:hover,
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-search:focus-visible {
+  background: #ffffff;
+  border-color: #786044;
+  color: #252c36;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-sidebar-link,
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-mobile-link {
+  border-radius: 11px;
+  transition: color var(--atelier-fast), background-color var(--atelier-fast);
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-sidebar-link[aria-current="page"],
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-mobile-link[aria-current="page"] {
+  background: #e6dfd5;
+  color: #57412b;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-sidebar-link[aria-current="page"] > span[aria-hidden],
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-mobile-link[aria-current="page"] > span[aria-hidden] {
+  background: #786044;
+}
+
+/* Warm card materials. Hover never hides content or depends on colour alone. */
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-ui-card {
+  border-color: #d3cec4;
+  border-radius: 16px;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-ui-card:focus-within {
+  border-color: #987b58;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-game-card > a {
+  background: #faf9f6;
+  border: 1px solid #d3cec4;
+  border-radius: 16px;
+  box-shadow: 0 5px 15px #3730210d;
+  transition: border-color var(--atelier-standard), background-color var(--atelier-standard), transform var(--atelier-standard);
+}
+@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+  html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-game-card:is(:hover,:focus-within) > a {
+    border-color: #987b58;
+    background: #ffffff;
+    transform: translateY(-2px);
+  }
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-game-card:focus-within > a {
+  outline: 2px solid #786044;
+  outline-offset: 3px;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-game-meta {
+  background: #f3f0e9;
+  border-top-color: #d3cec4;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-game-art::after {
+  box-shadow: inset 0 0 0 1px #ffffff38;
+  pointer-events: none;
+}
+
+/* Compact tactile controls, unmistakable selection and visible keyboard focus. */
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-ui-button {
+  border-radius: 11px;
+  transition: background-color var(--atelier-fast), color var(--atelier-fast), border-color var(--atelier-fast), opacity var(--atelier-fast), transform var(--atelier-fast);
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-ui-button:focus-visible,
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-ui-input:focus-visible,
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-select-trigger:focus-visible {
+  outline: 2px solid #786044;
+  outline-offset: 3px;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-ui-input,
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-select-trigger {
+  border-radius: 10px;
+  border-color: #afa79a;
+  background: #fffefa;
+  color: #252c36;
+  transition: border-color var(--atelier-fast), background-color var(--atelier-fast);
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-ui-input:focus-visible,
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-select-trigger:focus-visible {
+  border-color: #786044;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-select-content {
+  background: #ffffff;
+  border-color: #c6bfb3;
+  border-radius: 12px;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-tabs-list {
+  background: #e9e5df;
+  border: 1px solid #d3cec4;
+  border-radius: 12px;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-tabs-trigger[data-state="active"] {
+  background: #faf9f6;
+  color: #252c36;
+  box-shadow: inset 0 -2px #786044;
+}
+
+/* Player canvas remains untouched: premium framing must not reduce FPS. */
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-player-shell {
+  background: #f5f2ec;
+  border: 1px solid #d3cec4;
+  border-radius: 16px;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-player-hud {
+  border-bottom: 1px solid #d3cec4;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-player-stage {
+  border: 3px solid #a49b8f;
+  border-radius: 12px;
+  outline: 1px solid #786044;
+  box-shadow: none;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-difficulty {
+  background: #e9e5df;
+  border: 1px solid #c6bfb3;
+  border-radius: 10px;
+}
+html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-difficulty button[aria-pressed="true"] {
+  background: #66513b;
+  color: #ffffff;
+}
+
+/* No forced movement for reduced-motion users; keep state contrast visible. */
+html:not(.dark)[data-site-theme="premium"][data-reduced-motion="true"] .halloween-game-card > a,
+html:not(.dark)[data-site-theme="premium"][data-reduced-motion="true"] .halloween-ui-button,
+html:not(.dark)[data-site-theme="premium"][data-reduced-motion="true"] .halloween-search {
+  transition: none;
+  animation: none;
+  transform: none;
+}
+@media (prefers-reduced-motion: reduce) {
+  html:not(.dark)[data-site-theme="premium"] .halloween-game-card > a,
+  html:not(.dark)[data-site-theme="premium"] .halloween-ui-button,
+  html:not(.dark)[data-site-theme="premium"] .halloween-search {
+    transition: none;
+    animation: none;
+    transform: none;
+  }
+}
+@media (max-width: 640px) {
+  html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-player-shell { padding: 5px; }
+  html:not(.dark)[data-site-theme="premium"]:not([data-season="halloween"]) .halloween-player-stage { border-width: 2px; }
 }
