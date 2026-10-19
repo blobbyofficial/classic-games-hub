@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 export function Logo({ className, compact }: { className?: string; compact?: boolean }) {
   return (
     <Link href="/" className={cn("group flex min-w-0 items-center gap-2", className)} aria-label="Classic Games Hub home">
-      <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-black">
+      <span className="grid size-9 shrink-0 place-items-center overflow-hidden rounded-lg bg-[#0b0c10] ring-1 ring-white/10">
         <Image
           src="/icon.svg"
           alt=""
@@ -25,7 +25,7 @@ export function Logo({ className, compact }: { className?: string; compact?: boo
         <span className="text-[15px] font-bold leading-tight tracking-tight">
           Classic
           <br />
-          <span className="halloween-logo-text text-gradient">Games Hub</span>
+          <span className="halloween-logo-text text-foreground">Games Hub</span>
         </span>
       )}
     </Link>
