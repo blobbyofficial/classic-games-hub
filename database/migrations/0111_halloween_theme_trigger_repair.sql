@@ -15,9 +15,9 @@ begin
     select (booster_since is not null or role in ('admin','moderator'))
       into v_allowed from public.profiles where id = new.user_id;
     if coalesce(v_allowed, false) then return new; end if;
-    raise exception 'theme_locked' using message = 'This theme is for server boosters and staff';
+    raise exception 'This theme is for server boosters and staff' using errcode = 'P0001';
   end if;
-  raise exception 'invalid_theme' using message = 'Unknown site theme';
+  raise exception 'Unknown site theme' using errcode = 'P0001';
 end;
 $$;
 revoke execute on function public.check_site_theme() from public, anon, authenticated;
