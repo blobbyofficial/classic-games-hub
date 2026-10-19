@@ -39,8 +39,9 @@ export function SiteThemePicker({
       else document.documentElement.removeAttribute("data-season");
     }
     start(async () => {
-      const res = await updateSettings({ site_theme: id });
-      if (!res.ok) {
+      try {
+        const res = await updateSettings({ site_theme: id });
+        if (!res.ok) {
         setSelected(previous);
         document.documentElement.setAttribute("data-site-theme", previous === "halloween" ? "default" : previous);
         if (halloweenAvailable) {
@@ -48,8 +49,18 @@ export function SiteThemePicker({
           else document.documentElement.removeAttribute("data-season");
         }
         toast.error(res.error ?? "Could not save the theme");
-      } else {
-        toast.success("Site theme updated");
+        } else {
+          toast.success("Site theme updated");
+        }
+      } catch {
+        // Network/server-action exceptions must undo the optimistic preview.
+        setSelected(previous);
+        document.documentElement.setAttribute("data-site-theme", previous === "halloween" ? "default" : previous);
+        if (halloweenAvailable) {
+          if (previous === "halloween") document.documentElement.setAttribute("data-season", "halloween");
+          else document.documentElement.removeAttribute("data-season");
+        }
+        toast.error("Could not save the theme. Please try again.");
       }
     });
   };
