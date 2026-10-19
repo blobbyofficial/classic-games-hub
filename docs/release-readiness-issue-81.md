@@ -41,6 +41,7 @@ Statuses: [x] source change confirmed; [ ] incomplete or not yet verified. Attac
 
 ## Code review fixes in this branch
 - [x] Source guard for PostgREST's row-response limit in social preview: don't display an incomplete plays sum (`87ff96f`). Full OG browser testing still open.
+- [x] Catch unexpected theme save exceptions and restore optimistic theme preview (`dd91e72`). Manual error-path testing remains open.
 - [x] PostgreSQL exception fixes for migration sequence 0111–0114 (source-level inspection, not migration execution).
 
 ## Current blockers / evidence
