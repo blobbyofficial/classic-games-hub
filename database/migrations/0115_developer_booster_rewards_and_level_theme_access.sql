@@ -190,7 +190,7 @@ create or replace function public.grant_gift_tokens()
 returns jsonb
 language plpgsql security definer
 set search_path = public
-as $
+as $$
 declare
   v_month date := date_trunc('month', now() at time zone 'utc')::date;
   v_granted int := 0;
@@ -215,7 +215,7 @@ begin
 
   return jsonb_build_object('ok', true, 'month', v_month, 'granted', v_granted);
 end;
-$;
+$$;
 
 revoke execute on function public.grant_gift_tokens() from public, anon, authenticated;
 grant execute on function public.grant_gift_tokens() to service_role;
@@ -226,7 +226,7 @@ returns jsonb
 language sql stable
 security definer
 set search_path = public
-as $
+as $$
   select jsonb_build_object(
     'boosting', (select (booster_since is not null or role = 'admin') from public.profiles where id = auth.uid()),
     'month', to_char(date_trunc('month', now() at time zone 'utc'), 'YYYY-MM'),
@@ -242,7 +242,7 @@ as $
         and gt.month = date_trunc('month', now() at time zone 'utc')::date
     )
   );
-$;
+$$;
 
 revoke execute on function public.my_gift_token() from public, anon;
 grant execute on function public.my_gift_token() to authenticated;
