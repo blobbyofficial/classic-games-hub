@@ -27,7 +27,7 @@ export function SiteThemePicker({
       return;
     }
     if (!canUseSiteTheme(id, entitlements)) {
-      toast.error(id === "premium" ? "Boost the Discord server to unlock Premium." : "Reach level 25 to unlock Retro.");
+      toast.error(id === "premium" ? "Boost the Discord server or reach Level 25 to unlock Premium." : "Reach level 25 to unlock Retro.");
       return;
     }
     if (id === selected || pending) return;
@@ -70,7 +70,7 @@ export function SiteThemePicker({
       <CardHeader>
         <CardTitle>Site colour theme</CardTitle>
         <CardDescription>
-          Choose from five designs. Premium is for active Discord server boosters; Retro unlocks at level 25. Velvet Red uses a fixed appearance, while the others support Light and Dark.
+          Choose from five designs. Premium is for boosters, staff and Level 25 players; Retro permanently unlocks at level 25. Velvet Red uses a fixed appearance, while the others support Light and Dark.
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -82,10 +82,10 @@ export function SiteThemePicker({
               <button
                 key={t.id}
                 onClick={() => apply(t.id)}
-                aria-label={locked ? `${t.name}, locked: ${t.id === "premium" ? "requires an active Discord server boost" : "requires level 25"}` : t.name}
+                aria-label={locked ? `${t.name}, locked: ${t.id === "premium" ? "requires a Discord server boost or level 25" : "requires level 25"}` : t.name}
                 aria-pressed={active}
                 disabled={locked || pending}
-                title={locked ? (t.id === "premium" ? "Boost the Discord server to unlock" : "Unlock at level 25") : undefined}
+                title={locked ? (t.id === "premium" ? "Boost the server or reach level 25" : "Unlock at level 25") : undefined}
                 className={cn(
                   "group relative overflow-hidden rounded-xl border p-2 text-left transition-all",
                   active
@@ -142,7 +142,7 @@ export function SiteThemePicker({
                 )}
                 <span className="mt-1.5 flex items-center gap-1 text-xs font-medium">
                   {t.name}
-                  {locked && <span className="ml-1 text-[10px] text-muted-foreground">{t.id === "premium" ? "Booster" : "Level 25"}</span>}
+                  {locked && <span className="ml-1 text-[10px] text-muted-foreground">{t.id === "premium" ? "Booster / Level 25" : "Level 25"}</span>}
                   {t.id === "halloween" && <span className="ml-1 rounded border border-amber-600/50 px-1 py-0.5 text-[10px] font-normal text-amber-600 dark:text-amber-300">{halloweenAvailable ? "Limited time theme" : "Season ended"}</span>}
                 </span>
                 {active && (
