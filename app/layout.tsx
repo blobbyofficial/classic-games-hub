@@ -31,6 +31,7 @@ const geistSans = Geist({
   adjustFontFallback: true,
 });
 const retroDisplay = Press_Start_2P({
+  weight: "400",
   variable: "--font-retro-display",
   subsets: ["latin"],
   display: "swap",
