@@ -186,6 +186,68 @@ revoke execute on function public.my_booster_drop() from public, anon;
 grant execute on function public.my_booster_drop() to authenticated;
 
 
+create or replace function public.grant_gift_tokens()
+returns jsonb
+language plpgsql security definer
+set search_path = public
+as $
+declare
+  v_month date := date_trunc('month', now() at time zone 'utc')::date;
+  v_granted int := 0;
+begin
+  with granted as (
+    insert into public.gift_tokens (user_id, month)
+    select p.id, v_month
+    from public.profiles p
+    where p.booster_since is not null or p.role = 'admin'
+    on conflict (user_id, month) do nothing
+    returning user_id
+  ),
+  told as (
+    insert into public.notifications (user_id, type, title, body, data)
+    select g.user_id, 'gift', 'Gift token ready',
+           'Your monthly gift token is here - give a friend a cosmetic for 30 days, on us.',
+           jsonb_build_object('month', v_month)
+    from granted g
+    returning 1
+  )
+  select count(*) into v_granted from told;
+
+  return jsonb_build_object('ok', true, 'month', v_month, 'granted', v_granted);
+end;
+$;
+
+revoke execute on function public.grant_gift_tokens() from public, anon, authenticated;
+grant execute on function public.grant_gift_tokens() to service_role;
+
+
+create or replace function public.my_gift_token()
+returns jsonb
+language sql stable
+security definer
+set search_path = public
+as $
+  select jsonb_build_object(
+    'boosting', (select (booster_since is not null or role = 'admin') from public.profiles where id = auth.uid()),
+    'month', to_char(date_trunc('month', now() at time zone 'utc'), 'YYYY-MM'),
+    'token', (
+      select jsonb_build_object(
+        'used', gt.used_at is not null,
+        'used_at', gt.used_at,
+        'gifted_to', (select username from public.profiles where id = gt.gifted_to),
+        'item', (select name from public.shop_items where id = gt.item_id)
+      )
+      from public.gift_tokens gt
+      where gt.user_id = auth.uid()
+        and gt.month = date_trunc('month', now() at time zone 'utc')::date
+    )
+  );
+$;
+
+revoke execute on function public.my_gift_token() from public, anon;
+grant execute on function public.my_gift_token() to authenticated;
+
+
 -- Keep already-selected Premium on level 25 accounts when Discord boosts stop.
 -- Replace 0114's narrower downgrade trigger with a level-aware version.
 create or replace function public.sync_restricted_theme_on_profile_change()
