@@ -12,16 +12,18 @@ assert.match(layout,/styles\/themes\/retro\.css/, "Retro stylesheet must be impo
 assert.match(css,/html:not\(\.dark\)\[data-site-theme="retro"\]/, "Retro light scope missing");
 assert.match(css,/html\.dark\[data-site-theme="retro"\]:not\(\[data-season="halloween"\]\)/, "Retro dark palette must exclude Halloween");
 assert.match(css,/--retro-pixel-font:/);
-assert.match(css,/font-family: var\(--retro-pixel-font\)/, "Headings should use actual pixel font");
+assert.match(css,/\.retro-pixel-label[\\s\\S]*font-family: var\(--retro-pixel-font\)/, "Short arcade labels should use the pixel font");
+assert.match(css,/font-family: var\(--font-geist-sans\)/, "Main headings must remain legible");
+assert.doesNotMatch(css,/text-transform: uppercase;/, "Retro should not uppercase every heading");
 for(const cls of [".halloween-navigation",".halloween-sidebar",".halloween-mobile-nav",".halloween-game-card",".halloween-ui-card",".halloween-ui-button",".halloween-player-stage"]){
  assert.ok(css.includes(cls), "Missing retro component treatment: " + cls);
 }
-assert.match(css,/prefers-reduced-motion:reduce/);
-for (const fragment of ["--background: #0d1513", "--primary: #8bebb6", "html.dark[data-site-theme=\"retro\"] .halloween-game-card", "html.dark[data-site-theme=\"retro\"] .halloween-player-stage"]) {
+assert.match(css,/prefers-reduced-motion: reduce/);
+for (const fragment of ["--background: #10111b", "--primary: #a9a0ff", "html[data-site-theme=\"retro\"]:not([data-season=\"halloween\"]) .halloween-game-card", "html[data-site-theme=\"retro\"]:not([data-season=\"halloween\"]) .halloween-player-stage"]) {
   assert.ok(css.includes(fragment), `Missing Retro Night rule: ${fragment}`);
 }
 assert.match(themes,/id: "retro"/);
 assert.ok(validator.includes('"retro"'));
 assert.match(read("database/migrations/0114_single_release_theme_entitlements.sql"), /new.site_theme = 'retro'/);
 assert.match(read("app/layout.tsx"), /canUseSiteTheme/);
-console.log("Retro Day/Night checks passed (font, surfaces, secured entitlement).");
+console.log("Retro Day/Night checks passed (readable typography, palettes, surfaces, secured entitlement).");
