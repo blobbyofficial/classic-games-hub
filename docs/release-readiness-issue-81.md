@@ -7,7 +7,7 @@
 Statuses: [x] source change confirmed; [ ] incomplete or not yet verified. Attach command output, CI URL, database evidence or browser screenshots when completing a gate.
 
 ## Gate A — Build must pass (release blocker)
-- [ ] Capture the **first actual failure** in `npm run build`, not merely Vercel's generic exit code 1. Use GitHub Actions logs or a reproducible local clean checkout; do not trigger more Vercel deployments merely to obtain logs.
+- [x] Capture first build failure: both Vercel and local logs show `app/layout.tsx` missing `Press_Start_2P` weight. Source corrected in `f292bdd`; post-fix build still unverified.
 - [ ] Run `npm ci` with Node 24 in a clean environment; inspect lockfile consistency and dependency errors.
 - [ ] Run `npm run typecheck`, `npm run lint`, `npm run build`; record results and fix code on the isolated branch.
 - [ ] Run relevant theme regression scripts: `node scripts/check-halloween.mjs`, `node scripts/check-premium-theme.mjs`, `node scripts/check-retro-theme.mjs`, `node scripts/check-red-theme.mjs`.
@@ -43,6 +43,12 @@ Statuses: [x] source change confirmed; [ ] incomplete or not yet verified. Attac
 - [x] Source guard for PostgREST's row-response limit in social preview: don't display an incomplete plays sum (`87ff96f`). Full OG browser testing still open.
 - [x] Catch unexpected theme save exceptions and restore optimistic theme preview (`dd91e72`). Manual error-path testing remains open.
 - [x] PostgreSQL exception fixes for migration sequence 0111–0114 (source-level inspection, not migration execution).
+
+## Build root cause identified
+- [x] Vercel Turbopack and TS2741 both report the missing `weight: "400"` on `Press_Start_2P` in `app/layout.tsx`; fixed on branch in `f292bdd`.
+- [x] Pre-fix local lint and four theme source scripts passed in uploaded logs.
+- [ ] Rerun and verify post-fix `npm run typecheck`, `npm run lint`, `npm run build` and four theme scripts.
+- [ ] Consider ESLint 10 / TypeScript 7 peer warnings separately; they did not cause the shown build failure.
 
 ## Current blockers / evidence
 - Production build attempts of `b547c17` and `fdc44fa` returned `npm run build` exit code 1; detailed Vercel build logs inaccessible via connected API (403).
