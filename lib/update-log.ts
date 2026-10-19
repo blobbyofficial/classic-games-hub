@@ -2349,6 +2349,7 @@ export const SERIES: ReleaseSeries[] = [
 export const RELEASES: UpdateRelease[] = SERIES.flatMap((s) => s.releases);
 
 export const LANDED: LandedChange[] = [
+  { sha: "952a7af74a6dbcb400f116c78eba54d2c0cf9a29", date: "19 Oct 2026", subject: "fix(release): restore production builds and theme migration validity", pr: 82 },
   { sha: "5d23669", date: "15 Aug 2026", subject: "feat(discord): server audit logging, and the audit that produced it (0072)" },
   { sha: "67285b3", date: "5 Aug 2026", subject: "chore: verify the git integration fires after reconnecting" },
   { sha: "358a871", date: "5 Aug 2026", subject: "chore: trigger a build of 573a225" },
@@ -2430,6 +2431,7 @@ export interface MergedPullRequest {
 }
 
 export const PULL_REQUESTS: MergedPullRequest[] = [
+  { number: 82, title: "Restore production builds and theme migration validity", date: "19 Oct 2026" },
   { number: 22, title: "v1.5.0 \"Collector's Edition\": cosmetics, seasons, collections & social", date: "2 Aug 2026" },
   { number: 20, title: "feat(ui): redesign the interface and cut two runtime dependencies", date: "29 Jul 2026" },
   { number: 21, title: "Admin dashboard: sidebar layout, shared page furniture, one set of primitives", date: "29 Jul 2026" },
