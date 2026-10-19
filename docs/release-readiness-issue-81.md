@@ -23,7 +23,7 @@ Statuses: [x] source change confirmed; [ ] incomplete or not yet verified. Attac
 - [ ] Test Halloween saving; Retro level-24 denial/level-25 unlock and persistence; Premium boost/revocation; direct database-write protection.
 
 ## Gate C — Feature regression
-- [ ] Social Open Graph image serves correct PNG, image links unfurl, counters are accurate and failures degrade gracefully.
+- [ ] Social Open Graph image serves correct PNG, image links unfurl, counters are accurate and failures degrade gracefully. Source guard against truncated plays total committed (`87ff96f`); browser tests remain pending.
 - [ ] Themes Basic, Halloween, Velvet Red, Premium and Retro persist across navigation and reload; verify light/dark/system, locking, fallback and mobile rendering.
 - [ ] Game filters: URL query persistence, sorting, browser back/forward, search, favourites, empty results, mobile.
 - [ ] Slither: game exists as a published DB record, desktop steering, mobile controls, pause/resume and score behavior.
@@ -38,6 +38,10 @@ Statuses: [x] source change confirmed; [ ] incomplete or not yet verified. Attac
 - [ ] Confirm `classic-games-hub.blobbyofficial.com` is aliased to that exact READY deployment, with canonical URL behavior correct.
 - [ ] Validate live desktop/mobile/social share routes, authenticated journeys and error logging; retain Ready `728f51d` rollback path.
 - [ ] Update release notes and issue #81 with deployment ID, SHA, timestamp, migration state, test evidence; only close #81 after evidence.
+
+## Code review fixes in this branch
+- [x] Source guard for PostgREST's row-response limit in social preview: don't display an incomplete plays sum (`87ff96f`). Full OG browser testing still open.
+- [x] PostgreSQL exception fixes for migration sequence 0111–0114 (source-level inspection, not migration execution).
 
 ## Current blockers / evidence
 - Production build attempts of `b547c17` and `fdc44fa` returned `npm run build` exit code 1; detailed Vercel build logs inaccessible via connected API (403).
