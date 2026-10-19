@@ -91,7 +91,7 @@ begin
     select coalesce(booster_since is not null or role in ('admin','moderator'),false)
       into v_allowed from public.profiles where id = new.user_id;
     if coalesce(v_allowed,false) then return new; end if;
-    raise exception 'theme_locked' using message = 'Premium requires an active Discord server boost';
+    raise exception 'Premium requires an active Discord server boost' using errcode = 'P0001';
   end if;
 
   if new.site_theme = 'retro' then
@@ -99,10 +99,10 @@ begin
       select 1 from public.theme_unlocks where user_id = new.user_id
     ) into v_allowed from public.profiles where id = new.user_id;
     if coalesce(v_allowed,false) then return new; end if;
-    raise exception 'theme_locked' using message = 'Retro unlocks at level 25';
+    raise exception 'Retro unlocks at level 25' using errcode = 'P0001';
   end if;
 
-  raise exception 'invalid_theme' using message = 'Unknown site theme';
+  raise exception 'Unknown site theme' using errcode = 'P0001';
 end;
 $$;
 revoke execute on function public.check_site_theme() from public, anon, authenticated;
