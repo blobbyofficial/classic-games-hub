@@ -48,14 +48,18 @@ async function previewStats(): Promise<PreviewStats> {
     const [gamesCount, playRows, profilesCount] = await Promise.all([
       publicDb.from("games").select("id", { count: "exact", head: true })
         .in("status", ["published", "coming_soon", "in_development"]),
-      publicDb.from("games").select("play_count")
-        .in("status", ["published", "coming_soon", "in_development"]),
+      publicDb.from("games").select("play_count", { count: "exact" })
+        .in("status", ["published", "coming_soon", "in_development"])
+        .range(0, 999),
       adminDb
         ? adminDb.from("profiles").select("id", { count: "exact", head: true })
         : Promise.resolve(null),
     ]);
     if (!gamesCount.error && gamesCount.count !== null) stats.games = gamesCount.count;
-    if (!playRows.error && playRows.data) {
+    // PostgREST limits row responses (commonly to 1,000). Do not show a
+    // misleading lifetime plays total if the entire dataset was not returned.
+    if (!playRows.error && playRows.data && playRows.count !== null
+        && playRows.data.length === playRows.count) {
       stats.plays = playRows.data.reduce((total, game) => total + (game.play_count ?? 0), 0);
     }
     if (profilesCount && !profilesCount.error && profilesCount.count !== null) {
