@@ -96,9 +96,37 @@ export const SERIES: ReleaseSeries[] = [
   {
     version: "v1.6.0",
     codename: "Reliability and Mobile Foundations",
-    dates: "17 Oct 2026",
+    dates: "17 - 19 Oct 2026",
     summary: "Production safeguards, security and concurrency acceptance, mobile improvements and accessibility, followed by a focused roadmap correction.",
     releases: [
+      {
+        version: "v1.6.1",
+        codename: "Five Themes, One Arcade",
+        date: "19 Oct 2026",
+        scope: "The five-theme selection and entitlement system, previously blocked by a production build error, reached Production with pull request #82. Follow-up visual and role fixes are recorded separately until deployed.",
+        summary: "Basic, seasonal Halloween, Velvet Red, Premium Atelier and Level 25 Retro; theme selection and saving improvements, more reliable social previews, and repairs that restored the production build. Database migration rollout and live entitlement behaviour require independent verification.",
+        groups: [
+          {
+            heading: "The five-theme wardrobe",
+            icon: "Palette",
+            items: [
+              { title: "Basic, Halloween and Velvet Red", description: "A standard light/dark appearance, an October seasonal look, and an independent red colour mode." },
+              { title: "Premium Atelier and Retro Insert Coin", description: "Booster/staff and Level 25 theme options with server-backed entitlement validation; actual unlocks depend on the production database migration." },
+              { title: "Settings and theme saving", description: "Five-theme selector, locked states and safe preview rollback if a theme update fails." },
+            ],
+          },
+          {
+            heading: "Shared identity and release reliability",
+            icon: "Wrench",
+            items: [
+              { title: "Social card statistics", description: "Keep totals accurate when the game-play query is truncated." },
+              { title: "Build and SQL repairs", description: "Specify the required Press Start 2P font weight; correct exception syntax in theme migrations 0111–0114; add build diagnostics." },
+            ],
+          },
+        ],
+        commits: ["952a7af74a6dbcb400f116c78eba54d2c0cf9a29"],
+        prs: [82],
+      },
       {
         version: "v1.6.0",
         codename: "Release Integration",
