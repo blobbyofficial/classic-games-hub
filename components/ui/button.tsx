@@ -27,7 +27,7 @@ const buttonVariants = cva(
         link: "text-primary underline-offset-4 hover:underline",
         glass: "glass text-foreground shadow-sm hover:bg-accent/40 hover:shadow-md",
         gradient:
-          "bg-[linear-gradient(120deg,var(--primary),oklch(0.6_0.2_330))] text-white shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/35 hover:brightness-[1.08]",
+          "bg-[linear-gradient(120deg,var(--primary),var(--neon))] text-primary-foreground shadow-md shadow-primary/25 hover:shadow-lg hover:shadow-primary/35 hover:brightness-[1.08]",
       },
       size: {
         default: "h-10 px-4 text-sm [&_svg]:size-4",
