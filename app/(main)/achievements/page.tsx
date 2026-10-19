@@ -57,7 +57,7 @@ export default async function AchievementsPage() {
           <Progress
             value={percent}
             aria-label="Achievements unlocked"
-            indicatorClassName="bg-[linear-gradient(90deg,var(--gold),var(--primary))]"
+            indicatorClassName="bg-[linear-gradient(90deg,var(--primary),var(--neon))]"
           />
         </div>
       )}

@@ -96,9 +96,37 @@ export const SERIES: ReleaseSeries[] = [
   {
     version: "v1.6.0",
     codename: "Reliability and Mobile Foundations",
-    dates: "17 Oct 2026",
+    dates: "17 - 19 Oct 2026",
     summary: "Production safeguards, security and concurrency acceptance, mobile improvements and accessibility, followed by a focused roadmap correction.",
     releases: [
+      {
+        version: "v1.6.1",
+        codename: "Five Themes, One Arcade",
+        date: "19 Oct 2026",
+        scope: "The five-theme selection and entitlement system, previously blocked by a production build error, reached Production with pull request #82. Follow-up visual and role fixes are recorded separately until deployed.",
+        summary: "Basic, seasonal Halloween, Velvet Red, Premium Atelier and Level 25 Retro; theme selection and saving improvements, more reliable social previews, and repairs that restored the production build. Database migration rollout and live entitlement behaviour require independent verification.",
+        groups: [
+          {
+            heading: "The five-theme wardrobe",
+            icon: "Palette",
+            items: [
+              { title: "Basic, Halloween and Velvet Red", description: "A standard light/dark appearance, an October seasonal look, and an independent red colour mode." },
+              { title: "Premium Atelier and Retro Insert Coin", description: "Booster/staff and Level 25 theme options with server-backed entitlement validation; actual unlocks depend on the production database migration." },
+              { title: "Settings and theme saving", description: "Five-theme selector, locked states and safe preview rollback if a theme update fails." },
+            ],
+          },
+          {
+            heading: "Shared identity and release reliability",
+            icon: "Wrench",
+            items: [
+              { title: "Social card statistics", description: "Keep totals accurate when the game-play query is truncated." },
+              { title: "Build and SQL repairs", description: "Specify the required Press Start 2P font weight; correct exception syntax in theme migrations 0111–0114; add build diagnostics." },
+            ],
+          },
+        ],
+        commits: ["952a7af74a6dbcb400f116c78eba54d2c0cf9a29"],
+        prs: [82],
+      },
       {
         version: "v1.6.0",
         codename: "Release Integration",
@@ -2321,6 +2349,7 @@ export const SERIES: ReleaseSeries[] = [
 export const RELEASES: UpdateRelease[] = SERIES.flatMap((s) => s.releases);
 
 export const LANDED: LandedChange[] = [
+  { sha: "952a7af74a6dbcb400f116c78eba54d2c0cf9a29", date: "19 Oct 2026", subject: "fix(release): restore production builds and theme migration validity", pr: 82 },
   { sha: "5d23669", date: "15 Aug 2026", subject: "feat(discord): server audit logging, and the audit that produced it (0072)" },
   { sha: "67285b3", date: "5 Aug 2026", subject: "chore: verify the git integration fires after reconnecting" },
   { sha: "358a871", date: "5 Aug 2026", subject: "chore: trigger a build of 573a225" },
@@ -2402,6 +2431,7 @@ export interface MergedPullRequest {
 }
 
 export const PULL_REQUESTS: MergedPullRequest[] = [
+  { number: 82, title: "Restore production builds and theme migration validity", date: "19 Oct 2026" },
   { number: 22, title: "v1.5.0 \"Collector's Edition\": cosmetics, seasons, collections & social", date: "2 Aug 2026" },
   { number: 20, title: "feat(ui): redesign the interface and cut two runtime dependencies", date: "29 Jul 2026" },
   { number: 21, title: "Admin dashboard: sidebar layout, shared page furniture, one set of primitives", date: "29 Jul 2026" },
