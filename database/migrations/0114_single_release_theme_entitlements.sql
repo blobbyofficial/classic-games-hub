@@ -19,7 +19,7 @@ create policy theme_unlocks_owner_read on public.theme_unlocks
   for select to authenticated using (user_id = (select auth.uid()));
 
 create or replace function public.grant_retro_theme_on_level()
-returns trigger language plpgsql security definer set search_path=public as $
+returns trigger language plpgsql security definer set search_path=public as $$
 declare v_granted integer := 0;
 begin
   if new.level >= 25 then
@@ -38,7 +38,7 @@ begin
   end if;
   return new;
 end;
-$;
+$$;
 revoke execute on function public.grant_retro_theme_on_level() from public, anon, authenticated;
 drop trigger if exists profiles_award_retro_theme on public.profiles;
 create trigger profiles_award_retro_theme
