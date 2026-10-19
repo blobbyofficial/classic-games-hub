@@ -67,7 +67,7 @@ html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) {
   --accent-foreground: #1b1e25;
 
   /* Dark, neutral primary controls; precise rather than saturated. */
-  --primary: #22262d;
+  --primary: #6947a3;
   --primary-foreground: #ffffff;
   --ring: #505968;
 
@@ -82,8 +82,8 @@ html:not(.dark)[data-site-theme="default"]:not([data-season="halloween"]) {
   --destructive-foreground: #ffffff;
   --success: #287a5a;
   --warning: #98610d;
-  --neon: #4d5663;
-  --gold: #866432;
+  --neon: #b04c91;
+  --gold: #76639a;
 
   --shadow-color: 225 19% 25%;
   --shadow-xs: 0 1px 2px hsl(var(--shadow-color) / 0.045);
@@ -180,8 +180,8 @@ html.dark[data-site-theme="default"]:not([data-season="halloween"]) {
   --accent-foreground: #ffffff;
 
   /* Primary buttons are bright neutral, without coloured glow. */
-  --primary: #eceef1;
-  --primary-foreground: #101114;
+  --primary: #d6b2ff;
+  --primary-foreground: #191021;
   --ring: #c8ced8;
 
   /* Crisp, quiet outlines and practical focus/field visibility. */
@@ -195,8 +195,8 @@ html.dark[data-site-theme="default"]:not([data-season="halloween"]) {
   --destructive-foreground: #241112;
   --success: #74caaa;
   --warning: #eac184;
-  --neon: #c6cad1;
-  --gold: #d8be91;
+  --neon: #f2a7dd;
+  --gold: #b8a2d9;
 
   /* Neutral charcoal shadows, not purple/orange light blooms. */
   --shadow-color: 230 10% 2%;
@@ -927,7 +927,7 @@ html.dark[data-season="halloween"] {
   /* Use background-image (not the `background` shorthand, which resets
      background-clip to border-box) and -webkit-text-fill-color so the gradient
      reliably clips to the glyphs instead of filling the whole box. */
-  background-image: linear-gradient(110deg, var(--primary) 0%, var(--gold) 62%, var(--primary) 100%);
+  background-image: linear-gradient(112deg, var(--primary) 0%, var(--neon) 55%, var(--primary) 100%);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
