@@ -11,7 +11,7 @@ begin
   if new.site_theme in ('default', 'halloween') then
     return new;
   end if;
-  raise exception 'invalid_theme' using message = 'This site theme is no longer available';
+  raise exception 'This site theme is no longer available' using errcode = 'P0001';
 end;
 $$;
 revoke execute on function public.check_site_theme() from public, anon, authenticated;
