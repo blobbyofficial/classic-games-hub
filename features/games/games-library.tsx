@@ -36,6 +36,7 @@ export function GamesLibrary({
   );
   const [sort, setSort] = useState<Sort>("featured");
   const [favOnly, setFavOnly] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(24);
   const favSet = useMemo(() => new Set(favorites), [favorites]);
 
   // Follow navigation to a different category, including browser Back/Forward.
@@ -101,6 +102,8 @@ export function GamesLibrary({
     });
     return list;
   }, [games, category, favOnly, favSet, query, sort]);
+
+  useEffect(() => { setVisibleCount(24); }, [query, category, sort, favOnly]);
 
   const surpriseCandidates = useMemo(() => games.filter((game) =>
     game.status === "published" &&
@@ -208,7 +211,14 @@ export function GamesLibrary({
           <p aria-live="polite" className="text-sm text-muted-foreground">
             {filtered.length} {filtered.length === 1 ? "game" : "games"}
           </p>
-          <GameGrid games={filtered} favorites={favSet} highlightQuery={query} />
+          <GameGrid games={filtered.slice(0, visibleCount)} favorites={favSet} highlightQuery={query} />
+          {filtered.length > visibleCount && (
+            <div className="flex justify-center">
+              <Button variant="outline" className="min-h-11" onClick={() => setVisibleCount((count) => Math.min(count + 24, filtered.length))}>
+                Show more games ({Math.min(24, filtered.length - visibleCount)} more)
+              </Button>
+            </div>
+          )}
         </>
       )}
     </div>
