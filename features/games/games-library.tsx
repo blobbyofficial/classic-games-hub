@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import { Search, X, SlidersHorizontal, Heart, Gamepad2 } from "lucide-react";
 import { GameGrid } from "@/components/games/game-grid";
 import { LibraryBackToTop } from "./library-polish";
+import { RecentGamesStrip } from "./recent-games";
 import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -175,11 +176,12 @@ export function GamesLibrary({
         })}
       </div>
 
+      <RecentGamesStrip games={games} />
       {filtered.length === 0 ? (
         <EmptyState
           icon={Gamepad2}
           title="No games match your filters"
-          description="Try a different category, or clear everything and start again."
+          description={query.trim() ? "No titles or tags match your search. Try another term." : favOnly ? "None of your favourites match the current category." : "Try another category or clear the filters."}
           action={
             <Button
               variant="outline"
