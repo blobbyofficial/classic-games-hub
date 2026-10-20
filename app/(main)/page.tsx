@@ -7,6 +7,7 @@ import { getDailyRewardStatus } from "@/services/economy";
 import { getCurrentProfile, getCurrentSettings, getFlagPayload } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { GameGrid } from "@/components/games/game-grid";
+import { ArcadeSignature } from "@/components/ui/arcade-signature";
 import { GameCard } from "@/components/games/game-card";
 import { SectionHeader } from "@/components/section-header";
 import { DailyRewardCard } from "@/features/economy/daily-reward-card";
@@ -189,6 +190,7 @@ function Hero({
           <Stat icon={Gamepad2} label="Games" value={gameCount.toString()} />
           <Stat icon={Users} label="Plays" value={compactNumber(totalPlays)} />
           <Stat icon={Star} label="Free forever" value="100%" />
+          <span className="sr-only">Classic Games Hub</span><ArcadeSignature />
         </dl>
       </div>
     </section>
