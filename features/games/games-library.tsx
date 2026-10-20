@@ -183,12 +183,12 @@ export function GamesLibrary({
           title="No games match your filters"
           description={query.trim() ? "No titles or tags match your search. Try another term." : favOnly ? "None of your favourites match the current category." : "Try another category or clear the filters."}
           action={
-            <Button
-              variant="outline"
-              onClick={resetFilters}
-            >
-              Clear filters
-            </Button>
+            <div className="flex flex-wrap justify-center gap-2">
+              {query.trim() && <Button variant="outline" onClick={() => setQuery("")}>Clear search</Button>}
+              {favOnly && <Button variant="outline" onClick={() => setFavOnly(false)}>Show all favourites and games</Button>}
+              {category !== "All" && <Button variant="outline" onClick={() => selectCategory("All")}>All categories</Button>}
+              <Button variant="outline" onClick={resetFilters}>Clear all filters</Button>
+            </div>
           }
         />
       ) : (
