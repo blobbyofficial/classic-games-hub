@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Search, X, SlidersHorizontal, Heart, Gamepad2 } from "lucide-react";
 import { GameGrid } from "@/components/games/game-grid";
+import { LibraryBackToTop } from "./library-polish";
 import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -100,6 +101,7 @@ export function GamesLibrary({
 
   return (
     <div className="halloween-library space-y-5">
+      <LibraryBackToTop />
       <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
@@ -192,7 +194,7 @@ export function GamesLibrary({
           <p aria-live="polite" className="text-sm text-muted-foreground">
             {filtered.length} {filtered.length === 1 ? "game" : "games"}
           </p>
-          <GameGrid games={filtered} favorites={favSet} />
+          <GameGrid games={filtered} favorites={favSet} highlightQuery={query} />
         </>
       )}
     </div>
