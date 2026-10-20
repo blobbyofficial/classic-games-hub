@@ -7,6 +7,8 @@ import { getDailyRewardStatus } from "@/services/economy";
 import { getCurrentProfile, getCurrentSettings, getFlagPayload } from "@/lib/supabase/queries";
 import { createClient } from "@/lib/supabase/server";
 import { GameGrid } from "@/components/games/game-grid";
+import { ArcadeSignature } from "@/components/ui/arcade-signature";
+import { WhatsNewNotice } from "@/components/updates/whats-new-notice";
 import { GameCard } from "@/components/games/game-card";
 import { SectionHeader } from "@/components/section-header";
 import { DailyRewardCard } from "@/features/economy/daily-reward-card";
@@ -190,6 +192,8 @@ function Hero({
           <Stat icon={Users} label="Plays" value={compactNumber(totalPlays)} />
           <Stat icon={Star} label="Free forever" value="100%" />
         </dl>
+        <div className="mt-3"><ArcadeSignature /></div>
+        {process.env.NEXT_PUBLIC_CGH_RELEASE_NOTES_VERSION ? <div className="mt-4"><WhatsNewNotice version={process.env.NEXT_PUBLIC_CGH_RELEASE_NOTES_VERSION} message="See what changed in Classic Games Hub." /></div> : null}
       </div>
     </section>
   );

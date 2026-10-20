@@ -13,6 +13,7 @@ import { InDevelopmentLock } from "@/features/games/in-development-lock";
 import { LeaderboardTabs } from "@/features/leaderboards/leaderboard-tabs";
 import { RateGame } from "@/features/games/rate-game";
 import { GameCard } from "@/components/games/game-card";
+import { RecordRecentGame } from "@/features/games/recent-games";
 import { FavoriteButton } from "@/components/games/favorite-button";
 import { RatingStars } from "@/components/games/rating-stars";
 import { Badge } from "@/components/ui/badge";
@@ -110,6 +111,7 @@ export default async function GameDetailPage({ params }: { params: Promise<{ slu
 
   return (
     <div className="halloween-game-detail mx-auto max-w-6xl space-y-6">
+      <RecordRecentGame slug={game.slug} />
       {/* The rich-result payload. A game page is the only thing here that can
           realistically win a search: nobody outranks Poki for "free online
           games", but "play <title> online free" is a query with intent and

@@ -48,14 +48,14 @@ export function Footer() {
             href={SITE.discord}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-[#5865F2] hover:underline"
+            className="inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-[#8994ff] hover:underline"
           >
             <DiscordIcon className="size-4" /> Join our Discord
           </a>
         </div>
         {Object.entries(LINKS).map(([heading, links]) => (
           <nav key={heading} aria-label={heading}>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground/70">
+            <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
               {heading}
             </h3>
             <ul className="space-y-2.5 text-sm">
