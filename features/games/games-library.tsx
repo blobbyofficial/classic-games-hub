@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Search, X, SlidersHorizontal, Heart, Gamepad2, Shuffle } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { GameGrid } from "@/components/games/game-grid";
@@ -30,6 +30,7 @@ export function GamesLibrary({
   initialCategory?: string;
 }) {
   const router = useRouter();
+  const searchRef = useRef<HTMLInputElement>(null);
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>(
     categoryFromUrl(initialCategory),
@@ -52,6 +53,19 @@ export function GamesLibrary({
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  // "/" focuses search unless a text field or modifier key already owns the shortcut.
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key !== "/" || event.metaKey || event.ctrlKey || event.altKey || event.shiftKey) return;
+      const target = event.target;
+      if (target instanceof HTMLElement && (target.isContentEditable || ["INPUT", "TEXTAREA", "SELECT"].includes(target.tagName))) return;
+      event.preventDefault();
+      searchRef.current?.focus();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
   const selectCategory = (next: string) => {
@@ -118,11 +132,13 @@ export function GamesLibrary({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
           <Input
+            ref={searchRef}
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             placeholder="Search games…"
             className="min-h-11 pl-9 pr-9 text-base sm:text-sm"
             aria-label="Search games"
+            onKeyDown={(event) => { if (event.key === "Escape" && query) { event.preventDefault(); setQuery(""); } }}
           />
           {query && (
             <button
