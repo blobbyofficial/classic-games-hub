@@ -6,15 +6,18 @@ import { CATEGORY_META } from "@/lib/constants";
 import { Badge } from "@/components/ui/badge";
 import type { GameWithMeta } from "@/types";
 import { FavoriteButton } from "./favorite-button";
+import { HighlightMatch } from "@/features/games/library-polish";
 
 export function GameCard({
   game,
   isFavorite,
   priority,
+  highlightQuery,
 }: {
   game: GameWithMeta;
   isFavorite?: boolean;
   priority?: boolean;
+  highlightQuery?: string;
 }) {
   const meta = CATEGORY_META[game.category];
   const comingSoon = game.status === "coming_soon";
@@ -93,7 +96,7 @@ export function GameCard({
           )}
 
           <div className="halloween-game-caption absolute inset-x-3 bottom-2.5">
-            <h3 className="truncate font-semibold text-white drop-shadow-sm">{game.title}</h3>
+            <h3 className="truncate font-semibold text-white drop-shadow-sm"><HighlightMatch text={game.title} query={highlightQuery} /></h3>
             {game.tagline && (
               <p className="truncate text-xs text-white/75">{game.tagline}</p>
             )}
