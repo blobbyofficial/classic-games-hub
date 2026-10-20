@@ -8,6 +8,7 @@ import { getCurrentProfile, getCurrentSettings, getFlagPayload } from "@/lib/sup
 import { createClient } from "@/lib/supabase/server";
 import { GameGrid } from "@/components/games/game-grid";
 import { ArcadeSignature } from "@/components/ui/arcade-signature";
+import { WhatsNewNotice } from "@/components/updates/whats-new-notice";
 import { GameCard } from "@/components/games/game-card";
 import { SectionHeader } from "@/components/section-header";
 import { DailyRewardCard } from "@/features/economy/daily-reward-card";
@@ -191,6 +192,7 @@ function Hero({
           <Stat icon={Users} label="Plays" value={compactNumber(totalPlays)} />
           <Stat icon={Star} label="Free forever" value="100%" />
           <span className="sr-only">Classic Games Hub</span><ArcadeSignature />
+          {process.env.NEXT_PUBLIC_CGH_RELEASE_NOTES_VERSION ? <WhatsNewNotice version={process.env.NEXT_PUBLIC_CGH_RELEASE_NOTES_VERSION} message="See what changed in Classic Games Hub." /> : null}
         </dl>
       </div>
     </section>
