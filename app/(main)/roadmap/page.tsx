@@ -111,7 +111,7 @@ export default async function RoadmapPage() {
   const hasActiveOverride = roadmap !== ROADMAP;
 
   return (
-    <div className="mx-auto max-w-4xl space-y-10">
+    <div className="mx-auto min-w-0 max-w-4xl space-y-10 [overflow-wrap:anywhere]">
       {/* Header */}
       <header className="space-y-4">
         <div className="flex items-center gap-3">
