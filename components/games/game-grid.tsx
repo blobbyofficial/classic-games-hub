@@ -7,11 +7,13 @@ export function GameGrid({
   favorites,
   className,
   priorityCount = 0,
+  highlightQuery,
 }: {
   games: GameWithMeta[];
   favorites?: Set<string>;
   className?: string;
   priorityCount?: number;
+  highlightQuery?: string;
 }) {
   return (
     <div
@@ -29,6 +31,7 @@ export function GameGrid({
           game={game}
           isFavorite={favorites?.has(game.id)}
           priority={i < priorityCount}
+          highlightQuery={highlightQuery}
         />
       ))}
     </div>
