@@ -48,7 +48,7 @@ export function Footer() {
             href={SITE.discord}
             target="_blank"
             rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-[#5865F2] hover:underline"
+            className="inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-[#8994ff] hover:underline"
           >
             <DiscordIcon className="size-4" /> Join our Discord
           </a>
