@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { Search, X, SlidersHorizontal, Heart, Gamepad2 } from "lucide-react";
+import { Search, X, SlidersHorizontal, Heart, Gamepad2, Shuffle } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { GameGrid } from "@/components/games/game-grid";
 import { LibraryBackToTop } from "./library-polish";
 import { RecentGamesStrip } from "./recent-games";
@@ -28,6 +29,7 @@ export function GamesLibrary({
   favorites: string[];
   initialCategory?: string;
 }) {
+  const router = useRouter();
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>(
     categoryFromUrl(initialCategory),
@@ -100,6 +102,12 @@ export function GamesLibrary({
     return list;
   }, [games, category, favOnly, favSet, query, sort]);
 
+  const surpriseCandidates = useMemo(() => games.filter((game) =>
+    game.status === "published" &&
+    (category === "All" || game.category === category) &&
+    (!game.early_access_until || new Date(game.early_access_until).getTime() <= Date.now())
+  ), [games, category]);
+
   return (
     <div className="halloween-library space-y-5">
       <LibraryBackToTop />
@@ -124,6 +132,10 @@ export function GamesLibrary({
           )}
         </div>
         <div className="grid grid-cols-[auto_minmax(0,1fr)] items-center gap-2 sm:flex">
+          {surpriseCandidates.length > 0 && <Button variant="outline" className="min-h-11 shrink-0" onClick={() => {
+            const game = surpriseCandidates[Math.floor(Math.random() * surpriseCandidates.length)];
+            router.push(`/games/${game.slug}`);
+          }}><Shuffle /> Surprise me</Button>}
           <Button
             variant={favOnly ? "default" : "outline"}
             onClick={() => setFavOnly((f) => !f)}
