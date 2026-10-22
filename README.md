@@ -1,6 +1,6 @@
 # Classic Games Hub
 
-**Documentation:** [Start here](docs/documentation-index.md) · [Release and commit audit](docs/repository-history.md) · [Changelog](CHANGELOG.md) · [Roadmap](lib/roadmap.ts).
+**Quality audit:** [Repository quality baseline (18 October 2026)](docs/repository-quality-baseline-2026-10-18.md) · **Documentation:** [Start here](docs/documentation-index.md) · [Release and commit audit](docs/repository-history.md) · [Changelog](CHANGELOG.md) · [Roadmap](lib/roadmap.ts).
 
 A Next.js and Supabase browser arcade with games and community features: accounts, friends, chat, credits, achievements, leaderboards, challenges, cosmetics and administration. The game library is in a staged rebuild; an engine present in source is not necessarily publicly playable.
 
