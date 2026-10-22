@@ -11,7 +11,9 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "generate:assets": "node scripts/generate-thumbnails.mjs && node scripts/generate-icons.mjs",
-    "check:halloween": "node scripts/check-halloween.mjs"
+    "check:halloween": "node scripts/check-halloween.mjs",
+    "check:game-packages": "tsc -p packages/game-contracts/tsconfig.json && tsc -p packages/game-runtime/tsconfig.json && tsc -p packages/game-sdk/tsconfig.json && tsc -p packages/game-input/tsconfig.json",
+    "test:game-packages": "node --test scripts/test-game-packages.cjs"
   },
   "dependencies": {
     "@radix-ui/react-avatar": "^1.2.7",

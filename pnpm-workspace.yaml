@@ -1,0 +1,4 @@
+# Initial opt-in package discovery; the existing npm deployment workflow remains unchanged.
+packages:
+  - "packages/*"
+  - "games/*"
