@@ -2,32 +2,27 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Gamepad2, Trophy, Store, Users } from "lucide-react";
+import { MOBILE_NAV_PUBLIC, MOBILE_NAV_SIGNED_IN, isNavRouteActive } from "@/lib/navigation";
 import { cn } from "@/lib/utils";
 import { useSessionStore } from "@/lib/stores/session-store";
-
-const ITEMS = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/games", label: "Games", icon: Gamepad2 },
-  { href: "/leaderboards", label: "Ranks", icon: Trophy },
-  { href: "/shop", label: "Shop", icon: Store },
-  { href: "/friends", label: "Friends", icon: Users, badgeKey: "friendRequests" as const },
-];
 
 /** Fixed bottom tab bar for phones. */
 export function MobileNav() {
   const pathname = usePathname();
   const pending = useSessionStore((s) => s.pendingFriendRequests);
+  const signedIn = useSessionStore((s) => Boolean(s.userId));
+  const items = signedIn ? MOBILE_NAV_SIGNED_IN : MOBILE_NAV_PUBLIC;
 
   return (
     <nav
       aria-label="Mobile primary navigation"
       className="halloween-mobile-nav fixed inset-x-0 bottom-0 z-40 border-t border-border/60 bg-background/95 backdrop-blur-md lg:hidden"
     >
-      <div className="mx-auto grid w-full max-w-lg grid-cols-5 px-1 pb-[env(safe-area-inset-bottom)]">
-        {ITEMS.map((item) => {
-          const active = item.href === "/" ? pathname === "/" : (pathname === item.href || pathname.startsWith(`${item.href}/`));
+      <div className={cn("mx-auto grid w-full max-w-lg px-1 pb-[env(safe-area-inset-bottom)]", signedIn ? "grid-cols-5" : "grid-cols-4")}>
+        {items.map((item) => {
+          const active = isNavRouteActive(pathname, item.href);
           const badge = item.badgeKey === "friendRequests" ? pending : 0;
+          const label = item.label === "Leaderboards" ? "Ranks" : item.label;
           return (
             <Link
               key={item.href}
@@ -63,7 +58,7 @@ export function MobileNav() {
                   </span>
                 )}
               </span>
-              {item.label}
+              {label}
             </Link>
           );
         })}
