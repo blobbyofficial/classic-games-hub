@@ -89,11 +89,9 @@ export function Sidebar() {
     try { setCollapsed(localStorage.getItem("cgh:sidebar-collapsed") === "true"); } catch { /* storage may be unavailable */ }
   }, []);
   const toggleCollapsed = () => {
-    setCollapsed((previous) => {
-      const next = !previous;
-      try { localStorage.setItem("cgh:sidebar-collapsed", String(next)); } catch { /* storage may be unavailable */ }
-      return next;
-    });
+    const next = !collapsed;
+    setCollapsed(next);
+    try { localStorage.setItem("cgh:sidebar-collapsed", String(next)); } catch { /* storage may be unavailable */ }
   };
 
   return (
