@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -23,6 +23,8 @@ export function MobileMenu() {
   const userId = useSessionStore((s) => s.userId);
   const profile = useSessionStore((s) => s.profile);
   const close = () => setOpen(false);
+  const pathname = usePathname();
+  useEffect(() => { setOpen(false); }, [pathname]);
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
@@ -36,9 +38,9 @@ export function MobileMenu() {
       </Dialog.Trigger>
 
       <Dialog.Portal>
-        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 lg:hidden" />
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50 data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 lg:hidden" />
         <Dialog.Content
-          className="fixed inset-y-0 left-0 z-50 flex h-dvh w-[min(84vw,20rem)] min-w-0 flex-col overflow-hidden border-r border-border bg-background pb-[env(safe-area-inset-bottom)] shadow-xl duration-300 ease-[var(--ease-standard)] data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left lg:hidden"
+          className="fixed inset-y-0 left-0 z-50 flex h-dvh w-[min(88vw,20rem)] min-w-0 flex-col overflow-hidden border-r border-border bg-background pb-[env(safe-area-inset-bottom)] shadow-xl motion-reduce:!animate-none duration-200 ease-[var(--ease-standard)] data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:slide-out-to-left data-[state=open]:slide-in-from-left lg:hidden"
           aria-describedby={undefined}
         >
           <Dialog.Title className="sr-only">Navigation menu</Dialog.Title>
@@ -56,7 +58,7 @@ export function MobileMenu() {
               <Link
                 href={`/u/${profile.username}`}
                 onClick={close}
-                className="flex items-center gap-3 rounded-xl border border-border/70 bg-card p-3 transition-colors hover:bg-accent/50"
+                className="flex items-center gap-3 rounded-lg bg-muted/50 p-3 transition-colors hover:bg-accent/50"
               >
                 <UserAvatar src={profile.avatar_url} name={profile.display_name ?? profile.username} className="size-10" />
                 <div className="min-w-0 flex-1">
@@ -122,7 +124,7 @@ export function MobileMenu() {
               href={SITE.discord}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-3 rounded-xl bg-[#5865F2]/10 px-3 py-2.5 text-sm font-medium text-[#5865F2] transition-colors hover:bg-[#5865F2]/20"
+              className="flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-muted-foreground transition-colors hover:bg-accent/50 hover:text-foreground"
             >
               <DiscordIcon className="size-[18px]" /> Join Discord
               <ExternalLink className="ml-auto size-3.5 opacity-60" />
@@ -168,9 +170,9 @@ function DrawerLink({ item, onNavigate }: { item: NavItem; onNavigate: () => voi
       href={item.href}
       onClick={onNavigate}
       aria-current={active ? "page" : undefined}
-      aria-label={badge > 0 ? `${item.label}, ${badge} unread` : item.label}
+      aria-label={badge > 0 ? `${item.label}, ${badge} ${item.badgeKey === "friendRequests" ? "pending requests" : "unread notifications"}` : item.label}
       className={cn(
-        "relative flex min-h-11 items-center gap-3 rounded-xl py-2.5 pl-3.5 pr-3 text-sm font-medium transition-colors",
+        "relative flex min-h-11 items-center gap-3 rounded-lg py-2.5 pl-3.5 pr-3 text-sm font-medium transition-colors",
         active
           ? "bg-primary/10 text-primary"
           : "text-muted-foreground hover:bg-accent/50 hover:text-foreground",
