@@ -1,12 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, User, Settings, Package, ShieldCheck, Coins, Trophy } from "lucide-react";
+import { LogOut, User, Settings, Package, ShieldCheck, Coins, Trophy, Palette } from "lucide-react";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { signOut } from "@/actions/auth";
 import { UserAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { formatNumber } from "@/lib/utils";
+import { ThemeToggle } from "./theme-toggle";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -24,22 +25,20 @@ export function UserMenu() {
 
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger className="focus-visible-ring rounded-full">
+      <DropdownMenuTrigger aria-label="Open account menu" className="focus-visible-ring rounded-full">
         <UserAvatar
           src={profile.avatar_url}
           name={profile.display_name ?? profile.username}
           frame={profile.equipped?.avatar_frame}
-          decoration={profile.equipped?.decoration}
           className="size-9"
         />
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-64">
+      <DropdownMenuContent align="end" className="w-64 p-1.5">
         <div className="flex items-center gap-3 px-2 py-2">
           <UserAvatar
             src={profile.avatar_url}
             name={profile.display_name ?? profile.username}
             frame={profile.equipped?.avatar_frame}
-          decoration={profile.equipped?.decoration}
             className="size-10"
           />
           <div className="min-w-0">
@@ -82,6 +81,11 @@ export function UserMenu() {
             </DropdownMenuItem>
           </>
         )}
+        <DropdownMenuSeparator />
+        <div className="flex items-center justify-between px-2 py-1.5 text-sm text-muted-foreground">
+          <span className="flex items-center gap-2"><Palette className="size-4" /> Appearance</span>
+          <ThemeToggle />
+        </div>
         <DropdownMenuSeparator />
         <form action={signOut}>
           <Button
