@@ -1,101 +1,66 @@
 import Link from "next/link";
 import { ExternalLink } from "lucide-react";
 import { Logo } from "./logo";
-import { DiscordIcon } from "@/components/icons";
 import { SITE } from "@/lib/constants";
 
-const LINKS = {
-  Platform: [
-    { label: "Games", href: "/games" },
-    { label: "Leaderboards", href: "/leaderboards" },
-    { label: "Shop", href: "/shop" },
-    { label: "Achievements", href: "/achievements" },
-  ],
-  Community: [
-    { label: "Party", href: "/party" },
-    { label: "Friends", href: "/friends" },
-    { label: "Challenges", href: "/challenges" },
-    { label: "Roadmap", href: "/roadmap" },
-    { label: "Update log", href: "/updates" },
-    { label: "Status", href: "/status" },
-    { label: "Discord", href: SITE.discord, external: true },
-    { label: "Founder", href: SITE.founder, external: true },
-  ],
-  Account: [
-    { label: "Sign up", href: "/register" },
-    { label: "Log in", href: "/login" },
-    { label: "Settings", href: "/settings" },
-    { label: "Inventory", href: "/inventory" },
-  ],
-  Legal: [
-    { label: "Terms of Service", href: "/legal/terms" },
-    { label: "Privacy Policy", href: "/legal/privacy" },
-    { label: "Cookie Policy", href: "/legal/cookies" },
-  ],
-};
+const FOOTER_LINKS = [
+  { label: "Games", href: "/games" },
+  { label: "Updates", href: "/updates" },
+  { label: "Roadmap", href: "/roadmap" },
+  { label: "Status", href: "/status" },
+  { label: "Discord", href: SITE.discord, external: true },
+  { label: "Founder", href: SITE.founder, external: true },
+] as const;
+
+const LEGAL_LINKS = [
+  { label: "Terms", href: "/legal/terms" },
+  { label: "Privacy", href: "/legal/privacy" },
+  { label: "Cookies", href: "/legal/cookies" },
+] as const;
 
 export function Footer() {
   return (
-    /* mb clears the fixed mobile tab bar so the last row of links stays tappable. */
-    <footer className="halloween-footer mt-16 border-t border-border/60 bg-muted/20 pb-20 defer-paint lg:pb-0">
-      <div className="mx-auto grid max-w-[1600px] gap-10 px-4 py-12 sm:px-6 md:grid-cols-[1.5fr_repeat(4,1fr)]">
-        <div className="space-y-4">
-          <Logo />
-          <p className="max-w-xs text-sm leading-relaxed text-muted-foreground">
-            {SITE.description}
-          </p>
-          <a
-            href={SITE.discord}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex items-center gap-2 rounded-lg text-sm font-semibold text-[#8994ff] hover:underline"
-          >
-            <DiscordIcon className="size-4" /> Join our Discord
-          </a>
-        </div>
-        {Object.entries(LINKS).map(([heading, links]) => (
-          <nav key={heading} aria-label={heading}>
-            <h3 className="mb-3 text-xs font-semibold uppercase tracking-[0.08em] text-muted-foreground">
-              {heading}
-            </h3>
-            <ul className="space-y-2.5 text-sm">
-              {links.map((l) => (
-                <li key={l.label}>
+    <footer className="halloween-footer mt-12 border-t border-border/70 pb-[calc(5rem+env(safe-area-inset-bottom))] lg:pb-0">
+      <div className="mx-auto max-w-[1600px] space-y-6 px-4 py-8 sm:px-6 lg:py-10">
+        <div className="flex flex-col justify-between gap-6 md:flex-row md:items-start">
+          <div className="max-w-sm space-y-2">
+            <Logo />
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              Play classic games, earn rewards and connect with friends.
+            </p>
+          </div>
+          <nav aria-label="Footer navigation">
+            <ul className="flex max-w-xl flex-wrap gap-x-5 gap-y-3 text-sm">
+              {FOOTER_LINKS.map((link) => (
+                <li key={link.href}>
                   <Link
-                    href={l.href}
-                    target={"external" in l && l.external ? "_blank" : undefined}
-                    rel={"external" in l && l.external ? "noopener noreferrer" : undefined}
-                    className="inline-flex items-center gap-1 rounded text-muted-foreground transition-colors hover:text-foreground"
+                    href={link.href}
+                    target={"external" in link ? "_blank" : undefined}
+                    rel={"external" in link ? "noopener noreferrer" : undefined}
+                    className="inline-flex items-center gap-1 text-muted-foreground hover:text-foreground focus-visible:underline"
                   >
-                    {l.label}
-                    {"external" in l && l.external && <ExternalLink className="size-3" />}
+                    {link.label}
+                    {"external" in link && <ExternalLink className="size-3" aria-hidden="true" />}
                   </Link>
                 </li>
               ))}
             </ul>
           </nav>
-        ))}
-      </div>
-      <div className="border-t border-border/60 px-4 py-5 text-center text-xs leading-relaxed text-muted-foreground">
-        © {new Date().getFullYear()} {SITE.name}. Built by{" "}
-        <a
-          href={SITE.founder}
-          target="_blank"
-          rel="noopener noreferrer"
-          className="font-medium hover:text-foreground"
-        >
-          BlobbyOfficial
-        </a>
-        . A community arcade - no pay-to-win, ever.{" "}
-        <span className="whitespace-nowrap">
-          <Link href="/legal/terms" className="hover:text-foreground">
-            Terms
-          </Link>{" "}
-          ·{" "}
-          <Link href="/legal/privacy" className="hover:text-foreground">
-            Privacy
-          </Link>
-        </span>
+        </div>
+        <div className="flex flex-col gap-3 border-t border-border/60 pt-5 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
+          <p>© {new Date().getFullYear()} {SITE.name} · Built by BlobbyOfficial</p>
+          <nav aria-label="Legal">
+            <ul className="flex flex-wrap gap-x-5 gap-y-2">
+              {LEGAL_LINKS.map((link) => (
+                <li key={link.href}>
+                  <Link href={link.href} className="hover:text-foreground focus-visible:underline">
+                    {link.label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        </div>
       </div>
     </footer>
   );
