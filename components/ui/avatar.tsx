@@ -87,13 +87,15 @@ const FRAME_RING: Record<string, { gradient: string; glow: string; spin?: boolea
 };
 
 interface UserAvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPrimitive.Root> {
+  /** Deprecated compatibility input. Decorations are intentionally no longer rendered. */
+  decoration?: string | null;
   src?: string | null;
   name?: string | null;
   frame?: string | null;
 }
 
 /** Avatar that renders image or colored initials, with optional cosmetic frame. */
-function UserAvatar({ src, name, frame, className, ...props }: UserAvatarProps) {
+function UserAvatar({ src, name, frame, decoration: _decoration, className, ...props }: UserAvatarProps) {
   const ring = frame ? FRAME_RING[frame] : undefined;
   const inner = (
     <Avatar className={cn(!ring && frame ? FRAME_STYLES[frame] : undefined, ring && "ring-2 ring-card", className)} {...props}>
