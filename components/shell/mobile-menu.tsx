@@ -12,7 +12,8 @@ import { UserAvatar } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { signOut } from "@/actions/auth";
-import { PRIMARY_NAV, SOCIAL_NAV, LIBRARY_NAV, SITE, type NavItem } from "@/lib/constants";
+import { SITE, type NavItem } from "@/lib/constants";
+import { MAIN_NAV_GROUPS, isNavRouteActive } from "@/lib/navigation";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { cn, formatNumber } from "@/lib/utils";
 
@@ -79,27 +80,17 @@ export function MobileMenu() {
 
           {/* Navigation */}
           <div className="min-h-0 flex-1 space-y-1 overflow-y-auto overscroll-contain px-3 py-2">
-            <nav className="space-y-0.5">
-              {PRIMARY_NAV.map((item) => (
-                <DrawerLink key={item.href} item={item} onNavigate={close} />
-              ))}
-            </nav>
-
-            {userId && (
-              <>
-                <SectionLabel>Social</SectionLabel>
-                <nav className="space-y-0.5">
-                  {SOCIAL_NAV.map((item) => (
-                    <DrawerLink key={item.href} item={item} onNavigate={close} />
-                  ))}
-                </nav>
-                <SectionLabel>Library</SectionLabel>
-                <nav className="space-y-0.5">
-                  {LIBRARY_NAV.map((item) => (
-                    <DrawerLink key={item.href} item={item} onNavigate={close} />
-                  ))}
-                </nav>
-              </>
+            {MAIN_NAV_GROUPS.map((group) =>
+              group.label && !userId ? null : (
+                <div key={group.label ?? "primary"}>
+                  {group.label && <SectionLabel>{group.label}</SectionLabel>}
+                  <nav className="space-y-0.5" aria-label={group.label ?? "Primary"}>
+                    {group.items.map((item) => (
+                      <DrawerLink key={item.href} item={item} onNavigate={close} />
+                    ))}
+                  </nav>
+                </div>
+              ),
             )}
 
             <Separator className="my-2" />
@@ -163,7 +154,7 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 function DrawerLink({ item, onNavigate }: { item: NavItem; onNavigate: () => void }) {
   const pathname = usePathname();
-  const active = item.href === "/" ? pathname === "/" : pathname === item.href || pathname.startsWith(`${item.href}/`);
+  const active = isNavRouteActive(pathname, item.href);
   const badge = useSessionStore((s) =>
     item.badgeKey === "notifications"
       ? s.unreadNotifications
