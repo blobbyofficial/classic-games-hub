@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
@@ -23,8 +23,6 @@ export function MobileMenu() {
   const userId = useSessionStore((s) => s.userId);
   const profile = useSessionStore((s) => s.profile);
   const close = () => setOpen(false);
-  const pathname = usePathname();
-  useEffect(() => { setOpen(false); }, [pathname]);
 
   return (
     <Dialog.Root open={open} onOpenChange={setOpen}>
