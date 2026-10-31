@@ -4,7 +4,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PRIMARY_NAV, SOCIAL_NAV, LIBRARY_NAV, SITE, type NavItem } from "@/lib/constants";
+import { SITE, type NavItem } from "@/lib/constants";
+import { MAIN_NAV_GROUPS, isNavRouteActive } from "@/lib/navigation";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { DiscordIcon } from "@/components/icons";
 
@@ -68,7 +69,7 @@ function NavGroup({ label, items, pathname }: { label?: string; items: NavItem[]
           <SidebarLink
             key={item.href}
             item={item}
-            active={item.href === "/" ? pathname === "/" : pathname.startsWith(item.href)}
+            active={isNavRouteActive(pathname, item.href)}
           />
         ))}
       </nav>
@@ -82,13 +83,10 @@ export function Sidebar() {
 
   return (
     <aside className="halloween-sidebar sticky top-16 hidden h-[calc(100dvh-4rem)] w-60 shrink-0 flex-col overflow-y-auto border-r border-border/60 px-3 py-5 lg:flex">
-      <NavGroup items={PRIMARY_NAV} pathname={pathname} />
-
-      {userId && (
-        <>
-          <NavGroup label="Social" items={SOCIAL_NAV} pathname={pathname} />
-          <NavGroup label="Library" items={LIBRARY_NAV} pathname={pathname} />
-        </>
+      {MAIN_NAV_GROUPS.map((group) =>
+        group.label && !userId ? null : (
+          <NavGroup key={group.label ?? "primary"} label={group.label ?? undefined} items={group.items as NavItem[]} pathname={pathname} />
+        ),
       )}
 
       <div className="mt-auto pt-6">
