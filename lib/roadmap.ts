@@ -68,6 +68,45 @@ export const STATUS_META: Record<RoadmapStatus, { label: string; className: stri
  */
 export const ROADMAP: RoadmapRelease[] = [
   {
+    version: "Arcade Polish — follow-up minis",
+    codename: "Small Improvements, Properly Shipped",
+    status: "later",
+    timeframe: "Unscheduled — split into independently tested mini releases",
+    summary: "Deferred ideas from the 100-item Arcade Polish exploration, after the focused October 2026 mini update. These are candidates, not shipped features or a commitment to all 100. Keep major Arcade Reborn rebuilds separate and ship each mini only after regression and mobile testing.",
+    groups: [
+      {
+        heading: "Next mini — games and discovery",
+        icon: "Gamepad2",
+        blurb: "Prioritise useful changes that do not alter gameplay engines or existing scoring.",
+        items: [
+          { title: "Better controls preview", description: "Show keyboard, touch and gamepad controls before launch; ensure previews are accurate for each published game.", status: "later" },
+          { title: "Related game recommendations", description: "Rank eligible published games by category and tags, with fallbacks when data is incomplete.", status: "later" },
+          { title: "Game-card quick actions", description: "Accessible action menus and responsive focus/hover states without nesting interactive links.", status: "later" },
+          { title: "Featured game discovery", description: "A carefully curated homepage spotlight and daily tip only if content and availability can be maintained.", status: "later" },
+        ],
+      },
+      {
+        heading: "Later mini — player experience",
+        icon: "Accessibility",
+        items: [
+          { title: "Player help and settings", description: "Touch-control hints, orientation guidance, sound preferences and clear keyboard shortcuts; respect reduced motion.", status: "later" },
+          { title: "Personal milestones", description: "Optional XP ring, personal-best feedback and milestone confetti using real authenticated, server-confirmed results only.", status: "later" },
+          { title: "Polish for loading and errors", description: "Improve game loading, empty states and recoverable errors without obscuring actionable messages.", status: "later" },
+          { title: "Navigation and theme refinement", description: "Mobile navigation, light/dark theme swatches, focus states and contrast; preserve existing entitlements.", status: "later" },
+        ],
+      },
+      {
+        heading: "Engineering and quality backlog",
+        icon: "Wrench",
+        items: [
+          { title: "Performance and low-end devices", description: "Measure layout shift, rendering budgets, image loading and idle behaviour on phones and low-power laptops before optimisation.", status: "later" },
+          { title: "Release automation", description: "Dependency and asset checks, smoke-test screenshots, a11y coverage, migration audit and reliable rollback documentation.", status: "later" },
+          { title: "Original idea inventory", description: "Review the remaining original 100-idea patch bundles against the live code; classify each as shipped, redundant, discarded or future work without blindly replaying installers.", status: "later" },
+        ],
+      },
+    ],
+  },
+  {
     version: "Arcade Reborn — Game Architecture 2.1",
     codename: "Platform-First Game Rebuild",
     status: "next",
