@@ -3,21 +3,9 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
-import {
-  Gamepad2,
-  Home,
-  Trophy,
-  Store,
-  Award,
-  Users,
-  MessageSquare,
-  Settings,
-  Search,
-  Package,
-  Target,
-  Moon,
-  Sun,
-} from "lucide-react";
+import { Gamepad2, Search, Moon, Sun } from "lucide-react";
+import { visibleNavigation } from "@/lib/navigation";
+import { useSessionStore } from "@/lib/stores/session-store";
 import { useTheme } from "next-themes";
 import { createClient } from "@/lib/supabase/client";
 import { useUIStore } from "@/lib/stores/ui-store";
@@ -53,25 +41,13 @@ async function loadGames(): Promise<GameHit[]> {
   return gamesInFlight;
 }
 
-const NAV = [
-  { label: "Home", href: "/", icon: Home },
-  { label: "Games", href: "/games", icon: Gamepad2 },
-  { label: "Leaderboards", href: "/leaderboards", icon: Trophy },
-  { label: "Shop", href: "/shop", icon: Store },
-  { label: "Achievements", href: "/achievements", icon: Award },
-  { label: "Challenges", href: "/challenges", icon: Target },
-  { label: "Friends", href: "/friends", icon: Users },
-  { label: "Messages", href: "/messages", icon: MessageSquare },
-  { label: "Inventory", href: "/inventory", icon: Package },
-  { label: "Settings", href: "/settings", icon: Settings },
-];
-
 export function CommandPalette() {
   const open = useUIStore((s) => s.commandOpen);
   const setOpen = useUIStore((s) => s.setCommandOpen);
   const toggle = useUIStore((s) => s.toggleCommand);
   const router = useRouter();
   const { setTheme, resolvedTheme } = useTheme();
+  const signedIn = useSessionStore((s) => Boolean(s.userId));
 
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
@@ -136,7 +112,7 @@ export function CommandPalette() {
             </Command.Group>
 
             <Command.Group heading="Navigate" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground">
-              {NAV.map((n) => (
+              {visibleNavigation(signedIn).map((n) => (
                 <Item key={n.href} onSelect={() => go(n.href)}>
                   <n.icon className="size-4 text-muted-foreground" />
                   <span>{n.label}</span>
