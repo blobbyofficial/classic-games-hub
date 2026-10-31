@@ -10,16 +10,11 @@ import type { ShopItem } from "@/types";
 const GROUPS: { key: string; label: string; kinds: string[] }[] = [
   { key: "all", label: "All", kinds: [] },
   { key: "frames", label: "Frames", kinds: ["avatar_frame"] },
-  { key: "decorations", label: "Decorations", kinds: ["decoration"] },
-  { key: "profile-frames", label: "Profile frames", kinds: ["profile_frame"] },
-  { key: "themes", label: "Themes", kinds: ["profile_theme", "banner"] },
+  { key: "themes", label: "Themes", kinds: ["profile_theme"] },
+  { key: "banners", label: "Banners", kinds: ["banner"] },
   { key: "nameplates", label: "Nameplates", kinds: ["nameplate"] },
   { key: "badges", label: "Badges", kinds: ["badge"] },
-  { key: "effects", label: "Effects", kinds: ["effect"] },
-  { key: "entrances", label: "Entrances", kinds: ["entrance"] },
-  { key: "trails", label: "Cursor trails", kinds: ["cursor_trail"] },
   { key: "tracks", label: "Tracks", kinds: ["track"] },
-  { key: "collectibles", label: "Collectibles", kinds: ["collectible"] },
   { key: "boosts", label: "Boosts", kinds: ["xp_boost", "credit_boost"] },
 ];
 

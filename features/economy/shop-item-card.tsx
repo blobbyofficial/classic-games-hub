@@ -13,23 +13,18 @@ import { Badge } from "@/components/ui/badge";
 import { cn, formatNumber, RARITY_META } from "@/lib/utils";
 import type { ShopItem } from "@/types";
 
-const EQUIPPABLE = new Set(["avatar_frame", "profile_theme", "badge", "effect", "banner", "nameplate", "decoration", "profile_frame", "entrance", "cursor_trail", "track"]);
+const EQUIPPABLE = new Set(["avatar_frame", "profile_theme", "badge", "banner", "nameplate", "track"]);
 
 const KIND_LABEL: Record<string, string> = {
   avatar_frame: "Avatar frame",
   profile_theme: "Profile theme",
   badge: "Badge",
-  effect: "Effect",
   banner: "Banner",
   nameplate: "Nameplate",
   collectible: "Collectible",
   xp_boost: "XP boost",
   credit_boost: "Credit boost",
   track: "Music track",
-  decoration: "Decoration",
-  profile_frame: "Profile frame",
-  entrance: "Entrance",
-  cursor_trail: "Cursor trail",
 };
 
 export function ShopItemCard({ item, owned }: { item: ShopItem; owned: boolean }) {
@@ -170,7 +165,6 @@ function kindIcon(kind: string): string {
     avatar_frame: "sparkles",
     profile_theme: "sparkles",
     badge: "award",
-    effect: "sparkles",
     banner: "map",
     nameplate: "id-card",
     collectible: "gem",

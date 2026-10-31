@@ -3,7 +3,6 @@
 import * as React from "react";
 import * as AvatarPrimitive from "@radix-ui/react-avatar";
 import { cn, initials, stringToColor } from "@/lib/utils";
-import { AvatarDecoration, hasDecoration } from "@/components/profile/avatar-decoration";
 
 const Avatar = React.forwardRef<
   React.ElementRef<typeof AvatarPrimitive.Root>,
@@ -91,14 +90,11 @@ interface UserAvatarProps extends React.ComponentPropsWithoutRef<typeof AvatarPr
   src?: string | null;
   name?: string | null;
   frame?: string | null;
-  /** Equipped `decoration` slug. Layers on top of the frame, and may overhang. */
-  decoration?: string | null;
 }
 
 /** Avatar that renders image or colored initials, with optional cosmetic frame. */
-function UserAvatar({ src, name, frame, decoration, className, ...props }: UserAvatarProps) {
+function UserAvatar({ src, name, frame, className, ...props }: UserAvatarProps) {
   const ring = frame ? FRAME_RING[frame] : undefined;
-  const deco = hasDecoration(decoration) ? decoration : null;
   const inner = (
     <Avatar className={cn(!ring && frame ? FRAME_STYLES[frame] : undefined, ring && "ring-2 ring-card", className)} {...props}>
       {src ? <AvatarImage src={src} alt={name ?? "avatar"} /> : null}
@@ -110,7 +106,7 @@ function UserAvatar({ src, name, frame, decoration, className, ...props }: UserA
 
   // The overwhelmingly common case is a plain avatar; keep it a single element
   // rather than paying for wrapper spans on every row of every list.
-  if (!ring && !deco) return inner;
+  if (!ring) return inner;
 
   // The decoration deliberately sits outside Avatar, which clips its overflow -
   // a crown that cannot poke above the head is not a crown.
@@ -124,7 +120,6 @@ function UserAvatar({ src, name, frame, decoration, className, ...props }: UserA
         />
       )}
       <span className="relative">{inner}</span>
-      <AvatarDecoration slug={deco} />
     </span>
   );
 }

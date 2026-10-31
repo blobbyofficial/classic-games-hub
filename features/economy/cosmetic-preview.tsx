@@ -2,11 +2,7 @@ import { DynamicIcon } from "@/components/dynamic-icon";
 import { cn } from "@/lib/utils";
 import { Nameplate } from "@/components/profile/nameplate";
 import { UserAvatar } from "@/components/ui/avatar";
-import { ProfileEffects } from "@/components/profile/profile-effects";
 import { ProfileBackdrop } from "@/components/profile/profile-backdrop";
-import { ProfileFrame } from "@/components/profile/profile-frame";
-import { ProfileEntrance } from "@/components/profile/profile-entrance";
-import { CursorTrail } from "@/components/profile/cursor-trail";
 import { ProfileMusic } from "@/components/profile/profile-music";
 import { bannerBackground } from "@/components/profile/profile-theme";
 import type { ShopItem } from "@/types";
@@ -24,11 +20,6 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
   const isBanner = item.kind === "banner" || item.kind === "profile_theme";
   const isFrame = item.kind === "avatar_frame";
   const isNameplate = item.kind === "nameplate";
-  const isEffect = item.kind === "effect";
-  const isProfileFrame = item.kind === "profile_frame";
-  const isDecoration = item.kind === "decoration";
-  const isEntrance = item.kind === "entrance";
-  const isTrail = item.kind === "cursor_trail";
   const isTrack = item.kind === "track";
 
   // For banner/theme items, drive the real backdrop off a synthetic equipped map.
@@ -41,9 +32,6 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
     <>
     {/* A trail is only itself when it is following a real pointer, so the
         preview arms the actual cosmetic for as long as this page is open. */}
-    {isTrail && <CursorTrail slug={item.slug} />}
-    <ProfileEntrance slug={isEntrance ? item.slug : undefined}>
-    <ProfileFrame slug={isProfileFrame ? item.slug : undefined}>
     <div className="mx-auto w-full max-w-sm overflow-hidden rounded-3xl border border-border bg-card shadow-xl">
       {/* Banner */}
       <div
@@ -51,17 +39,15 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
         style={bannerBg ? { background: bannerBg } : { background: "color-mix(in oklch, var(--muted) 80%, transparent)" }}
       >
         {isBanner && <ProfileBackdrop equipped={equipped} />}
-        {isEffect && <ProfileEffects slug={item.slug} />}
         <div className="absolute inset-0 bg-gradient-to-t from-black/25 to-transparent" />
       </div>
 
       {/* Avatar */}
       <div className="-mt-10 px-5">
-        {isFrame || isDecoration ? (
+        {isFrame ? (
           <UserAvatar
             name="SamplePlayer"
             frame={isFrame ? item.slug : undefined}
-            decoration={isDecoration ? item.slug : undefined}
             className="size-20 border-4 border-card"
           />
         ) : (
@@ -110,8 +96,8 @@ export function CosmeticPreview({ item }: { item: ShopItem }) {
         <p className="text-sm text-muted-foreground">Level 12 · 3,400 credits</p>
       </div>
     </div>
-    </ProfileFrame>
-    </ProfileEntrance>
+    
+    
     </>
   );
 }

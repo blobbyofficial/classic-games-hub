@@ -30,11 +30,7 @@ import { PresenceDot } from "@/components/profile/presence-dot";
 import { bannerBackground } from "@/components/profile/profile-theme";
 import { Nameplate } from "@/components/profile/nameplate";
 import { NameStyle } from "@/components/profile/name-style";
-import { ProfileEffects } from "@/components/profile/profile-effects";
 import { ProfileBackdrop } from "@/components/profile/profile-backdrop";
-import { ProfileFrame } from "@/components/profile/profile-frame";
-import { ProfileEntrance } from "@/components/profile/profile-entrance";
-import { CursorTrail } from "@/components/profile/cursor-trail";
 import { ProfileMusic } from "@/components/profile/profile-music";
 import { NowPlayingChip } from "@/features/social/now-playing";
 import { RARITY_META, formatNumber, timeAgo, cn } from "@/lib/utils";
@@ -133,24 +129,23 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
     .filter((g): g is { slug: string; title: string; thumbnail_url: string | null } => Boolean(g));
 
   return (
-    <div className="mx-auto max-w-5xl space-y-6">
-      <CursorTrail slug={profile.equipped?.cursor_trail} reduced={reducedMotion} />
+    <div className="mx-auto max-w-6xl space-y-7">
+
 
       {/* Banner, wrapped in the equipped profile frame (outermost layer), with
           the entrance outside that again so the frame arrives with the card. */}
-      <ProfileEntrance slug={profile.equipped?.entrance}>
-      <ProfileFrame slug={profile.equipped?.profile_frame}>
-        <div className="overflow-hidden rounded-3xl border border-border">
-        <div className="relative h-40 sm:h-56" style={{ background: bannerBackground(profile.equipped) }}>
+
+        <div className="overflow-hidden rounded-[28px] border border-border bg-card shadow-[0_18px_60px_-42px_rgba(0,0,0,.6)]">
+        <div className="relative isolate h-44 overflow-hidden sm:h-60" style={{ background: bannerBackground(profile.equipped) }}>
           {!profile.banner_url && <ProfileBackdrop equipped={profile.equipped} reduced={reducedMotion} />}
           {profile.banner_url && (
             <Image src={profile.banner_url} alt="" fill className="object-cover" sizes="1024px" />
           )}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
-          <ProfileEffects slug={profile.equipped?.effect} reduced={reducedMotion} />
+          <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+
         </div>
 
-        <div className="relative px-5 pb-5 sm:px-8">
+        <div className="relative bg-card px-5 pb-6 sm:px-8 sm:pb-8">
           <div className="-mt-12 flex flex-col gap-4 sm:-mt-14 sm:flex-row sm:items-end sm:justify-between">
             <div className="flex items-end gap-4">
               <div className="relative">
@@ -158,7 +153,6 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                   src={profile.avatar_url}
                   name={profile.display_name ?? profile.username}
                   frame={profile.equipped?.avatar_frame}
-                  decoration={profile.equipped?.decoration}
                   className="size-24 border-4 border-card sm:size-28"
                 />
                 <div className="absolute bottom-1 right-1">
@@ -169,7 +163,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                 <div className="flex flex-wrap items-center gap-2">
                   <Nameplate slug={profile.equipped?.nameplate}>
                     <NameStyle style={profile.equipped?.nameplate ? undefined : profile.equipped?.name_style}>
-                      <h1 className="text-2xl font-bold">{profile.display_name ?? profile.username}</h1>
+                      <h1 className="max-w-full break-words text-2xl font-bold tracking-tight sm:text-3xl">{profile.display_name ?? profile.username}</h1>
                     </NameStyle>
                   </Nameplate>
                   {profile.role === "admin" && (
@@ -248,12 +242,14 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
           {profile.bio && <p className="mt-4 max-w-2xl text-sm text-muted-foreground">{profile.bio}</p>}
 
           {badges.length > 0 && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {badges.map((b) => {
+            <div className="mt-5 flex flex-wrap items-center gap-2">
+              {badges.slice(0, 5).map((b) => {
                 const shiny = b.rarity === "epic" || b.rarity === "legendary";
                 return (
                   <span
                     key={b.slug}
+                    title={b.name}
+                    aria-label={b.name}
                     className={cn(
                       "relative inline-flex items-center gap-1.5 overflow-hidden rounded-full bg-muted px-3 py-1 text-xs font-medium ring-1",
                       RARITY_META[b.rarity]?.color,
@@ -269,10 +265,11 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
                       />
                     )}
                     <DynamicIcon name={b.preview?.icon ?? "star"} className="relative size-3.5" />
-                    <span className="relative">{b.name}</span>
+                    <span className="sr-only">{b.name}</span>
                   </span>
                 );
               })}
+              {badges.length > 5 && <span className="rounded-lg border border-border bg-muted px-2.5 py-1.5 text-xs text-muted-foreground" title={`${badges.length - 5} more badges`}>+{badges.length - 5}</span>}
             </div>
           )}
 
@@ -311,8 +308,7 @@ export default async function ProfilePage({ params }: { params: Promise<{ userna
           </p>
         </div>
         </div>
-      </ProfileFrame>
-      </ProfileEntrance>
+
 
       {/* Stats */}
       <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">

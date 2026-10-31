@@ -12,7 +12,7 @@ export const getShopItems = cache(async (includeStaffOnly = false): Promise<Shop
 
 export const getShopItemBySlug = cache(async (slug: string): Promise<ShopItem | null> => {
   const supabase = await createClient();
-  const { data } = await supabase.from("shop_items").select("*").eq("slug", slug).maybeSingle();
+  const { data } = await supabase.from("shop_items").select("*").eq("slug", slug).eq("available", true).maybeSingle();
   return data ?? null;
 });
 
