@@ -1,5 +1,6 @@
-import { isActiveShopItem } from "@/lib/profile-catalogue";
 "use server";
+
+import { isActiveShopItem } from "@/lib/profile-catalogue";
 
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
