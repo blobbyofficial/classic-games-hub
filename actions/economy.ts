@@ -1,3 +1,4 @@
+import { isActiveShopItem } from "@/lib/profile-catalogue";
 "use server";
 
 import { revalidatePath } from "next/cache";
@@ -88,12 +89,14 @@ export async function claimDailyReward(): Promise<RpcResult> {
 export async function purchaseItem(slug: string): Promise<RpcResult> {
   const item = invalid(slugSchema, slug, "item");
   if (!item.ok) return { ok: false, error: item.error };
+  if (!isActiveShopItem(item.value)) return { ok: false, error: "This item has been retired." };
   return runRpc((db) => db.rpc("purchase_shop_item", { p_slug: item.value }), ["/shop", "/inventory", "/"]);
 }
 
 export async function equipItem(slug: string): Promise<RpcResult> {
   const item = invalid(slugSchema, slug, "item");
   if (!item.ok) return { ok: false, error: item.error };
+  if (!isActiveShopItem(item.value)) return { ok: false, error: "This item has been retired." };
   return runRpc((db) => db.rpc("equip_item", { p_slug: item.value }), ["/inventory", "/"]);
 }
 
@@ -164,6 +167,7 @@ export async function giftItem(slug: string, toUserId: string): Promise<RpcResul
   const recipient = invalid(userIdSchema, toUserId, "recipient");
   if (!item.ok) return { ok: false, error: item.error };
   if (!recipient.ok) return { ok: false, error: recipient.error };
+  if (!isActiveShopItem(item.value)) return { ok: false, error: "This item has been retired." };
   return runRpc((db) => db.rpc("gift_item", { p_slug: item.value, p_to: recipient.value }), ["/"]);
 }
 
@@ -210,5 +214,6 @@ export async function giftWithToken(slug: string, toUserId: string): Promise<Rpc
   const recipient = invalid(userIdSchema, toUserId, "recipient");
   if (!item.ok) return { ok: false, error: item.error };
   if (!recipient.ok) return { ok: false, error: recipient.error };
+  if (!isActiveShopItem(item.value)) return { ok: false, error: "This item has been retired." };
   return runRpc((db) => db.rpc("gift_with_token", { p_slug: item.value, p_to: recipient.value }), ["/shop", "/"]);
 }

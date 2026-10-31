@@ -1,3 +1,4 @@
+import { ACTIVE_SHOP_SLUGS, isActiveShopItem } from "@/lib/profile-catalogue";
 import { cache } from "react";
 import { createClient } from "@/lib/supabase/server";
 import type { ShopItem } from "@/types";
@@ -7,13 +8,13 @@ export const getShopItems = cache(async (includeStaffOnly = false): Promise<Shop
   let query = supabase.from("shop_items").select("*").eq("available", true);
   if (!includeStaffOnly) query = query.eq("staff_only", false);
   const { data } = await query.order("sort_weight", { ascending: false });
-  return data ?? [];
+  return (data ?? []).filter((item) => isActiveShopItem(item.slug));
 });
 
 export const getShopItemBySlug = cache(async (slug: string): Promise<ShopItem | null> => {
   const supabase = await createClient();
   const { data } = await supabase.from("shop_items").select("*").eq("slug", slug).eq("available", true).maybeSingle();
-  return data ?? null;
+  return data && isActiveShopItem(data.slug) ? data : null;
 });
 
 /** A specific user's wishlist (public - for gifting discovery on their profile). */
