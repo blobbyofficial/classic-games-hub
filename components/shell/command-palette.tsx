@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Command } from "cmdk";
-import { Gamepad2, Search, Moon, Sun } from "lucide-react";
+import { Gamepad2, Search, Moon, Sun, Settings } from "lucide-react";
 import { visibleNavigation } from "@/lib/navigation";
 import { useSessionStore } from "@/lib/stores/session-store";
 import { useTheme } from "next-themes";
@@ -112,7 +112,7 @@ export function CommandPalette() {
             </Command.Group>
 
             <Command.Group heading="Navigate" className="[&_[cmdk-group-heading]]:px-2 [&_[cmdk-group-heading]]:py-1.5 [&_[cmdk-group-heading]]:text-xs [&_[cmdk-group-heading]]:font-semibold [&_[cmdk-group-heading]]:text-muted-foreground">
-              {visibleNavigation(signedIn).map((n) => (
+              {[...visibleNavigation(signedIn), ...(signedIn ? [{ label: "Settings", href: "/settings", icon: Settings }] : [])].map((n) => (
                 <Item key={n.href} onSelect={() => go(n.href)}>
                   <n.icon className="size-4 text-muted-foreground" />
                   <span>{n.label}</span>
