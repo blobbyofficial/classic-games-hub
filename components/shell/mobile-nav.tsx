@@ -10,6 +10,7 @@ import { useSessionStore } from "@/lib/stores/session-store";
 export function MobileNav() {
   const pathname = usePathname();
   const pending = useSessionStore((s) => s.pendingFriendRequests);
+  const unread = useSessionStore((s) => s.unreadNotifications);
   const signedIn = useSessionStore((s) => Boolean(s.userId));
   const items = signedIn ? MOBILE_NAV_SIGNED_IN : MOBILE_NAV_PUBLIC;
 
@@ -21,14 +22,14 @@ export function MobileNav() {
       <div className={cn("mx-auto grid w-full max-w-lg px-1 pb-[env(safe-area-inset-bottom)]", signedIn ? "grid-cols-5" : "grid-cols-4")}>
         {items.map((item) => {
           const active = isNavRouteActive(pathname, item.href);
-          const badge = item.badgeKey === "friendRequests" ? pending : 0;
+          const badge = item.badgeKey === "friendRequests" ? pending : item.badgeKey === "notifications" ? unread : 0;
           const label = item.label === "Leaderboards" ? "Ranks" : item.label;
           return (
             <Link
               key={item.href}
               href={item.href}
               aria-current={active ? "page" : undefined}
-              aria-label={badge > 0 ? `${item.label}, ${badge} pending friend requests` : item.label}
+              aria-label={badge > 0 ? `${item.label}, ${badge} ${item.badgeKey === "friendRequests" ? "pending friend requests" : "unread notifications"}` : item.label}
               className={cn(
                 // 56px tall: comfortably above the 44px minimum touch target.
                 "halloween-mobile-link group relative flex min-h-14 min-w-0 flex-col items-center justify-center gap-1 rounded-xl px-0.5 text-[11px] font-medium focus-visible:outline-2 focus-visible:outline-offset-[-2px] focus-visible:outline-primary",
