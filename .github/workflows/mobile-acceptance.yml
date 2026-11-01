@@ -36,7 +36,7 @@ jobs:
           SCREENSHOT_DIR=artifacts/mobile BASE_URL=http://127.0.0.1:3000 node --test scripts/test-mobile-browser.cjs
       - name: Preserve screenshots for release review
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: mobile-acceptance-screenshots
           path: artifacts/mobile/
